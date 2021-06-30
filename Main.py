@@ -4,7 +4,7 @@ from itertools import zip_longest
 import json
 import logging
 import os
-import random
+import RaceRandom as random
 import time
 import zlib
 
@@ -35,6 +35,31 @@ class EnemizerError(RuntimeError):
     pass
 
 
+def get_random_ganon_item(swordmode):
+    options = [
+      "default",
+      "arrow",
+      "boomerang",
+      "hookshot",
+      "bomb",
+      "powder",
+      "fire_rod",
+      "ice_rod",
+      "bombos",
+      "ether",
+      "quake",
+      "hammer",
+      "bee",
+      "somaria",
+      "byrna",
+    ]
+    if swordmode == "swordless":
+        options.remove("bombos")
+        options.remove("ether")
+        options.remove("quake")
+    return random.choice(options)
+
+
 def main(args, seed=None, fish=None):
     if args.outputpath:
         os.makedirs(args.outputpath, exist_ok=True)
@@ -42,8 +67,8 @@ def main(args, seed=None, fish=None):
 
     start = time.perf_counter()
 
-    # if args.securerandom:
-    #     random.use_secure()
+    if args.securerandom:
+        random.use_secure()
 
     # initialize the world
     if args.code:
@@ -73,6 +98,8 @@ def main(args, seed=None, fish=None):
     world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
     world.crystals_ganon_orig = args.crystals_ganon.copy()
     world.crystals_gt_orig = args.crystals_gt.copy()
+    world.ganon_item = {player: get_random_ganon_item(args.swords) if args.ganon_item[player] == 'random' else args.ganon_item[player] for player in range(1, world.players + 1)}
+    world.ganon_item_orig = args.ganon_item.copy()
     world.owKeepSimilar = args.ow_keepsimilar.copy()
     world.owFluteShuffle = args.ow_fluteshuffle.copy()
     world.open_pyramid = args.openpyramid.copy()
@@ -384,6 +411,8 @@ def copy_world(world):
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()
+    ret.ganon_item = world.ganon_item.copy()
+    ret.ganon_item_orig = world.ganon_item_orig.copy()
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owFluteShuffle = world.owFluteShuffle.copy()
     ret.open_pyramid = world.open_pyramid.copy()

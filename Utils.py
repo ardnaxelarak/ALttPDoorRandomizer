@@ -668,8 +668,8 @@ class bidict(dict):
 
 
 if __name__ == '__main__':
-    # make_new_base2current()
+    print(make_new_base2current())
     # read_entrance_data(old_rom=sys.argv[1])
     # room_palette_data(old_rom=sys.argv[1])
     # extract_data_from_us_rom(sys.argv[1])
-    extract_data_from_jp_rom(sys.argv[1])
+    # extract_data_from_jp_rom(sys.argv[1])

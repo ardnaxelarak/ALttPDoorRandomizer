@@ -22,7 +22,7 @@ def ItemFactory(items, player):
     return ret
 
 
-# Format: Name: (Advancement, Priority, Type, ItemCode, Pedestal Hint Text, Pedestal Credit Text, Sick Kid Credit Text, Zora Credit Text, Witch Credit Text, Flute Boy Credit Text, Hint Text)
+# Format: Name: (Advancement, Priority, Type, ItemCode, Cost, Pedestal Hint Text, Pedestal Credit Text, Sick Kid Credit Text, Zora Credit Text, Witch Credit Text, Flute Boy Credit Text, Hint Text)
 item_table = {'Bow': (True, False, None, 0x0B, 200, 'You have\nchosen the\narcher class.', 'the stick and twine', 'arrow-slinging kid', 'arrow sling for sale', 'witch and robin hood', 'archer boy shoots again', 'the Bow'),
               'Progressive Bow': (True, False, None, 0x64, 150, 'You have\nchosen the\narcher class.', 'the stick and twine', 'arrow-slinging kid', 'arrow sling for sale', 'witch and robin hood', 'archer boy shoots again', 'a Bow'),
               'Progressive Bow (Alt)': (True, False, None, 0x65, 150, 'You have\nchosen the\narcher class.', 'the stick and twine', 'arrow-slinging kid', 'arrow sling for sale', 'witch and robin hood', 'archer boy shoots again', 'a Bow'),
@@ -166,6 +166,11 @@ item_table = {'Bow': (True, False, None, 0x0B, 200, 'You have\nchosen the\narche
               'Small Key (Universal)': (False, True, None, 0xAF, 100, 'A small key for any door', 'and the key', 'the unlocking kid', 'keys for sale', 'unlock the fungus', 'key boy opens door again', 'a small key'),
               'Nothing': (False, False, None, 0x5A, 1, 'Some Hot Air', 'and the Nothing', 'the zen kid', 'outright theft', 'shroom theft', 'empty boy is bored again', 'nothing'),
               'Bee Trap': (False, False, None, 0xB0, 50, 'We will sting your face a whole lot!', 'and the sting buddies', 'the beekeeper kid', 'insects for sale', 'shroom pollenation', 'bottle boy has mad bees again', 'friendship'),
+              'L2 Bombs': (True, False, 'SwordBomb', 0xB1, 100, 'Some decent\nexplosives\nrest here!', 'the decent grenades', 'the bomb-holding kid', 'better booms for sale', 'blend fungus into bombs', '\'splosion boy explodes againsword boy fights again', 'fancy bombs'),
+              'L3 Bombs': (True, False, 'SwordBomb', 0xB2, 150, 'Some good\nexplosives\nrest here!', 'the good grenades sword', 'the bomb-holding kid', 'better booms for sale', 'blend fungus into bombs', '\'splosion boy explodes againsword boy fights again', 'fancy bombs'),
+              'L4 Bombs': (True, False, 'SwordBomb', 0xB3, 200, 'The golden\nexplosives\nrest here!', 'the golden grenades', 'the bomb-holding kid', 'better booms for sale', 'blend fungus into bombs', '\'splosion boy explodes againsword boy fights again', 'fancy bombs'),
+              'L5 Bombs': (True, False, 'SwordBomb', 0xB4, 200, 'The golden\nexplosives\nrest here!', 'the golden grenades', 'the bomb-holding kid', 'better booms sale', 'blend fungus into bombs', '\'splosion boy explodes againsword boy fights again', 'fancy bombs'),
+              'Progressive Bombs': (True, False, 'SwordBomb', 0xB5, 200, 'throw more\npowerful\nexplosives', 'the unknown grenades', 'the bomb-holding kid', 'better booms sale', 'blend fungus into bombs', '\'splosion boy explodes again', 'fancy bombs'),
               'Red Potion': (False, False, None, 0x2E, 150, 'Hearty red goop!', 'and the red goo', 'the liquid kid', 'potion for sale', 'free samples', 'bottle boy has red goo again', 'a red potion'),
               'Green Potion': (False, False, None, 0x2F, 60, 'Refreshing green goop!', 'and the green goo', 'the liquid kid', 'potion for sale', 'free samples', 'bottle boy has green goo again', 'a green potion'),
               'Blue Potion': (False, False, None, 0x30, 160, 'Delicious blue goop!', 'and the blue goo', 'the liquid kid', 'potion for sale', 'free samples', 'bottle boy has blue goo again', 'a blue potion'),

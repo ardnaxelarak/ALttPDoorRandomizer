@@ -1,4 +1,5 @@
-import random, logging, copy
+import RaceRandom as random
+import logging, copy
 from sortedcontainers import SortedList
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot
 from OWEdges import OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel

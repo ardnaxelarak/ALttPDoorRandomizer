@@ -1,6 +1,6 @@
 import argparse
 import logging
-import random
+import RaceRandom as random
 import urllib.request
 import urllib.parse
 import yaml
@@ -167,7 +167,10 @@ def roll_settings(weights):
     ret.crystals_gt = get_choice('tower_open')
 
     ret.crystals_ganon = get_choice('ganon_open')
-    
+
+    ganon_item = get_choice('ganon_item')
+    ret.ganon_item = ganon_item if ganon_item != 'none' else 'default'
+
     if ret.goal == 'triforcehunt':
         goal_min = get_choice_default('triforce_goal_min', default=20)
         goal_max = get_choice_default('triforce_goal_max', default=20)
@@ -187,7 +190,8 @@ def roll_settings(weights):
     ret.swords = {'randomized': 'random',
                   'assured': 'assured',
                   'vanilla': 'vanilla',
-                  'swordless': 'swordless'
+                  'swordless': 'swordless',
+                  'bombs': 'bombs'
                   }[get_choice('weapons')]
 
     ret.difficulty = get_choice('item_pool')

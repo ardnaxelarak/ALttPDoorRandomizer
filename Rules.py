@@ -347,7 +347,7 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Mire Lobby Gap', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Post-Gap Gap', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Falling Bridge WN', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))  # this is due to the fact the the door opposite is blocked
-    set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.has_sword(player) or state.has('Fire Rod', player) or state.has('Ice Rod', player) or state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player))  # need to defeat wizzrobes, bombs don't work ...
+    set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.bomb_mode_check(player, 1) and (state.has_sword(player) or state.has('Fire Rod', player) or state.has('Ice Rod', player) or state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player) or state.has_bomb_level(1)))  # need to defeat wizzrobes, bombs don't work ...
     set_rule(world.get_location('Misery Mire - Spike Chest', player), lambda state: (state.world.can_take_damage and state.has_hearts(player, 4)) or state.has('Cane of Byrna', player) or state.has('Cape', player))
     set_rule(world.get_entrance('Mire Left Bridge Hook Path', player), lambda state: state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Tile Room NW', player), lambda state: state.has_fire_source(player))
@@ -595,9 +595,21 @@ def global_rules(world, player):
     add_key_logic_rules(world, player)
     # End of door rando rules.
 
-    set_rule(world.get_location('Ganon', player), lambda state: state.has_beam_sword(player) and state.has_fire_source(player) and state.has_crystals(world.crystals_needed_for_ganon[player], player)
-                                                                and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or (state.has('Silver Arrows', player) and state.can_shoot_arrows(player)) or state.has('Lamp', player) or state.can_extend_magic(player, 12)))  # need to light torch a sufficient amount of times
-    set_rule(world.get_entrance('Ganon Drop', player), lambda state: state.has_beam_sword(player))  # need to damage ganon to get tiles to drop
+    set_rule(
+        world.get_location('Ganon', player),
+        lambda state: (state.has_beam_sword(player) or state.has_bomb_level(player, 3))
+            and state.has_fire_source(player)
+            and state.has_crystals(world.crystals_needed_for_ganon[player], player)
+            and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or
+                state.can_hit_stunned_ganon(player) or
+                state.has_beam_sword(player) and
+                    (state.has('Lamp', player) or state.can_extend_magic(player, 12))))
+                    # need to light torch a sufficient amount of times
+
+    set_rule(
+        world.get_entrance('Ganon Drop', player),
+        lambda state: state.has_beam_sword(player) or state.has_bomb_level(player, 3))
+        # need to damage ganon to get tiles to drop
 
 def bomb_rules(world, player):
     bonkable_doors = ['Two Brothers House Exit (West)', 'Two Brothers House Exit (East)'] # Technically this is incorrectly defined, but functionally the same as what is intended.
@@ -669,14 +681,14 @@ def bomb_rules(world, player):
     ]
     for location,bombable in enemy_kill_drops:
         if bombable:
-            add_rule(world.get_location(location, player), lambda state: state.can_use_bombs(player) or state.can_kill_most_things(player)) 
+            add_rule(world.get_location(location, player), lambda state: state.can_use_bombs(player) or state.can_kill_most_things(player))
         else:
             add_rule(world.get_location(location, player), lambda state: state.can_kill_most_things(player))
 
-    add_rule(world.get_location('Attic Cracked Floor', player), lambda state: state.can_use_bombs(player)) 
+    add_rule(world.get_location('Attic Cracked Floor', player), lambda state: state.can_use_bombs(player))
     bombable_floors = ['PoD Pit Room Bomb Hole', 'Ice Bomb Drop Hole', 'Ice Freezors Bomb Hole', 'GT Bob\'s Room Hole']
     for entrance in bombable_floors:
-        add_rule(world.get_entrance(entrance, player), lambda state: state.can_use_bombs(player)) 
+        add_rule(world.get_entrance(entrance, player), lambda state: state.can_use_bombs(player))
 
     if world.doorShuffle[player] == 'vanilla':
         add_rule(world.get_entrance('TR Lazy Eyes SE', player), lambda state: state.can_use_bombs(player)) # ToDo: Add always true for inverted, cross-entrance, and door-variants and so on.
@@ -717,13 +729,13 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Bumper Cave Exit (Top)', player), lambda state: state.has('Cape', player))
     set_rule(world.get_entrance('Bumper Cave Exit (Bottom)', player), lambda state: state.has('Cape', player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Superbunny Cave Exit (Bottom)', player), lambda state: False)  # Cannot get to bottom exit from top. Just exists for shuffling
-    
+
     # Item Access
     set_rule(world.get_location('Zora\'s Ledge', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_location('Potion Shop', player), lambda state: state.has('Mushroom', player))
     set_rule(world.get_location('Flute Spot', player), lambda state: state.has('Shovel', player))
     set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_beam_sword(player))
-    
+
     # Entrance Access
     set_rule(world.get_entrance('Lumberjack Tree Tree', player), lambda state: state.has_Boots(player) and state.has('Beat Agahnim 1', player))
     set_rule(world.get_entrance('Bonk Rock Cave', player), lambda state: state.has_Boots(player))
@@ -738,10 +750,10 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has_sword(player) and state.has_turtle_rock_medallion(player) and state.can_reach('Turtle Rock Ledge', 'Region', player))  # sword required to cast magic (!)
     set_rule(world.get_entrance('Dark World Hammer Peg Cave', player), lambda state: state.has('Hammer', player))
     set_rule(world.get_entrance('Bonk Fairy (Dark)', player), lambda state: state.has_Boots(player))
-    set_rule(world.get_entrance('Misery Mire', player), lambda state: state.has_sword(player) and state.has_misery_mire_medallion(player))  # sword required to cast magic (!)
+    set_rule(world.get_entrance('Misery Mire', player), lambda state: state.can_use_medallions(player) and state.has_misery_mire_medallion(player))  # sword required to cast magic (!)
     set_rule(world.get_entrance('Dark Lake Hylia Ledge Spike Cave', player), lambda state: state.can_lift_rocks(player))
 
-    # Region Access    
+    # Region Access
     set_rule(world.get_entrance('DM Hammer Bridge (West)', player), lambda state: state.has('Hammer', player))
     set_rule(world.get_entrance('DM Hammer Bridge (East)', player), lambda state: state.has('Hammer', player))
     set_rule(world.get_entrance('DM Broken Bridge (West)', player), lambda state: state.has('Hookshot', player))
@@ -837,9 +849,11 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Shopping Mall SW', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Bomber Corner Water Drop', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Bomber Corner Waterfall Water Drop', player), lambda state: state.has('Flippers', player))
-    
+
     if world.swords[player] == 'swordless':
         swordless_rules(world, player)
+    if world.swords[player] == 'bombs':
+        bomb_mode_rules(world, player)
 
 
 def ow_rules(world, player):
@@ -857,23 +871,23 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Skull Woods Portal Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Forgotten (Middle) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Front Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x02 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Lumberjack Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark Lumberjack Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x03 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('GT Entry Approach', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
         set_rule(world.get_entrance('GT Entry Leave', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player) or state.world.shuffle[player] in ('restricted', 'full', 'crossed', 'insanity'))
-        
+
         set_rule(world.get_entrance('West Death Mountain (Top) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Spectacle Rock Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('West Dark Death Mountain (Top) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Bubble Boy Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('West Dark Death Mountain (Bottom) Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x05 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('East Death Mountain (Top West) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('East Death Mountain (Top East) Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -895,7 +909,7 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('East Dark Death Mountain (Bottom) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Floating Island Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Death Mountain Teleporter (East)', player), lambda state: state.can_lift_heavy_rocks(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x07 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('TR Pegs Area Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('TR Pegs Teleporter', player), lambda state: state.has('Hammer', player))
@@ -903,7 +917,7 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Turtle Rock Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Turtle Rock Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Turtle Rock Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_heavy_rocks(player) and state.has_Pearl(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x0a in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Mountain Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Mountain Entry Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -912,12 +926,12 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Bumper Cave Area Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Bumper Cave Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Bumper Cave Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x0f in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Zora Waterfall Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Catfish Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x10 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Lost Woods Pass West Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Lost Woods Pass East Top Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -930,24 +944,24 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Skull Woods Pass East Bottom Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('West Dark World Teleporter (Hammer)', player), lambda state: state.has('Hammer', player) and state.has_Pearl(player))
         set_rule(world.get_entrance('West Dark World Teleporter (Rock)', player), lambda state: state.can_lift_heavy_rocks(player) and state.has_Pearl(player)) # bunny cannot lift bushes
-        
+
     if (world.mode[player] == 'inverted') == (0x11 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Kakariko Fortune Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Outcast Fortune Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x12 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Kakariko Pond Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Outcast Pond Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x13 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Sanctuary Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Bonk Rock Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark Chapel Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Chapel Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x14 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Graveyard Ledge Mirror Spot', player), lambda state: state.has_Pearl(player) and state.has_Mirror(player))
         set_rule(world.get_entrance('Kings Grave Mirror Spot', player), lambda state: state.has_Pearl(player) and state.has_Mirror(player))
@@ -957,28 +971,28 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Dark Graveyard Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Graveyard Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Graveyard Grave Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x15 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('River Bend Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('River Bend East Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Qirn Jump Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Qirn Jump East Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x16 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Potion Shop Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Potion Shop Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark Witch Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Witch Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x17 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Zora Approach Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Zora Approach Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Catfish Approach Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Catfish Approach Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x18 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Kakariko Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Kakariko Grass Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -986,19 +1000,19 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Village of Outcasts Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Village of Outcasts Southwest Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Hammer House Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x1a in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Forgotton Forest Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Forgotton Forest Fence Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Shield Shop Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x1b in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Inverted Pyramid Hole', player), lambda state: False)
         set_rule(world.get_entrance('Inverted Pyramid Entrance', player), lambda state: False)
         set_rule(world.get_entrance('Pyramid Hole', player), lambda state: state.has('Beat Agahnim 2', player) or world.open_pyramid[player])
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_beam_sword(player) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
-        
+
         set_rule(world.get_entrance('HC Area Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('HC Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('HC Courtyard Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1011,7 +1025,7 @@ def ow_rules(world, player):
         add_rule(world.get_entrance('Pyramid Hole', player), lambda state: False)
         set_rule(world.get_entrance('Pyramid Entrance', player), lambda state: False)
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
-        
+
         set_rule(world.get_entrance('Pyramid Exit Ledge Drop', player), lambda state: state.has('Hammer', player))
         set_rule(world.get_entrance('Pyramid Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Pyramid Pass Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1020,7 +1034,7 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Pyramid From Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Pyramid Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Post Aga Inverted Teleporter', player), lambda state: state.has('Beat Agahnim 1', player))
-        
+
     if (world.mode[player] == 'inverted') == (0x1d in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Wooden Bridge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Wooden Bridge Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1029,12 +1043,12 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Broken Bridge West Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Broken Bridge East Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Broken Bridge Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x1e in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Eastern Palace Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Palace of Darkness Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x22 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Blacksmith Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Blacksmith Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1042,19 +1056,19 @@ def ow_rules(world, player):
     else:
         set_rule(world.get_entrance('Hammer Pegs Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Hammer Pegs Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x25 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Sand Dunes Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark Dunes Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x28 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Maze Race Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Maze Race Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dig Game Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dig Game Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x29 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Kakariko Suburb Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Kakariko Suburb South Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1062,24 +1076,24 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Frog Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Frog Prison Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Archery Game Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x2a in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Flute Boy Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Flute Boy Pass Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Stumpy Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Stumpy Pass Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x2b in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Central Bonk Rocks Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark Bonk Rocks Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x2c in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Links House Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Big Bomb Shop Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x2d in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Stone Bridge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Stone Bridge South Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1088,19 +1102,19 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Hammer Bridge North Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Hammer Bridge South Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Hobo Mirror Spot', player), lambda state: state.has_Mirror(player) and state.has_Pearl(player) and state.has('Flippers', player))
-        
+
     if (world.mode[player] == 'inverted') == (0x2e in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Tree Line Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark Tree Line Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x2f in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Eastern Nook Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('East Hyrule Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player)) # bunny cannot use hammer
     else:
         set_rule(world.get_entrance('Darkness Nook Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('East Dark World Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x30 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Checkerboard Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Desert Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1115,14 +1129,14 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Misery Mire Blocked Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Misery Mire Main Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Misery Mire Teleporter', player), lambda state: state.can_lift_heavy_rocks(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x32 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Cave 45 Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Flute Boy Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Stumpy Approach Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Stumpy Bush Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x33 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('C Whirlpool Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('C Whirlpool Outer Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1133,12 +1147,12 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Dark C Whirlpool Outer Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('South Dark World Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player))
         set_rule(world.get_entrance('South Teleporter Cliff Ledge Drop', player), lambda state: state.can_lift_rocks(player) and state.has_Pearl(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x34 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Statues Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Hype Cave Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x35 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Lake Hylia Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Lake Hylia Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1155,12 +1169,12 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Ice Lake Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Ice Palace Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Ice Palace Teleporter', player), lambda state: state.can_lift_heavy_rocks(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x37 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Ice Cave Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Shopping Mall Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x3a in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Desert Pass Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Desert Pass Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1168,17 +1182,17 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Swamp Nook Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Swamp Nook Southeast Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Swamp Nook Pegs Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x3b in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Dam Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Swamp Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x3c in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('South Pass Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Dark South Pass Mirror Spot', player), lambda state: state.has_Mirror(player))
-        
+
     if (world.mode[player] == 'inverted') == (0x3f in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Octoballoon Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
@@ -1218,7 +1232,7 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('Hype Cave', player), player) # bomb required
     add_bunny_rule(world.get_entrance('Dark Lake Hylia Ledge Fairy', player), player) # bomb required
     add_bunny_rule(world.get_entrance('Dark Lake Hylia Ledge Spike Cave', player), player)
-    
+
     add_bunny_rule(world.get_entrance('Lost Woods Bush (West)', player), player)
     add_bunny_rule(world.get_entrance('Lost Woods Bush (East)', player), player)
     add_bunny_rule(world.get_entrance('DM Hammer Bridge (West)', player), player)
@@ -1487,7 +1501,21 @@ def swordless_rules(world, player):
     set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has('Hammer', player))
     set_rule(world.get_location('Ganon', player), lambda state: state.has('Hammer', player) and state.has_fire_source(player) and state.has('Silver Arrows', player) and state.can_shoot_arrows(player) and state.has_crystals(world.crystals_needed_for_ganon[player], player))
     set_rule(world.get_entrance('Ganon Drop', player), lambda state: state.has('Hammer', player))  # need to damage ganon to get tiles to drop
-    
+
+    if world.mode[player] != 'inverted':
+        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has('Hammer', player) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
+
+    set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has_turtle_rock_medallion(player) and state.can_reach('Turtle Rock Ledge', 'Region', player))   # sword not required to use medallion for opening in swordless (!)
+    add_bunny_rule(world.get_entrance('Turtle Rock', player), player)
+    add_bunny_rule(world.get_entrance('Misery Mire', player), player)
+
+def bomb_mode_rules(world, player):
+    set_rule(world.get_entrance('Tower Altar NW', player), lambda state: True)
+    set_rule(world.get_entrance('Skull Vines NW', player), lambda state: True)
+
+    set_rule(world.get_location('Ether Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has('Hammer', player))
+    set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has('Hammer', player))
+
     if world.mode[player] != 'inverted':
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has('Hammer', player) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
 
@@ -1508,7 +1536,7 @@ std_kill_rooms = {
     'Tower Red Guards': ['Tower Red Guards EN', 'Tower Red Guards SW'], # Two usain bolts
     'Tower Circle of Pots': ['Tower Circle of Pots NW'], # Two spear soldiers. Plenty of pots.
     'PoD Turtle Party': ['PoD Turtle Party ES', 'PoD Turtle Party NW'],  # Lots of turtles.
-    'Thieves Basement Block': ['Thieves Basement Block WN'], # One blue and one red zazak and one Stalfos. Two pots. Need weapon. 
+    'Thieves Basement Block': ['Thieves Basement Block WN'], # One blue and one red zazak and one Stalfos. Two pots. Need weapon.
     'Ice Stalfos Hint': ['Ice Stalfos Hint SE'], # Need bombs for big stalfos knights
     'Ice Pengator Trap': ['Ice Pengator Trap NE'], # Five pengators. Bomb-doable?
     'Mire 2': ['Mire 2 NE'], # Wizzrobes. Bombs dont work.
@@ -1560,7 +1588,7 @@ def standard_rules(world, player):
         return loc.item and loc.item.name == 'Bombs (10)'
 
     def standard_escape_rule(state):
-        return state.can_kill_most_things(player) or bomb_escape_rule() 
+        return state.can_kill_most_things(player) or bomb_escape_rule()
 
     add_item_rule(world.get_location('Link\'s Uncle', player), uncle_item_rule)
 
@@ -1854,7 +1882,7 @@ def set_big_bomb_rules(world, player):
         # same as the Normal_LW_entrances case except in insanity it's possible you could be here without Flippers which
         # means you need an escape route of either Flippers or Flute
         add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: (state.has('Flippers', player) or state.can_flute(player)))
-    
+
     #TODO: Fix red bomb rules, artifically adding a bunch of rules to help reduce unbeatable seeds in OW shuffle
     add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False)
     #add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: state.can_reach('Pyramid Area', 'Region', player))
@@ -2051,7 +2079,7 @@ def set_inverted_big_bomb_rules(world, player):
         set_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False)
     else:
         raise Exception('No logic found for routing from %s to the pyramid.' % bombshop_entrance.name)
-    
+
     if world.owShuffle[player] != 'vanilla' or world.owSwap[player] != 'vanilla':
         add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False) #temp disable progression until routing to Pyramid get be guaranteed
 

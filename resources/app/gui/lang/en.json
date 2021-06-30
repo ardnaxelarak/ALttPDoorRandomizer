@@ -124,7 +124,7 @@
     "randomizer.overworld.overworldflute": "Flute Shuffle",
     "randomizer.overworld.overworldflute.vanilla": "Vanilla",
     "randomizer.overworld.overworldflute.random": "Random",
-    
+
     "randomizer.entrance.openpyramid": "Pre-open Pyramid Hole",
     "randomizer.entrance.shuffleganon": "Include Ganon's Tower and Pyramid Hole in shuffle pool",
     "randomizer.entrance.shufflelinks": "Include Link's House in the shuffle pool",
@@ -244,10 +244,29 @@
     "randomizer.item.crystals_ganon.7": "7",
     "randomizer.item.crystals_ganon.random": "Random",
 
+    "randomizer.item.ganon_item": "Item to harm stunned Ganon",
+    "randomizer.item.ganon_item.default": "Default",
+    "randomizer.item.ganon_item.random": "Random",
+    "randomizer.item.ganon_item.arrow": "Silver Arrows",
+    "randomizer.item.ganon_item.boomerang": "Boomerang",
+    "randomizer.item.ganon_item.hookshot": "Hookshot",
+    "randomizer.item.ganon_item.bomb": "Bombs",
+    "randomizer.item.ganon_item.powder": "Powder",
+    "randomizer.item.ganon_item.fire_rod": "Fire Rod",
+    "randomizer.item.ganon_item.ice_rod": "Ice Rod",
+    "randomizer.item.ganon_item.bombos": "Bombos",
+    "randomizer.item.ganon_item.ether": "Ether",
+    "randomizer.item.ganon_item.quake": "Quake",
+    "randomizer.item.ganon_item.hammer": "Hammer",
+    "randomizer.item.ganon_item.bee": "Bee",
+    "randomizer.item.ganon_item.somaria": "Cane of Somaria",
+    "randomizer.item.ganon_item.byrna": "Cane of Byrna",
+
     "randomizer.item.weapons": "Weapons",
     "randomizer.item.weapons.random": "Randomized",
     "randomizer.item.weapons.assured": "Assured",
     "randomizer.item.weapons.swordless": "Swordless",
+    "randomizer.item.weapons.bombs": "Bomb-Only",
     "randomizer.item.weapons.vanilla": "Vanilla",
 
     "randomizer.item.beemizer": "Beemizer",

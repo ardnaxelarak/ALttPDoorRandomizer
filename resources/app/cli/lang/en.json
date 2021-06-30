@@ -91,6 +91,11 @@
       "                Ether and Bombos Tablet can be activated with Hammer",
       "                (and Book). Bombos pads have been added in Ice",
       "                Palace, to allow for an alternative to firerod.",
+      "Bombs:          Similar to swordless, but only bombs deal damage",
+      "                to enemies. Bombs deal sword-class damage and can be",
+      "                upgraded. Special enemies such as red eyegores still",
+      "                require the traditional item to kill. Medallions can",
+      "                be used despite not having a sword.",
       "Vanilla:        Swords are in vanilla locations."
     ],
     "goal": [
@@ -248,6 +253,13 @@
       "this applies to the castle tower door instead. (default: %(default)s)",
       "Random: Picks a random value between 0 and 7 (inclusive).",
       "0-7:    Number of crystals needed"
+    ],
+    "ganon_item": [
+      "What item Ganon is vulnerable to while stunned in his final phase.",
+      "Default: The usual item (silver arrows except in bomb-only mode) will",
+      "         damage stunned Ganon.",
+      "Random:  Picks a random damaging item (but not a medallion if swordless)",
+      "<item>:  The specified item will damage stunned Ganon."
     ],
     "openpyramid": [ "Pre-opens the pyramid hole, this removes the Agahnim 2 requirement for it. (default: %(default)s)" ],
     "rom": [

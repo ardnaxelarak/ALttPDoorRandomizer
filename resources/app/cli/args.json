@@ -34,6 +34,7 @@
       "random",
       "assured",
       "swordless",
+      "bombs",
       "vanilla"
     ]
   },
@@ -200,6 +201,26 @@
       "1",
       "0",
       "random"
+    ]
+  },
+  "ganon_item": {
+    "choices": [
+      "default",
+      "random",
+      "arrow",
+      "boomerang",
+      "hookshot",
+      "bomb",
+      "powder",
+      "fire_rod",
+      "ice_rod",
+      "bombos",
+      "ether",
+      "quake",
+      "hammer",
+      "bee",
+      "somaria",
+      "byrna"
     ]
   },
   "beemizer": {

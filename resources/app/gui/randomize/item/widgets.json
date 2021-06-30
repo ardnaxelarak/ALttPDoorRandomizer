@@ -50,19 +50,35 @@
         "random"
       ]
     },
+    "ganon_item": {
+      "type": "selectbox",
+      "options": [
+        "default",
+        "random",
+        "arrow",
+        "boomerang",
+        "hookshot",
+        "bomb",
+        "powder",
+        "fire_rod",
+        "ice_rod",
+        "bombos",
+        "ether",
+        "quake",
+        "hammer",
+        "bee",
+        "somaria",
+        "byrna"
+      ]
+    },
     "weapons": {
       "type": "selectbox",
       "options": [
         "random",
         "assured",
         "swordless",
+        "bombs",
         "vanilla"
-      ]
-    },
-    "beemizer": {
-      "type": "selectbox",
-      "options": [
-        "0", "1", "2", "3", "4"
       ]
     }
   },
@@ -121,6 +137,12 @@
         "vt25",
         "vt26",
         "balanced"
+      ]
+    },
+    "beemizer": {
+      "type": "selectbox",
+      "options": [
+        "0", "1", "2", "3", "4"
       ]
     }
   }

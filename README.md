@@ -96,6 +96,21 @@ Flute spots remain unchanged.
 New flute spots are chosen at random. You can also cancel out of the flute menu by pressing X.
 
 
+## Ganon Vulnerability Item (--ganon_item)
+
+### Default
+
+Ganon will remain vulnerable to the default item (silver arrows except in bomb-only mode) in his final phase.
+
+### Random
+
+Ganon will be vulnerable to a random item in his final phase instead of being vulnerable to silver. Ganon will tell you what his weakness is as he enters his final phase, and in swordless mode a medallion will never be picked.
+
+### *<item>*
+
+Ganon will be vulnerable to the specified item in his final phase instead of being vulnerable to silver.
+
+
 # Command Line Options
 
 ```
@@ -127,3 +142,9 @@ This keeps similar edge transitions paired together with other pairs of transiti
 ```
 
 For randomizing the flute spots around the overworld
+
+```
+--ganon_item <item>
+```
+
+For specifying what item ganon will be vulnerable to while stunned in his final phase. (default: default)

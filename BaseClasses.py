@@ -133,6 +133,8 @@ class World(object):
             set_player_attr('crystals_needed_for_gt', 7)
             set_player_attr('crystals_ganon_orig', {})
             set_player_attr('crystals_gt_orig', {})
+            set_player_attr('ganon_item', 'default')
+            set_player_attr('ganon_item_orig', 'default')
             set_player_attr('open_pyramid', False)
             set_player_attr('treasure_hunt_icon', 'Triforce Piece')
             set_player_attr('treasure_hunt_count', 0)
@@ -338,6 +340,17 @@ class World(object):
                         ret.prog_items['Master Sword', item.player] += 1
                     elif self.difficulty_requirements[item.player].progressive_sword_limit >= 1:
                         ret.prog_items['Fighter Sword', item.player] += 1
+                elif 'Bombs' in item.name:
+                    if ret.has('L5 Bombs', item.player):
+                        pass
+                    elif ret.has('L4 Bombs', item.player):
+                        ret.prog_items['L5 Bombs', item.player] += 1
+                    elif ret.has('L3 Bombs', item.player):
+                        ret.prog_items['L4 Bombs', item.player] += 1
+                    elif ret.has('L2 Bombs', item.player):
+                        ret.prog_items['L3 Bombs', item.player] += 1
+                    else:
+                        ret.prog_items['L2 Bombs', item.player] += 1
                 elif 'Glove' in item.name:
                     if ret.has('Titans Mitts', item.player):
                         pass
@@ -720,12 +733,12 @@ class CollectionState(object):
         return basemagic >= smallmagic
 
     def can_kill_most_things(self, player, enemies=5):
-        return (self.has_blunt_weapon(player)
+        return (self.bomb_mode_check(player, 1) and
+            (self.has_blunt_weapon(player) or self.has_bomb_level(player, 1)
                 or self.has('Cane of Somaria', player)
                 or (self.has('Cane of Byrna', player) and (enemies < 6 or self.can_extend_magic(player)))
                 or self.can_shoot_arrows(player)
-                or self.has('Fire Rod', player)
-                )
+                or self.has('Fire Rod', player)))
 
     # In the future, this can be used to check if the player starts without bombs
     def can_use_bombs(self, player):
@@ -743,7 +756,7 @@ class CollectionState(object):
                 or self.has('Ice Rod', player)
                 or self.has('Cane of Somaria', player)
                 or self.has('Cane of Byrna', player))
-    
+
     def can_hit_crystal_through_barrier(self, player):
         return (self.can_use_bombs(player)
             or self.can_shoot_arrows(player)
@@ -764,7 +777,7 @@ class CollectionState(object):
         return (
             self.has_bottle(player) and
             self.has('Bug Catching Net', player) and
-            (self.has_Boots(player) or (self.has_sword(player) and self.has('Quake', player))) and
+            (self.has_Boots(player) or (self.can_use_medallions(player) and self.has('Quake', player))) and
             cave.can_reach(self) and
             self.is_not_bunny(cave, player)
         )
@@ -774,6 +787,65 @@ class CollectionState(object):
 
     def has_beam_sword(self, player):
         return self.has('Master Sword', player) or self.has('Tempered Sword', player) or self.has('Golden Sword', player)
+
+    def has_bomb_level(self, player, level):
+        if self.world.swords[player] != 'bombs':
+            return False
+        if level == 5:
+            return self.has('L5 Bombs', player)
+        elif level == 4:
+            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player)
+        elif level == 3:
+            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player)
+        elif level == 2:
+            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player)
+        return True
+
+    def bomb_mode_check(self, player, level):
+        return self.world.swords[player] != 'bombs' or self.has_bomb_level(player, level)
+
+    def can_hit_stunned_ganon(self, player):
+        ganon_item = self.world.ganon_item[player]
+        if ganon_item == 'default':
+            if self.world.swords[player] == 'bombs':
+                ganon_item = 'bomb'
+            else:
+                ganon_item = 'arrow'
+        if ganon_item == 'arrow':
+            return self.has('Silver Arrows', player) and self.can_shoot_arrows(player)
+        elif ganon_item == 'boomerang':
+            return self.has('Blue Boomerang', player) or self.has('Red Boomerang', player)
+        elif ganon_item == 'hookshot':
+            return self.has('Hookshot', player)
+        elif ganon_item == 'bomb':
+            return self.can_use_bombs(player)
+        elif ganon_item == 'powder':
+            return self.has('Magic Powder', player)
+        elif ganon_item == 'fire_rod':
+            return self.has('Fire Rod', player)
+        elif ganon_item == 'ice_rod':
+            return self.has('Fire Rod', player)
+        elif ganon_item == 'bombos':
+            return self.has('Bombos', player) and self.can_use_medallions(player)
+        elif ganon_item == 'ether':
+            return self.has('Ether', player) and self.can_use_medallions(player)
+        elif ganon_item == 'quake':
+            return self.has('Quake', player) and self.can_use_medallions(player)
+        elif ganon_item == 'hammer':
+            return self.has('Hammer', player)
+        elif ganon_item == 'bee':
+            return (self.has_bottle(player) and
+                ((self.has('Bug Catching Net', player) and self.can_get_good_bee(player))
+                    or self.can_buy_unlimited('Bee', player)))
+        elif ganon_item == 'somaria':
+            return self.has('Cane of Somaria', player)
+        elif ganon_item == 'byrna':
+            return self.has('Cane of Byrna', player)
+        else:
+            return False
+
+    def can_use_medallions(self, player):
+        return self.has_sword(player) or self.world.swords[player] == 'bombs'
 
     def has_blunt_weapon(self, player):
         return self.has_sword(player) or self.has('Hammer', player)
@@ -795,7 +867,7 @@ class CollectionState(object):
         return self.has('Ocarina', player) and lw.can_reach(self) and self.is_not_bunny(lw, player)
 
     def can_melt_things(self, player):
-        return self.has('Fire Rod', player) or (self.has('Bombos', player) and self.has_sword(player))
+        return self.has('Fire Rod', player) or (self.has('Bombos', player) and self.can_use_medallions(player))
 
     def can_avoid_lasers(self, player):
         return self.has('Mirror Shield', player) or self.has('Cane of Byrna', player) or self.has('Cape', player)
@@ -867,6 +939,21 @@ class CollectionState(object):
                 elif self.world.difficulty_requirements[item.player].progressive_sword_limit >= 1:
                     self.prog_items['Fighter Sword', item.player] += 1
                     changed = True
+            elif 'Bombs' in item.name:
+                if self.has('L5 Bombs', item.player):
+                    pass
+                elif self.has('L4 Bombs', item.player):
+                    self.prog_items['L5 Bombs', item.player] += 1
+                    changed = True
+                elif self.has('L3 Bombs', item.player):
+                    self.prog_items['L4 Bombs', item.player] += 1
+                    changed = True
+                elif self.has('L2 Bombs', item.player):
+                    self.prog_items['L3 Bombs', item.player] += 1
+                    changed = True
+                else:
+                    self.prog_items['L2 Bombs', item.player] += 1
+                    changed = True
             elif 'Glove' in item.name:
                 if self.has('Titans Mitts', item.player):
                     pass
@@ -937,6 +1024,17 @@ class CollectionState(object):
                         to_remove = 'Master Sword'
                     elif self.has('Fighter Sword', item.player):
                         to_remove = 'Fighter Sword'
+                    else:
+                        to_remove = None
+                elif 'Bomb' in to_remove:
+                    if self.has('L5 Bombs', item.player):
+                        to_remove = 'L5 Bombs'
+                    elif self.has('L4 Bombs', item.player):
+                        to_remove = 'L4 Bombs'
+                    elif self.has('L3 Bombs', item.player):
+                        to_remove = 'L3 Bombs'
+                    elif self.has('L2 Bombs', item.player):
+                        to_remove = 'L2 Bombs'
                     else:
                         to_remove = None
                 elif 'Glove' in item.name:
@@ -2167,6 +2265,7 @@ class Spoiler(object):
                          'item_functionality': self.world.difficulty_adjustments,
                          'gt_crystals': self.world.crystals_needed_for_gt,
                          'ganon_crystals': self.world.crystals_needed_for_ganon,
+                         'ganon_vulnerability_item': self.world.ganon_item,
                          'open_pyramid': self.world.open_pyramid,
                          'accessibility': self.world.accessibility,
                          'hints': self.world.hints,
@@ -2184,8 +2283,8 @@ class Spoiler(object):
                          'experimental': self.world.experimental,
                          'keydropshuffle': self.world.keydropshuffle,
                          'shopsanity': self.world.shopsanity,
-						 'triforcegoal': self.world.treasure_hunt_count,
-						 'triforcepool': self.world.treasure_hunt_total,
+                         'triforcegoal': self.world.treasure_hunt_count,
+                         'triforcepool': self.world.treasure_hunt_total,
                          'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
                          }
 
@@ -2250,6 +2349,8 @@ class Spoiler(object):
                 outfile.write('Crystals required for GT:'.ljust(line_width) + '%s\n' % (str(self.metadata['gt_crystals'][player]) + addition))
                 addition = ' (Random)' if self.world.crystals_ganon_orig[player] == 'random' else ''
                 outfile.write('Crystals required for Ganon:'.ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player]) + addition))
+                addition = ' (Random)' if self.world.ganon_item_orig[player] == 'random' else ''
+                outfile.write('Ganon Vulnerability Item:'.ljust(line_width) + '%s\n' % (str(self.metadata['ganon_vulnerability_item'][player]) + addition))
                 outfile.write('Pyramid hole pre-opened:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
                 outfile.write('Accessibility:'.ljust(line_width) + '%s\n' % self.metadata['accessibility'][player])
                 outfile.write('Map shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['mapshuffle'][player] else 'No'))
@@ -2410,7 +2511,7 @@ er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "crossed": 4, 
 # byte 1: LLLW WSSR (logic, mode, sword, retro)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
 world_mode = {"open": 0, "standard": 1, "inverted": 2}
-sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3}
+sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 2} # fix this, kara
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4}

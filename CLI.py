@@ -93,9 +93,9 @@ def parse_cli(argv, no_defaults=False):
         for player in range(1, multiargs.multi + 1):
             playerargs = parse_cli(shlex.split(getattr(ret, f"p{player}")), True)
 
-            for name in ['logic', 'mode', 'swords', 'goal', 'difficulty', 'item_functionality',
-                         'ow_shuffle', 'ow_swap', 'ow_keepsimilar', 'ow_fluteshuffle',
-                         'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'openpyramid',
+            for name in ['logic', 'mode', 'swords', 'goal', 'difficulty', 'item_functionality', 'ow_shuffle',
+                         'ow_swap', 'ow_keepsimilar', 'ow_fluteshuffle', 'shuffle', 'door_shuffle',
+                         'intensity', 'crystals_ganon', 'crystals_gt', 'ganon_item', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
                          'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks',
@@ -131,6 +131,7 @@ def parse_settings():
         "goal": "ganon",
         "crystals_gt": "7",
         "crystals_ganon": "7",
+        "ganon_item": "default",
         "swords": "random",
         "difficulty": "normal",
         "item_functionality": "normal",
@@ -169,7 +170,7 @@ def parse_settings():
         "dungeon_counters": "default",
         "mixed_travel": "prevent",
         "standardize_palettes": "standardize",
-        
+
         "triforce_pool": 30,
         "triforce_goal": 20,
         "triforce_pool_min": 0,

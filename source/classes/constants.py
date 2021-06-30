@@ -63,6 +63,7 @@ SETTINGSTOPROCESS = {
       "goal": "goal",
       "crystals_gt": "crystals_gt",
       "crystals_ganon": "crystals_ganon",
+      "ganon_item": "ganon_item",
       "weapons": "swords",
       "itempool": "difficulty",
       "itemfunction": "item_functionality",
