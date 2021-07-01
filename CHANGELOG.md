@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.6.2
+- Added Balanced option for Flute Shuffle
+- Fixed issue with Flute Spot to Mountain Entry softlocking
+- Fixed logic bug with Inverted Kakariko Portal
+
 ### 0.1.6.1
 - Fixed issue with Flute Spot to VoO softlocking
 - Fixed Houlihan to exit where Link's House does

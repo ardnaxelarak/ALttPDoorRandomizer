@@ -123,6 +123,7 @@
 
     "randomizer.overworld.overworldflute": "Flute Shuffle",
     "randomizer.overworld.overworldflute.vanilla": "Vanilla",
+    "randomizer.overworld.overworldflute.balanced": "Balanced",
     "randomizer.overworld.overworldflute.random": "Random",
 
     "randomizer.entrance.openpyramid": "Pre-open Pyramid Hole",

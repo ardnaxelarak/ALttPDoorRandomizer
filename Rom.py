@@ -651,28 +651,29 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         flute_spots = world.owflutespots[player]
 
     for o in range(0, len(flute_spots)):
-        owid = flute_spots[o]
+        owslot = flute_spots[o]
         offset = 0
-        if (world.mode[player] == 'inverted') != (owid in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
+        data = flute_data[owslot]
+
+        if (world.mode[player] == 'inverted') != (data[1] in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
             offset = 0x40
 
-        data = flute_data[owid]
-        write_int16(rom, snes_to_pc(0x02E849 + (o * 2)), owid + offset) # owid
-        write_int16(rom, snes_to_pc(0x02E86B + (o * 2)), data[1]) #vram
-        write_int16(rom, snes_to_pc(0x02E88D + (o * 2)), data[2]) # BG scroll Y
-        write_int16(rom, snes_to_pc(0x02E8AF + (o * 2)), data[3]) # BG scroll X
-        write_int16(rom, snes_to_pc(0x02E8D1 + (o * 2)), data[12] if offset > 0 and len(data) > 12 else data[4]) # link Y
-        write_int16(rom, snes_to_pc(0x02E8F3 + (o * 2)), data[13] if offset > 0 and len(data) > 12 else data[5]) # link X
-        write_int16(rom, snes_to_pc(0x02E915 + (o * 2)), data[6]) # cam Y
-        write_int16(rom, snes_to_pc(0x02E937 + (o * 2)), data[7]) # cam X
-        write_int16(rom, snes_to_pc(0x02E959 + (o * 2)), data[8]) # unknown 1
-        write_int16(rom, snes_to_pc(0x02E97B + (o * 2)), data[9]) # unknown 2
+        write_int16(rom, snes_to_pc(0x02E849 + (o * 2)), data[1] + offset) # owid
+        write_int16(rom, snes_to_pc(0x02E86B + (o * 2)), data[2]) #vram
+        write_int16(rom, snes_to_pc(0x02E88D + (o * 2)), data[3]) # BG scroll Y
+        write_int16(rom, snes_to_pc(0x02E8AF + (o * 2)), data[4]) # BG scroll X
+        write_int16(rom, snes_to_pc(0x02E8D1 + (o * 2)), data[13] if offset > 0 and len(data) > 13 else data[5]) # link Y
+        write_int16(rom, snes_to_pc(0x02E8F3 + (o * 2)), data[14] if offset > 0 and len(data) > 13 else data[6]) # link X
+        write_int16(rom, snes_to_pc(0x02E915 + (o * 2)), data[7]) # cam Y
+        write_int16(rom, snes_to_pc(0x02E937 + (o * 2)), data[8]) # cam X
+        write_int16(rom, snes_to_pc(0x02E959 + (o * 2)), data[9]) # unknown 1
+        write_int16(rom, snes_to_pc(0x02E97B + (o * 2)), data[10]) # unknown 2
 
         # flute menu blips
-        rom.write_byte(snes_to_pc(0x0AB783 + o), data[11] & 0xff) # X low byte
-        rom.write_byte(snes_to_pc(0x0AB78B + o), data[11] // 0x100) # X high byte
-        rom.write_byte(snes_to_pc(0x0AB793 + o), data[10] & 0xff) # Y low byte
-        rom.write_byte(snes_to_pc(0x0AB79B + o), data[10] // 0x100) # Y high byte
+        rom.write_byte(snes_to_pc(0x0AB783 + o), data[12] & 0xff) # X low byte
+        rom.write_byte(snes_to_pc(0x0AB78B + o), data[12] // 0x100) # X high byte
+        rom.write_byte(snes_to_pc(0x0AB793 + o), data[11] & 0xff) # Y low byte
+        rom.write_byte(snes_to_pc(0x0AB79B + o), data[11] // 0x100) # Y high byte
 
 
     # patch entrance/exits/holes

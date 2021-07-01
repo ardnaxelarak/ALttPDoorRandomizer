@@ -1676,7 +1676,8 @@ class OWEdge(object):
     def dead_end(self):
         self.deadEnd = True
 
-    def coordInfo(self, vram_loc):
+    def coordInfo(self, midpoint, vram_loc):
+        self.midpoint = midpoint
         self.vramLoc = vram_loc
         return self
 

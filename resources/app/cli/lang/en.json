@@ -222,7 +222,8 @@
     "ow_fluteshuffle": [
       "This randomizes the flute spot destinations.",
       "Vanilla:        All flute spots remain unchanged.",
-      "Random:         New flute spots will be generated."
+      "Balanced:       New flute spots will be generated but prevents flute spots from being on any adjacent screen.",
+      "Random:         New flute spots will be generated with minimal bias."
     ],
     "door_shuffle": [
       "Select Door Shuffling Algorithm. (default: %(default)s)",

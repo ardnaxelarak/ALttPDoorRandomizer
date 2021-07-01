@@ -23,6 +23,7 @@
       "default": "vanilla",
       "options": [
         "vanilla",
+        "balanced",
         "random"
       ]
     }

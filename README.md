@@ -87,13 +87,19 @@ This keeps similar edge transitions together. ie. The 2 west edges of Potion Sho
 
 ## Flute Shuffle (--ow_fluteshuffle)
 
+When enabled, new flute spots are generated and gives the player the option to cancel out of the flute menu by pressing X.
+
 ### Vanilla
 
 Flute spots remain unchanged.
 
+### Balanced
+
+New flute spots are chosen at random, with restrictions that limit the promixity between other chosen flute spots.
+
 ### Random
 
-New flute spots are chosen at random. You can also cancel out of the flute menu by pressing X.
+New flute spots are chosen at random with minimum bias.
 
 
 ## Ganon Vulnerability Item (--ganon_item)

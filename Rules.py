@@ -942,7 +942,7 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Skull Woods Pass West Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Pass East Top Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Pass East Bottom Mirror Spot', player), lambda state: state.has_Mirror(player))
-        set_rule(world.get_entrance('West Dark World Teleporter (Hammer)', player), lambda state: state.has('Hammer', player) and state.has_Pearl(player))
+        set_rule(world.get_entrance('West Dark World Teleporter (Hammer)', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player))
         set_rule(world.get_entrance('West Dark World Teleporter (Rock)', player), lambda state: state.can_lift_heavy_rocks(player) and state.has_Pearl(player)) # bunny cannot lift bushes
 
     if (world.mode[player] == 'inverted') == (0x11 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
