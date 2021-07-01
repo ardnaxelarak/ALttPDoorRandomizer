@@ -2286,6 +2286,7 @@ class Spoiler(object):
                          'shopsanity': self.world.shopsanity,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
+                         'seed': self.world.seed,
                          'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
                          }
 
