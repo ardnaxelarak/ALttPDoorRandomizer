@@ -4,7 +4,7 @@ from sortedcontainers import SortedList
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot
 from OWEdges import OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.1.6.2-u'
+__version__ = '0.1.6.3-u'
 
 def link_overworld(world, player):
     # setup mandatory connections

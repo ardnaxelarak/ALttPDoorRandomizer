@@ -28,7 +28,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '35f262588baff34e2e2bf523a45a2703'
+RANDOMIZERBASEHASH = '5cf6e7c96f0b7775e2936ef1b7b3be66'
 
 
 class JsonRom(object):
@@ -496,8 +496,6 @@ class Sprite(object):
         sprite_name = read_utf16le(stream)
         author_name = read_utf16le(stream)
 
-        # Ignoring the Author Rom name for the time being.
-
         real_csum = sum(filedata) % 0x10000
         if real_csum != csum or real_csum ^ 0xFFFF != icsum:
             logger.warning('ZSPR file has incorrect checksum. It may be corrupted.')
@@ -892,7 +890,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     write_int16(rom, 0x187010, credits_total)  # dynamic credits
     if credits_total != 216:
         # collection rate address:
-        cr_address = 0x2391BE
+        cr_address = 0x239214
         cr_pc = cr_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit((credits_total // 10) % 10)
         last_top, last_bot = credits_digit(credits_total % 10)
@@ -911,7 +909,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             total += count_locations_exclude_logic(region.locations, gt_logic)
         # rom.write_byte(0x187012, total)  # dynamic credits
         # gt big key address:
-        gtbk_address = 0x2390E0
+        gtbk_address = 0x23911C
         gtbk_pc = gtbk_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit(total // 10)
         last_top, last_bot = credits_digit(total % 10)
@@ -1769,7 +1767,15 @@ def hud_format_text(text):
     return output[:32]
 
 
-def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, sprite, ow_palettes, uw_palettes):
+def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, sprite,
+                       ow_palettes, uw_palettes, reduce_flashing):
+    if not os.path.exists("data/sprites/official/001.link.1.zspr") and rom.orig_buffer:
+        dump_zspr(rom.orig_buffer[0x80000:0x87000], rom.orig_buffer[0xdd308:0xdd380],
+                  rom.orig_buffer[0xdedf5:0xdedf9], "data/sprites/official/001.link.1.zspr", "Nintendo", "Link")
+
+    # todo: implement a flag for msu resume delay
+    rom.write_bytes(0x18021D, [0, 0])  # default to off for now
+
     if sprite and not isinstance(sprite, Sprite):
         sprite = Sprite(sprite) if os.path.isfile(sprite) else get_sprite_from_name(sprite)
 
@@ -1826,6 +1832,32 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     if sprite is not None:
         write_sprite(rom, sprite)
 
+    # sprite author credits
+    padded_author = sprite.author_name if sprite is not None else "Nintendo"
+    padded_author = padded_author[:28] if len(padded_author) > 28 else padded_author
+    padded_author = padded_author.center(28).upper()
+
+    def convert_char_to_credits(char):
+        char_map = {
+            " ": (0x9F, 0x9F), "0": (0x53, 0x79), "1": (0x54, 0x7A), "2": (0x55, 0x7B), "3": (0x56, 0x7C),
+            "4": (0x57, 0x7D), "5": (0x58, 0x7E), "6": (0x59, 0x7F), "7": (0x5A, 0x80), "8": (0x5B, 0x81),
+            "9": (0x5C, 0x82), "A": (0x5D, 0x83), "B": (0x5E, 0x84), "C": (0x5F, 0x85), "D": (0x60, 0x86),
+            "E": (0x61, 0x87), "F": (0x62, 0x88), "G": (0x63, 0x89), "H": (0x64, 0x8A), "I": (0x65, 0x8B),
+            "J": (0x66, 0x8C), "K": (0x67, 0x8D), "L": (0x68, 0x8E), "M": (0x69, 0x8F), "N": (0x6A, 0x90),
+            "O": (0x6B, 0x91), "P": (0x6C, 0x92), "Q": (0x6D, 0x93), "R": (0x6E, 0x94), "S": (0x6F, 0x95),
+            "T": (0x70, 0x96), "U": (0x71, 0x97), "V": (0x72, 0x98), "W": (0x73, 0x99), "X": (0x74, 0x9A),
+            "Y": (0x75, 0x9B), "Z": (0x76, 0x9C), "'": (0x77, 0x9d), ".": (0xA0, 0xC0), "/": (0xA2, 0xC2),
+            ":": (0xA3, 0xC3), "_": (0xA6, 0xC6)}
+        return char_map[char] if char in char_map else (0x9F, 0x9F)
+
+    character_bytes = map(convert_char_to_credits, padded_author)
+    for i, pair in enumerate(character_bytes):
+        rom.write_byte(0x118002 + i, pair[0])
+        rom.write_byte(0x118020 + i, pair[1])
+
+    if reduce_flashing:
+        rom.write_byte(0x18017f, 1)
+    
     default_ow_palettes(rom)
     if ow_palettes == 'random':
         randomize_ow_palettes(rom)
@@ -1841,6 +1873,60 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     if isinstance(rom, LocalRom):
         rom.write_crc()
 
+# .zspr file dumping logic copied with permission from SpriteSomething:
+# https://github.com/Artheau/SpriteSomething/blob/master/source/meta/classes/spritelib.py#L443 (thanks miketrethewey!)
+def dump_zspr(basesprite, basepalette, baseglove, outfilename, author_name, sprite_name):
+    palettes = basepalette
+    # Add glove data
+    palettes.extend(baseglove)
+    HEADER_STRING = b"ZSPR"
+    VERSION = 0x01
+    SPRITE_TYPE = 0x01  # this format has "1" for the player sprite
+    RESERVED_BYTES = b'\x00\x00\x00\x00\x00\x00'
+    QUAD_BYTE_NULL_CHAR = b'\x00\x00\x00\x00'
+    DOUBLE_BYTE_NULL_CHAR = b'\x00\x00'
+    SINGLE_BYTE_NULL_CHAR = b'\x00'
+
+    write_buffer = bytearray()
+
+    write_buffer.extend(HEADER_STRING)
+    write_buffer.extend(struct.pack('B', VERSION)) # as_u8
+    checksum_start = len(write_buffer)
+    write_buffer.extend(QUAD_BYTE_NULL_CHAR)  # checksum
+    sprite_sheet_pointer = len(write_buffer)
+    write_buffer.extend(QUAD_BYTE_NULL_CHAR)
+    write_buffer.extend(struct.pack('<H', len(basesprite)))  # as_u16
+    palettes_pointer = len(write_buffer)
+    write_buffer.extend(QUAD_BYTE_NULL_CHAR)
+    write_buffer.extend(struct.pack('<H', len(palettes)))  # as_u16
+    write_buffer.extend(struct.pack('<H', SPRITE_TYPE))  # as_u16
+    write_buffer.extend(RESERVED_BYTES)
+    # sprite.name
+    write_buffer.extend(sprite_name.encode('utf-16-le'))
+    write_buffer.extend(DOUBLE_BYTE_NULL_CHAR)
+    # author.name
+    write_buffer.extend(author_name.encode('utf-16-le'))
+    write_buffer.extend(DOUBLE_BYTE_NULL_CHAR)
+    # author.name-short
+    write_buffer.extend(author_name.encode('ascii'))
+    write_buffer.extend(SINGLE_BYTE_NULL_CHAR)
+    write_buffer[sprite_sheet_pointer:sprite_sheet_pointer +
+                                      4] = struct.pack('<L', len(write_buffer)) # as_u32
+    write_buffer.extend(basesprite)
+    write_buffer[palettes_pointer:palettes_pointer +
+                                  4] = struct.pack('<L', len(write_buffer)) # as_u32
+    write_buffer.extend(palettes)
+
+    checksum = (sum(write_buffer) + 0xFF + 0xFF) % 0x10000
+    checksum_complement = 0xFFFF - checksum
+
+    write_buffer[checksum_start:checksum_start +
+                                2] = struct.pack('<H', checksum) # as_u16
+    write_buffer[checksum_start + 2:checksum_start +
+                                    4] = struct.pack('<H', checksum_complement) # as_u16
+
+    with open('%s' % outfilename, "wb") as zspr_file:
+        zspr_file.write(write_buffer)
 
 def write_sprite(rom, sprite):
     if not sprite.valid:

@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.6.3
+- Fixed borked credits (and missing Sprite Author) when collection rate isn't 216 or if GTBK count isn't /22
+- Added OW Rando in credits
+- Actually merged in DR v0.4.0.7 (with no thanks to GitHub)
+
 ### 0.1.6.2
 - Added Balanced option for Flute Shuffle
 - Fixed issue with Flute Spot to Mountain Entry softlocking
@@ -28,7 +33,7 @@
 ### 0.1.5.0
 - Added OW Tile Swap setting
 - Fixed horizontal VRAM visual loading glitch on megatiles
-- Merged DR v0.4.0.7 - Fast Credits / Reduced Flashing / Sprite Author in Credits
+- ~~Merged DR v0.4.0.7 - Fast Credits / Reduced Flashing / Sprite Author in Credits~~
 
 ### 0.1.4.3
 - Merged DR v0.4.0.6 - TT Maiden Attic Hint / DR Entrance Floor Mat Mods / Hard/Expert Item Pool Fix

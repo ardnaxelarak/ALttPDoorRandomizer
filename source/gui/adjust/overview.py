@@ -101,7 +101,8 @@ def adjust_page(top, parent, settings):
           "owpalettes": "ow_palettes",
           "uwpalettes": "uw_palettes",
           "quickswap": "quickswap",
-          "nobgm": "disablemusic"
+          "nobgm": "disablemusic",
+          "reduce_flashing": "reduce_flashing"
         }
         guiargs = Namespace()
         for option in options:
@@ -110,6 +111,7 @@ def adjust_page(top, parent, settings):
         guiargs.rom = self.romVar2.get()
         guiargs.baserom = top.pages["randomizer"].pages["generation"].widgets["rom"].storageVar.get()
         guiargs.sprite = self.sprite
+        guiargs.outputpath = os.path.dirname(guiargs.rom)
         try:
             adjust(args=guiargs)
         except Exception as e:

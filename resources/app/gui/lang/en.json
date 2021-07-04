@@ -148,6 +148,7 @@
 
     "randomizer.gameoptions.nobgm": "Disable Music & MSU-1",
     "randomizer.gameoptions.quickswap": "L/R Quickswapping",
+    "randomizer.gameoptions.reduce_flashing": "Reduce Flashing",
 
     "randomizer.gameoptions.heartcolor": "Heart Color",
     "randomizer.gameoptions.heartcolor.red": "Red",
