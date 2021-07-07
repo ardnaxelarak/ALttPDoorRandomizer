@@ -958,19 +958,19 @@ OWTileGroups = {
             'Palace of Darkness Area'
         ]
     ),
-    # ("Blacksmith", "Regular"): (
-    #     [
-    #         0x22, 0x62
-    #     ],
-    #     [
-    #         'Blacksmith Area',
-    #         'Bat Cave Ledge'
-    #     ],
-    #     [
-    #         'Hammer Pegs Area',
-    #         'Hammer Pegs Entry'
-    #     ]
-    # ),
+    ("Blacksmith", "Regular"): (
+        [
+            0x22, 0x62
+        ],
+        [
+            'Blacksmith Area',
+            'Bat Cave Ledge'
+        ],
+        [
+            'Hammer Pegs Area',
+            'Hammer Pegs Entry'
+        ]
+    ),
     ("Dunes", "Regular"): (
         [
             0x25, 0x65

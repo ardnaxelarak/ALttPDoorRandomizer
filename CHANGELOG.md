@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.1.6.4
+- Fixed Frogsmith and Stumpy and restored progression in these locations
+- Added Blacksmith/Hammer Pegs to OW Tile Swap pool
+
 ### 0.1.6.3
 - Fixed borked credits (and missing Sprite Author) when collection rate isn't 216 or if GTBK count isn't /22
 - Added OW Rando in credits

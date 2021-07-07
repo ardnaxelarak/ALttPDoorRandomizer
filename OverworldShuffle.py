@@ -4,7 +4,7 @@ from sortedcontainers import SortedList
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot
 from OWEdges import OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.1.6.3-u'
+__version__ = '0.1.6.4-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -641,8 +641,8 @@ mandatory_connections = [('Flute Away', 'Flute Sky'),
                          ('Broken Bridge Water Drop', 'Broken Bridge Water'), #flippers
                          ('Broken Bridge Northeast Water Drop', 'Broken Bridge Water'), #flippers
                          ('Broken Bridge West Water Drop', 'Broken Bridge Water'), #flippers
-                         ('Peg Area Rocks (West)', 'Hammer Peg Area'), #mitts
-                         ('Peg Area Rocks (East)', 'Hammer Peg Entry'), #mitts
+                         ('Peg Area Rocks (West)', 'Hammer Pegs Area'), #mitts
+                         ('Peg Area Rocks (East)', 'Hammer Pegs Entry'), #mitts
                          ('Dig Game To Ledge Drop', 'Dig Game Ledge'), #mitts
                          ('Dig Game Ledge Drop', 'Dig Game Area'),
                          ('Frog Ledge Drop', 'Archery Game Area'),
@@ -924,8 +924,8 @@ ow_connections = {
             ('Blacksmith Entry Mirror Spot', 'Blacksmith Area'),
             ('Bat Cave Ledge Mirror Spot', 'Bat Cave Ledge')
         ], [
-            ('Hammer Pegs Mirror Spot', 'Hammer Peg Area'),
-            ('Hammer Pegs Entry Mirror Spot', 'Hammer Peg Entry')
+            ('Hammer Pegs Mirror Spot', 'Hammer Pegs Area'),
+            ('Hammer Pegs Entry Mirror Spot', 'Hammer Pegs Entry')
         ]),
     0x25: ([
             ('Sand Dunes Mirror Spot', 'Sand Dunes Area')

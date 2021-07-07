@@ -18,46 +18,59 @@ jml OWFluteCancel2 : nop
 org $0ab90d ;JSL $02E99D
 jsl OWFluteCancel
 
+; allows Frog sprite to spawn in LW and also allows his friend to spawn in their house
+org $068a76 ; < 30a76 - sprite_prep.asm:785 (LDA $7EF3CA : AND.w #$40)
+lda $1b : eor.b #1 : nop #2
+
+; allows Frog to be accepted at Blacksmith
+org $06b3ee ; < 333ee - sprite_smithy_bros.asm:347 (LDA $7EF3CC : CMP.b #$08 : BEQ .no_returning_smithy_tagalong)
+jsl OWSmithAccept : nop #2
+db #$b0 ; BCS to replace BEQ
+
+; load Stumpy per screen's original world, not current world flag
+org $06907f ; < 3107f - sprite_prep.asm:2170 (LDA $7EF3CA)
+lda $8a : and.b #$40
+
 ;(replacing -> LDA $8A : AND.b #$40)
-org $00d8c4  ; < ? - Bank00.asm 4068 ()
+org $00d8c4  ; < ? - Bank00.asm:4068 ()
 jsl.l OWWorldCheck
-org $0283dc  ; < ? - Bank02.asm 816 ()
+org $0283dc  ; < ? - Bank02.asm:816 ()
 jsl.l OWWorldCheck
-org $02aa36  ; < ? - Bank02.asm 6559 ()
+org $02aa36  ; < ? - Bank02.asm:6559 ()
 jsl.l OWWorldCheck
-org $02aeca  ; < ? - Bank02.asm 7257 ()
+org $02aeca  ; < ? - Bank02.asm:7257 ()
 jsl.l OWWorldCheck16 : nop
-org $02b349  ; < ? - Bank02.asm 7902 ()
+org $02b349  ; < ? - Bank02.asm:7902 ()
 jsl.l OWWorldCheck
-org $02c40a  ; < ? - Bank02.asm 10547 ()
+org $02c40a  ; < ? - Bank02.asm:10547 ()
 jsl.l OWWorldCheck
-org $05afd9  ; < ? - sprite_warp_vortex.asm 60 ()
+org $05afd9  ; < ? - sprite_warp_vortex.asm:60 ()
 jsl.l OWWorldCheck
-org $07a3f0  ; < ? - Bank07.asm 5772 () ; flute activation/use
+org $07a3f0  ; < ? - Bank07.asm:5772 () ; flute activation/use
 jsl.l OWWorldCheck
-org $07a967  ; < ? - Bank07.asm 6578 ()
+org $07a967  ; < ? - Bank07.asm:6578 ()
 jsl.l OWWorldCheck
-org $07a9a1  ; < ? - Bank07.asm 6622 ()
+org $07a9a1  ; < ? - Bank07.asm:6622 ()
 jsl.l OWWorldCheck
-org $07a9ed  ; < ? - Bank07.asm 6677 ()
+org $07a9ed  ; < ? - Bank07.asm:6677 ()
 jsl.l OWWorldCheck
-org $07aa34  ; < ? - Bank07.asm 6718 ()
+org $07aa34  ; < ? - Bank07.asm:6718 ()
 jsl.l OWWorldCheck
-org $08d408  ; < ? - ancilla_morph_poof.asm 48 ()
+org $08d408  ; < ? - ancilla_morph_poof.asm:48 ()
 jsl.l OWWorldCheck
-org $0aba6c  ; < ? - Bank0a.asm 474 ()
+org $0aba6c  ; < ? - Bank0a.asm:474 ()
 jsl.l OWWorldCheck16 : nop
-org $0aba99  ; < ? - Bank0a.asm 515 ()
+org $0aba99  ; < ? - Bank0a.asm:515 ()
 jsl.l OWWorldCheck
-org $0bfeab  ; < ? - Bank0b.asm 36 ()
+org $0bfeab  ; < ? - Bank0b.asm:36 ()
 jsl.l OWWorldCheck16 : nop
 org $0cffb6  ; < ? - ?.asm ? ()
 jsl.l OWWorldCheck16 : nop
 org $0cffe8  ; < ? - ?.asm ? ()
 jsl.l OWWorldCheck16 : nop
-org $1beca2  ; < ? - palettes.asm 556 ()
+org $1beca2  ; < ? - palettes.asm:556 ()
 jsl.l OWWorldCheck16 : nop
-org $1bed95  ; < ? - palettes.asm 748 ()
+org $1bed95  ; < ? - palettes.asm:748 ()
 jsl.l OWWorldCheck16 : nop
 
 org $02b16e  ; AND #$3F : ORA 7EF3CA
@@ -121,6 +134,13 @@ OWFluteCancel2:
     lda $f2 : cmp #$40 : bne +
         lda #$01 : sta $7f5006
     + rtl 
+}
+OWSmithAccept:
+{
+    lda $7ef3cc : cmp #$07 : beq +
+    cmp #$08 : beq +
+        clc : rtl
+    + sec : rtl
 }
 
 org $aa9000

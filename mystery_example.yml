@@ -1,4 +1,19 @@
   description: Example door rando weights
+  ow_shuffle:
+    vanilla: 0
+    parallel: 2
+    full: 2
+  ow_keepsimilar:
+    on: 1
+    off: 1
+  ow_swap:
+    vanilla: 0
+    mixed: 2
+    crossed: 2
+  ow_fluteshuffle:
+    vanilla: 0
+    balanced: 1
+    random: 1
   door_shuffle:
     vanilla: 0
     basic: 2

@@ -22,7 +22,7 @@ This is a very new mode of LTTPR so the tools and info is very limited. - There 
 - In Crossed OW Tile Swap, there are some interesting bunny water-walk situations that can occur, these are mean to be out-of-logic but beware of logic bugs around this area.
 
 ### Known bugs:
-- In Mixed OW Tile Swap, Smith and Stumpy have issues when their tiles are swapped. Progression cannot be found on them when these tiles are swapped
+- ~~In Mixed OW Tile Swap, Smith and Stumpy have issues when their tiles are swapped. Progression cannot be found on them when these tiles are swapped~~ (Fixed in 0.1.6.4)
 - Screens that loop on itself and also have free-standing items, the sprites are duplicated and can cause item duplication
 - When OWG are performed to enter mega-tile screens (large OW screens), there is a small chance that an incorrect VRAM reference value causes the map graphics to offset in increments of 16 pixels
 
@@ -36,7 +36,7 @@ Download the source code from the repository directly and put it in a folder of 
 
 You must have Python installed (version 3.6 - 3.9 supported)
 
-This program requires all python dependencies that are necessary to run Aerinon's Door Randomizer plus an additional 'sortedcontainers' package. Try running ```pip install sortedcontainers``` on the command line to install the dependency.
+This program requires all python dependencies that are necessary to run Aerinon's Door Randomizer plus an additional 'sortedcontainers' package. Try running ```pip install sortedcontainers``` or ```python -m pip install sortedcontainers``` on the command line to install the dependency.
 
 Alternatively, run ```resources/ci/common/local_install.py``` to install all the missing dependencies as well.
 

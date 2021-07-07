@@ -254,11 +254,11 @@ def get_boots_clip_exits_dw(inverted):
     yield ('VoO To Dig Game Clip', 'Village of Outcasts Area', 'Dig Game Area')
     yield ('VoO To Dig Game Hook Clip', 'Village of Outcasts Area', 'Dig Game Ledge') #requires hookshot
     yield ('Broken Bridge To Dunes Clip', 'Broken Bridge West', 'Dark Dunes Area')
-    yield ('Broken Bridge To Hammer Pegs Clip', 'Broken Bridge West', 'Hammer Peg Area') #fake flipper
+    yield ('Broken Bridge To Hammer Pegs Clip', 'Broken Bridge West', 'Hammer Pegs Area') #fake flipper
     yield ('Broken Bridge To Bomb Shop Clip', 'Broken Bridge West', 'Big Bomb Shop Area') #fake flipper
     yield ('PoD To Cliff Clip', 'Palace of Darkness Area', 'Darkness Cliff')
     yield ('Dark Dunes To Cliff Clip', 'Dark Dunes Area', 'Darkness Cliff')
-    yield ('Dark Dunes To Hammer Pegs Clip', 'Dark Dunes Area', 'Hammer Peg Area')
+    yield ('Dark Dunes To Hammer Pegs Clip', 'Dark Dunes Area', 'Hammer Pegs Area')
     yield ('Dark Dunes To Bomb Shop Clip', 'Dark Dunes Area', 'Big Bomb Shop Area')
     
     yield ('Dig Game To Mire Clip', 'Dig Game Area', 'Misery Mire Area')
@@ -267,7 +267,7 @@ def get_boots_clip_exits_dw(inverted):
     yield ('Bomb Shop To Cliff Clip', 'Big Bomb Shop Area', 'Dark Central Cliffs')
     yield ('Bomb Shop To Hammer Bridge FAWT Clip', 'Big Bomb Shop Area', 'Hammer Bridge North Area')
     yield ('Hammer Bridge To Bomb Shop Clip', 'Hammer Bridge North Area', 'Big Bomb Shop Area')
-    yield ('Hammer Bridge To Hammer Pegs Clip', 'Hammer Bridge North Area', 'Hammer Peg Area')
+    yield ('Hammer Bridge To Hammer Pegs Clip', 'Hammer Bridge North Area', 'Hammer Pegs Area')
     yield ('Hammer Bridge To Cliff Clip', 'Hammer Bridge South Area', 'Dark Central Cliffs')
     yield ('Dark Tree Line Water Clip', 'Dark Tree Line Area', 'Dark Tree Line Water') #requires flippers
     yield ('PoD Nook To Shopping Mall FAWT Clip', 'Palace of Darkness Nook Area', 'Shopping Mall Area')

@@ -28,7 +28,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '5cf6e7c96f0b7775e2936ef1b7b3be66'
+RANDOMIZERBASEHASH = '7fde2c814de47cf292b74c8be9db04c4'
 
 
 class JsonRom(object):
@@ -593,19 +593,6 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     # patch overworld edges
     inverted_buffer = [0] * 0x82
     if world.owShuffle[player] != 'vanilla' or world.owSwap[player] != 'vanilla':
-        rom.write_byte(0x18004C, 0x01) #patch for allowing Frogsmith to enter multi-entrance caves
-        # patches map data specific for OW Shuffle
-        inverted_buffer[0x03] = inverted_buffer[0x03] | 0x2  # convenient portal on WDM
-        inverted_buffer[0x1A] = inverted_buffer[0x1A] | 0x2  # rocks added to prevent OWG hardlock
-        inverted_buffer[0x1B] = inverted_buffer[0x1B] | 0x2  # rocks added to prevent OWG hardlock
-        inverted_buffer[0x22] = inverted_buffer[0x22] | 0x2  # rocks added to prevent OWG hardlock
-        inverted_buffer[0x3F] = inverted_buffer[0x3F] | 0x2  # added C to terrain
-        inverted_buffer[0x43] = inverted_buffer[0x43] | 0x2  # convenient portal on WDDM
-        inverted_buffer[0x5A] = inverted_buffer[0x5A] | 0x2  # rocks added to prevent OWG hardlock
-        inverted_buffer[0x5B] = inverted_buffer[0x5B] | 0x2  # rocks added to prevent OWG hardlock
-        inverted_buffer[0x62] = inverted_buffer[0x62] | 0x2  # rocks added to prevent OWG hardlock
-        inverted_buffer[0x7F] = inverted_buffer[0x7F] | 0x2  # added C to terrain
-
         owMode = 0
         if world.owShuffle[player] == 'parallel':
             owMode = 1
@@ -628,6 +615,20 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             owFlags |= 0x100
 
         write_int16(rom, 0x150004, owFlags)
+
+        rom.write_byte(0x18004C, 0x01) # patch for allowing Frogsmith to enter multi-entrance caves
+        
+        # patches map data specific for OW Shuffle
+        inverted_buffer[0x03] = inverted_buffer[0x03] | 0x2  # convenient portal on WDM
+        inverted_buffer[0x1A] = inverted_buffer[0x1A] | 0x2  # rocks added to prevent OWG hardlock
+        inverted_buffer[0x1B] = inverted_buffer[0x1B] | 0x2  # rocks added to prevent OWG hardlock
+        inverted_buffer[0x22] = inverted_buffer[0x22] | 0x2  # rocks added to prevent OWG hardlock
+        inverted_buffer[0x3F] = inverted_buffer[0x3F] | 0x2  # added C to terrain
+        inverted_buffer[0x43] = inverted_buffer[0x43] | 0x2  # convenient portal on WDDM
+        inverted_buffer[0x5A] = inverted_buffer[0x5A] | 0x2  # rocks added to prevent OWG hardlock
+        inverted_buffer[0x5B] = inverted_buffer[0x5B] | 0x2  # rocks added to prevent OWG hardlock
+        inverted_buffer[0x62] = inverted_buffer[0x62] | 0x2  # rocks added to prevent OWG hardlock
+        inverted_buffer[0x7F] = inverted_buffer[0x7F] | 0x2  # added C to terrain
 
         if world.owSwap[player] == 'mixed':
             for b in world.owswaps[player][0]:
@@ -890,7 +891,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     write_int16(rom, 0x187010, credits_total)  # dynamic credits
     if credits_total != 216:
         # collection rate address:
-        cr_address = 0x239214
+        cr_address = 0x239202
         cr_pc = cr_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit((credits_total // 10) % 10)
         last_top, last_bot = credits_digit(credits_total % 10)
@@ -909,7 +910,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             total += count_locations_exclude_logic(region.locations, gt_logic)
         # rom.write_byte(0x187012, total)  # dynamic credits
         # gt big key address:
-        gtbk_address = 0x23911C
+        gtbk_address = 0x2390EE
         gtbk_pc = gtbk_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit(total // 10)
         last_top, last_bot = credits_digit(total % 10)
@@ -2796,7 +2797,7 @@ OtherEntrances = {'Blinds Hideout': 'Blind\'s old house',
                   'Kings Grave': 'The northeastmost grave',
                   'Bonk Fairy (Light)': 'The rock pile near your home',
                   'Hookshot Fairy': 'The left paired cave on east DM',
-				  'Bonk Fairy (Dark)': 'The rock pile near the old bomb shop',
+                  'Bonk Fairy (Dark)': 'The rock pile near the old bomb shop',
                   'Dark Lake Hylia Fairy': 'The cave NE dark Lake Hylia',
                   'C-Shaped House': 'The NE house in Village of Outcasts',
                   'Dark Death Mountain Fairy': 'The SW cave on dark DM',

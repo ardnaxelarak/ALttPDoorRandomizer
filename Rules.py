@@ -72,13 +72,6 @@ def set_rules(world, player):
 
     set_bunny_rules(world, player, world.mode[player] == 'inverted')
 
-    # TODO: Remove these rules when these scenarios aren't a problem
-    if world.owSwap[player] == 'mixed':
-        if 'Frog Area' in world.owswaps[player][2]:
-            set_rule(world.get_location('Frog', player), lambda state: False)
-        if 'Stumpy Area' in world.owswaps[player][2]:
-            set_rule(world.get_location('Stumpy', player), lambda state: False)
-
 
 def mirrorless_path_to_location(world, startName, targetName, player):
     # If Agahnim is defeated then the courtyard needs to be accessible without using the mirror for the mirror offset glitch.
