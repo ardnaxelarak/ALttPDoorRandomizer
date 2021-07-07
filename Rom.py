@@ -28,7 +28,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '7fde2c814de47cf292b74c8be9db04c4'
+RANDOMIZERBASEHASH = 'da6f3d011c2e50ccf6450f5e69c7c735'
 
 
 class JsonRom(object):
@@ -891,7 +891,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     write_int16(rom, 0x187010, credits_total)  # dynamic credits
     if credits_total != 216:
         # collection rate address:
-        cr_address = 0x239202
+        cr_address = 0x2391E0
         cr_pc = cr_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit((credits_total // 10) % 10)
         last_top, last_bot = credits_digit(credits_total % 10)
@@ -901,25 +901,6 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         # bottom half
         rom.write_byte(cr_pc+0x3a, mid_bot)
         rom.write_byte(cr_pc+0x3b, last_bot)
-
-    if world.keydropshuffle[player] or world.doorShuffle[player] != 'vanilla':
-        gt = world.dungeon_layouts[player]['Ganons Tower']
-        gt_logic = world.key_logic[player]['Ganons Tower']
-        total = 0
-        for region in gt.master_sector.regions:
-            total += count_locations_exclude_logic(region.locations, gt_logic)
-        # rom.write_byte(0x187012, total)  # dynamic credits
-        # gt big key address:
-        gtbk_address = 0x2390EE
-        gtbk_pc = gtbk_address - 0x120000  # convert to pc
-        mid_top, mid_bot = credits_digit(total // 10)
-        last_top, last_bot = credits_digit(total % 10)
-        # top half
-        rom.write_byte(gtbk_pc+0x1c, mid_top)
-        rom.write_byte(gtbk_pc+0x1d, last_top)
-        # bottom half
-        rom.write_byte(gtbk_pc+0x3a, mid_bot)
-        rom.write_byte(gtbk_pc+0x3b, last_bot)
 
     # patch medallion requirements
     if world.required_medallions[player][0] == 'Bombos':
