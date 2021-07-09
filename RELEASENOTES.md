@@ -14,6 +14,35 @@ Thanks to qadan, cheuer, & compiling
 
 # Bug Fixes and Notes.
 
+* 0.4.0.8
+	* Ganon jokes added for when silvers aren't available
+	* Some text updated (Blind jokes, uncle text)
+	* Fixed some enemizer Mystery settings
+	* Added a setting that's random enemy shuffle without Unkillable Thieves possible
+	* Fixed shop spoiler when money balancing/multiworld balancing
+	* Fixed a problem with insanity
+	* Fixed an issue with the credit stats specific to DR (e.g. collection rate total)
+	* More helpful error message when bps is missing?
+	* Minor generation issues involving enemizer and the link sprite
+	* Baserom updates (from Bonta, kan, qwertymodo, ardnaxelark)
+		* Boss icon on dungeon map (if you have a compass)
+		* Progressive bow sprite replacement
+		* Quickswap - consecutive special swaps
+		* Bonk Counter
+		* One mind
+		* MSU fix
+		* Chest turn tracking (not yet in credits)
+		* Damaged and magic stats in credits (gt bk removed)
+		* Fix for infinite bombs
+		* Fake boots option
+		* Always allowed medallions for swordless (no option yet)
+* 0.4.0.7
+	* Reduce flashing option added
+	* Sprite author credit added
+	* Ranged Crystal switch rules tweaked
+	* Baserom update: includes Credits Speedup, reduced flashing option, msu resume (but turned off by default)
+	* Create link sprite's zspr from local ROM and no longer attempts to download it from website
+	* Some minor bug fixes
 * 0.4.0.6
 	* Hints now default to off
 	* The maiden gives you a hint to the attic if you bring her to the unlit boss room

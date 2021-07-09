@@ -150,6 +150,7 @@ def roll_settings(weights):
         ret.dungeon_counters = 'pickup' if ret.door_shuffle != 'vanilla' or ret.compassshuffle == 'on' else 'off'
 
     ret.shufflelinks = get_choice('shufflelinks') == 'on'
+    ret.fakeboots = get_choice('fakeboots') == 'on'
     ret.shopsanity = get_choice('shopsanity') == 'on'
     ret.keydropshuffle = get_choice('keydropshuffle') == 'on'
     ret.mixed_travel = get_choice('mixed_travel') if 'mixed_travel' in weights else 'prevent'
@@ -206,15 +207,17 @@ def roll_settings(weights):
         boss_choice = old_style_bosses[boss_choice]
     ret.shufflebosses = boss_choice
 
-    ret.shuffleenemies = {'none': 'none',
-                          'shuffled': 'shuffled',
-                          'random': 'chaos'
-                          }[get_choice('enemy_shuffle')]
+    enemy_choice = get_choice('enemy_shuffle')
+    if enemy_choice == 'chaos':
+        enemy_choice = 'random'
+    ret.shuffleenemies = enemy_choice
 
-    ret.enemy_damage = {'default': 'default',
-                        'shuffled': 'shuffled',
-                        'random': 'chaos'
-                        }[get_choice('enemy_damage')]
+    old_style_damage = {'none': 'default',
+                        'chaos': 'random'}
+    damage_choice = get_choice('enemy_damage')
+    if damage_choice in old_style_damage:
+        damage_choice = old_style_damage[damage_choice]
+    ret.enemy_damage = damage_choice
 
     ret.enemy_health = get_choice('enemy_health')
 

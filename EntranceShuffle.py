@@ -1482,14 +1482,12 @@ def link_entrances(world, player):
         blacksmith_hut = blacksmith_doors.pop()
         connect_entrance(world, blacksmith_hut, 'Blacksmiths Hut', player)
         doors.remove(blacksmith_hut)
-        exit_pool.remove(blacksmith_hut)
 
         # place dam and pyramid fairy, have limited options
         random.shuffle(bomb_shop_doors)
         bomb_shop = bomb_shop_doors.pop()
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
         doors.remove(bomb_shop)
-        exit_pool.remove(bomb_shop)
 
         # handle remaining caves
         for cave in caves:

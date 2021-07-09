@@ -2,6 +2,7 @@
   "gui": {
     "adjust.nobgm": "Disable Music & MSU-1",
     "adjust.quickswap": "L/R Quickswapping",
+    "adjust.reduce_flashing": "Reduce Flashing",
 
     "adjust.heartcolor": "Heart Color",
     "adjust.heartcolor.red": "Red",
@@ -86,6 +87,7 @@
     "randomizer.enemizer.enemyshuffle.none": "None",
     "randomizer.enemizer.enemyshuffle.shuffled": "Shuffled",
     "randomizer.enemizer.enemyshuffle.random": "Random",
+    "randomizer.enemizer.enemyshuffle.legacy": "Random (including Thieves)",
 
     "randomizer.enemizer.bossshuffle": "Boss Shuffle",
     "randomizer.enemizer.bossshuffle.none": "None",
@@ -204,6 +206,7 @@
 
     "randomizer.item.hints": "Include Helpful Hints",
     "randomizer.item.retro": "Retro mode (universal keys)",
+    "randomizer.item.fakeboots": "Start with Fake Boots",
 
     "randomizer.item.worldstate": "World State",
     "randomizer.item.worldstate.standard": "Standard",

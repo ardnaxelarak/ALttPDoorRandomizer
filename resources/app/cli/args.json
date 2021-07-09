@@ -375,6 +375,10 @@
     "action": "store_true",
     "type": "bool"
   },
+  "fakeboots": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "calc_playthrough": {
     "action": "store_false",
     "type": "bool"
@@ -405,7 +409,8 @@
     "choices": [
       "none",
       "shuffled",
-      "random"
+      "random",
+      "legacy"
     ]
   },
   "enemy_health": {

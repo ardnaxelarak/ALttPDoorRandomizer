@@ -11,6 +11,8 @@ dw 0
 ;Hooks
 org $02a999
 jsl OWEdgeTransition : nop #4 ;LDA $02A4E3,X : ORA $7EF3CA
+;org $02e238 ;LDX #$9E : - DEX : DEX : CMP $DAEE,X : BNE -
+;jsl OWSpecialTransition : nop #5
 
 ; flute menu cancel
 org $0ab7af ;LDA $F2 : ORA $F0 : AND #$C0
@@ -285,7 +287,8 @@ OWNewDestination:
         ++ lda $84 : !add 1,s : sta $84 : pla : pla
 
     .adjustMainAxis
-    LDA $84 : SEC : SBC #$0400 : AND #$0F00 : ASL : XBA : STA $88 ; vram
+    ;LDA $84 : SEC : SBC #$0400 : AND #$0F80 : ASL : XBA : STA $88 ; vram
+    LDA $84 : SEC : SBC #$0400 : AND #$0F00 : ASL : XBA : STA $88
     LDA $84 : SEC : SBC #$0010 : AND #$003E : LSR : STA $86
 
     pla : pla : sep #$10 : ldy $418
@@ -346,7 +349,7 @@ OWNewDestination:
             ; turn into bunny
             lda $5d : cmp #$17 : beq .return
             lda #$17 : sta $5d
-            lda #$01 : sta $02e0
+            lda #$01 : sta $2e0
             bra .return
         .nobunny
         lda $5d : cmp #$17 : bne .return
@@ -355,6 +358,11 @@ OWNewDestination:
     .return
     lda $05 : sta $8a
     rep #$30 : rts
+}
+OWSpecialTransition:
+{
+    LDX #$9E
+    - DEX : DEX : CMP $DAEE,X : BNE -
 }
 
 ;Data

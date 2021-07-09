@@ -1,10 +1,13 @@
 import RaceRandom as random
 import logging, copy
-from sortedcontainers import SortedList
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot
 from OWEdges import OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
+try:
+    from sortedcontainers import SortedList
+except ImportError:
+    raise Exception('Could not load sortedcontainers module')
 
-__version__ = '0.1.6.4-u'
+__version__ = '0.1.6.5-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -174,7 +177,7 @@ def link_overworld(world, player):
                     or flute_pool[f] - 1 in new_spots \
                     or flute_pool[f] + 8 in new_spots \
                     or flute_pool[f] - 8 in new_spots) \
-                        or (random.randint(0, 9) != 0 \
+                        or (random.randint(0, 31) != 0 \
                         and (flute_pool[f] + 7 in new_spots 
                             or flute_pool[f] - 7 in new_spots 
                             or flute_pool[f] + 9 in new_spots 

@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.1.6.5
+- Reduced chance of diagonal flute spot in Balanced
+- ~~Merged DR v0.4.0.8 - Boss Indicator / Fake Boots / Quickswap Update / Credits Updates~~
+
 ### 0.1.6.4
 - Fixed Frogsmith and Stumpy and restored progression in these locations
 - Added Blacksmith/Hammer Pegs to OW Tile Swap pool
