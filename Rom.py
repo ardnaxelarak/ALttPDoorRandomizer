@@ -31,7 +31,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'efb10737d732625792a9af7fdda2c4e9'
+RANDOMIZERBASEHASH = 'b6c98e872be23f268ff6678aa3eeaee4'
 
 
 class JsonRom(object):
@@ -1178,8 +1178,6 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x18002F, 0x03)  # special bombs
         rom.write_byte(0x180040, 0x01)  # open curtains
         rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
-        rom.write_byte(0x180043, 0xFF)  # starting sword for link
-        rom.write_byte(0x180044, 0x01)  # hammer activates tablets
         # since we have infinite bombs, let's get rid of bomb drops
         rom.write_byte(0x030051, 0xDB)  # fish bottle merchant
         rom.write_byte(0x0301F8, 0xD9)  # replace Pot bombs with green rupees

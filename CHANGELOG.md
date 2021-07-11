@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.1.6.6
+- ~~Merged DR v0.4.0.9 - P/C Indicator / Credits fix / CLI Hints Fix~~
+
 ### 0.1.6.5
 - Reduced chance of diagonal flute spot in Balanced
 - ~~Merged DR v0.4.0.8 - Boss Indicator / Fake Boots / Quickswap Update / Credits Updates~~

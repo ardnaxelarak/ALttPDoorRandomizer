@@ -33,6 +33,10 @@ db #$b0 ; BCS to replace BEQ
 org $06907f ; < 3107f - sprite_prep.asm:2170 (LDA $7EF3CA)
 lda $8a : and.b #$40
 
+; Dark Bonk Rocks Rain Sequence Guards (allowing Tile Swap on Dark Bonk Rocks)
+;org $09c957 ; <- 4c957
+;dw #$cb5f ; matches value on Central Bonk Rocks screen
+
 ;(replacing -> LDA $8A : AND.b #$40)
 org $00d8c4  ; < ? - Bank00.asm:4068 ()
 jsl.l OWWorldCheck

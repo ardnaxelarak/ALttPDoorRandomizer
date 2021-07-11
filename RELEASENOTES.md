@@ -14,6 +14,10 @@ Thanks to qadan, cheuer, & compiling
 
 # Bug Fixes and Notes.
 
+* 0.4.0.9
+	* Fixes for stats and P/C indicator (thanks Kara)
+	* Swamp lobby fixes (thanks Catobat)
+	* Fix for --hints flag on CLI
 * 0.4.0.8
 	* Ganon jokes added for when silvers aren't available
 	* Some text updated (Blind jokes, uncle text)
