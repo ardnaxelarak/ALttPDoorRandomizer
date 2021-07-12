@@ -350,8 +350,10 @@ class World(object):
                         ret.prog_items['L4 Bombs', item.player] += 1
                     elif ret.has('L2 Bombs', item.player):
                         ret.prog_items['L3 Bombs', item.player] += 1
-                    else:
+                    elif ret.has('L1 Bombs', item.player):
                         ret.prog_items['L2 Bombs', item.player] += 1
+                    else:
+                        ret.prog_items['L1 Bombs', item.player] += 1
                 elif 'Glove' in item.name:
                     if ret.has('Titans Mitts', item.player):
                         pass
@@ -741,10 +743,10 @@ class CollectionState(object):
                 or self.can_shoot_arrows(player)
                 or self.has('Fire Rod', player)))
 
-    # In the future, this can be used to check if the player starts without bombs
+    # Check if the player starts without bombs
     def can_use_bombs(self, player):
         StartingBombs = True
-        return StartingBombs or self.has('Bomb Upgrade (+10)', player)
+        return (self.bomb_mode_check(player, 1) and (StartingBombs or self.has('Bomb Upgrade (+10)', player)))
 
     def can_hit_crystal(self, player):
         return (self.can_use_bombs(player)
@@ -800,6 +802,8 @@ class CollectionState(object):
             return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player)
         elif level == 2:
             return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player)
+        elif level == 1:
+            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player) or self.has('L1 Bombs', player)
         return True
 
     def bomb_mode_check(self, player, level):
@@ -952,8 +956,11 @@ class CollectionState(object):
                 elif self.has('L2 Bombs', item.player):
                     self.prog_items['L3 Bombs', item.player] += 1
                     changed = True
-                else:
+                elif self.has('L1 Bombs', item.player):
                     self.prog_items['L2 Bombs', item.player] += 1
+                    changed = True
+                else:
+                    self.prog_items['L1 Bombs', item.player] += 1
                     changed = True
             elif 'Glove' in item.name:
                 if self.has('Titans Mitts', item.player):
@@ -1036,6 +1043,8 @@ class CollectionState(object):
                         to_remove = 'L3 Bombs'
                     elif self.has('L2 Bombs', item.player):
                         to_remove = 'L2 Bombs'
+                    elif self.has('L1 Bombs', item.player):
+                        to_remove = 'L1 Bombs'
                     else:
                         to_remove = None
                 elif 'Glove' in item.name:
