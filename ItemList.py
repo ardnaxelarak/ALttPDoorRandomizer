@@ -274,7 +274,15 @@ def generate_itempool(world, player):
 
     if (world.mode[player] == 'standard' and not world.state.has_blunt_weapon(player)
             and not world.state.has_bomb_level(player, 1)):
-        if "Link's Uncle" not in placed_items:
+        if world.swords[player] == 'bombs' and "Link's Uncle" not in placed_items:
+            possible_weapons = []
+            for item in pool:
+                if item in ['Progressive Bombs', 'L1 Bombs', 'L2 Bombs', 'L3 Bombs', 'L4 Bombs', 'L5 Bombs']:
+                    possible_weapons.append(item)
+            starting_weapon = random.choice(possible_weapons)
+            placed_items["Link's Uncle"] = starting_weapon
+            pool.remove(starting_weapon)
+        elif "Link's Uncle" not in placed_items:
             found_sword = False
             found_bow = False
             possible_weapons = []
