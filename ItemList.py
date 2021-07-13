@@ -272,7 +272,7 @@ def generate_itempool(world, player):
     for item in precollected_items:
         world.push_precollected(ItemFactory(item, player))
 
-    if (world.mode[player] == 'standard' and not world.state.has_blunt_weapon(player)
+    if (world.mode[player] == 'standard' and not (world.state.has_bomb_level(player, 1) if world.swords[player] else world.state.has_blunt_weapon(player))
             and not world.state.has_bomb_level(player, 1)):
         if world.swords[player] == 'bombs' and "Link's Uncle" not in placed_items:
             possible_weapons = []

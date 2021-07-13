@@ -31,7 +31,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '5a85c6c90ed1e6a66236fd10e96d496b'
+RANDOMIZERBASEHASH = 'afd6b5969f5888faab916821e3f32782'
 
 
 class JsonRom(object):
@@ -1275,7 +1275,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     if world.fakeboots[player]:
         rom.write_byte(0x18008E, 0x01)
 
-    equip = [0] * (0x340 + 0x4F)
+    equip = [0] * (0x340 + 0x4F + 1)
     equip[0x36C] = 0x18
     equip[0x36D] = 0x18
     equip[0x379] = 0x68
@@ -1306,6 +1306,17 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     elif startingstate.has('Fighter Sword', player):
         equip[0x359] = 1
 
+    if startingstate.has('L5 Bombs', player):
+        equip[0x38F] = 5
+    elif startingstate.has('L4 Bombs', player):
+        equip[0x38F] = 4
+    elif startingstate.has('L3 Bombs', player):
+        equip[0x38F] = 3
+    elif startingstate.has('L2 Bombs', player):
+        equip[0x38F] = 2
+    elif startingstate.has('L1 Bombs', player):
+        equip[0x38F] = 1
+
     if startingstate.has('Mirror Shield', player):
         equip[0x35A] = 3
     elif startingstate.has('Red Shield', player):
@@ -1332,6 +1343,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         if item.name in ['Bow', 'Silver Arrows', 'Progressive Bow', 'Progressive Bow (Alt)',
                          'Titans Mitts', 'Power Glove', 'Progressive Glove',
                          'Golden Sword', 'Tempered Sword', 'Master Sword', 'Fighter Sword', 'Progressive Sword',
+                         'L5 Bombs', 'L4 Bombs', 'L3 Bombs', 'L2 Bombs', 'L1 Bombs', 'Progressive Bombs',
                          'Mirror Shield', 'Red Shield', 'Blue Shield', 'Progressive Shield',
                          'Red Mail', 'Blue Mail', 'Progressive Armor',
                          'Magic Upgrade (1/4)', 'Magic Upgrade (1/2)']:
