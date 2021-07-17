@@ -192,6 +192,19 @@ def read_rom(stream):
         buffer = buffer[0x200:]
     return buffer
 
+def convert_char_to_credits(char):
+    char_map = {
+        " ": (0x9F, 0x9F), "0": (0x53, 0x79), "1": (0x54, 0x7A), "2": (0x55, 0x7B), "3": (0x56, 0x7C),
+        "4": (0x57, 0x7D), "5": (0x58, 0x7E), "6": (0x59, 0x7F), "7": (0x5A, 0x80), "8": (0x5B, 0x81),
+        "9": (0x5C, 0x82), "A": (0x5D, 0x83), "B": (0x5E, 0x84), "C": (0x5F, 0x85), "D": (0x60, 0x86),
+        "E": (0x61, 0x87), "F": (0x62, 0x88), "G": (0x63, 0x89), "H": (0x64, 0x8A), "I": (0x65, 0x8B),
+        "J": (0x66, 0x8C), "K": (0x67, 0x8D), "L": (0x68, 0x8E), "M": (0x69, 0x8F), "N": (0x6A, 0x90),
+        "O": (0x6B, 0x91), "P": (0x6C, 0x92), "Q": (0x6D, 0x93), "R": (0x6E, 0x94), "S": (0x6F, 0x95),
+        "T": (0x70, 0x96), "U": (0x71, 0x97), "V": (0x72, 0x98), "W": (0x73, 0x99), "X": (0x74, 0x9A),
+        "Y": (0x75, 0x9B), "Z": (0x76, 0x9C), "'": (0x77, 0x9d), ".": (0xA0, 0xC0), "/": (0xA2, 0xC2),
+        ":": (0xA3, 0xC3), "_": (0xA6, 0xC6)}
+    return char_map[char] if char in char_map else (0x9F, 0x9F)
+
 def patch_enemizer(world, player, rom, baserom_path, enemizercli, random_sprite_on_hit):
     baserom_path = os.path.abspath(baserom_path)
     basepatch_path = os.path.abspath(local_path(os.path.join("data","base2current.json")))
@@ -877,6 +890,12 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         # bot: $7A is 1, 7B is 2, etc so 7D=4, 82=9 (zero unknown...)
         return 0x53+int(num), 0x79+int(num)
 
+    def credits_string_top(string):
+        return map(lambda c: convert_char_to_credits(c)[0], string)
+
+    def credits_string_bot(string):
+        return map(lambda c: convert_char_to_credits(c)[1], string)
+
     credits_total = 216
     if world.keydropshuffle[player]:
         credits_total += 33
@@ -1175,20 +1194,45 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x180043, 0xFF)  # starting sword for link
         rom.write_byte(0x180044, 0x01)  # hammer activates tablets
     elif world.swords[player] == 'bombs':
-        rom.write_byte(0x18002F, 0x03)  # special bombs
+        rom.write_byte(0x18002F, 0x01)  # special bombs
         rom.write_byte(0x180040, 0x01)  # open curtains
         rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
+        rom.write_byte(0x180034, 0x00)  # starting max bombs = 0
+
         # since we have infinite bombs, let's get rid of bomb drops
         rom.write_byte(0x030051, 0xDB)  # fish bottle merchant
         rom.write_byte(0x0301F8, 0xD9)  # replace Pot bombs with green rupees
         rom.write_byte(0x0301FD, 0xD9)
         rom.write_byte(0x030224, 0x04)  # adjust width of offset for replaced pot bomb
         rom.write_byte(0x030229, 0x04)
-        rom.write_byte(0x04CC4A, 0xD9)  # replace bonk rocks bombs with green rupees
+        rom.write_byte(0x04CC4A, 0xD9)  # bonk rocks that drop bombs
+        rom.write_byte(0x04D028, 0xD9)
+        rom.write_byte(0x04D397, 0xD9)
+        rom.write_byte(0x04D3A3, 0xDB)
+        rom.write_byte(0x04D56A, 0xDA)
         rom.write_byte(0x00EDA7, 0x35)  # DW chest game (bomb -> blue rupee)
+
         # thiefs and pikits shouldn't steal bombs
         rom.write_bytes(0x0ECB54, [0xA9, 0x00, 0xEA, 0xEA]) # thief
         rom.write_bytes(0x0F0D80, [0xA9, 0x00, 0xEA, 0xEA]) # pikit
+
+        # remove regular bombs for sale from bomb shop and center the big bomb
+        rom.write_bytes(0x0309DE, [0xA9, 0xFF, 0xEA, 0xEA])
+        rom.write_byte(0x30A28, 0x2C)
+
+        # update sword references in credits to bombs
+        rom.write_bytes(0x11803E, credits_string_top("FIRST BOMBS"))
+        rom.write_bytes(0x11805C, credits_string_bot("FIRST BOMBS"))
+        rom.write_bytes(0x11807A, credits_string_top("BOMBLESS "))
+        rom.write_bytes(0x118098, credits_string_bot("BOMBLESS "))
+        rom.write_bytes(0x1180B6, credits_string_top("FIGHTER'S BOMBS"))
+        rom.write_bytes(0x1180D4, credits_string_bot("FIGHTER'S BOMBS"))
+        rom.write_bytes(0x1180F2, credits_string_top("MASTER BOMBS"))
+        rom.write_bytes(0x118110, credits_string_bot("MASTER BOMBS"))
+        rom.write_bytes(0x11812E, credits_string_top("TEMPERED BOMBS"))
+        rom.write_bytes(0x11814C, credits_string_bot("TEMPERED BOMBS"))
+        rom.write_bytes(0x11816A, credits_string_top("GOLD BOMBS"))
+        rom.write_bytes(0x118188, credits_string_bot("GOLD BOMBS"))
 
     # set up clocks for timed modes
     if world.shuffle[player] == 'vanilla':
@@ -1448,8 +1492,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     rom.write_bytes(0x180080, [50, 50, 70, 70]) # values to fill for Capacity Upgrades (Bomb5, Bomb10, Arrow5, Arrow10)
 
-    rom.write_byte(0x18004D, ((0x22 if world.swords[player] == 'bombs' else 0x00) |
-                              (0x01 if 'arrows' in world.escape_assist[player] else 0x00) |
+    rom.write_byte(0x18004D, ((0x01 if 'arrows' in world.escape_assist[player] else 0x00) |
                               (0x02 if 'bombs' in world.escape_assist[player] else 0x00) |
                               (0x04 if 'magic' in world.escape_assist[player] else 0x00))) # Escape assist
 
@@ -1837,19 +1880,6 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     padded_author = sprite.author_name if sprite is not None else "Nintendo"
     padded_author = padded_author[:28] if len(padded_author) > 28 else padded_author
     padded_author = padded_author.center(28).upper()
-
-    def convert_char_to_credits(char):
-        char_map = {
-            " ": (0x9F, 0x9F), "0": (0x53, 0x79), "1": (0x54, 0x7A), "2": (0x55, 0x7B), "3": (0x56, 0x7C),
-            "4": (0x57, 0x7D), "5": (0x58, 0x7E), "6": (0x59, 0x7F), "7": (0x5A, 0x80), "8": (0x5B, 0x81),
-            "9": (0x5C, 0x82), "A": (0x5D, 0x83), "B": (0x5E, 0x84), "C": (0x5F, 0x85), "D": (0x60, 0x86),
-            "E": (0x61, 0x87), "F": (0x62, 0x88), "G": (0x63, 0x89), "H": (0x64, 0x8A), "I": (0x65, 0x8B),
-            "J": (0x66, 0x8C), "K": (0x67, 0x8D), "L": (0x68, 0x8E), "M": (0x69, 0x8F), "N": (0x6A, 0x90),
-            "O": (0x6B, 0x91), "P": (0x6C, 0x92), "Q": (0x6D, 0x93), "R": (0x6E, 0x94), "S": (0x6F, 0x95),
-            "T": (0x70, 0x96), "U": (0x71, 0x97), "V": (0x72, 0x98), "W": (0x73, 0x99), "X": (0x74, 0x9A),
-            "Y": (0x75, 0x9B), "Z": (0x76, 0x9C), "'": (0x77, 0x9d), ".": (0xA0, 0xC0), "/": (0xA2, 0xC2),
-            ":": (0xA3, 0xC3), "_": (0xA6, 0xC6)}
-        return char_map[char] if char in char_map else (0x9F, 0x9F)
 
     character_bytes = map(convert_char_to_credits, padded_author)
     for i, pair in enumerate(character_bytes):

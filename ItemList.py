@@ -527,12 +527,25 @@ def set_up_shops(world, player):
             for shop in random.sample([s for s in world.shops[player] if not s.locked and s.region.player == player], 5):
                 shop.custom = True
                 shop.locked = True
-                shop.add_inventory(0, 'Single Arrow', 80)
+                if shop.inventory[2]['item'] != 'Single Arrow':
+                    shop.add_inventory(0, 'Single Arrow', 80)
                 shop.add_inventory(1, 'Small Key (Universal)', 100)
-                shop.add_inventory(2, 'Bombs (10)', 50)
             rss.locked = True
             cap_shop = world.get_region('Capacity Upgrade', player).shop
             cap_shop.inventory[1] = None  # remove arrow capacity upgrades in retro
+    if world.swords[player] == 'bombs' and not world.shopsanity[player]:
+        for shop in [s for s in world.shops[player] if s.region.player == player]:
+            shop.custom = True
+            shop.locked = True
+            if shop.inventory[2] and shop.inventory[2]['item'] == 'Bombs (10)':
+                shop.inventory[2] = None
+        # remove bomb capacity upgrades
+        cap_shop = world.get_region('Capacity Upgrade', player).shop
+        if cap_shop.inventory[1]:
+            cap_shop.inventory[0] = cap_shop.inventory[1]
+            cap_shop.inventory[1] = None
+        else:
+            cap_shop.inventory[0] = None
 
 
 def customize_shops(world, player):
