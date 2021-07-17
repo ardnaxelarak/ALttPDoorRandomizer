@@ -375,7 +375,7 @@
     "action": "store_true",
     "type": "bool"
   },
-  "fakeboots": {
+  "pseudoboots": {
     "action": "store_true",
     "type": "bool"
   },

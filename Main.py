@@ -29,7 +29,7 @@ from Fill import sell_potions, sell_keys, balance_multiworld_progression, balanc
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops
 from Utils import output_path, parse_player_names
 
-__version__ = '0.4.0.9-u'
+__version__ = '0.4.0.11u'
 
 
 class EnemizerError(RuntimeError):
@@ -121,7 +121,7 @@ def main(args, seed=None, fish=None):
     world.treasure_hunt_count = args.triforce_goal.copy()
     world.treasure_hunt_total = args.triforce_pool.copy()
     world.shufflelinks = args.shufflelinks.copy()
-    world.fakeboots = args.fakeboots.copy()
+    world.pseudoboots = args.pseudoboots.copy()
 
     world.rom_seeds = {player: random.randint(0, 999999999) for player in range(1, world.players + 1)}
 
@@ -429,6 +429,8 @@ def copy_world(world):
     ret.keydropshuffle = world.keydropshuffle.copy()
     ret.mixed_travel = world.mixed_travel.copy()
     ret.standardize_palettes = world.standardize_palettes.copy()
+    ret.owswaps = world.owswaps.copy()
+    ret.owflutespots = world.owflutespots.copy()
 
     for player in range(1, world.players + 1):
         create_regions(ret, player)

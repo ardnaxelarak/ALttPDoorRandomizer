@@ -851,6 +851,13 @@ def default_rules(world, player):
 
 
 def ow_rules(world, player):
+    if world.mode[player] != 'inverted':
+        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_beam_sword(player) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
+        set_rule(world.get_entrance('GT Entry Approach', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
+        set_rule(world.get_entrance('GT Entry Leave', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player) or state.world.shuffle[player] in ('restricted', 'full', 'crossed', 'insanity'))
+    else:
+        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
+
     if (world.mode[player] == 'inverted') == (0x00 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         set_rule(world.get_entrance('Lost Woods East Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Lost Woods Entry Mirror Spot', player), lambda state: state.has_Mirror(player))

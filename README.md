@@ -36,7 +36,7 @@ Download the source code from the repository directly and put it in a folder of 
 
 You must have Python installed (version 3.6 - 3.9 supported)
 
-This program requires all python dependencies that are necessary to run Aerinon's Door Randomizer plus an additional 'sortedcontainers' package. Try running ```pip install sortedcontainers``` or ```python -m pip install sortedcontainers``` on the command line to install the dependency.
+This program requires all python dependencies that are necessary to run Aerinon's Door Randomizer. Try running ```pip install missingdependency``` or ```python -m pip install missingdependency``` on the command line (replace ```missingdependency``` with the specific package that is missing) to install the dependency.
 
 Alternatively, run ```resources/ci/common/local_install.py``` to install all the missing dependencies as well.
 

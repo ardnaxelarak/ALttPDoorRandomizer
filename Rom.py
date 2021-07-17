@@ -31,7 +31,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'afd6b5969f5888faab916821e3f32782'
+RANDOMIZERBASEHASH = 'b39ce425e3d390aa9e956aa46b6f4087'
 
 
 class JsonRom(object):
@@ -894,7 +894,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     write_int16(rom, 0x187010, credits_total)  # dynamic credits
     if credits_total != 216:
         # collection rate address:
-        cr_address = 0x2391DE
+        cr_address = 0x239200
         cr_pc = cr_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit((credits_total // 10) % 10)
         last_top, last_bot = credits_digit(credits_total % 10)
@@ -1272,7 +1272,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x18017E, 0x01) # Fairy fountains only trade in bottles
 
     # Starting equipment
-    if world.fakeboots[player]:
+    if world.pseudoboots[player]:
         rom.write_byte(0x18008E, 0x01)
 
     equip = [0] * (0x340 + 0x4F + 1)
@@ -2508,18 +2508,18 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         for b in range(0x00, len(inverted_buffer)):
             inverted_buffer[b] = (inverted_buffer[b] & 0xFE) | ((inverted_buffer[b] + 1) % 2)
     
-        rom.write_byte(snes_to_pc(0x0283E0), 0xF0) # residual portals
+        rom.write_byte(snes_to_pc(0x0283E0), 0xF0)  # residual portals
         rom.write_byte(snes_to_pc(0x02B34D), 0xF0)
-        rom.write_byte(snes_to_pc(0x06DB78), 0x8B) # dark-style portal
+        rom.write_byte(snes_to_pc(0x06DB78), 0x8B)  # dark-style portal
 
-        rom.write_byte(snes_to_pc(0x0DB3C5), 0xC6) #vortex
+        rom.write_byte(snes_to_pc(0x0DB3C5), 0xC6)  # vortex
 
-        rom.write_byte(snes_to_pc(0x07A3F4), 0xF0) # duck
-        rom.write_byte(snes_to_pc(0x08D40C), 0xD0) # morph poof
-        rom.write_byte(snes_to_pc(0x0ABFBB), 0x90) # move mirror portal indicator to correct map (0xB0 normally)
-        rom.write_byte(snes_to_pc(0x0280A6), 0xD0) # use starting point prompt instead of start at pyramid
+        rom.write_byte(snes_to_pc(0x07A3F4), 0xF0)  # duck
+        rom.write_byte(snes_to_pc(0x08D40C), 0xD0)  # morph poof
+        rom.write_byte(snes_to_pc(0x0ABFBB), 0x90)  # move mirror portal indicator to correct map (0xB0 normally)
+        rom.write_byte(snes_to_pc(0x0280A6), 0xD0)  # use starting point prompt instead of start at pyramid
         
-        write_int16(rom, snes_to_pc(0x02D8D4), 0x112) # change sanctuary spawn point to dark sanc
+        write_int16(rom, snes_to_pc(0x02D8D4), 0x112)  # change sanctuary spawn point to dark sanc
         rom.write_bytes(snes_to_pc(0x02D8E8), [0x22, 0x22, 0x22, 0x23, 0x04, 0x04, 0x04, 0x05])
         write_int16(rom, snes_to_pc(0x02D91A), 0x0400)
         write_int16(rom, snes_to_pc(0x02D928), 0x222E)
@@ -2543,12 +2543,11 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
             if world.doorShuffle[player] == 'vanilla' or world.intensity[player] < 3:
                 write_int16(rom, 0x15AEE + 2*0x38, 0x00E0)
                 write_int16(rom, 0x15AEE + 2*0x25, 0x000C)
-        
     if (world.mode[player] == 'inverted') != (0x03 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         if world.shuffle[player] in ['vanilla', 'dungeonsfull', 'dungeonssimple']:
-            rom.write_bytes(snes_to_pc(0x308350), [0x00, 0x00, 0x01]) # mountain cave starts on OW
+            rom.write_bytes(snes_to_pc(0x308350), [0x00, 0x00, 0x01])  # mountain cave starts on OW
             
-            write_int16(rom, snes_to_pc(0x02D8DE), 0x00F1) # change mountain cave spawn point to just outside old man cave
+            write_int16(rom, snes_to_pc(0x02D8DE), 0x00F1)  # change mountain cave spawn point to just outside old man cave
             rom.write_bytes(snes_to_pc(0x02D910), [0x1F, 0x1E, 0x1F, 0x1F, 0x03, 0x02, 0x03, 0x03])
             write_int16(rom, snes_to_pc(0x02D924), 0x0300)
             write_int16(rom, snes_to_pc(0x02D932), 0x1F10)
@@ -2566,49 +2565,16 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
             write_int16(rom, snes_to_pc(0x02D9B0), 0x0007)
             rom.write_byte(snes_to_pc(0x02D9B8), 0x12)
 
-            rom.write_bytes(0x180247, [0x00, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x00]) #indicates the overworld door being used for the single entrance spawn point
-        
-            rom.write_byte(0xDBB73 + 0x6F, 0x07)  # DDM fairy entrance to old man fetch east UW
-            write_int16(rom, 0x15AEE + 2*0x18, 0x00F1) # old man fetch UW to DDM fairy entrance
-            rom.write_byte(0x15B8C + 0x18, 0x43)
-            write_int16(rom, 0x15BDB + 2 * 0x18, 0x1400)
-            write_int16(rom, 0x15C79 + 2 * 0x18, 0x0294)
-            write_int16(rom, 0x15D17 + 2 * 0x18, 0x0600)
-            write_int16(rom, 0x15DB5 + 2 * 0x18, 0x02E8)
-            write_int16(rom, 0x15E53 + 2 * 0x18, 0x0678)
-            write_int16(rom, 0x15EF1 + 2 * 0x18, 0x0303)
-            write_int16(rom, 0x15F8F + 2 * 0x18, 0x0685)
-            rom.write_byte(0x1602D + 0x18, 0x0A)
-            rom.write_byte(0x1607C + 0x18, 0xF6)
-            write_int16(rom, 0x160CB + 2 * 0x18, 0x0000)
-            write_int16(rom, 0x16169 + 2 * 0x18, 0x0000)
-            
-            rom.write_byte(0xDBB73 + 0x06, 0x2E) # old man fetch east entrance to DMD west UW
-            write_int16(rom, 0x15AEE + 2*0x08, 0x00E6) # DMD west UW to old man fetch east entrance 
-            if (world.mode[player] == 'inverted') != (0x0A in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
-                rom.write_byte(0xDBB73 + 0x16, 0x5E) # bumper cave top entrance to DDM Fairy UW
-            else:
-                rom.write_byte(0xDBB73 + 0x2D, 0x5E) # DMD west entrance to DDM Fairy
+            rom.write_bytes(0x180247, [0x00, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x00])  #indicates the overworld door being used for the single entrance spawn point
     if (world.mode[player] == 'inverted') != (0x05 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         rom.write_bytes(snes_to_pc(0x1BC655), [0x4A, 0x1D, 0x82])  # add warp under rock
     if (world.mode[player] == 'inverted') != (0x07 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         rom.write_bytes(snes_to_pc(0x1BC387), [0xDD, 0xD1])  # add warps under rocks
-        rom.write_bytes(snes_to_pc(0x1BD1DD), [0xA4, 0x06, 0x82, 0x9E, 0x06, 0x82, 0xFF, 0xFF]) # add warps under rocks
+        rom.write_bytes(snes_to_pc(0x1BD1DD), [0xA4, 0x06, 0x82, 0x9E, 0x06, 0x82, 0xFF, 0xFF])  # add warps under rocks
         rom.write_byte(0x180089, 0x01)  # open TR after exit
         rom.write_bytes(0x0086E, [0x5C, 0x00, 0xA0, 0xA1]) # TR tail
         if world.shuffle[player] in ['vanilla']:
             world.fix_trock_doors[player] = True
-    if (world.mode[player] == 'inverted') != (0x0A in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
-        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-            rom.write_byte(0xDBB73 + 0x15, 0x06)  # bumper cave bottom entrance to old man fetch west UW
-            write_int16(rom, 0x15AEE + 2*0x17, 0x00F0)  # old man fetch west UW to bumper cave bottom entrance
-            rom.write_byte(0xDBB73 + 0x05, 0x16) # old man fetch west entrance to bumper cave bottom UW
-            write_int16(rom, 0x15AEE + 2*0x07, 0x00FB) # bumper cave bottom UW to old man fetch west entrance
-            rom.write_byte(0xDBB73 + 0x2D, 0x17) # DMD west entrance to bumper cave top UW
-            write_int16(rom, 0x15AEE + 2*0x2F, 0x00EB) # bumper cave top UW to DMD west entrance
-            if (world.mode[player] == 'inverted') == (0x03 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
-                rom.write_byte(0xDBB73 + 0x16, 0x2E) # bumper cave top entrance to DMD west UW
-                write_int16(rom, 0x15AEE + 2*0x18, 0x00E6) # DMD west UW to bumper cave top entrance
     if (world.mode[player] == 'inverted') != (0x10 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         rom.write_bytes(snes_to_pc(0x1BC67A), [0x2E, 0x0B, 0x82])  # add warp under rock
     if (world.mode[player] == 'inverted') != (0x1B in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
@@ -2647,7 +2613,7 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         rom.write_byte(snes_to_pc(0x00D009), 0x31)  # castle hole graphics
         rom.write_byte(snes_to_pc(0x00D0E8), 0xE0)
         rom.write_byte(snes_to_pc(0x00D1C7), 0x00)
-        write_int16(rom, snes_to_pc(0x1BE8DA), 0x39AD) # add color for shading for castle hole
+        write_int16(rom, snes_to_pc(0x1BE8DA), 0x39AD)  # add color for shading for castle hole
         
         #castle hole map16 data
         write_int16s(rom, snes_to_pc(0x0FF1C8), [0x190F, 0x190F, 0x190F, 0x194C, 0x190F,
@@ -2661,21 +2627,21 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         write_int16s(rom, snes_to_pc(0x0FA480), [0x190F, 0x196B, 0x9D04, 0x9D04, 0x196B,
                                                     0x190F, 0x9D04, 0x9D04])
 
-        write_int16s(rom, snes_to_pc(0x1BB810), [0x00BE, 0x00C0, 0x013E]) # update pyramid hole entrance
+        write_int16s(rom, snes_to_pc(0x1BB810), [0x00BE, 0x00C0, 0x013E])  # update pyramid hole entrance
         write_int16s(rom, snes_to_pc(0x1BB836), [0x001B, 0x001B, 0x001B])
         
-        write_int16(rom, snes_to_pc(0x308300), 0x0140) #add extra pyramid hole
+        write_int16(rom, snes_to_pc(0x308300), 0x0140)  # add extra pyramid hole
         write_int16(rom, snes_to_pc(0x308320), 0x001B)
         if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
             rom.write_byte(snes_to_pc(0x308340), 0x7B)
         
-        rom.write_byte(snes_to_pc(0x00DB9D), 0x1A) # make retreat bat gfx available in HC area
+        rom.write_byte(snes_to_pc(0x00DB9D), 0x1A)  # make retreat bat gfx available in HC area
         rom.write_byte(snes_to_pc(0x00DC09), 0x1A)
 
         rom.write_byte(snes_to_pc(0x1AF696), 0xF0)  # bat sprite retreat : bat X position
         rom.write_byte(snes_to_pc(0x1AF6B2), 0x33)  # bat sprite retreat : bat delay
         
-        write_int16(rom, snes_to_pc(0x1af504), 0x148B) # prioritize retreat Bat and use 3rd sprite group
+        write_int16(rom, snes_to_pc(0x1af504), 0x148B)  # prioritize retreat Bat and use 3rd sprite group
         write_int16(rom, snes_to_pc(0x1af50c), 0x149B)
         write_int16(rom, snes_to_pc(0x1af514), 0x14A4)
         write_int16(rom, snes_to_pc(0x1af51c), 0x1489)
@@ -2699,28 +2665,11 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         
         write_int16(rom, 0xDB96F + 2 * 0x35, 0x001B)  # move pyramid exit door
         write_int16(rom, 0xDBA71 + 2 * 0x35, 0x011C)
-        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-            rom.write_byte(0xDBB73 + 0x35, 0x36)
-        
-        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-            write_int16(rom, 0x15AEE + 2 * 0x37, 0x0010)  # pyramid exit to new hc area
-            rom.write_byte(0x15B8C + 0x37, 0x1B)
-            write_int16(rom, 0x15BDB + 2 * 0x37, 0x000E)
-            write_int16(rom, 0x15C79 + 2 * 0x37, 0x0600)
-            write_int16(rom, 0x15D17 + 2 * 0x37, 0x0676)
-            write_int16(rom, 0x15DB5 + 2 * 0x37, 0x0604)
-            write_int16(rom, 0x15E53 + 2 * 0x37, 0x06E8)
-            write_int16(rom, 0x15EF1 + 2 * 0x37, 0x066D)
-            write_int16(rom, 0x15F8F + 2 * 0x37, 0x06F3)
-            rom.write_byte(0x1602D + 0x37, 0x00)
-            rom.write_byte(0x1607C + 0x37, 0x0A)
-            write_int16(rom, 0x160CB + 2 * 0x37, 0x0000)
-            write_int16(rom, 0x16169 + 2 * 0x37, 0x811c)
     if (world.mode[player] == 'inverted') != (0x29 in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
-        rom.write_bytes(snes_to_pc(0x06B2AB), [0xF0, 0xE1, 0x05]) #frog pickup on contact
+        rom.write_bytes(snes_to_pc(0x06B2AB), [0xF0, 0xE1, 0x05])  # frog pickup on contact
     if (world.mode[player] == 'inverted') != (0x2C in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):
         if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-            rom.write_byte(0x15B8C, 0x6C) #exit links at bomb shop area
+            rom.write_byte(0x15B8C, 0x6C)  # exit links at bomb shop area
             rom.write_byte(0xDBB73 + 0x00, 0x53)  # switch bomb shop and links house
             rom.write_byte(0xDBB73 + 0x52, 0x01)
     if (world.mode[player] == 'inverted') != (0x2F in world.owswaps[player][0] and world.owSwap[player] == 'mixed'):

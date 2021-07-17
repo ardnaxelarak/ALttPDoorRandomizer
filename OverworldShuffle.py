@@ -1,13 +1,9 @@
 import RaceRandom as random
 import logging, copy
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot
-from OWEdges import OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
-try:
-    from sortedcontainers import SortedList
-except ImportError:
-    raise Exception('Could not load sortedcontainers module')
+from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.1.6.6-u'
+__version__ = '0.1.6.7-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -29,18 +25,24 @@ def link_overworld(world, player):
 
         for (name, groupType) in OWTileGroups.keys():
             if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks']:
-                (owids, lw_regions, dw_regions) = OWTileGroups[(name, groupType,)]
+                (lw_owids, dw_owids) = OWTileGroups[(name, groupType,)]
                 if world.shuffle[player] in ['vanilla', 'simple', 'dungeonssimple']:
                     (exist_owids, exist_lw_regions, exist_dw_regions) = tile_groups[(name,)]
-                    exist_owids.extend(owids)
-                    exist_lw_regions.extend(lw_regions)
-                    exist_dw_regions.extend(dw_regions)
+                    exist_owids.extend(lw_owids)
+                    exist_owids.extend(dw_owids)
+                    for owid in lw_owids:
+                        exist_lw_regions.extend(OWTileRegions[owid])
+                    for owid in dw_owids:
+                        exist_dw_regions.extend(OWTileRegions[owid])
                     tile_groups[(name,)] = (exist_owids, exist_lw_regions, exist_dw_regions)
                 else:
                     (exist_owids, exist_lw_regions, exist_dw_regions) = tile_groups[(name, groupType)]
-                    exist_owids.extend(owids)
-                    exist_lw_regions.extend(lw_regions)
-                    exist_dw_regions.extend(dw_regions)
+                    exist_owids.extend(lw_owids)
+                    exist_owids.extend(dw_owids)
+                    for owid in lw_owids:
+                        exist_lw_regions.extend(OWTileRegions[owid])
+                    for owid in dw_owids:
+                        exist_dw_regions.extend(OWTileRegions[owid])
                     tile_groups[(name, groupType)] = (exist_owids, exist_lw_regions, exist_dw_regions)
         
         #tile shuffle happens here, the groups that remain in the list are the tiles that get swapped
@@ -156,16 +158,16 @@ def link_overworld(world, player):
         connect_flutes(default_flute_connections)
     else:
         flute_pool = list(flute_data.keys())
-        new_spots = SortedList()
+        new_spots = list()
 
         # guarantee desert/mire access
         flute_pool.remove(0x38)
-        new_spots.add(0x38)
+        new_spots.append(0x38)
         # guarantee mountain access
         mountainIds = [0x0b, 0x0e, 0x07]
         owslot = mountainIds[random.randint(0, 2)]
         flute_pool.remove(owslot)
-        new_spots.add(owslot)
+        new_spots.append(owslot)
 
         random.shuffle(flute_pool)
         f = 0
@@ -185,8 +187,9 @@ def link_overworld(world, player):
                     f += 1
                     continue
             if flute_pool[f] not in new_spots:
-                new_spots.add(flute_pool[f])
+                new_spots.append(flute_pool[f])
             f += 1
+        new_spots.sort()
         world.owflutespots[player] = new_spots
         connect_flutes(new_spots)
 
@@ -1087,12 +1090,14 @@ parallelsimilar_connections = [('Maze Race ES', 'Kakariko Suburb WS'),
                                 ]
 
 # non shuffled overworld
-default_connections = [('Lost Woods SW', 'Lost Woods Pass NW'),
+default_connections = [#('Lost Woods NW', 'Master Sword Meadow SC'),
+                        ('Lost Woods SW', 'Lost Woods Pass NW'),
                         ('Lost Woods SC', 'Lost Woods Pass NE'),
                         ('Lost Woods SE', 'Kakariko Fortune NE'),
                         ('Lost Woods EN', 'Lumberjack WN'),
                         ('Lumberjack SW', 'Mountain Entry NW'),
                         ('Mountain Entry SE', 'Kakariko Pond NE'),
+                        #('Zora Waterfall NE', 'Zoras Domain SW'),
                         ('Lost Woods Pass SW', 'Kakariko NW'),
                         ('Lost Woods Pass SE', 'Kakariko NC'),
                         ('Kakariko Fortune SC', 'Kakariko NE'),
@@ -1141,6 +1146,7 @@ default_connections = [('Lost Woods SW', 'Lost Woods Pass NW'),
                         ('Stone Bridge SC', 'Lake Hylia NW'),
                         ('Stone Bridge EN', 'Tree Line WN'),
                         ('Stone Bridge EC', 'Tree Line WC'),
+                        #('Stone Bridge WC', 'Hobo EC'),
                         ('Tree Line SC', 'Lake Hylia NC'),
                         ('Tree Line SE', 'Lake Hylia NE'),
                         ('Desert EC', 'Desert Pass WC'),

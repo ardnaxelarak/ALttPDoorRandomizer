@@ -1,7 +1,6 @@
 aenum
 fast-enum
 python-bps-continued
-sortedcontainers
 colorama
 aioconsole
 websockets
