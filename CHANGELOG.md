@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.6.8
+- Implemented a smarter Balanced Flute Shuffle algorithm
+- Fixed Collection Rate in credits
+- Removed sortedcontainers dependency
+
 ### 0.1.6.7
 - Mountain Entry and West Death Mountain are now Swapped independently (Old Man rescue is always in your starting world)
 - Fixed issue with AT/GT access logic
@@ -7,7 +12,6 @@
 - Fixed Boss Music when boss room is entered thru straight stairs
 - Suppressed in-dungeon music changes when DR is enabled
 - Fixed issue with Pyramid Exit exiting to wrong location in ER
-- Removed sortedcontainers dependency
 - ~~Merged DR v0.4.0.11 - Various DR changes~~
 
 ### 0.1.6.6

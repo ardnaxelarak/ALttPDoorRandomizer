@@ -687,365 +687,282 @@ OWEdgeGroups = {
     )
 }
 
-OWTileRegions = {
-    0x00: [
-        'Lost Woods West Area',
-        'Lost Woods East Area'
-    ],
-    0x02: [
-        'Lumberjack Area'
-    ],
-    0x03: [
-        'West Death Mountain (Top)',
-        'Spectacle Rock Ledge',
-        'West Death Mountain (Bottom)'
-    ],
-    0x05: [
-        'Death Mountain Floating Island',
-        'East Death Mountain (Top West)',
-        'East Death Mountain (Top East)',
-        'Spiral Cave Ledge',
-        'Mimic Cave Ledge',
-        'Fairy Ascension Ledge',
-        'Fairy Ascension Plateau',
-        'East Death Mountain (Bottom Left)',
-        'East Death Mountain (Bottom)'
-    ],
-    0x07: [
-        'Death Mountain TR Pegs',
-        'Death Mountain TR Pegs Ledge'
-    ],
-    0x0a: [
-        'Mountain Entry Area',
-        'Mountain Entry Entrance',
-        'Mountain Entry Ledge'
-    ],
-    0x0f: [
-        'Zora Waterfall Area',
-        'Zora Waterfall Water',
-        'Waterfall of Wishing Cave'
-    ],
-    0x10: [
-        'Lost Woods Pass West Area',
-        'Lost Woods Pass East Top Area',
-        'Lost Woods Pass East Bottom Area'
-    ],
-    0x11: [
-        'Kakariko Fortune Area'
-    ],
-    0x12: [
-        'Kakariko Pond Area'
-    ],
-    0x13: [
-        'Sanctuary Area',
-        'Bonk Rock Ledge'
-    ],
-    0x14: [
-        'Graveyard Area',
-        'Graveyard Ledge',
-        'Kings Grave Area'
-    ],
-    0x15: [
-        'River Bend Area',
-        'River Bend East Bank',
-        'River Bend Water'
-    ],
-    0x16: [
-        'Potion Shop Area',
-        'Potion Shop Northeast',
-        'Potion Shop Water'
-    ],
-    0x17: [
-        'Zora Approach Area',
-        'Zora Approach Ledge',
-        'Zora Approach Water'
-    ],
-    0x18: [
-        'Kakariko Area',
-        'Kakariko Southwest',
-        'Kakariko Grass Yard'
-    ],
-    0x1a: [
-        'Forgotten Forest Area'
-    ],
-    0x1b: [
-        'Hyrule Castle Area',
-        'Hyrule Castle Southwest',
-        'Hyrule Castle Courtyard',
-        'Hyrule Castle Courtyard Northeast',
-        'Hyrule Castle Ledge',
-        'Hyrule Castle East Entry'
-    ],
-    0x1d: [
-        'Wooden Bridge Area',
-        'Wooden Bridge Northeast',
-        'Wooden Bridge Water'
-    ],
-    0x1e: [
-        'Eastern Palace Area'
-    ],
-    0x22: [
-        'Blacksmith Area',
-        'Bat Cave Ledge'
-    ],
-    0x25: [
-        'Sand Dunes Area'
-    ],
-    0x28: [
-        'Maze Race Area',
-        'Maze Race Ledge',
-        'Maze Race Prize'
-    ],
-    0x29: [
-        'Kakariko Suburb Area'
-    ],
-    0x2a: [
-        'Flute Boy Area',
-        'Flute Boy Pass'
-    ],
-    0x2b: [
-        'Central Bonk Rocks Area'
-    ],
-    0x2c: [
-        'Links House Area'
-    ],
-    0x2d: [
-        'Stone Bridge Area',
-        'Stone Bridge Water'
-    ],
-    0x2e: [
-        'Tree Line Area',
-        'Tree Line Water'
-    ],
-    0x2f: [
-        'Eastern Nook Area'
-    ],
-    0x30: [
-        'Desert Area',
-        'Desert Ledge',
-        'Desert Palace Entrance (North) Spot',
-        'Desert Checkerboard Ledge',
-        'Desert Palace Stairs',
-        'Desert Palace Mouth',
-        'Desert Palace Teleporter Ledge',
-        'Bombos Tablet Ledge'
-    ],
-    0x32: [
-        'Flute Boy Approach Area',
-        'Flute Boy Bush Entry',
-        'Cave 45 Ledge'
-    ],
-    0x33: [
-        'C Whirlpool Area',
-        'C Whirlpool Water',
-        'C Whirlpool Outer Area'
-    ],
-    0x34: [
-        'Statues Area',
-        'Statues Water'
-    ],
-    0x35: [
-        'Lake Hylia Area',
-        'Lake Hylia South Shore',
-        'Lake Hylia Northeast Bank',
-        'Lake Hylia Central Island',
-        'Lake Hylia Island',
-        'Lake Hylia Water'
-    ],
-    0x37: [
-        'Ice Cave Area'
-    ],
-    0x3a: [
-        'Desert Pass Area',
-        'Desert Pass Southeast',
-        'Desert Pass Ledge'
-    ],
-    0x3b: [
-        'Dam Area'
-    ],
-    0x3c: [
-        'South Pass Area'
-    ],
-    0x3f: [
-        'Octoballoon Area',
-        'Octoballoon Water',
-        'Octoballoon Water Ledge'
-    ],
-    0x40: [
-        'Skull Woods Forest',
-        'Skull Woods Portal Entry',
-        'Skull Woods Forest (West)',
-        'Skull Woods Forgotten Path (Southwest)',
-        'Skull Woods Forgotten Path (Northeast)'
-    ],
-    0x42: [
-        'Dark Lumberjack Area'
-    ],
-    0x43: [
-        'West Dark Death Mountain (Top)',
-        'GT Approach',
-        'West Dark Death Mountain (Bottom)'
-    ],
-    0x45: [
-        'East Dark Death Mountain (Top)',
-        'East Dark Death Mountain (Bottom Left)',
-        'East Dark Death Mountain (Bottom)'
-    ],
-    0x47: [
-        'Turtle Rock Area',
-        'Turtle Rock Ledge'
-    ],
-    0x4a: [
-        'Bumper Cave Area',
-        'Bumper Cave Entrance',
-        'Bumper Cave Ledge'
-    ],
-    0x4f: [
-        'Catfish Area'
-    ],
-    0x50: [
-        'Skull Woods Pass West Area',
-        'Skull Woods Pass East Top Area',
-        'Skull Woods Pass East Bottom Area'
-    ],
-    0x51: [
-        'Dark Fortune Area'
-    ],
-    0x52: [
-        'Outcast Pond Area'
-    ],
-    0x53: [
-        'Dark Chapel Area'
-    ],
-    0x54: [
-        'Dark Graveyard Area'
-    ],
-    0x55: [
-        'Qirn Jump Area',
-        'Qirn Jump East Bank',
-        'Qirn Jump Water'
-    ],
-    0x56: [
-        'Dark Witch Area',
-        'Dark Witch Northeast',
-        'Dark Witch Water'
-    ],
-    0x57: [
-        'Catfish Approach Area',
-        'Catfish Approach Ledge',
-        'Catfish Approach Water'
-    ],
-    0x58: [
-        'Village of Outcasts Area',
-        'Dark Grassy Lawn'
-    ],
-    0x5a: [
-        'Shield Shop Area',
-        'Shield Shop Fence'
-    ],
-    0x5b: [
-        'Pyramid Area',
-        'Pyramid Exit Ledge',
-        'Pyramid Pass'
-    ],
-    0x5d: [
-        'Broken Bridge Area',
-        'Broken Bridge Northeast',
-        'Broken Bridge West',
-        'Broken Bridge Water'
-    ],
-    0x5e: [
-        'Palace of Darkness Area'
-    ],
-    0x62: [
-        'Hammer Pegs Area',
-        'Hammer Pegs Entry'
-    ],
-    0x65: [
-        'Dark Dunes Area'
-    ],
-    0x68: [
-        'Dig Game Area',
-        'Dig Game Ledge'
-    ],
-    0x69: [
-        'Frog Area',
-        'Frog Prison',
-        'Archery Game Area'
-    ],
-    0x6a: [
-        'Stumpy Area',
-        'Stumpy Pass'
-    ],
-    0x6b: [
-        'Dark Bonk Rocks Area'
-    ],
-    0x6c: [
-        'Big Bomb Shop Area'
-    ],
-    0x6d: [
-        'Hammer Bridge North Area',
-        'Hammer Bridge South Area',
-        'Hammer Bridge Water'
-    ],
-    0x6e: [
-        'Dark Tree Line Area',
-        'Dark Tree Line Water'
-    ],
-    0x6f: [
-        'Palace of Darkness Nook Area'
-    ],
-    0x70: [
-        'Misery Mire Area',
-        'Misery Mire Teleporter Ledge'
-    ],
-    0x72: [
-        'Stumpy Approach Area',
-        'Stumpy Approach Bush Entry'
-    ],
-    0x73: [
-        'Dark C Whirlpool Area',
-        'Dark C Whirlpool Water',
-        'Dark C Whirlpool Outer Area'
-    ],
-    0x74: [
-        'Hype Cave Area',
-        'Hype Cave Water'
-    ],
-    0x75: [
-        'Ice Lake Area',
-        'Ice Lake Northeast Bank',
-        'Ice Lake Ledge (West)',
-        'Ice Lake Ledge (East)',
-        'Ice Lake Water',
-        'Ice Lake Moat',
-        'Ice Palace Area'
-    ],
-    0x77: [
-        'Shopping Mall Area'
-    ],
-    0x7a: [
-        'Swamp Nook Area'
-    ],
-    0x7b: [
-        'Swamp Area'
-    ],
-    0x7c: [
-        'Dark South Pass Area'
-    ],
-    0x7f: [
-        'Bomber Corner Area',
-        'Bomber Corner Water',
-        'Bomber Corner Water Ledge'
-    ],
-    0x80: [
-        'Master Sword Meadow',
-        'Hobo Bridge'
-    ],
-    0x81: [
-        'Zoras Domain'
-    ]
-}
+OWTileRegions = bidict({
+    'Lost Woods West Area': 0x00,
+    'Lost Woods East Area': 0x00,
+
+    'Lumberjack Area': 0x02,
+
+    'West Death Mountain (Top)': 0x03,
+    'Spectacle Rock Ledge': 0x03,
+    'West Death Mountain (Bottom)': 0x03,
+
+    'Death Mountain Floating Island': 0x05,
+    'East Death Mountain (Top West)': 0x05,
+    'East Death Mountain (Top East)': 0x05,
+    'Spiral Cave Ledge': 0x05,
+    'Mimic Cave Ledge': 0x05,
+    'Fairy Ascension Ledge': 0x05,
+    'Fairy Ascension Plateau': 0x05,
+    'East Death Mountain (Bottom Left)': 0x05,
+    'East Death Mountain (Bottom)': 0x05,
+
+    'Death Mountain TR Pegs': 0x07,
+    'Death Mountain TR Pegs Ledge': 0x07,
+
+    'Mountain Entry Area': 0x0a,
+    'Mountain Entry Entrance': 0x0a,
+    'Mountain Entry Ledge': 0x0a,
+
+    'Zora Waterfall Area': 0x0f,
+    'Zora Waterfall Water': 0x0f,
+    'Waterfall of Wishing Cave': 0x0f,
+
+    'Lost Woods Pass West Area': 0x10,
+    'Lost Woods Pass East Top Area': 0x10,
+    'Lost Woods Pass East Bottom Area': 0x10,
+
+    'Kakariko Fortune Area': 0x11,
+
+    'Kakariko Pond Area': 0x12,
+
+    'Sanctuary Area': 0x13,
+    'Bonk Rock Ledge': 0x13,
+
+    'Graveyard Area': 0x14,
+    'Graveyard Ledge': 0x14,
+    'Kings Grave Area': 0x14,
+
+    'River Bend Area': 0x15,
+    'River Bend East Bank': 0x15,
+    'River Bend Water': 0x15,
+
+    'Potion Shop Area': 0x16,
+    'Potion Shop Northeast': 0x16,
+    'Potion Shop Water': 0x16,
+
+    'Zora Approach Area': 0x17,
+    'Zora Approach Ledge': 0x17,
+    'Zora Approach Water': 0x17,
+
+    'Kakariko Area': 0x18,
+    'Kakariko Southwest': 0x18,
+    'Kakariko Grass Yard': 0x18,
+
+    'Forgotten Forest Area': 0x1a,
+
+    'Hyrule Castle Area': 0x1b,
+    'Hyrule Castle Southwest': 0x1b,
+    'Hyrule Castle Courtyard': 0x1b,
+    'Hyrule Castle Courtyard Northeast': 0x1b,
+    'Hyrule Castle Ledge': 0x1b,
+    'Hyrule Castle East Entry': 0x1b,
+
+    'Wooden Bridge Area': 0x1d,
+    'Wooden Bridge Northeast': 0x1d,
+    'Wooden Bridge Water': 0x1d,
+
+    'Eastern Palace Area': 0x1e,
+
+    'Blacksmith Area': 0x22,
+    'Bat Cave Ledge': 0x22,
+
+    'Sand Dunes Area': 0x25,
+
+    'Maze Race Area': 0x28,
+    'Maze Race Ledge': 0x28,
+    'Maze Race Prize': 0x28,
+
+    'Kakariko Suburb Area': 0x29,
+
+    'Flute Boy Area': 0x2a,
+    'Flute Boy Pass': 0x2a,
+
+    'Central Bonk Rocks Area': 0x2b,
+
+    'Links House Area': 0x2c,
+
+    'Stone Bridge Area': 0x2d,
+    'Stone Bridge Water': 0x2d,
+
+    'Tree Line Area': 0x2e,
+    'Tree Line Water': 0x2e,
+
+    'Eastern Nook Area': 0x2f,
+
+    'Desert Area': 0x30,
+    'Desert Ledge': 0x30,
+    'Desert Palace Entrance (North) Spot': 0x30,
+    'Desert Checkerboard Ledge': 0x30,
+    'Desert Palace Stairs': 0x30,
+    'Desert Palace Mouth': 0x30,
+    'Desert Palace Teleporter Ledge': 0x30,
+    'Bombos Tablet Ledge': 0x30,
+
+    'Flute Boy Approach Area': 0x32,
+    'Flute Boy Bush Entry': 0x32,
+    'Cave 45 Ledge': 0x32,
+
+    'C Whirlpool Area': 0x33,
+    'C Whirlpool Water': 0x33,
+    'C Whirlpool Outer Area': 0x33,
+
+    'Statues Area': 0x34,
+    'Statues Water': 0x34,
+
+    'Lake Hylia Area': 0x35,
+    'Lake Hylia South Shore': 0x35,
+    'Lake Hylia Northeast Bank': 0x35,
+    'Lake Hylia Central Island': 0x35,
+    'Lake Hylia Island': 0x35,
+    'Lake Hylia Water': 0x35,
+
+    'Ice Cave Area': 0x37,
+
+    'Desert Pass Area': 0x3a,
+    'Desert Pass Southeast': 0x3a,
+    'Desert Pass Ledge': 0x3a,
+
+    'Dam Area': 0x3b,
+
+    'South Pass Area': 0x3c,
+
+    'Octoballoon Area': 0x3f,
+    'Octoballoon Water': 0x3f,
+    'Octoballoon Water Ledge': 0x3f,
+
+    'Skull Woods Forest': 0x40,
+    'Skull Woods Portal Entry': 0x40,
+    'Skull Woods Forest (West)': 0x40,
+    'Skull Woods Forgotten Path (Southwest)': 0x40,
+    'Skull Woods Forgotten Path (Northeast)': 0x40,
+
+    'Dark Lumberjack Area': 0x42,
+
+    'West Dark Death Mountain (Top)': 0x43,
+    'GT Approach': 0x43,
+    'West Dark Death Mountain (Bottom)': 0x43,
+
+    'East Dark Death Mountain (Top)': 0x45,
+    'East Dark Death Mountain (Bottom Left)': 0x45,
+    'East Dark Death Mountain (Bottom)': 0x45,
+
+    'Turtle Rock Area': 0x47,
+    'Turtle Rock Ledge': 0x47,
+
+    'Bumper Cave Area': 0x4a,
+    'Bumper Cave Entrance': 0x4a,
+    'Bumper Cave Ledge': 0x4a,
+
+    'Catfish Area': 0x4f,
+
+    'Skull Woods Pass West Area': 0x50,
+    'Skull Woods Pass East Top Area': 0x50,
+    'Skull Woods Pass East Bottom Area': 0x50,
+
+    'Dark Fortune Area': 0x51,
+
+    'Outcast Pond Area': 0x52,
+
+    'Dark Chapel Area': 0x53,
+
+    'Dark Graveyard Area': 0x54,
+
+    'Qirn Jump Area': 0x55,
+    'Qirn Jump East Bank': 0x55,
+    'Qirn Jump Water': 0x55,
+
+    'Dark Witch Area': 0x56,
+    'Dark Witch Northeast': 0x56,
+    'Dark Witch Water': 0x56,
+
+    'Catfish Approach Area': 0x57,
+    'Catfish Approach Ledge': 0x57,
+    'Catfish Approach Water': 0x57,
+
+    'Village of Outcasts Area': 0x58,
+    'Dark Grassy Lawn': 0x58,
+
+    'Shield Shop Area': 0x5a,
+    'Shield Shop Fence': 0x5a,
+
+    'Pyramid Area': 0x5b,
+    'Pyramid Exit Ledge': 0x5b,
+    'Pyramid Pass': 0x5b,
+
+    'Broken Bridge Area': 0x5d,
+    'Broken Bridge Northeast': 0x5d,
+    'Broken Bridge West': 0x5d,
+    'Broken Bridge Water': 0x5d,
+
+    'Palace of Darkness Area': 0x5e,
+
+    'Hammer Pegs Area': 0x62,
+    'Hammer Pegs Entry': 0x62,
+
+    'Dark Dunes Area': 0x65,
+
+    'Dig Game Area': 0x68,
+    'Dig Game Ledge': 0x68,
+
+    'Frog Area': 0x69,
+    'Frog Prison': 0x69,
+    'Archery Game Area': 0x69,
+
+    'Stumpy Area': 0x6a,
+    'Stumpy Pass': 0x6a,
+
+    'Dark Bonk Rocks Area': 0x6b,
+
+    'Big Bomb Shop Area': 0x6c,
+
+    'Hammer Bridge North Area': 0x6d,
+    'Hammer Bridge South Area': 0x6d,
+    'Hammer Bridge Water': 0x6d,
+
+    'Dark Tree Line Area': 0x6e,
+    'Dark Tree Line Water': 0x6e,
+
+    'Palace of Darkness Nook Area': 0x6f,
+
+    'Misery Mire Area': 0x70,
+    'Misery Mire Teleporter Ledge': 0x70,
+
+    'Stumpy Approach Area': 0x72,
+    'Stumpy Approach Bush Entry': 0x72,
+
+    'Dark C Whirlpool Area': 0x73,
+    'Dark C Whirlpool Water': 0x73,
+    'Dark C Whirlpool Outer Area': 0x73,
+
+    'Hype Cave Area': 0x74,
+    'Hype Cave Water': 0x74,
+
+    'Ice Lake Area': 0x75,
+    'Ice Lake Northeast Bank': 0x75,
+    'Ice Lake Ledge (West)': 0x75,
+    'Ice Lake Ledge (East)': 0x75,
+    'Ice Lake Water': 0x75,
+    'Ice Lake Moat': 0x75,
+    'Ice Palace Area': 0x75,
+
+    'Shopping Mall Area': 0x77,
+
+    'Swamp Nook Area': 0x7a,
+
+    'Swamp Area': 0x7b,
+
+    'Dark South Pass Area': 0x7c,
+
+    'Bomber Corner Area': 0x7f,
+    'Bomber Corner Water': 0x7f,
+    'Bomber Corner Water Ledge': 0x7f,
+
+    'Master Sword Meadow': 0x80,
+    'Hobo Bridge': 0x80,
+
+    'Zoras Domain': 0x81
+})
 
 OWTileGroups = {
     ("Woods", "Regular"): (
