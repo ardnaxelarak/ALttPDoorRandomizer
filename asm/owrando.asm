@@ -353,7 +353,7 @@ OWNewDestination:
             ; turn into bunny
             lda $5d : cmp #$17 : beq .return
             lda #$17 : sta $5d
-            lda #$01 : sta $02e0
+            lda #$01 : sta $2e0
             bra .return
         .nobunny
         lda $5d : cmp #$17 : bne .return

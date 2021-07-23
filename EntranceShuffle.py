@@ -687,7 +687,8 @@ def link_entrances(world, player):
 
         if invFlag:
             # shuffle aga door. if it's on hc ledge, then one other hc ledge door has to be must_exit
-            aga_door = random.choice(entrances)
+            aga_choices = [x for x in entrances]
+            aga_door = random.choice(aga_choices)
             
             if aga_door in hc_ledge_entrances:
                 hc_ledge_entrances.remove(aga_door)

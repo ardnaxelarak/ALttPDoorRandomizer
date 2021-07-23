@@ -22,6 +22,11 @@ For accessibility, you now get a C or P indicator to the left of the magic bar o
 
 # Bug Fixes and Notes.
 
+* 0.4.0.12
+	* ER Inverted fix for HC Ledge, and Aga Tower choosing Links House incorrectly
+	* Credits again - hopefully for good
+	* Incorporated music fixes for now (may revisit later)
+	* Secure random re-incorporated
 * 0.4.0.11
 	* Some minor base rom fixes
 	* Improved distribution of bombable/dashable doors

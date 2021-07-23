@@ -1,9 +1,8 @@
-import RaceRandom as random
-import logging, copy
+import RaceRandom as random, logging, copy
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.1.6.8-u'
+__version__ = '0.1.6.9-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -230,7 +229,7 @@ def link_overworld(world, player):
         new_spots = list()
         ignored_regions = set()
 
-        def addSpot(owid, removeFromPool = False):
+        def addSpot(owid):
             if world.owFluteShuffle[player] == 'balanced':
                 def getIgnored(regionname, base_owid, owid):
                     region = world.get_region(regionname, player)
@@ -253,18 +252,17 @@ def link_overworld(world, player):
                 if random.randint(0, 31) != 0 and new_ignored.intersection(ignored_regions):
                     return False
                 ignored_regions.update(new_ignored)
-            if removeFromPool:
-                flute_pool.remove(owid)
+            flute_pool.remove(owid)
             new_spots.append(owid)
             return True
 
         # guarantee desert/mire access
-        addSpot(0x38, True)
+        addSpot(0x38)
 
         # guarantee mountain access
         if world.owShuffle[player] == 'vanilla':
             mountainIds = [0x0b, 0x0e, 0x07]
-            addSpot(mountainIds[random.randint(0, 2)], True)
+            addSpot(mountainIds[random.randint(0, 2)])
 
         random.shuffle(flute_pool)
         f = 0

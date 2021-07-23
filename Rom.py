@@ -31,7 +31,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'b39ce425e3d390aa9e956aa46b6f4087'
+RANDOMIZERBASEHASH = 'd97c9a8977e73da261852d69a287abcc'
 
 
 class JsonRom(object):
@@ -912,17 +912,17 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     write_int16(rom, 0x187010, credits_total)  # dynamic credits
     if credits_total != 216:
-        # collection rate address:
-        cr_address = 0x239200
+        # collection rate address (hi):
+        cr_address = 0x238057
         cr_pc = cr_address - 0x120000  # convert to pc
         mid_top, mid_bot = credits_digit((credits_total // 10) % 10)
         last_top, last_bot = credits_digit(credits_total % 10)
         # top half
-        rom.write_byte(cr_pc+0x1c, mid_top)
-        rom.write_byte(cr_pc+0x1d, last_top)
+        rom.write_byte(cr_pc+0x1, mid_top)
+        rom.write_byte(cr_pc+0x2, last_top)
         # bottom half
-        rom.write_byte(cr_pc+0x3a, mid_bot)
-        rom.write_byte(cr_pc+0x3b, last_bot)
+        rom.write_byte(cr_pc+0x1f, mid_bot)
+        rom.write_byte(cr_pc+0x20, last_bot)
 
     # patch medallion requirements
     if world.required_medallions[player][0] == 'Bombos':
@@ -1221,18 +1221,18 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x30A28, 0x2C)
 
         # update sword references in credits to bombs
-        rom.write_bytes(0x11803E, credits_string_top("FIRST BOMBS"))
-        rom.write_bytes(0x11805C, credits_string_bot("FIRST BOMBS"))
-        rom.write_bytes(0x11807A, credits_string_top("BOMBLESS "))
-        rom.write_bytes(0x118098, credits_string_bot("BOMBLESS "))
-        rom.write_bytes(0x1180B6, credits_string_top("FIGHTER'S BOMBS"))
-        rom.write_bytes(0x1180D4, credits_string_bot("FIGHTER'S BOMBS"))
-        rom.write_bytes(0x1180F2, credits_string_top("MASTER BOMBS"))
-        rom.write_bytes(0x118110, credits_string_bot("MASTER BOMBS"))
-        rom.write_bytes(0x11812E, credits_string_top("TEMPERED BOMBS"))
-        rom.write_bytes(0x11814C, credits_string_bot("TEMPERED BOMBS"))
-        rom.write_bytes(0x11816A, credits_string_top("GOLD BOMBS"))
-        rom.write_bytes(0x118188, credits_string_bot("GOLD BOMBS"))
+        rom.write_bytes(0x11807A, credits_string_top("FIRST BOMBS"))
+        rom.write_bytes(0x118098, credits_string_bot("FIRST BOMBS"))
+        rom.write_bytes(0x1180B6, credits_string_top("BOMBLESS "))
+        rom.write_bytes(0x1180D4, credits_string_bot("BOMBLESS "))
+        rom.write_bytes(0x1180F2, credits_string_top("FIGHTER'S BOMBS"))
+        rom.write_bytes(0x118110, credits_string_bot("FIGHTER'S BOMBS"))
+        rom.write_bytes(0x11812E, credits_string_top("MASTER BOMBS"))
+        rom.write_bytes(0x11814C, credits_string_bot("MASTER BOMBS"))
+        rom.write_bytes(0x11816A, credits_string_top("TEMPERED BOMBS"))
+        rom.write_bytes(0x118188, credits_string_bot("TEMPERED BOMBS"))
+        rom.write_bytes(0x1181A6, credits_string_top("GOLD BOMBS"))
+        rom.write_bytes(0x1181C4, credits_string_bot("GOLD BOMBS"))
 
     # set up clocks for timed modes
     if world.shuffle[player] == 'vanilla':

@@ -1,5 +1,8 @@
 # Changelog
 
+### 0.1.6.9
+- ~~Merged DR v0.4.0.12 - Secure random update / Credits fix~~
+
 ### 0.1.6.8
 - Implemented a smarter Balanced Flute Shuffle algorithm
 - Fixed Collection Rate in credits
