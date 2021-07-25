@@ -848,7 +848,7 @@ def default_rules(world, player):
         swordless_rules(world, player)
     if world.swords[player] == 'bombs':
         bomb_mode_rules(world, player)
-    if world.swords[player] == 'pseudo':
+    if world.swords[player] in ['pseudo', 'assured_pseudo']:
         pseudo_sword_mode_rules(world, player)
 
 

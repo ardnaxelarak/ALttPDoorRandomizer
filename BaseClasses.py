@@ -797,7 +797,7 @@ class CollectionState(object):
         return False
 
     def has_real_sword(self, player, level=1):
-        if self.world.swords[player] == 'pseudo':
+        if self.world.swords[player] in ['pseudo', 'assured_pseudo']:
             return False;
         return self.has_sword(player, level)
 
@@ -2533,7 +2533,7 @@ er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "crossed": 4, 
 # byte 1: LLLW WSSS (logic, mode, sword)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
 world_mode = {"open": 0, "standard": 1, "inverted": 2}
-sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 4, "pseudo": 5}
+sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 6}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4}

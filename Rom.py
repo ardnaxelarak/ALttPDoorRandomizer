@@ -1060,7 +1060,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     #Work around for json patch ordering issues - write bow limit separately so that it is replaced in the patch
     rom.write_bytes(0x180098, [difficulty.progressive_bow_limit, overflow_replacement])
 
-    if difficulty.progressive_bow_limit < 2 and world.swords[player] in ['swordless', 'pseudo']:
+    if difficulty.progressive_bow_limit < 2 and world.swords[player] in ['swordless', 'pseudo', 'assured_pseudo']:
         rom.write_bytes(0x180098, [2, overflow_replacement])
 
     # set up game internal RNG seed
@@ -1193,7 +1193,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x180041, 0x01)  # swordless medallions (on pads)
         rom.write_byte(0x180043, 0xFF)  # starting sword for link
         rom.write_byte(0x180044, 0x01)  # hammer activates tablets
-    elif world.swords[player] == 'pseudo':
+    elif world.swords[player] in ['pseudo', 'assured_pseudo']:
         rom.write_byte(0x18002F, 0x02)  # pseudo-swords
         rom.write_byte(0x18003F, 0x01)  # hammer can harm ganon
     elif world.swords[player] == 'bombs':
@@ -2377,7 +2377,7 @@ def write_strings(rom, world, player, team):
 
         prog_bow_locs = world.find_items('Progressive Bow', player)
         distinguished_prog_bow_loc = next((location for location in prog_bow_locs if location.item.code == 0x65), None)
-        progressive_silvers = world.difficulty_requirements[player].progressive_bow_limit >= 2 or world.swords[player] in ['swordless', 'pseudo']
+        progressive_silvers = world.difficulty_requirements[player].progressive_bow_limit >= 2 or world.swords[player] in ['swordless', 'pseudo', 'assured_pseudo']
         if distinguished_prog_bow_loc:
             prog_bow_locs.remove(distinguished_prog_bow_loc)
             hint_phrase = hint_text(distinguished_prog_bow_loc).replace("Ganon's", "my")

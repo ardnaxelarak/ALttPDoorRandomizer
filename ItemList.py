@@ -831,7 +831,7 @@ def get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, treasure_
             place_item('Master Sword Pedestal', 'Triforce')
     else:
         pool.extend(diff.progressivesword if want_progressives() else diff.basicsword)
-        if swords == 'assured':
+        if swords in ['assured', 'assured_pseudo']:
             if want_progressives():
                 precollected_items.append('Progressive Sword')
                 pool.remove('Progressive Sword')
