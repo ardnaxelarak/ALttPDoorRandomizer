@@ -785,11 +785,21 @@ class CollectionState(object):
             self.is_not_bunny(cave, player)
         )
 
-    def has_sword(self, player):
-        return self.has('Fighter Sword', player) or self.has('Master Sword', player) or self.has('Tempered Sword', player) or self.has('Golden Sword', player)
+    def has_sword(self, player, level=1):
+        if level == 4:
+            return self.has('Golden Sword', player)
+        elif level == 3:
+            return self.has('Golden Sword', player) or self.has('Tempered Sword', player)
+        elif level == 2:
+            return self.has('Golden Sword', player) or self.has('Tempered Sword', player) or self.has('Master Sword', player)
+        elif level == 1:
+            return self.has('Golden Sword', player) or self.has('Tempered Sword', player) or self.has('Master Sword', player) or self.has('Fighter Sword', player)
+        return False
 
-    def has_beam_sword(self, player):
-        return self.has('Master Sword', player) or self.has('Tempered Sword', player) or self.has('Golden Sword', player)
+    def has_real_sword(self, player, level=1):
+        if self.world.swords[player] == 'pseudo':
+            return False;
+        return self.has_sword(player, level)
 
     def has_bomb_level(self, player, level):
         if self.world.swords[player] != 'bombs':
@@ -853,7 +863,7 @@ class CollectionState(object):
         return self.has_sword(player) or self.world.swords[player] == 'bombs'
 
     def has_blunt_weapon(self, player):
-        return self.has_sword(player) or self.has('Hammer', player)
+        return self.has_real_sword(player) or self.has('Hammer', player)
 
     def has_Mirror(self, player):
         return self.has('Magic Mirror', player)
@@ -2520,10 +2530,10 @@ or_mode = {"parallel": 1, "full": 2, "vanilla": 0}
 er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "crossed": 4, "insanity": 5, "restricted_legacy": 8,
            "full_legacy": 9, "madness_legacy": 10, "insanity_legacy": 11, "dungeonsfull": 7, "dungeonssimple": 6}
 
-# byte 1: LLLW WSSR (logic, mode, sword, retro)
+# byte 1: LLLW WSSS (logic, mode, sword)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
 world_mode = {"open": 0, "standard": 1, "inverted": 2}
-sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 2} # fix this, kara
+sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 4, "pseudo": 5}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4}
@@ -2544,7 +2554,7 @@ access_mode = {"items": 0, "locations": 1, "none": 2}
 boss_mode = {"none": 0, "simple": 1, "full": 2, "random": 3, "chaos": 3}
 enemy_mode = {"none": 0, "shuffled": 1, "random": 2, "chaos": 2, "legacy": 3}
 
-# byte 7: HHHD DP?? (enemy_health, enemy_dmg, potshuffle, ?)
+# byte 7: HHHD DPR? (enemy_health, enemy_dmg, potshuffle, retro, ?)
 e_health = {"default": 0, "easy": 1, "normal": 2, "hard": 3, "expert": 4}
 e_dmg = {"default": 0, "shuffled": 1, "random": 2}
 
@@ -2555,8 +2565,7 @@ class Settings(object):
         code = bytes([
             (dr_mode[w.doorShuffle[p]] << 6) | (or_mode[w.owShuffle[p]] << 4) | er_mode[w.shuffle[p]],
 
-            (logic_mode[w.logic[p]] << 5) | (world_mode[w.mode[p]] << 3)
-            | (sword_mode[w.swords[p]] << 1) | (1 if w.retro[p] else 0),
+            (logic_mode[w.logic[p]] << 5) | (world_mode[w.mode[p]] << 3) | (sword_mode[w.swords[p]]),
 
             (goal_mode[w.goal[p]] << 5) | (diff_mode[w.difficulty[p]] << 3)
             | (func_mode[w.difficulty_adjustments[p]] << 1) | (1 if w.hints[p] else 0),
@@ -2575,7 +2584,7 @@ class Settings(object):
             | (0x20 if w.mapshuffle[p] else 0) | (0x10 if w.compassshuffle[p] else 0)
             | (boss_mode[w.boss_shuffle[p]] << 2) | (enemy_mode[w.enemy_shuffle[p]]),
 
-            (e_health[w.enemy_health[p]] << 5) | (e_dmg[w.enemy_damage[p]] << 3) | (0x4 if w.potshuffle[p] else 0)])
+            (e_health[w.enemy_health[p]] << 5) | (e_dmg[w.enemy_damage[p]] << 3) | (0x4 if w.potshuffle[p] else 0) | (0x2 if w.retro[p] else 0)])
         return base64.b64encode(code, "+-".encode()).decode()
 
     @staticmethod

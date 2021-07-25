@@ -192,6 +192,7 @@ def roll_settings(weights):
                   'assured': 'assured',
                   'vanilla': 'vanilla',
                   'swordless': 'swordless',
+                  'pseudo': 'pseudo',
                   'bombs': 'bombs'
                   }[get_choice('weapons')]
 
