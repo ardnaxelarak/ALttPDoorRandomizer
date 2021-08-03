@@ -31,7 +31,7 @@ from OverworldShuffle import default_flute_connections, flute_data
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'd97c9a8977e73da261852d69a287abcc'
+RANDOMIZERBASEHASH = 'b9914f4de5a16b9a8bb94363fec0ac15'
 
 
 class JsonRom(object):
@@ -87,10 +87,12 @@ class LocalRom(object):
         self.name = name
         self.hash = hash
         self.orig_buffer = None
+        self.file = file
+        self.has_smc_header = False
         if not os.path.isfile(file):
             raise RuntimeError("Could not find valid local base rom for patching at expected path %s." % file)
         with open(file, 'rb') as stream:
-            self.buffer = read_rom(stream)
+            self.buffer, self.has_smc_header = read_rom(stream)
         if patch:
             self.patch_base_rom()
             self.orig_buffer = self.buffer.copy()
@@ -188,9 +190,12 @@ def write_int32s(rom, startaddress, values):
 def read_rom(stream):
     "Reads rom into bytearray and strips off any smc header"
     buffer = bytearray(stream.read())
+    has_smc_header = False
     if len(buffer)%0x400 == 0x200:
         buffer = buffer[0x200:]
-    return buffer
+        has_smc_header = True
+    return buffer, has_smc_header
+
 
 def convert_char_to_credits(char):
     char_map = {
@@ -205,8 +210,16 @@ def convert_char_to_credits(char):
         ":": (0xA3, 0xC3), "_": (0xA6, 0xC6)}
     return char_map[char] if char in char_map else (0x9F, 0x9F)
 
-def patch_enemizer(world, player, rom, baserom_path, enemizercli, random_sprite_on_hit):
-    baserom_path = os.path.abspath(baserom_path)
+
+def patch_enemizer(world, player, rom, local_rom, enemizercli, random_sprite_on_hit):
+    baserom_path = os.path.abspath(local_rom.file)
+    unheadered_path = None
+    if local_rom.has_smc_header:
+        headered_path = baserom_path
+        unheadered_path = baserom_path = os.path.abspath(output_path('unheadered_rom.sfc'))
+        with open(headered_path, 'rb') as headered:
+            with open(baserom_path, 'wb') as unheadered:
+                unheadered.write(headered.read()[0x200:])
     basepatch_path = os.path.abspath(local_path(os.path.join("data","base2current.json")))
     enemizer_basepatch_path = os.path.join(os.path.dirname(enemizercli), "enemizerBasePatch.json")
     randopatch_path = os.path.abspath(output_path('enemizer_randopatch.json'))
@@ -349,6 +362,12 @@ def patch_enemizer(world, player, rom, baserom_path, enemizercli, random_sprite_
                 rom.write_bytes(0x300000 + (i * 0x8000), sprite.sprite)
                 rom.write_bytes(0x307000 + (i * 0x8000), sprite.palette)
                 rom.write_bytes(0x307078 + (i * 0x8000), sprite.glove_palette)
+
+    if local_rom.has_smc_header:
+        try:
+            os.remove(unheadered_path)
+        except OSError:
+            pass
 
     try:
         os.remove(randopatch_path)
@@ -635,12 +654,12 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x18004C, 0x01) # patch for allowing Frogsmith to enter multi-entrance caves
         
         # patches map data specific for OW Shuffle
-        inverted_buffer[0x03] = inverted_buffer[0x03] | 0x2  # convenient portal on WDM
+        #inverted_buffer[0x03] = inverted_buffer[0x03] | 0x2  # convenient portal on WDM
         inverted_buffer[0x1A] = inverted_buffer[0x1A] | 0x2  # rocks added to prevent OWG hardlock
         inverted_buffer[0x1B] = inverted_buffer[0x1B] | 0x2  # rocks added to prevent OWG hardlock
         inverted_buffer[0x22] = inverted_buffer[0x22] | 0x2  # rocks added to prevent OWG hardlock
         inverted_buffer[0x3F] = inverted_buffer[0x3F] | 0x2  # added C to terrain
-        inverted_buffer[0x43] = inverted_buffer[0x43] | 0x2  # convenient portal on WDDM
+        #inverted_buffer[0x43] = inverted_buffer[0x43] | 0x2  # convenient portal on WDDM
         inverted_buffer[0x5A] = inverted_buffer[0x5A] | 0x2  # rocks added to prevent OWG hardlock
         inverted_buffer[0x5B] = inverted_buffer[0x5B] | 0x2  # rocks added to prevent OWG hardlock
         inverted_buffer[0x62] = inverted_buffer[0x62] | 0x2  # rocks added to prevent OWG hardlock
@@ -1068,9 +1087,13 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x178000 + i, random.randint(0, 255))
 
     # shuffle prize packs
-    prizes = [0xD8, 0xD8, 0xD8, 0xD8, 0xD9, 0xD8, 0xD8, 0xD9, 0xDA, 0xD9, 0xDA, 0xDB, 0xDA, 0xD9, 0xDA, 0xDA, 0xE0, 0xDF, 0xDF, 0xDA, 0xE0, 0xDF, 0xD8, 0xDF,
-              0xDC, 0xDC, 0xDC, 0xDD, 0xDC, 0xDC, 0xDE, 0xDC, 0xE1, 0xD8, 0xE1, 0xE2, 0xE1, 0xD8, 0xE1, 0xE2, 0xDF, 0xD9, 0xD8, 0xE1, 0xDF, 0xDC, 0xD9, 0xD8,
-              0xD8, 0xE3, 0xE0, 0xDB, 0xDE, 0xD8, 0xDB, 0xE2, 0xD9, 0xDA, 0xDB, 0xD9, 0xDB, 0xD9, 0xDB]
+    pack_prizes = [0xD8, 0xD8, 0xD8, 0xD8, 0xD9, 0xD8, 0xD8, 0xD9,
+                   0xDA, 0xD9, 0xDA, 0xDB, 0xDA, 0xD9, 0xDA, 0xDA,
+                   0xE0, 0xDF, 0xDF, 0xDA, 0xE0, 0xDF, 0xD8, 0xDF,
+                   0xDC, 0xDC, 0xDC, 0xDD, 0xDC, 0xDC, 0xDE, 0xDC,
+                   0xE1, 0xD8, 0xE1, 0xE2, 0xE1, 0xD8, 0xE1, 0xE2,
+                   0xDF, 0xD9, 0xD8, 0xE1, 0xDF, 0xDC, 0xD9, 0xD8,
+                   0xD8, 0xE3, 0xE0, 0xDB, 0xDE, 0xD8, 0xDB, 0xE2]
     dig_prizes = [0xB2, 0xD8, 0xD8, 0xD8, 0xD8, 0xD8, 0xD8, 0xD8, 0xD8,
                   0xD9, 0xD9, 0xD9, 0xD9, 0xD9, 0xDA, 0xDA, 0xDA, 0xDA, 0xDA,
                   0xDB, 0xDB, 0xDB, 0xDB, 0xDB, 0xDC, 0xDC, 0xDC, 0xDC, 0xDC,
@@ -1082,52 +1105,49 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     def chunk(l,n):
         return [l[i:i+n] for i in range(0, len(l), n)]
 
-    # randomize last 7 slots
-    prizes [-7:] = random.sample(prizes, 7)
-
     #shuffle order of 7 main packs
-    packs = chunk(prizes[:56], 8)
+    packs = chunk(pack_prizes, 8)
     random.shuffle(packs)
-    prizes[:56] = [drop for pack in packs for drop in pack]
+    pack_prizes = [drop for pack in packs for drop in pack]
 
     if world.difficulty_adjustments[player] in ['hard', 'expert']:
         prize_replacements = {0xE0: 0xDF, # Fairy -> heart
                               0xE3: 0xD8} # Big magic -> small magic
-        prizes = [prize_replacements.get(prize, prize) for prize in prizes]
+        pack_prizes = [prize_replacements.get(prize, prize) for prize in pack_prizes]
         dig_prizes = [prize_replacements.get(prize, prize) for prize in dig_prizes]
 
     if world.retro[player]:
         prize_replacements = {0xE1: 0xDA, # 5 Arrows -> Blue Rupee
                               0xE2: 0xDB} # 10 Arrows -> Red Rupee
-        prizes = [prize_replacements.get(prize, prize) for prize in prizes]
+        pack_prizes = [prize_replacements.get(prize, prize) for prize in pack_prizes]
         dig_prizes = [prize_replacements.get(prize, prize) for prize in dig_prizes]
 
     if world.swords[player] == "bombs":
         prize_replacements = {0xDC: 0xD9, # 1 Bomb -> Green Rupee
                               0xDD: 0xDA, # 3 Bombs -> Blue Rupee
                               0xDE: 0xDB} # 10 Bombs -> Red Rupee
-        prizes = [prize_replacements.get(prize, prize) for prize in prizes]
+        pack_prizes = [prize_replacements.get(prize, prize) for prize in pack_prizes]
         dig_prizes = [prize_replacements.get(prize, prize) for prize in dig_prizes]
 
     rom.write_bytes(0x180100, dig_prizes)
 
     # write tree pull prizes
-    rom.write_byte(0xEFBD4, prizes.pop())
-    rom.write_byte(0xEFBD5, prizes.pop())
-    rom.write_byte(0xEFBD6, prizes.pop())
+    rom.write_byte(0xEFBD4, world.prizes[player]['pull'][0])
+    rom.write_byte(0xEFBD5, world.prizes[player]['pull'][1])
+    rom.write_byte(0xEFBD6, world.prizes[player]['pull'][2])
 
     # rupee crab prizes
-    rom.write_byte(0x329C8, prizes.pop())  # first prize
-    rom.write_byte(0x329C4, prizes.pop())  # final prize
+    rom.write_byte(0x329C8, world.prizes[player]['crab'][0])  # first prize
+    rom.write_byte(0x329C4, world.prizes[player]['crab'][1])  # final prize
 
     # stunned enemy prize
-    rom.write_byte(0x37993, prizes.pop())
+    rom.write_byte(0x37993, world.prizes[player]['stun'])
 
     # saved fish prize
-    rom.write_byte(0xE82CC, prizes.pop())
+    rom.write_byte(0xE82CC, world.prizes[player]['fish'])
 
     # fill enemy prize packs
-    rom.write_bytes(0x37A78, prizes)
+    rom.write_bytes(0x37A78, pack_prizes)
 
     # set bonk prizes
     bonk_prizes = [0x79, 0xE3, 0x79, 0xAC, 0xAC, 0xE0, 0xDC, 0xAC, 0xE3, 0xE3, 0xDA, 0xE3, 0xDA, 0xD8, 0xAC, 0xAC, 0xE3, 0xD8, 0xE3, 0xE3, 0xE3, 0xE3, 0xE3, 0xE3, 0xDC, 0xDB, 0xE3, 0xDA, 0x79, 0x79, 0xE3, 0xE3,
@@ -1145,7 +1165,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_bytes(0x184000, [
         # original_item, limit, replacement_item, filler
         0x12, 0x01, 0x35, 0xFF, # lamp -> 5 rupees
-        0x51, 0x06, 0x52, 0xFF, # 6 +5 bomb upgrades -> +10 bomb upgrade
+        0x51, 0x00 if world.bomblogic[player] else 0x06, 0x31 if world.bomblogic[player] else 0x52, 0xFF, # 6 +5 bomb upgrades -> +10 bomb upgrade. If bomblogic -> turns into Bombs (10)
         0x53, 0x06, 0x54, 0xFF, # 6 +5 arrow upgrades -> +10 arrow upgrade
         0x58, 0x01, 0x36 if world.retro[player] else 0x43, 0xFF, # silver arrows -> single arrow (red 20 in retro mode)
         0x3E, difficulty.boss_heart_container_limit, 0x47, 0xff, # boss heart -> green 20
@@ -1326,7 +1346,10 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     equip[0x36C] = 0x18
     equip[0x36D] = 0x18
     equip[0x379] = 0x68
-    starting_max_bombs = 10
+    if world.bomblogic[player]:
+        starting_max_bombs = 0
+    else:
+        starting_max_bombs = 10
     starting_max_arrows = 30
 
     startingstate = CollectionState(world)
@@ -1650,7 +1673,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             rom.write_bytes(0x180188, [0, 0, 10])  # Zelda respawn refills (magic, bombs, arrows)
             rom.write_bytes(0x18018B, [0, 0, 10])  # Mantle respawn refills (magic, bombs, arrows)
             bow_max, bow_small = 70, 10
-        elif uncle_location.item is not None and uncle_location.item.name in ['Bombs (10)']:
+        elif uncle_location.item is not None and uncle_location.item.name in ['Bomb Upgrade (+10)' if world.bomblogic[player] else 'Bombs (10)']:
             rom.write_byte(0x18004E, 2)  # Escape Fill (bombs)
             rom.write_bytes(0x180185, [0, 50, 0])  # Uncle respawn refills (magic, bombs, arrows)
             rom.write_bytes(0x180188, [0, 3, 0])  # Zelda respawn refills (magic, bombs, arrows)

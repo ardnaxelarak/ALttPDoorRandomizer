@@ -712,3 +712,33 @@ def balance_money_progression(world):
                         unchecked_locations.remove(location)
                         if location.item.name.startswith('Rupee'):
                             wallet[location.item.player] += rupee_chart[location.item.name]
+
+def set_prize_drops(world, player):
+    prizes = [0xD8, 0xD8, 0xD8, 0xD8, 0xD9, 0xD8, 0xD8, 0xD9, 0xDA, 0xD9, 0xDA, 0xDB, 0xDA, 0xD9, 0xDA, 0xDA, 0xE0, 0xDF, 0xDF, 0xDA, 0xE0, 0xDF, 0xD8, 0xDF,
+              0xDC, 0xDC, 0xDC, 0xDD, 0xDC, 0xDC, 0xDE, 0xDC, 0xE1, 0xD8, 0xE1, 0xE2, 0xE1, 0xD8, 0xE1, 0xE2, 0xDF, 0xD9, 0xD8, 0xE1, 0xDF, 0xDC, 0xD9, 0xD8,
+              0xD8, 0xE3, 0xE0, 0xDB, 0xDE, 0xD8, 0xDB, 0xE2, 0xD9, 0xDA, 0xDB, 0xD9, 0xDB, 0xD9, 0xDB]
+    
+    # randomize last 7 slots
+    new_prizes = random.sample(prizes, 7)
+
+    if world.difficulty_adjustments[player] in ['hard', 'expert']:
+        prize_replacements = {0xE0: 0xDF, # Fairy -> heart
+                              0xE3: 0xD8} # Big magic -> small magic
+        new_prizes = [prize_replacements.get(prize, prize) for prize in new_prizes]
+
+    if world.retro[player]:
+        prize_replacements = {0xE1: 0xDA, #5 Arrows -> Blue Rupee
+                              0xE2: 0xDB} #10 Arrows -> Red Rupee
+        new_prizes = [prize_replacements.get(prize, prize) for prize in new_prizes]
+
+    # write tree pull prizes
+    world.prizes[player]['pull'] = [ new_prizes.pop(), new_prizes.pop(), new_prizes.pop() ]
+
+    # rupee crab prizes
+    world.prizes[player]['crab'] = [ new_prizes.pop(), new_prizes.pop() ]
+
+    # stunned enemy prize
+    world.prizes[player]['stun'] = new_prizes.pop()
+
+    # saved fish prize
+    world.prizes[player]['fish'] = new_prizes.pop()

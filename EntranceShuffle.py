@@ -7,7 +7,7 @@ from collections import defaultdict
 def link_entrances(world, player):
     invFlag = world.mode[player] == 'inverted'
     
-    Dungeon_Exits = Dungeon_Exits_Base.copy() if not invFlag else Inverted_Dungeon_Exits_Base.copy()
+    Dungeon_Exits = Dungeon_Exits_Base.copy()
     Cave_Exits = Cave_Exits_Base.copy()
     Old_Man_House = Old_Man_House_Base.copy()
     Cave_Three_Exits = Cave_Three_Exits_Base.copy()
@@ -2058,14 +2058,13 @@ Cave_Exits_Base = [['Elder House Exit (East)', 'Elder House Exit (West)'],
               ['Death Mountain Return Cave Exit (West)', 'Death Mountain Return Cave Exit (East)'],
               ['Fairy Ascension Cave Exit (Bottom)', 'Fairy Ascension Cave Exit (Top)'],
               ['Bumper Cave Exit (Top)', 'Bumper Cave Exit (Bottom)'],
-              ['Hookshot Cave Exit (South)', 'Hookshot Cave Exit (North)']]
+              ['Hookshot Cave Back Exit', 'Hookshot Cave Front Exit'],
+              ['Superbunny Cave Exit (Bottom)', 'Superbunny Cave Exit (Top)'],
+              ['Spiral Cave Exit (Top)', 'Spiral Cave Exit']]
 
-Cave_Exits_Base += [('Superbunny Cave Exit (Bottom)', 'Superbunny Cave Exit (Top)'),
-              ('Spiral Cave Exit (Top)', 'Spiral Cave Exit')]
 
-
-Cave_Three_Exits_Base = [('Spectacle Rock Cave Exit (Peak)', 'Spectacle Rock Cave Exit (Top)',
- 'Spectacle Rock Cave Exit'),
+Cave_Three_Exits_Base = [['Spectacle Rock Cave Exit (Peak)', 'Spectacle Rock Cave Exit (Top)',
+ 'Spectacle Rock Cave Exit'],
                     ['Paradox Cave Exit (Top)', 'Paradox Cave Exit (Middle)','Paradox Cave Exit (Bottom)']]
 
 
@@ -2387,20 +2386,6 @@ Inverted_DW_Dungeon_Entrances = ['Thieves Town',
 
 Inverted_LW_Dungeon_Entrances_Must_Exit = ['Desert Palace Entrance (East)']
 
-Inverted_Dungeon_Exits_Base = [['Desert Palace Exit (South)', 'Desert Palace Exit (West)', 'Desert Palace Exit (East)'],
-                 'Desert Palace Exit (North)',
-                 'Eastern Palace Exit',
-                 'Tower of Hera Exit',
-                 'Thieves Town Exit',
-                 'Skull Woods Final Section Exit',
-                 'Ice Palace Exit',
-                 'Misery Mire Exit',
-                 'Palace of Darkness Exit',
-                 'Swamp Palace Exit',
-                 'Agahnims Tower Exit',
-                 ['Turtle Rock Ledge Exit (East)',
-                     'Turtle Rock Exit (Front)',  'Turtle Rock Ledge Exit (West)', 'Turtle Rock Isolated Ledge Exit']]
-
 Inverted_LW_Entrances_Must_Exit = ['Death Mountain Return Cave (West)',
                                    'Two Brothers House (West)']
 
@@ -2718,6 +2703,10 @@ mandatory_connections = [('Links House S&Q', 'Links House'),
                          ('Fairy Ascension Cave Pots', 'Fairy Ascension Cave (Bottom)'),
                          ('Fairy Ascension Cave Drop', 'Fairy Ascension Cave (Drop)'),
                          ('Superbunny Cave Climb', 'Superbunny Cave (Top)'),
+                         ('Hookshot Cave Front to Middle', 'Hookshot Cave (Middle)'),
+                         ('Hookshot Cave Middle to Front', 'Hookshot Cave (Front)'),
+                         ('Hookshot Cave Middle to Back', 'Hookshot Cave (Back)'),
+                         ('Hookshot Cave Back to Middle', 'Hookshot Cave (Middle)'),
                          ('Ganon Drop', 'Bottom of Pyramid')
                          ]
 
@@ -2862,16 +2851,16 @@ default_connections = [('Waterfall of Wishing', 'Waterfall of Wishing'),
                        ('Dark Desert Hint', 'Dark Desert Hint'),
                        ('Dark Desert Fairy', 'Dark Desert Healer Fairy'),
                        ('Spike Cave', 'Spike Cave'),
-                       ('Hookshot Cave', 'Hookshot Cave'),
+                       ('Hookshot Cave', 'Hookshot Cave (Front)'),
                        ('Superbunny Cave (Top)', 'Superbunny Cave (Top)'),
                        ('Cave Shop (Dark Death Mountain)', 'Cave Shop (Dark Death Mountain)'),
                        ('Dark Death Mountain Fairy', 'Dark Death Mountain Healer Fairy'),
                        ('Superbunny Cave (Bottom)', 'Superbunny Cave (Bottom)'),
                        ('Superbunny Cave Exit (Top)', 'East Dark Death Mountain (Top)'),
                        ('Superbunny Cave Exit (Bottom)', 'East Dark Death Mountain (Bottom)'),
-                       ('Hookshot Cave Exit (South)', 'East Dark Death Mountain (Top)'),
-                       ('Hookshot Cave Exit (North)', 'Dark Death Mountain Floating Island'),
-                       ('Hookshot Cave Back Entrance', 'Hookshot Cave'),
+                       ('Hookshot Cave Front Exit', 'East Dark Death Mountain (Top)'),
+                       ('Hookshot Cave Back Exit', 'Dark Death Mountain Floating Island'),
+                       ('Hookshot Cave Back Entrance', 'Hookshot Cave (Back)'),
                        ('Mimic Cave', 'Mimic Cave'),
 
                        ('Pyramid Exit', 'Pyramid Exit Ledge')
@@ -3198,8 +3187,8 @@ exit_ids = {'Links House Exit': (0x01, 0x00),
             'Bumper Cave Exit (Bottom)': (0x16, 0x17),
             'Superbunny Cave Exit (Top)': (0x14, 0x15),
             'Superbunny Cave Exit (Bottom)': (0x13, 0x14),
-            'Hookshot Cave Exit (South)': (0x3A, 0x3B),
-            'Hookshot Cave Exit (North)': (0x3B, 0x3C),
+            'Hookshot Cave Front Exit': (0x3A, 0x3B),
+            'Hookshot Cave Back Exit': (0x3B, 0x3C),
             'Ganons Tower Exit': (0x37, 0x38),
             'Pyramid Exit': (0x36, 0x37),
             'Waterfall of Wishing': 0x5C,

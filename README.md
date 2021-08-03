@@ -6,7 +6,8 @@ See https://alttpr.com/ for more details on the normal randomizer.
 
 ### Trackers & Guides
 
-This is a very new mode of LTTPR so the tools and info is very limited. - There is an [OW Rando Cheat Sheet](https://zelda.codemann8.com/images/shared/ow-rando-reference-sheet.png) that shows all the transitions that exist and are candidates for shuffle.
+This is a very new mode of LTTPR so the tools and info is very limited.
+- There is an [OW Rando Cheat Sheet](https://zelda.codemann8.com/images/shared/ow-rando-reference-sheet.png) that shows all the transitions that exist and are candidates for shuffle.
 - There is OW tracking capability within the following trackers:
   - CodeTracker, an [EmoTracker](https://emotracker.net) package for LTTPR
   - [Community Tracker](https://alttptracker.dunka.net/)

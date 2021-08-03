@@ -25,11 +25,13 @@ from RoomData import create_rooms
 from Rules import set_rules
 from Dungeons import create_dungeons, fill_dungeons, fill_dungeons_restrictive
 from Fill import distribute_items_cutoff, distribute_items_staleness, distribute_items_restrictive, flood_items
-from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations
+from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops
 from Utils import output_path, parse_player_names
 
-__version__ = '0.4.0.12u'
+__version__ = '0.5.0.1-u'
+
+from source.classes.BabelFish import BabelFish
 
 
 class EnemizerError(RuntimeError):
@@ -61,7 +63,15 @@ def get_random_ganon_item(swordmode):
     return random.choice(options)
 
 
+def check_python_version():
+    import sys
+    version = sys.version_info
+    if version.major < 3 or version.minor < 7:
+        logging.warning(BabelFish().translate("cli","cli","old.python.version"), sys.version)
+
+
 def main(args, seed=None, fish=None):
+    check_python_version()
     if args.outputpath:
         os.makedirs(args.outputpath, exist_ok=True)
         output_path.cached_path = args.outputpath
@@ -95,6 +105,7 @@ def main(args, seed=None, fish=None):
     world.compassshuffle = args.compassshuffle.copy()
     world.keyshuffle = args.keyshuffle.copy()
     world.bigkeyshuffle = args.bigkeyshuffle.copy()
+    world.bomblogic = args.bomblogic.copy()
     world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
     world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
     world.crystals_ganon_orig = args.crystals_ganon.copy()
@@ -211,6 +222,8 @@ def main(args, seed=None, fish=None):
         else:
             lock_shop_locations(world, player)
 
+    for player in range(1, world.players + 1):
+        set_prize_drops(world, player)
 
     logger.info(world.fish.translate("cli","cli","placing.dungeon.prizes"))
 
@@ -275,7 +288,7 @@ def main(args, seed=None, fish=None):
             customize_shops(world, player)
     balance_money_progression(world)
 
-    if world.owShuffle[1] != 'vanilla' or world.owSwap[1] != 'vanilla':
+    if world.owShuffle[1] != 'vanilla' or world.owSwap[1] != 'vanilla' or str(world.seed).startswith('M'):
         outfilebase = f'OR_{args.outputname if args.outputname else world.seed}'
     else:
         outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
@@ -295,11 +308,11 @@ def main(args, seed=None, fish=None):
                 rom = JsonRom() if args.jsonout or use_enemizer else LocalRom(args.rom)
 
                 if use_enemizer and (args.enemizercli or not args.jsonout):
-                    base_patch = LocalRom(args.rom)  # update base2current.json (side effect)
+                    local_rom = LocalRom(args.rom)  # update base2current.json (side effect)
                     if args.rom and not(os.path.isfile(args.rom)):
                         raise RuntimeError("Could not find valid base rom for enemizing at expected path %s." % args.rom)
                     if os.path.exists(args.enemizercli):
-                        patch_enemizer(world, player, rom, args.rom, args.enemizercli, sprite_random_on_hit)
+                        patch_enemizer(world, player, rom, local_rom, args.enemizercli, sprite_random_on_hit)
                         enemized = True
                         if not args.jsonout:
                             rom = LocalRom.fromJsonRom(rom, args.rom, 0x400000)
@@ -409,6 +422,7 @@ def copy_world(world):
     ret.compassshuffle = world.compassshuffle.copy()
     ret.keyshuffle = world.keyshuffle.copy()
     ret.bigkeyshuffle = world.bigkeyshuffle.copy()
+    ret.bomblogic = world.bomblogic.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
@@ -431,6 +445,7 @@ def copy_world(world):
     ret.standardize_palettes = world.standardize_palettes.copy()
     ret.owswaps = world.owswaps.copy()
     ret.owflutespots = world.owflutespots.copy()
+    ret.prizes = world.prizes.copy()
 
     for player in range(1, world.players + 1):
         create_regions(ret, player)

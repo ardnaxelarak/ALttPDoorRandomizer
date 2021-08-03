@@ -37,7 +37,7 @@ Difficulty = namedtuple('Difficulty',
                         ['baseitems', 'bottles', 'bottle_count', 'same_bottle', 'progressiveshield',
                          'basicshield', 'progressivearmor', 'basicarmor', 'swordless', 'bombs_only',
                          'progressivesword', 'basicsword', 'basicbow', 'timedohko', 'timedother',
-                         'retro',
+                         'retro', 'bomblogic',
                          'extras', 'progressive_sword_limit', 'progressive_shield_limit',
                          'progressive_armor_limit', 'progressive_bottle_limit',
                          'progressive_bow_limit', 'heart_piece_limit', 'boss_heart_container_limit'])
@@ -62,6 +62,7 @@ difficulties = {
         timedohko = ['Green Clock'] * 25,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
         retro = ['Small Key (Universal)'] * 18 + ['Rupees (20)'] * 10,
+        bomblogic = ['Bomb Upgrade (+10)'] * 2,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 4,
         progressive_shield_limit = 3,
@@ -88,6 +89,7 @@ difficulties = {
         timedohko = ['Green Clock'] * 25,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
         retro = ['Small Key (Universal)'] * 13 + ['Rupees (5)'] * 15,
+        bomblogic = ['Bomb Upgrade (+10)'] * 2,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 3,
         progressive_shield_limit = 2,
@@ -114,6 +116,7 @@ difficulties = {
         timedohko = ['Green Clock'] * 20 + ['Red Clock'] * 5,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
         retro = ['Small Key (Universal)'] * 13 + ['Rupees (5)'] * 15,
+        bomblogic = ['Bomb Upgrade (+10)'] * 2,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 2,
         progressive_shield_limit = 1,
@@ -255,10 +258,10 @@ def generate_itempool(world, player):
 
     # set up item pool
     if world.custom:
-        (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_icon, lamps_needed_for_dark_rooms) = make_custom_item_pool(world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.retro[player], world.customitemarray)
+        (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_icon, lamps_needed_for_dark_rooms) = make_custom_item_pool(world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.retro[player], world.bomblogic[player], world.customitemarray)
         world.rupoor_cost = min(world.customitemarray[player]["rupoorcost"], 9999)
     else:
-        (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms) = get_pool_core(world.progressive, world.owShuffle[player], world.owSwap[player], world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.retro[player], world.doorShuffle[player], world.logic[player])
+        (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms) = get_pool_core(world.progressive, world.owShuffle[player], world.owSwap[player], world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.retro[player], world.bomblogic[player], world.doorShuffle[player], world.logic[player])
 
     if player in world.pool_adjustment.keys():
         amt = world.pool_adjustment[player]
@@ -297,7 +300,7 @@ def generate_itempool(world, player):
                 if item in ['Hammer', 'Fire Rod', 'Cane of Somaria', 'Cane of Byrna']:
                     if item not in possible_weapons:
                         possible_weapons.append(item)
-                if item in ['Bombs (10)']:
+                if not world.bomblogic[player] and item in ['Bombs (10)']:
                     if item not in possible_weapons and world.doorShuffle[player] != 'crossed':
                         possible_weapons.append(item)
             starting_weapon = random.choice(possible_weapons)
@@ -546,6 +549,18 @@ def set_up_shops(world, player):
             cap_shop.inventory[1] = None
         else:
             cap_shop.inventory[0] = None
+    if world.bomblogic[player]:
+        for item in world.itempool:
+            if item.name == 'Bomb Upgrade (+10)' and item.player == player:
+                item.advancement = True
+        if world.shopsanity[player]:
+            removals = [item for item in world.itempool if item.name == 'Bomb Upgrade (+5)' and item.player == player]
+            for remove in removals:
+                world.itempool.remove(remove)
+            world.itempool.append(ItemFactory('Rupees (50)', player)) # replace the bomb upgrade
+        else:
+            cap_shop = world.get_region('Capacity Upgrade', player).shop
+            cap_shop.inventory[0] = cap_shop.inventory[1]  # remove bomb capacity upgrades in bomblogic
 
 
 def customize_shops(world, player):
@@ -587,7 +602,7 @@ def customize_shops(world, player):
             shop.shopkeeper_config = shopkeeper
     # handle capacity upgrades - randomly choose a bomb bunch or arrow bunch to become capacity upgrades
     if world.difficulty[player] == 'normal':
-        if not found_bomb_upgrade and len(possible_replacements) > 0:
+        if not found_bomb_upgrade and len(possible_replacements) > 0 and not world.bomblogic[player]:
             choices = []
             for shop, idx, loc, item in possible_replacements:
                 if item.name in ['Bombs (3)', 'Bombs (10)']:
@@ -735,7 +750,7 @@ rupee_chart = {'Rupee (1)': 1, 'Rupees (5)': 5, 'Rupees (20)': 20, 'Rupees (50)'
                'Rupees (100)': 100, 'Rupees (300)': 300}
 
 
-def get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, treasure_hunt_total, timer, goal, mode, swords, retro, door_shuffle, logic):
+def get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, treasure_hunt_total, timer, goal, mode, swords, retro, bomblogic, door_shuffle, logic):
     pool = []
     placed_items = {}
     precollected_items = []
@@ -760,12 +775,6 @@ def get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, treasure_
         pool.remove('Pegasus Boots')
         pool.extend(['Rupees (20)'])
 
-    if owSwap in ['mixed', 'crossed'] and owShuffle == 'vanilla':
-        precollected_items.append('Bombs (3)')
-        precollected_items.append('Rupees (5)')
-        precollected_items.append('Rupees (5)')
-        precollected_items.append('Rupees (5)')
-
     if want_progressives():
         pool.extend(progressivegloves)
     else:
@@ -787,6 +796,11 @@ def get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, treasure_
 
     diff = difficulties[difficulty]
     pool.extend(diff.baseitems)
+
+    if bomblogic:
+        pool = [item.replace('Bomb Upgrade (+5)','Rupees (5)') for item in pool]
+        pool = [item.replace('Bomb Upgrade (+10)','Rupees (5)') for item in pool]
+        pool.extend(diff.bomblogic)
 
     # expert+ difficulties produce the same contents for
     # all bottles, since only one bottle is available
@@ -890,7 +904,7 @@ def get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, treasure_
         pool = [item.replace('Bomb Upgrade (+10)', 'Small Heart') for item in pool]
     return (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms)
 
-def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, swords, retro, customitemarray):
+def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, swords, retro, bomblogic, customitemarray):
     if isinstance(customitemarray,dict) and 1 in customitemarray:
         customitemarray = customitemarray[1]
     pool = []
@@ -1009,7 +1023,7 @@ def test():
                                         for door_shuffle in ['basic', 'crossed', 'vanilla']:
                                             for owShuffle in ['full', 'vanilla']:
                                                 for owSwap in ['mixed', 'vanilla']:
-                                                    out = get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, 30, timer, goal, mode, swords, retro, door_shuffle, logic)
+                                                    out = get_pool_core(progressive, owShuffle, owSwap, shuffle, difficulty, 30, timer, goal, mode, swords, retro, bomblogic, door_shuffle, logic)
                                                     count = len(out[0]) + len(out[1])
 
                                                     correct_count = total_items_to_place
@@ -1019,7 +1033,7 @@ def test():
                                                     if retro:
                                                         correct_count += 28
                                                     try:
-                                                        assert count == correct_count, "expected {0} items but found {1} items for {2}".format(correct_count, count, (progressive, shuffle, difficulty, timer, goal, mode, swords, retro))
+                                                        assert count == correct_count, "expected {0} items but found {1} items for {2}".format(correct_count, count, (progressive, shuffle, difficulty, timer, goal, mode, swords, retro, bomblogic))
                                                     except AssertionError as e:
                                                         print(e)
 

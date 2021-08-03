@@ -135,9 +135,9 @@ def roll_settings(weights):
     ret.ow_shuffle = overworld_shuffle if overworld_shuffle != 'none' else 'vanilla'
     overworld_swap = get_choice('overworld_swap')
     ret.ow_swap = overworld_swap if overworld_swap != 'none' else 'vanilla'
-    ret.ow_keepsimilar = get_choice('ow_keepsimilar')
-    overworld_flute = get_choice('overworld_flute')
-    ret.ow_swap = overworld_flute if overworld_flute != 'none' else 'vanilla'
+    ret.ow_keepsimilar = get_choice('overworld_keepsimilar')
+    overworld_flute = get_choice('flute_shuffle')
+    ret.ow_fluteshuffle = overworld_flute if overworld_flute != 'none' else 'vanilla'
     entrance_shuffle = get_choice('entrance_shuffle')
     ret.shuffle = entrance_shuffle if entrance_shuffle != 'none' else 'vanilla'
     door_shuffle = get_choice('door_shuffle')
@@ -185,6 +185,8 @@ def roll_settings(weights):
         ret.mode = 'open'
         ret.retro = True
     ret.retro = get_choice('retro') == 'on'  # this overrides world_state if used
+
+    ret.bomblogic = get_choice('bomblogic') == 'on'
 
     ret.hints = get_choice('hints') == 'on'
 
@@ -239,6 +241,7 @@ def roll_settings(weights):
         ret.sprite = get_choice('sprite', romweights)
         ret.disablemusic = get_choice('disablemusic', romweights) == 'on'
         ret.quickswap = get_choice('quickswap', romweights) == 'on'
+        ret.reduce_flashing = get_choice('reduce_flashing', romweights) == 'on'
         ret.fastmenu = get_choice('menuspeed', romweights)
         ret.heartcolor = get_choice('heartcolor', romweights)
         ret.heartbeep = get_choice('heartbeep', romweights)

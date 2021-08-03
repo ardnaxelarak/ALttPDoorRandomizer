@@ -97,6 +97,7 @@ def parse_cli(argv, no_defaults=False):
                          'ow_swap', 'ow_keepsimilar', 'ow_fluteshuffle', 'shuffle', 'door_shuffle',
                          'intensity', 'crystals_ganon', 'crystals_gt', 'ganon_item', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
+                         'bomblogic',
                          'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'pseudoboots',
                          'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
@@ -127,6 +128,7 @@ def parse_settings():
     settings = {
         "lang": "en",
         "retro": False,
+        "bomblogic": False,
         "mode": "open",
         "logic": "noglitches",
         "goal": "ganon",
