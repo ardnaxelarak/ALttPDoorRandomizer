@@ -341,23 +341,27 @@ OWNewDestination:
     sep #$30 : lda OWOppSlotOffset,y : !add $04 : asl : and #$7f : sta $700
     
     ; crossed OW shuffle
-    lda.l OWMode+1 : and #$ff : cmp #$02 : bne .return
-        ldx $05 : lda.l OWTileWorldAssoc,x : sta.l $7ef3ca ; change world
+    LDA.l OWMode+1 : AND.b #!FLAG_OW_CROSSED : beq .return
+        ldx $05 : lda.l OWTileWorldAssoc,x : cmp.l $7ef3ca : beq .return
+            sta.l $7ef3ca ; change world
+            lda #$38 : sta $012f ; play sfx - #$3b is an alternative
 
-        ; toggle bunny mode
-        lda $7ef357 : bne .nobunny
-        lda.l InvertedMode : bne .inverted
-            lda $7ef3ca : and.b #$40 : bra +
-            .inverted lda $7ef3ca : and.b #$40 : eor #$40
-        + cmp #$40 : bne .nobunny
-            ; turn into bunny
-            lda $5d : cmp #$17 : beq .return
-            lda #$17 : sta $5d
-            lda #$01 : sta $2e0
-            bra .return
-        .nobunny
-        lda $5d : cmp #$17 : bne .return
-        stz $5d : stz $2e0
+            ; toggle bunny mode
+            + lda $7ef357 : bne .nobunny
+            lda.l InvertedMode : bne .inverted
+                lda $7ef3ca : and.b #$40 : bra +
+                .inverted lda $7ef3ca : and.b #$40 : eor #$40
+            + cmp #$40 : bne .nobunny
+                ; turn into bunny
+                lda $5d : cmp #$04 : beq + ; if swimming, continue
+                    lda #$17 : sta $5d
+                + lda #$01 : sta $02e0 : sta $56
+                bra .return
+
+            .nobunny
+            lda $5d : cmp #$17 : bne + ; retain current state unless bunny
+                stz $5d
+            + stz $02e0 : stz $56
 
     .return
     lda $05 : sta $8a

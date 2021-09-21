@@ -119,14 +119,20 @@
       "full"
     ]
   },
-  "ow_swap": {
+  "ow_crossed": {
     "choices": [
-      "vanilla",
-      "mixed",
-      "crossed"
+      "none",
+      "polar",
+      "grouped",
+      "limited",
+      "chaos"
     ]
   },
   "ow_keepsimilar": {
+    "action": "store_true",
+    "type": "bool"
+  },
+  "ow_mixed": {
     "action": "store_true",
     "type": "bool"
   },
@@ -145,10 +151,6 @@
       "full",
       "crossed",
       "insanity",
-      "restricted_legacy",
-      "full_legacy",
-      "madness_legacy",
-      "insanity_legacy",
       "dungeonsfull",
       "dungeonssimple"
     ]
@@ -266,6 +268,10 @@
     "action": "store_true",
     "type": "bool"
   },
+  "shuffle_sfx": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "mapshuffle": {
     "action": "store_true",
     "type": "bool"
@@ -287,7 +293,7 @@
     "type": "bool",
     "help": "suppress"
   },
-  "bomblogic": {
+  "bombbag": {
     "action": "store_true",
     "type": "bool"
   },

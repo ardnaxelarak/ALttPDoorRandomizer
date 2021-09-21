@@ -9,21 +9,19 @@ See https://alttpr.com/ for more details on the normal randomizer.
 This is a very new mode of LTTPR so the tools and info is very limited.
 - There is an [OW Rando Cheat Sheet](https://zelda.codemann8.com/images/shared/ow-rando-reference-sheet.png) that shows all the transitions that exist and are candidates for shuffle.
 - There is OW tracking capability within the following trackers:
-  - CodeTracker, an [EmoTracker](https://emotracker.net) package for LTTPR
   - [Community Tracker](https://alttptracker.dunka.net/)
+  - CodeTracker, an [EmoTracker](https://emotracker.net) package for LTTPR
 - There is an [OW OWG Reference Sheet](https://zelda.codemann8.com/images/shared/ow-owg-reference-sheet.png) that shows all the in-logic places where boots/mirror clips and fake flippers are expected from the player.
 
 # Known Issues
-(Updated 2021-06-23)
+(Updated 2021-08-26)
 
 ### If you want to playtest this, know these things:
 - Big Red Bomb may require bomb duping as ledge drops may be in the way of your path to the Pyramid Fairy crack
-- Do NOT grab the Frogsmith until you have seen the Blacksmith location. Doing so may prevent you from continuing in your save file.
 - If you fake flipper, beware of transitioning south. You could end up at the top of the waterfall in the southeast of either world. If you mistakenly drop down, it is important to NOT make any other movements and S+Q immediately when the game allows you to (might take several seconds, the game has to scroll back to the original point of water entry) or there will be a hardlock. Falling from the waterfall is avoidable but it is super easy to do as it is super close to the transition.
-- In Crossed OW Tile Swap, there are some interesting bunny water-walk situations that can occur, these are mean to be out-of-logic but beware of logic bugs around this area.
+- In Crossed OW, there are some interesting bunny swimming situations that can occur, these are meant to be out-of-logic but beware of logic bugs around this area. But also, hardlocks can occur; if you take damage, be sure to S+Q immediately before moving in any direction, or you may get an infinite screen wrap glitch.
 
 ### Known bugs:
-- ~~In Mixed OW Tile Swap, Smith and Stumpy have issues when their tiles are swapped. Progression cannot be found on them when these tiles are swapped~~ (Fixed in 0.1.6.4)
 - Screens that loop on itself and also have free-standing items, the sprites are duplicated and can cause item duplication
 - When OWG are performed to enter mega-tile screens (large OW screens), there is a small chance that an incorrect VRAM reference value causes the map graphics to offset in increments of 16 pixels
 
@@ -67,31 +65,57 @@ OW Transitions are shuffled, but both worlds will have a matching layout.
 
 OW Transitions are shuffled within each world separately.
 
-## Overworld Tile Swap (--ow_swap)
+## Crossed Options (--ow_crossed)
 
-### Vanilla
+This allows OW connections to be shuffled cross-world.
 
-OW tiles remain in their original worlds.
+Polar and Grouped both are guaranteed to result in two separated planes of tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a LW tile that was previously unreachable
 
-### Mixed
+Limited and Chaos are not bound to follow a two-plane framework. This means that it could be possible to travel on foot to every tile without entering a normal portal.
 
-OW tiles are randomly chosen to become a part of the opposite world
+See each option to get more details on the differences.
 
-### Crossed
+### None
 
-OW tiles remain in their original world, but transitions can now be travel cross-world.
+Transitions will remain same-world.
 
-## Visual Representation of Main OW Shuffle Settings
+### Polar
 
-![OW Shuffle Settings Combination](https://zelda.codemann8.com/images/shared/ow-modes.gif)
+Only effective if Mixed/Tile Swap is enabled. Enabling Polar preserves the original/vanilla connections even when tiles are swapped/mixed. This results in a completely vanilla overworld, except that some tiles will transform Link to a Bunny (as per Mixed swapping some tiles to the other world). This offers an interesting twist on Mixed where you have a pre-conditioned knowledge of the terrain you will encounter, but not necessarily be able to do what you need to do there. (see Tile Swap/Mixed section for more details)
+
+### Grouped
+
+This option shuffles connections cross-world in the same manner as Tile Swap/Mixed, the connections leading in and coming out of a group of tiles are crossed. Unlike Polar, this uses a different set of tile groups as a basis of crossing connections, albeit the same rule govern which groups of tiles must cross together (see Tile Swap/Mixed for more details)
+
+### Limited
+
+Every transition independently is a candidate to be chosen as a cross-world connection, however only 9 transitions become crossed (in each world). This option abides by the Keep Similar Edges Together option and will guarantee same effect on all edges in a Similar Edge group if enabled. If a Similar Edge group is chosen from the pool of candidates, it only counts as one portal, not multiple.
+
+Note: Only parallel connections (a connection that also exists in the opposite world) are considered for cross-world connections, which means that the same connection in the opposite world will also connect cross-world.
+
+Motive: Why 9 connections? To imitate the effect of the 9 standard portals that exist.
+
+### Chaos
+
+Same as Limited, except that there is no limit to the number of cross-world connections that are made. Each transition has an equal 50/50 chance of being a crossed connection.
 
 ## Keep Similar Edges Together (--ow_keepsimilar)
 
 This keeps similar edge transitions together. ie. The 2 west edges of Potion Shop will be paired to another set of two similar edges
 
+Note: This affects OW Layout Shuffle mostly, but also affects Limited and Chaos modes in Crossed OW.
+
+## Tile Swap / Mixed Overworld (--ow_mixed)
+
+OW tiles are randomly chosen to become a part of the opposite world. When on the Overworld, there will be an L or D in the upper left corner, indicating which world you are currently in. Mirroring still works the same, you must be in the DW to mirror to the LW.
+
+Note: Tiles are put into groups that must be shuffled together when certain settings are enabled. For instance, if ER is disabled, then any tiles that have a connector cave that leads to another tile, those tiles must swap together; (an exception to this is the Old Man Rescue cave which has been modified similar to how Inverted modifies it, Old Man Rescue is ALWAYS accessible from the Light World)
+
 ## Flute Shuffle (--ow_fluteshuffle)
 
 When enabled, new flute spots are generated and gives the player the option to cancel out of the flute menu by pressing X.
+
+Note: Desert Teleporter Ledge is always guaranteed to be chosen. One of the three Mountain tiles are guaranteed if OW Layout Shuffle is set to Vanilla.
 
 ### Vanilla
 
@@ -136,16 +160,22 @@ Show the help message and exit.
 For specifying the overworld layout shuffle you want as above. (default: vanilla)
 
 ```
---ow_swap <mode>
+--ow_crossed <mode>
 ```
 
-For specifying the overworld tile swap you want as above. (default: vanilla)
+For specifying the type of cross-world connections  you want on the overworld
 
 ```
 --ow_keepsimilar
 ```
 
 This keeps similar edge transitions paired together with other pairs of transitions
+
+```
+--ow_mixed
+```
+
+This gives each OW tile a random chance to be swapped to the opposite world
 
 ```
 --ow_fluteshuffle <mode>

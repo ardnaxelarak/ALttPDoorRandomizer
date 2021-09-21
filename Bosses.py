@@ -192,16 +192,16 @@ def place_bosses(world, player):
 
         if world.boss_shuffle[player] == "simple":  # vanilla bosses shuffled
             bosses = placeable_bosses + ['Armos Knights', 'Lanmolas', 'Moldorm']
-        else: # all bosses present, the three duplicates chosen at random
-            bosses = all_bosses + [random.choice(placeable_bosses) for _ in range(3)]
+        else:  # all bosses present, the three duplicates chosen at random
+            bosses = all_bosses + random.sample(placeable_bosses, 3)
 
         logging.getLogger('').debug('Bosses chosen %s', bosses)
 
-        random.shuffle(bosses)
         for [loc, level] in boss_locations:
             loc_text = loc + (' ('+level+')' if level else '')
-            boss = next((b for b in bosses if can_place_boss(world, player, b, loc, level)), None)
-            if not boss:
+            try:
+                boss = random.choice([b for b in bosses if can_place_boss(world, player, b, loc, level)])
+            except IndexError:
                 raise FillError('Could not place boss for location %s' % loc_text)
             bosses.remove(boss)
 

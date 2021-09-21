@@ -3,6 +3,7 @@
     "adjust.nobgm": "Disable Music & MSU-1",
     "adjust.quickswap": "L/R Quickswapping",
     "adjust.reduce_flashing": "Reduce Flashing",
+    "adjust.shuffle_sfx": "Shuffle Sound Effects",
 
     "adjust.heartcolor": "Heart Color",
     "adjust.heartcolor.red": "Red",
@@ -116,12 +117,14 @@
     "randomizer.overworld.overworldshuffle.parallel": "Parallel",
     "randomizer.overworld.overworldshuffle.full": "Full",
 
-    "randomizer.overworld.overworldswap": "Tile Swap",
-    "randomizer.overworld.overworldswap.vanilla": "Vanilla",
-    "randomizer.overworld.overworldswap.mixed": "Mixed",
-    "randomizer.overworld.overworldswap.crossed": "Crossed",
-
+    "randomizer.overworld.crossed": "Crossed",
+    "randomizer.overworld.crossed.none": "None",
+    "randomizer.overworld.crossed.polar": "Polar",
+    "randomizer.overworld.crossed.grouped": "Grouped",
+    "randomizer.overworld.crossed.limited": "Limited",
+    "randomizer.overworld.crossed.chaos": "Chaos",
     "randomizer.overworld.keepsimilar": "Keep Similar Edges Together",
+    "randomizer.overworld.mixed": "Tile Swap (Mixed)",
 
     "randomizer.overworld.overworldflute": "Flute Shuffle",
     "randomizer.overworld.overworldflute.vanilla": "Vanilla",
@@ -151,6 +154,7 @@
     "randomizer.gameoptions.nobgm": "Disable Music & MSU-1",
     "randomizer.gameoptions.quickswap": "L/R Quickswapping",
     "randomizer.gameoptions.reduce_flashing": "Reduce Flashing",
+    "randomizer.gameoptions.shuffle_sfx": "Shuffle Sound Effects",
 
     "randomizer.gameoptions.heartcolor": "Heart Color",
     "randomizer.gameoptions.heartcolor.red": "Red",
@@ -207,7 +211,7 @@
     "randomizer.item.hints": "Include Helpful Hints",
     "randomizer.item.retro": "Retro mode (universal keys)",
     "randomizer.item.pseudoboots": "Start with Pseudo Boots",
-    "randomizer.item.bomblogic": "Bomblogic",
+    "randomizer.item.bombbag": "Bombbag",
 
     "randomizer.item.worldstate": "World State",
     "randomizer.item.worldstate.standard": "Standard",

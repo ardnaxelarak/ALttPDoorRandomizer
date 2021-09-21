@@ -14,7 +14,7 @@ In the vanilla, dungeonssimple, and dungeonsfull shuffles, the following ratios 
 8 hints for valuable items.
 7 junk hints.
 
-In the simple, restricted, and restricted legacy shuffles, these are the ratios:
+In the simple, restricted shuffles, these are the ratios:
 
 2 hints for inconvenient entrances.
 1 hint for an inconvenient dungeon entrance.

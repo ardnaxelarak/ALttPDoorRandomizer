@@ -242,3 +242,10 @@ Ganons Tower - Mini Helmasaur Room - Right: Nothing
 Ganons Tower - Pre-Moldorm Chest: Small Key (Ganons Tower)
 Ganons Tower - Validation Chest: Nothing
 Ganon: Triforce
+
+# set Overworld connections (lines starting with $, separate edges with =)
+!owShuffle: parallel
+#!owMixed: true # Mixed OW not supported yet
+!owCrossed: none
+!owKeepSimilar: true
+$Links House NE = Kakariko Village SE

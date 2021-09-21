@@ -1,5 +1,50 @@
 # Changelog
 
+### 0.1.9.1
+- Fixed logic issue with leaving IP entrance not requiring flippers
+- ~~Merged DR v0.5.1.1 - Map Indicator Fix/Boss Shuffle Bias/Shop Hints~~
+
+### 0.1.9.0
+- Expanded Crossed OW to four separate options, see Readme for details
+- Crossed OW will now play a short SFX when changing worlds
+- Improved Link/Bunny state in Crossed OW
+- Fixed issue with TR Pegs when fluting directly from an area with hammerpegs
+- Updated OW GUI layout
+
+### 0.1.8.2
+- Fixed issue with game crashing on using Flute
+- Fixed issues with Link/Bunny state in Crossed OW
+- Fixed issue with Standard+Parallel not using vanilla connections for Escape
+- Fixed issue with Mystery for OW boolean options
+- ~~Merged DR v0.5.1.0 - Major Keylogic Update~~
+
+### 0.1.8.1
+- Fixed issue with activating flute in DW (OW Mixed)
+- Fixed issue with Parallel+Crossed not generating
+- Fixed issue with Standard not generating
+- Fixed issue with Swordless not generating
+- Fixed logic for Graveyard Ledge and Kings Tomb
+
+### 0.1.8.0
+- Moved Crossed to its own checkbox option
+- Removed Legacy ER shuffles
+- Added OW Shuffle support for Plando module (needs user testing)
+- Fixed issue with Sanc start at TR as bunny when it is LW
+- Fixed issue with Pyramid Hole not getting shuffled
+- ~~Merged DR v0.5.0.3 - Minor DR fixes~~
+
+### 0.1.7.4
+- Fixed issue with Mixed OW failing to generate when HC/Pyramid is swapped
+- Various fixes to improve generation rates for Mixed OW Shuffle
+- ~~Merged DR v0.5.0.2 - Shuffle SFX~~
+
+### 0.1.7.3
+- Fixed minor issue with ambient SFX stopping and starting on OW screen load
+- MSU-1 changed to play LW2 (track 60) when Aga1 is killed instead of ped pull
+- Added dynamic flute exits for all LW OW regions
+- Improved spoiler log playthru pathing accuracy by including flute routing
+- Fixed issue with generating a filename for vanilla OW settings
+
 ### 0.1.7.2
 - Fixed music algorithm to play correct track in OW Shuffle
 - Removed convenient portal on WDM in OW Layout Shuffle
@@ -11,7 +56,7 @@
 
 ### 0.1.7.0
 - Expanded new DR bomb logic to all modes (bomb usage in logic only if there is an unlimited supply of bombs available)
-- ~~Merged DR v0.5.0.1 - Bomblogic mode / Enemizer fixes~~
+- ~~Merged DR v0.5.0.1 - Bombbag mode / Enemizer fixes~~
 
 ### 0.1.6.9
 - ~~Merged DR v0.4.0.12 - Secure random update / Credits fix~~

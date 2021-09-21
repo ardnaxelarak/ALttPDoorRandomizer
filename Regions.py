@@ -1,6 +1,6 @@
 import collections
 from Items import ItemFactory
-from BaseClasses import Region, Location, Entrance, RegionType, Shop, ShopType
+from BaseClasses import Region, Location, Entrance, RegionType, Terrain, Shop, ShopType
 
 
 def create_regions(world, player):
@@ -30,7 +30,7 @@ def create_regions(world, player):
         create_lw_region(player, 'Mountain Entry Entrance', None, ['Mountain Entry Entrance Rock (East)', 'Mountain Entry Entrance Ledge Drop', 'Old Man Cave (West)', 'Bumper Cave Entry Mirror Spot']),
         create_lw_region(player, 'Mountain Entry Ledge', None, ['Mountain Entry Ledge Drop', 'Death Mountain Return Cave (West)', 'Bumper Cave Ledge Mirror Spot']),
         create_lw_region(player, 'Zora Waterfall Area', None, ['Zora Waterfall Water Entry', 'Catfish Mirror Spot', 'Zora Waterfall SE', 'Zora Waterfall NE']),
-        create_lw_region(player, 'Zora Waterfall Water', None, ['Waterfall of Wishing Cave Entry', 'Zora Waterfall Landing', 'Zora Whirlpool']),
+        create_lw_region(player, 'Zora Waterfall Water', None, ['Waterfall of Wishing Cave Entry', 'Zora Waterfall Landing', 'Zora Whirlpool'], Terrain.Water),
         create_lw_region(player, 'Waterfall of Wishing Cave', None, ['Zora Waterfall Water Drop', 'Waterfall of Wishing']),
         create_lw_region(player, 'Zoras Domain', ['King Zora', 'Zora\'s Ledge'], ['Zoras Domain SW']),
         create_lw_region(player, 'Lost Woods Pass West Area', None, ['Skull Woods Pass West Mirror Spot', 'Lost Woods Pass NW', 'Lost Woods Pass SW']),
@@ -45,13 +45,13 @@ def create_regions(world, player):
         create_lw_region(player, 'Kings Grave Area', None, ['Kings Grave Inner Rocks', 'Kings Grave', 'Dark Graveyard Grave Mirror Spot']),
         create_lw_region(player, 'River Bend Area', None, ['North Fairy Cave Drop', 'River Bend Water Drop', 'North Fairy Cave', 'Qirn Jump Mirror Spot', 'River Bend WC', 'River Bend SW']),
         create_lw_region(player, 'River Bend East Bank', None, ['River Bend East Water Drop', 'Qirn Jump East Mirror Spot', 'River Bend SE', 'River Bend EC', 'River Bend ES']),
-        create_lw_region(player, 'River Bend Water', None, ['River Bend West Pier', 'River Bend East Pier', 'River Bend EN', 'River Bend SC', 'River Bend Whirlpool']),
+        create_lw_region(player, 'River Bend Water', None, ['River Bend West Pier', 'River Bend East Pier', 'River Bend EN', 'River Bend SC', 'River Bend Whirlpool'], Terrain.Water),
         create_lw_region(player, 'Potion Shop Area', None, ['Potion Shop Water Drop', 'Potion Shop Rock (South)', 'Potion Shop', 'Dark Witch Mirror Spot', 'Potion Shop WC', 'Potion Shop WS']),
         create_lw_region(player, 'Potion Shop Northeast', None, ['Potion Shop Northeast Water Drop', 'Potion Shop Rock (North)', 'Dark Witch Northeast Mirror Spot', 'Potion Shop EC']),
-        create_lw_region(player, 'Potion Shop Water', None, ['Potion Shop WN', 'Potion Shop EN']),
+        create_lw_region(player, 'Potion Shop Water', None, ['Potion Shop WN', 'Potion Shop EN'], Terrain.Water),
         create_lw_region(player, 'Zora Approach Area', None, ['Zora Approach Rocks (West)', 'Zora Approach Bottom Ledge Drop', 'Zora Approach Water Drop', 'Catfish Approach Mirror Spot', 'Zora Approach WC']),
         create_lw_region(player, 'Zora Approach Ledge', None, ['Zora Approach Rocks (East)', 'Zora Approach Ledge Drop', 'Catfish Approach Ledge Mirror Spot', 'Zora Approach NE']),
-        create_lw_region(player, 'Zora Approach Water', None, ['Zora Approach WN']),
+        create_lw_region(player, 'Zora Approach Water', None, ['Zora Approach WN'], Terrain.Water),
         create_lw_region(player, 'Kakariko Area', ['Bottle Merchant'], ['Kakariko Southwest Bush (North)', 'Kakariko Yard Bush (South)', 'Kakariko Well Drop', 'Kakariko Well Cave', 'Blinds Hideout',
                                                     'Elder House (West)', 'Elder House (East)', 'Snitch Lady (West)', 'Snitch Lady (East)', 'Chicken House', 'Sick Kids House',
                                                     'Kakariko Shop', 'Tavern (Front)', 'Tavern North', 'Village of Outcasts Mirror Spot', 'Kakariko NW', 'Kakariko NC', 'Kakariko NE', 'Kakariko ES', 'Kakariko SE']),
@@ -66,7 +66,7 @@ def create_regions(world, player):
         create_lw_region(player, 'Hyrule Castle East Entry', None, ['Hyrule Castle Outer East Rock', 'Pyramid Entry Mirror Spot', 'Hyrule Castle ES']),
         create_lw_region(player, 'Wooden Bridge Area', None, ['Wooden Bridge Bush (South)', 'Wooden Bridge Water Drop', 'Broken Bridge West Mirror Spot', 'Broken Bridge East Mirror Spot', 'Wooden Bridge NW', 'Wooden Bridge SW']),
         create_lw_region(player, 'Wooden Bridge Northeast', None, ['Wooden Bridge Bush (North)', 'Wooden Bridge Northeast Water Drop', 'Broken Bridge Northeast Mirror Spot', 'Wooden Bridge NE']),
-        create_lw_region(player, 'Wooden Bridge Water', None, ['Wooden Bridge NC']),
+        create_lw_region(player, 'Wooden Bridge Water', None, ['Wooden Bridge NC'], Terrain.Water),
         create_lw_region(player, 'Eastern Palace Area', None, ['Sahasrahlas Hut', 'Eastern Palace', 'Palace of Darkness Mirror Spot', 'Eastern Palace SW', 'Eastern Palace SE']),
         create_lw_region(player, 'Eastern Cliff', None, ['Sand Dunes Ledge Drop', 'Stone Bridge East Ledge Drop', 'Tree Line Ledge Drop', 'Eastern Palace Ledge Drop']),
         create_lw_region(player, 'Blacksmith Area', None, ['Blacksmiths Hut', 'Bat Cave Cave', 'Bat Cave Ledge Peg', 'Hammer Pegs Mirror Spot', 'Hammer Pegs Entry Mirror Spot', 'Blacksmith WS']),
@@ -79,13 +79,13 @@ def create_regions(world, player):
         create_lw_region(player, 'Flute Boy Area', ['Flute Spot'], ['Stumpy Mirror Spot', 'Flute Boy SC']),
         create_lw_region(player, 'Flute Boy Pass', None, ['Stumpy Pass Mirror Spot', 'Flute Boy WS', 'Flute Boy SW']),
         create_lw_region(player, 'Central Bonk Rocks Area', None, ['Bonk Fairy (Light)', 'Dark Bonk Rocks Mirror Spot', 'Central Bonk Rocks NW', 'Central Bonk Rocks SW', 'Central Bonk Rocks EN', 'Central Bonk Rocks EC', 'Central Bonk Rocks ES']),
-        create_lw_region(player, 'Links House Area', None, ['Links House', 'Big Bomb Shop Mirror Spot', 'Links House NE', 'Links House WN', 'Links House WC', 'Links House WS', 'Links House SC', 'Links House ES', 'Flute Away']),
+        create_lw_region(player, 'Links House Area', None, ['Links House', 'Big Bomb Shop Mirror Spot', 'Links House NE', 'Links House WN', 'Links House WC', 'Links House WS', 'Links House SC', 'Links House ES']),
         create_lw_region(player, 'Stone Bridge Area', None, ['Hammer Bridge North Mirror Spot', 'Hammer Bridge South Mirror Spot', 'Stone Bridge NC', 'Stone Bridge EN', 'Stone Bridge WS', 'Stone Bridge SC']),
-        create_lw_region(player, 'Stone Bridge Water', None, ['Dark Hobo Mirror Spot', 'Stone Bridge WC', 'Stone Bridge EC']),
+        create_lw_region(player, 'Stone Bridge Water', None, ['Dark Hobo Mirror Spot', 'Stone Bridge WC', 'Stone Bridge EC'], Terrain.Water),
         create_lw_region(player, 'Hobo Bridge', ['Hobo'], ['Hobo EC']),
         create_lw_region(player, 'Central Cliffs', None, ['Central Bonk Rocks Cliff Ledge Drop', 'Links House Cliff Ledge Drop', 'Stone Bridge Cliff Ledge Drop', 'Lake Hylia Area Cliff Ledge Drop', 'Lake Hylia Island FAWT Ledge Drop', 'Stone Bridge EC Cliff Water Drop', 'Tree Line WC Cliff Water Drop', 'C Whirlpool Outer Cliff Ledge Drop', 'C Whirlpool Cliff Ledge Drop', 'South Teleporter Cliff Ledge Drop', 'Statues Cliff Ledge Drop']),
         create_lw_region(player, 'Tree Line Area', None, ['Lake Hylia Fairy', 'Dark Tree Line Mirror Spot', 'Tree Line WN', 'Tree Line NW', 'Tree Line SE']),
-        create_lw_region(player, 'Tree Line Water', None, ['Tree Line WC', 'Tree Line SC']),
+        create_lw_region(player, 'Tree Line Water', None, ['Tree Line WC', 'Tree Line SC'], Terrain.Water),
         create_lw_region(player, 'Eastern Nook Area', None, ['Long Fairy Cave', 'Darkness Nook Mirror Spot', 'East Hyrule Teleporter', 'Eastern Nook NE']),
         create_lw_region(player, 'Desert Area', None, ['Desert Palace Statue Move', 'Checkerboard Ledge Approach', 'Aginahs Cave', 'Misery Mire Mirror Spot', 'Desert ES']),
         create_lw_region(player, 'Desert Ledge', ['Desert Ledge'], ['Desert Ledge Outer Rocks', 'Desert Ledge Drop', 'Desert Palace Entrance (West)', 'Misery Mire Ledge Mirror Spot']),
@@ -100,16 +100,16 @@ def create_regions(world, player):
         create_lw_region(player, 'Flute Boy Bush Entry', None, ['Flute Boy Bush (North)', 'Stumpy Bush Entry Mirror Spot', 'Flute Boy Approach NC']),
         create_lw_region(player, 'Cave 45 Ledge', None, ['Cave 45 Inverted Leave', 'Cave 45 Ledge Drop', 'Cave 45']),
         create_lw_region(player, 'C Whirlpool Area', None, ['C Whirlpool Rock (Bottom)', 'C Whirlpool Water Entry', 'Dark C Whirlpool Mirror Spot', 'South Hyrule Teleporter', 'C Whirlpool EN', 'C Whirlpool ES', 'C Whirlpool SC']),
-        create_lw_region(player, 'C Whirlpool Water', None, ['C Whirlpool Landing', 'C Whirlpool', 'C Whirlpool EC']),
+        create_lw_region(player, 'C Whirlpool Water', None, ['C Whirlpool Landing', 'C Whirlpool', 'C Whirlpool EC'], Terrain.Water),
         create_lw_region(player, 'C Whirlpool Outer Area', None, ['C Whirlpool Rock (Top)', 'Dark C Whirlpool Outer Mirror Spot', 'C Whirlpool WC', 'C Whirlpool NW']),
         create_lw_region(player, 'Statues Area', None, ['Statues Water Entry', 'Light Hype Fairy', 'Hype Cave Mirror Spot', 'Statues NC', 'Statues WN', 'Statues WS', 'Statues SC']),
-        create_lw_region(player, 'Statues Water', None, ['Statues Landing', 'Statues WC']),
+        create_lw_region(player, 'Statues Water', None, ['Statues Landing', 'Statues WC'], Terrain.Water),
         create_lw_region(player, 'Lake Hylia Area', None, ['Lake Hylia Water Drop', 'Lake Hylia Fortune Teller', 'Cave Shop (Lake Hylia)', 'Ice Lake Mirror Spot', 'Lake Hylia NW']),
         create_lw_region(player, 'Lake Hylia South Shore', None, ['Lake Hylia South Water Drop', 'Mini Moldorm Cave', 'Ice Lake Southwest Mirror Spot', 'Ice Lake Southeast Mirror Spot', 'Lake Hylia WS', 'Lake Hylia ES']),
         create_lw_region(player, 'Lake Hylia Northeast Bank', None, ['Lake Hylia Northeast Water Drop', 'Ice Lake Northeast Mirror Spot', 'Lake Hylia NE']),
         create_lw_region(player, 'Lake Hylia Central Island', None, ['Lake Hylia Central Water Drop', 'Capacity Upgrade', 'Ice Palace Mirror Spot', 'Lake Hylia Teleporter']),
         create_lw_region(player, 'Lake Hylia Island', ['Lake Hylia Island'], ['Lake Hylia Island Water Drop']),
-        create_lw_region(player, 'Lake Hylia Water', None, ['Lake Hylia Central Island Pier', 'Lake Hylia Island Pier', 'Lake Hylia West Pier', 'Lake Hylia East Pier', 'Lake Hylia NC', 'Lake Hylia EC', 'Lake Hylia Whirlpool']),
+        create_lw_region(player, 'Lake Hylia Water', None, ['Lake Hylia Central Island Pier', 'Lake Hylia Island Pier', 'Lake Hylia West Pier', 'Lake Hylia East Pier', 'Lake Hylia NC', 'Lake Hylia EC', 'Lake Hylia Whirlpool'], Terrain.Water),
         create_lw_region(player, 'Ice Cave Area', None, ['Ice Rod Cave', 'Good Bee Cave', '20 Rupee Cave', 'Shopping Mall Mirror Spot', 'Ice Cave SE', 'Ice Cave SW']),
         create_lw_region(player, 'Desert Pass Area', ['Purple Chest'], ['Desert Pass Ladder (South)', 'Desert Fairy', '50 Rupee Cave', 'Swamp Nook Mirror Spot', 'Desert Pass WS', 'Desert Pass EC', 'Desert Pass Rocks (North)']),
         create_lw_region(player, 'Desert Pass Southeast', None, ['Desert Pass Rocks (South)', 'Swamp Nook Southeast Mirror Spot', 'Desert Pass ES']),
@@ -117,8 +117,8 @@ def create_regions(world, player):
         create_lw_region(player, 'Dam Area', ['Sunken Treasure'], ['Dam', 'Swamp Mirror Spot', 'Dam WC', 'Dam WS', 'Dam NC', 'Dam EC']),
         create_lw_region(player, 'South Pass Area', None, ['Dark South Pass Mirror Spot', 'South Pass WC', 'South Pass NC', 'South Pass ES']),
         create_lw_region(player, 'Octoballoon Area', None, ['Octoballoon Water Drop', 'Bomber Corner Mirror Spot', 'Octoballoon WS', 'Octoballoon NE']),
-        create_lw_region(player, 'Octoballoon Water', None, ['Octoballoon Pier', 'Octoballoon WC', 'Octoballoon Whirlpool']),
-        create_lw_region(player, 'Octoballoon Water Ledge', None, ['Octoballoon Waterfall Water Drop', 'Octoballoon NW']),
+        create_lw_region(player, 'Octoballoon Water', None, ['Octoballoon Pier', 'Octoballoon WC', 'Octoballoon Whirlpool'], Terrain.Water),
+        create_lw_region(player, 'Octoballoon Water Ledge', None, ['Octoballoon Waterfall Water Drop', 'Octoballoon NW'], Terrain.Water),
         
         create_dw_region(player, 'Skull Woods Forest', None, ['Skull Woods Bush Rock (East)', 'Skull Woods First Section Hole (East)', 'Skull Woods First Section Hole (West)', 'Skull Woods First Section Hole (North)',
                                                             'Skull Woods First Section Door', 'Skull Woods Second Section Door (East)', 'Lost Woods East Mirror Spot', 'Skull Woods SE']),
@@ -148,16 +148,17 @@ def create_regions(world, player):
         create_dw_region(player, 'Dark Fortune Area', None, ['Fortune Teller (Dark)', 'Kakariko Fortune Mirror Spot', 'Dark Fortune NE', 'Dark Fortune EN', 'Dark Fortune ES', 'Dark Fortune SC']),
         create_dw_region(player, 'Outcast Pond Area', None, ['Kakariko Pond Mirror Spot', 'Outcast Pond NE', 'Outcast Pond WN', 'Outcast Pond WS', 'Outcast Pond SW', 'Outcast Pond SE', 'Outcast Pond EN', 'Outcast Pond ES']),
         create_dw_region(player, 'Dark Chapel Area', None, ['Dark Sanctuary Hint', 'Sanctuary Mirror Spot', 'Bonk Rock Ledge Mirror Spot', 'Dark Chapel WN', 'Dark Chapel WS', 'Dark Chapel EC']),
-        create_dw_region(player, 'Dark Graveyard Area', None, ['Graveyard Ledge Mirror Spot', 'Kings Grave Mirror Spot', 'Dark Graveyard WC', 'Dark Graveyard EC']),
+        create_dw_region(player, 'Dark Graveyard Area', None, ['Dark Graveyard Bush (South)', 'Dark Graveyard WC', 'Dark Graveyard EC']),
+        create_dw_region(player, 'Dark Graveyard North', None, ['Graveyard Ledge Mirror Spot', 'Kings Grave Mirror Spot', 'Dark Graveyard Bush (North)']),
         create_dw_region(player, 'Qirn Jump Area', None, ['Qirn Jump Water Drop', 'River Bend Mirror Spot', 'Qirn Jump WC', 'Qirn Jump SW']),
         create_dw_region(player, 'Qirn Jump East Bank', None, ['Qirn Jump East Water Drop', 'River Bend East Mirror Spot', 'Qirn Jump SE', 'Qirn Jump EC', 'Qirn Jump ES']),
-        create_dw_region(player, 'Qirn Jump Water', None, ['Qirn Jump Pier', 'Qirn Jump Whirlpool', 'Qirn Jump EN', 'Qirn Jump SC']),
+        create_dw_region(player, 'Qirn Jump Water', None, ['Qirn Jump Pier', 'Qirn Jump Whirlpool', 'Qirn Jump EN', 'Qirn Jump SC'], Terrain.Water),
         create_dw_region(player, 'Dark Witch Area', None, ['Dark Witch Water Drop', 'Dark Witch Rock (South)', 'Dark World Potion Shop', 'Potion Shop Mirror Spot', 'Dark Witch WC', 'Dark Witch WS']),
         create_dw_region(player, 'Dark Witch Northeast', None, ['Dark Witch Northeast Water Drop', 'Dark Witch Rock (North)', 'Potion Shop Northeast Mirror Spot', 'Dark Witch EC']),
-        create_dw_region(player, 'Dark Witch Water', None, ['Dark Witch WN', 'Dark Witch EN']),
+        create_dw_region(player, 'Dark Witch Water', None, ['Dark Witch WN', 'Dark Witch EN'], Terrain.Water),
         create_dw_region(player, 'Catfish Approach Area', None, ['Catfish Approach Rocks (West)', 'Catfish Approach Bottom Ledge Drop', 'Catfish Approach Water Drop', 'Zora Approach Mirror Spot', 'Catfish Approach WC']),
         create_dw_region(player, 'Catfish Approach Ledge', None, ['Catfish Approach Rocks (East)', 'Catfish Approach Ledge Drop', 'Zora Approach Ledge Mirror Spot', 'Catfish Approach NE']),
-        create_dw_region(player, 'Catfish Approach Water', None, ['Catfish Approach WN']),
+        create_dw_region(player, 'Catfish Approach Water', None, ['Catfish Approach WN'], Terrain.Water),
         create_dw_region(player, 'Village of Outcasts Area', None, ['Village of Outcasts Pegs', 'Chest Game', 'Thieves Town', 'C-Shaped House', 'Brewery', 'Kakariko Mirror Spot', 'Village of Outcasts NW', 'Village of Outcasts NC', 'Village of Outcasts NE', 'Village of Outcasts ES', 'Village of Outcasts SE']),
         create_dw_region(player, 'Dark Grassy Lawn', None, ['Grassy Lawn Pegs', 'Dark World Shop', 'Kakariko Grass Mirror Spot']),
         create_dw_region(player, 'Shield Shop Area', None, ['Shield Shop Fence (Outer) Ledge Drop', 'Forgotton Forest Mirror Spot', 'Shield Shop NW', 'Shield Shop NE']),
@@ -168,7 +169,7 @@ def create_regions(world, player):
         create_dw_region(player, 'Broken Bridge Area', None, ['Broken Bridge Hammer Rock (South)', 'Broken Bridge Water Drop', 'Wooden Bridge Mirror Spot', 'Broken Bridge SW']),
         create_dw_region(player, 'Broken Bridge Northeast', None, ['Broken Bridge Hammer Rock (North)', 'Broken Bridge Hookshot Gap', 'Broken Bridge Northeast Water Drop', 'Wooden Bridge Northeast Mirror Spot', 'Broken Bridge NE']),
         create_dw_region(player, 'Broken Bridge West', None, ['Broken Bridge West Water Drop', 'Wooden Bridge West Mirror Spot', 'Broken Bridge NW']),
-        create_dw_region(player, 'Broken Bridge Water', None, ['Broken Bridge NC']),
+        create_dw_region(player, 'Broken Bridge Water', None, ['Broken Bridge NC'], Terrain.Water),
         create_dw_region(player, 'Palace of Darkness Area', None, ['Palace of Darkness Hint', 'Palace of Darkness', 'Eastern Palace Mirror Spot', 'Palace of Darkness SW', 'Palace of Darkness SE']),
         create_dw_region(player, 'Darkness Cliff', None, ['Dark Dunes Ledge Drop', 'Hammer Bridge North Ledge Drop', 'Dark Tree Line Ledge Drop', 'Palace of Darkness Ledge Drop']),
         create_dw_region(player, 'Hammer Pegs Entry', None, ['Peg Area Rocks (West)', 'Blacksmith Entry Mirror Spot', 'Hammer Pegs WS']),
@@ -185,11 +186,11 @@ def create_regions(world, player):
         create_dw_region(player, 'Big Bomb Shop Area', None, ['Big Bomb Shop', 'Links House Mirror Spot', 'Big Bomb Shop NE', 'Big Bomb Shop WN', 'Big Bomb Shop WC', 'Big Bomb Shop WS', 'Big Bomb Shop SC', 'Big Bomb Shop ES']),
         create_dw_region(player, 'Hammer Bridge North Area', None, ['Hammer Bridge Pegs (North)', 'Hammer Bridge Water Drop', 'Stone Bridge Mirror Spot', 'Hammer Bridge NC', 'Hammer Bridge EN']),
         create_dw_region(player, 'Hammer Bridge South Area', None, ['Hammer Bridge Pegs (South)', 'Stone Bridge South Mirror Spot', 'Hammer Bridge WS', 'Hammer Bridge SC']),
-        create_dw_region(player, 'Hammer Bridge Water', None, ['Hammer Bridge Pier', 'Hobo Mirror Spot', 'Hammer Bridge EC']),
+        create_dw_region(player, 'Hammer Bridge Water', None, ['Hammer Bridge Pier', 'Hobo Mirror Spot', 'Hammer Bridge EC'], Terrain.Water),
         create_dw_region(player, 'Dark Central Cliffs', None, ['Dark Bonk Rocks Cliff Ledge Drop', 'Bomb Shop Cliff Ledge Drop', 'Hammer Bridge South Cliff Ledge Drop', 'Ice Lake Area Cliff Ledge Drop', 'Ice Palace Island FAWT Ledge Drop',
                                                                 'Hammer Bridge EC Cliff Water Drop', 'Dark Tree Line WC Cliff Water Drop', 'Dark C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Cliff Ledge Drop', 'Hype Cliff Ledge Drop', 'Dark South Teleporter Cliff Ledge Drop']),
         create_dw_region(player, 'Dark Tree Line Area', None, ['Dark Lake Hylia Fairy', 'Tree Line Mirror Spot', 'Dark Tree Line WN', 'Dark Tree Line NW', 'Dark Tree Line SE']),
-        create_dw_region(player, 'Dark Tree Line Water', None, ['Dark Tree Line WC', 'Dark Tree Line SC']),
+        create_dw_region(player, 'Dark Tree Line Water', None, ['Dark Tree Line WC', 'Dark Tree Line SC'], Terrain.Water),
         create_dw_region(player, 'Palace of Darkness Nook Area', None, ['East Dark World Hint', 'East Dark World Teleporter', 'Eastern Nook Mirror Spot', 'Palace of Darkness Nook NE']),
         create_dw_region(player, 'Misery Mire Area', None, ['Mire Shed', 'Misery Mire', 'Dark Desert Fairy', 'Dark Desert Hint', 'Desert Mirror Spot', 'Desert Ledge Mirror Spot', 'Checkerboard Mirror Spot', 'DP Stairs Mirror Spot', 'DP Entrance (North) Mirror Spot']),
         create_dw_region(player, 'Misery Mire Teleporter Ledge', None, ['Misery Mire Teleporter Ledge Drop', 'Misery Mire Teleporter']),
@@ -197,15 +198,15 @@ def create_regions(world, player):
         create_dw_region(player, 'Stumpy Approach Area', None, ['Stumpy Approach Bush (South)', 'Cave 45 Mirror Spot', 'Stumpy Approach NW', 'Stumpy Approach EC']),
         create_dw_region(player, 'Stumpy Approach Bush Entry', None, ['Stumpy Approach Bush (North)', 'Flute Boy Entry Mirror Spot', 'Stumpy Approach NC']),
         create_dw_region(player, 'Dark C Whirlpool Area', None, ['Dark C Whirlpool Rock (Bottom)', 'South Dark World Teleporter', 'C Whirlpool Mirror Spot', 'Dark C Whirlpool Water Entry', 'Dark C Whirlpool EN', 'Dark C Whirlpool ES', 'Dark C Whirlpool SC']),
-        create_dw_region(player, 'Dark C Whirlpool Water', None, ['Dark C Whirlpool Landing', 'Dark C Whirlpool EC']),
+        create_dw_region(player, 'Dark C Whirlpool Water', None, ['Dark C Whirlpool Landing', 'Dark C Whirlpool EC'], Terrain.Water),
         create_dw_region(player, 'Dark C Whirlpool Outer Area', None, ['Dark C Whirlpool Rock (Top)', 'C Whirlpool Outer Mirror Spot', 'Dark C Whirlpool WC', 'Dark C Whirlpool NW']),
         create_dw_region(player, 'Hype Cave Area', None, ['Hype Cave Water Entry', 'Hype Cave', 'Statues Mirror Spot', 'Hype Cave NC', 'Hype Cave WN', 'Hype Cave WS', 'Hype Cave SC']),
-        create_dw_region(player, 'Hype Cave Water', None, ['Hype Cave Landing', 'Hype Cave WC']),
+        create_dw_region(player, 'Hype Cave Water', None, ['Hype Cave Landing', 'Hype Cave WC'], Terrain.Water),
         create_dw_region(player, 'Ice Lake Area', None, ['Ice Lake Water Drop', 'Dark Lake Hylia Shop', 'Lake Hylia Mirror Spot', 'Ice Lake NW']),
         create_dw_region(player, 'Ice Lake Northeast Bank', None, ['Ice Lake Northeast Water Drop', 'Lake Hylia Northeast Mirror Spot', 'Ice Lake NE']),
         create_dw_region(player, 'Ice Lake Ledge (West)', None, ['Ice Lake Southwest Water Drop', 'South Shore Mirror Spot', 'Ice Lake WS']),
         create_dw_region(player, 'Ice Lake Ledge (East)', None, ['Ice Lake Southeast Water Drop', 'South Shore East Mirror Spot', 'Ice Lake ES']),
-        create_dw_region(player, 'Ice Lake Water', None, ['Ice Lake Northeast Pier', 'Lake Hylia Island Mirror Spot', 'Ice Lake NC', 'Ice Lake EC']),
+        create_dw_region(player, 'Ice Lake Water', None, ['Ice Lake Northeast Pier', 'Lake Hylia Island Mirror Spot', 'Ice Lake NC', 'Ice Lake EC'], Terrain.Water),
         create_dw_region(player, 'Ice Lake Moat', None, ['Ice Lake Moat Water Entry', 'Ice Lake Northeast Pier Bomb Jump', 'Ice Palace Approach', 'Lake Hylia Water Mirror Spot']),
         create_dw_region(player, 'Ice Palace Area', None, ['Ice Palace Leave', 'Ice Palace', 'Ice Palace Teleporter', 'Lake Hylia Central Island Mirror Spot']),
         create_dw_region(player, 'Shopping Mall Area', None, ['Dark Lake Hylia Ledge Fairy', 'Dark Lake Hylia Ledge Hint', 'Dark Lake Hylia Ledge Spike Cave', 'Ice Cave Mirror Spot', 'Shopping Mall SW', 'Shopping Mall SE']),
@@ -213,8 +214,8 @@ def create_regions(world, player):
         create_dw_region(player, 'Swamp Area', None, ['Swamp Palace', 'Dam Mirror Spot', 'Swamp WC', 'Swamp WS', 'Swamp NC', 'Swamp EC']),
         create_dw_region(player, 'Dark South Pass Area', None, ['South Pass Mirror Spot', 'Dark South Pass WC', 'Dark South Pass NC', 'Dark South Pass ES']),
         create_dw_region(player, 'Bomber Corner Area', None, ['Bomber Corner Water Drop', 'Octoballoon Mirror Spot', 'Bomber Corner WS', 'Bomber Corner NE']),
-        create_dw_region(player, 'Bomber Corner Water', None, ['Bomber Corner Pier', 'Bomber Corner Whirlpool', 'Bomber Corner WC']),
-        create_dw_region(player, 'Bomber Corner Water Ledge', None, ['Bomber Corner Waterfall Water Drop', 'Bomber Corner NW']),
+        create_dw_region(player, 'Bomber Corner Water', None, ['Bomber Corner Pier', 'Bomber Corner Whirlpool', 'Bomber Corner WC'], Terrain.Water),
+        create_dw_region(player, 'Bomber Corner Water Ledge', None, ['Bomber Corner Waterfall Water Drop', 'Bomber Corner NW'], Terrain.Water),
         
         create_cave_region(player, 'Lost Woods Gamble', 'a game of chance'),
         create_cave_region(player, 'Lost Woods Hideout (top)', 'a drop\'s exit', ['Lost Woods Hideout'], ['Lost Woods Hideout (top to bottom)']),
@@ -1013,12 +1014,16 @@ def create_menu_region(player, name, locations=None, exits=None):
     return _create_region(player, name, RegionType.Menu, 'Menu', locations, exits)
 
 
-def create_lw_region(player, name, locations=None, exits=None):
-    return _create_region(player, name, RegionType.LightWorld, 'Light World', locations, exits)
+def create_lw_region(player, name, locations=None, exits=None, terrain=Terrain.Land):
+    region = _create_region(player, name, RegionType.LightWorld, 'Light World', locations, exits)
+    region.terrain = terrain
+    return region
 
 
-def create_dw_region(player, name, locations=None, exits=None):
-    return _create_region(player, name, RegionType.DarkWorld, 'Dark World', locations, exits)
+def create_dw_region(player, name, locations=None, exits=None, terrain=Terrain.Land):
+    region = _create_region(player, name, RegionType.DarkWorld, 'Dark World', locations, exits)
+    region.terrain = terrain
+    return region
 
 
 def create_cave_region(player, name, hint='Hyrule', locations=None, exits=None):
@@ -1111,7 +1116,7 @@ def mark_dark_world_regions(world, player):
 def create_shops(world, player):
     world.shops[player] = []
     for region_name, (room_id, type, shopkeeper, custom, locked, inventory, sram) in shop_table.items():
-        if world.mode[player] == 'inverted' and region_name == 'Dark Lake Hylia Shop':
+        if (world.mode[player] == 'inverted') != (0x35 in world.owswaps[player][0] and world.owMixed[player]) and region_name == 'Dark Lake Hylia Shop':
             locked = True
             inventory = [('Blue Potion', 160), ('Blue Shield', 50), ('Bombs (10)', 50)]
         region = world.get_region(region_name, player)
@@ -1531,9 +1536,9 @@ location_table = {'Mushroom': (0x180013, 0x186338, False, 'in the woods'),
                   'Red Shield Shop - Left': (None, None, False, 'for sale as a curiosity'),
                   'Red Shield Shop - Middle': (None, None, False, 'for sale as a curiosity'),
                   'Red Shield Shop - Right': (None, None, False, 'for sale as a curiosity'),
-                  'Potion Shop - Left': (None, None, False, 'for sale near the witch'),
-                  'Potion Shop - Middle': (None, None, False, 'for sale near the witch'),
-                  'Potion Shop - Right': (None, None, False, 'for sale near the witch'),
+                  'Potion Shop - Left': (None, None, False, 'for sale near potions'),
+                  'Potion Shop - Middle': (None, None, False, 'for sale near potions'),
+                  'Potion Shop - Right': (None, None, False, 'for sale near potions'),
                   }
 
 lookup_id_to_name = {data[0]: name for name, data in location_table.items() if type(data[0]) == int}

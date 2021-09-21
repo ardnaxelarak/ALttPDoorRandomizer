@@ -9,6 +9,7 @@ import sys
 
 from BaseClasses import World
 from Regions import create_regions
+from OverworldShuffle import link_overworld
 from EntranceShuffle import link_entrances, connect_entrance, connect_two_way, connect_exit
 from Rom import patch_rom, LocalRom, write_string_to_rom, apply_rom_settings, get_sprite_from_name
 from Rules import set_rules
@@ -42,6 +43,11 @@ def main(args):
     create_regions(world, 1)
     create_dungeons(world, 1)
 
+    text_patches = []
+    prefill_world(world, args.plando, text_patches)
+
+    link_overworld(world, 1)
+
     link_entrances(world, 1)
 
     logger.info('Calculating Access Rules.')
@@ -50,9 +56,7 @@ def main(args):
 
     logger.info('Fill the world.')
 
-    text_patches = []
-
-    fill_world(world, args.plando, text_patches)
+    fill_world(world, args.plando)
 
     if world.get_entrance('Dam', 1).connected_region.name != 'Dam' or world.get_entrance('Swamp Palace', 1).connected_region.name != 'Swamp Palace (Entrance)':
         world.swamp_patch_required[1] = True
@@ -92,75 +96,14 @@ def main(args):
     return world
 
 
-def fill_world(world, plando, text_patches):
-    mm_medallion = 'Ether'
-    tr_medallion = 'Quake'
+def fill_world(world, plando):
     logger = logging.getLogger('')
     with open(plando, 'r') as plandofile:
         for line in plandofile.readlines():
+            line = line.lstrip()
             if line.startswith('#'):
                 continue
-            if ':' in line:
-                line = line.lstrip()
-
-                if line.startswith('!'):
-                    if line.startswith('!mm_medallion'):
-                        _, medallionstr = line.split(':', 1)
-                        mm_medallion = medallionstr.strip()
-                    elif line.startswith('!tr_medallion'):
-                        _, medallionstr = line.split(':', 1)
-                        tr_medallion = medallionstr.strip()
-                    elif line.startswith('!mode'):
-                        _, modestr = line.split(':', 1)
-                        world.mode = {1: modestr.strip()}
-                    elif line.startswith('!logic'):
-                        _, logicstr = line.split(':', 1)
-                        world.logic = {1: logicstr.strip()}
-                    elif line.startswith('!goal'):
-                        _, goalstr = line.split(':', 1)
-                        world.goal = {1: goalstr.strip()}
-                    elif line.startswith('!light_cone_sewers'):
-                        _, sewerstr = line.split(':', 1)
-                        world.sewer_light_cone = {1: sewerstr.strip().lower() == 'true'}
-                    elif line.startswith('!light_cone_lw'):
-                        _, lwconestr = line.split(':', 1)
-                        world.light_world_light_cone = lwconestr.strip().lower() == 'true'
-                    elif line.startswith('!light_cone_dw'):
-                        _, dwconestr = line.split(':', 1)
-                        world.dark_world_light_cone = dwconestr.strip().lower() == 'true'
-                    elif line.startswith('!fix_trock_doors'):
-                        _, trdstr = line.split(':', 1)
-                        world.fix_trock_doors = {1: trdstr.strip().lower() == 'true'}
-                    elif line.startswith('!fix_trock_exit'):
-                        _, trfstr = line.split(':', 1)
-                        world.fix_trock_exit = {1: trfstr.strip().lower() == 'true'}
-                    elif line.startswith('!fix_gtower_exit'):
-                        _, gtfstr = line.split(':', 1)
-                        world.fix_gtower_exit = gtfstr.strip().lower() == 'true'
-                    elif line.startswith('!fix_pod_exit'):
-                        _, podestr = line.split(':', 1)
-                        world.fix_palaceofdarkness_exit = {1: podestr.strip().lower() == 'true'}
-                    elif line.startswith('!fix_skullwoods_exit'):
-                        _, swestr = line.split(':', 1)
-                        world.fix_skullwoods_exit = {1: swestr.strip().lower() == 'true'}
-                    elif line.startswith('!check_beatable_only'):
-                        _, chkbtstr = line.split(':', 1)
-                        world.check_beatable_only = chkbtstr.strip().lower() == 'true'
-                    elif line.startswith('!ganon_death_pyramid_respawn'):
-                        _, gnpstr = line.split(':', 1)
-                        world.ganon_at_pyramid = gnpstr.strip().lower() == 'true'
-                    elif line.startswith('!save_quit_boss'):
-                        _, sqbstr = line.split(':', 1)
-                        world.save_and_quite_from_boss = sqbstr.strip().lower() == 'true'
-                    elif line.startswith('!text_'):
-                        textname, text = line.split(':', 1)
-                        text_patches.append([textname.lstrip('!text_').strip(), 'text', text.strip()])
-                    #temporarilly removed. New credits system not ready to handle this.
-                    #elif line.startswith('!credits_'):
-                    #    textname, text = line.split(':', 1)
-                    #    text_patches.append([textname.lstrip('!credits_').strip(), 'credits', text.strip()])
-                    continue
-
+            elif ':' in line:
                 locationstr, itemstr = line.split(':', 1)
                 location = world.get_location(locationstr.strip(), 1)
                 if location is None:
@@ -172,6 +115,7 @@ def fill_world(world, plando, text_patches):
                         world.push_item(location, item)
                     if item.smallkey or item.bigkey:
                         location.event = True
+            #TODO: move entrance stuff to prefill_world to work like OW stuff
             elif '<=>' in line:
                 entrance, exit = line.split('<=>', 1)
                 connect_two_way(world, entrance.strip(), exit.strip(), 1)
@@ -182,13 +126,105 @@ def fill_world(world, plando, text_patches):
                 entrance, exit = line.split('<=', 1)
                 connect_exit(world, exit.strip(), entrance.strip(), 1)
 
-    world.required_medallions[1] = (mm_medallion, tr_medallion)
-
     # set up Agahnim Events
     world.get_location('Agahnim 1', 1).event = True
     world.get_location('Agahnim 1', 1).item = ItemFactory('Beat Agahnim 1', 1)
     world.get_location('Agahnim 2', 1).event = True
     world.get_location('Agahnim 2', 1).item = ItemFactory('Beat Agahnim 2', 1)
+
+def prefill_world(world, plando, text_patches):
+    mm_medallion = 'Ether'
+    tr_medallion = 'Quake'
+    logger = logging.getLogger('')
+    with open(plando, 'r') as plandofile:
+        for line in plandofile.readlines():
+            line = line.lstrip()
+            if line.startswith('#'):
+                continue
+            elif line.startswith('!'):
+                if line.startswith('!mm_medallion'):
+                    _, medallionstr = line.split(':', 1)
+                    mm_medallion = medallionstr.strip()
+                elif line.startswith('!tr_medallion'):
+                    _, medallionstr = line.split(':', 1)
+                    tr_medallion = medallionstr.strip()
+                elif line.startswith('!mode'):
+                    _, modestr = line.split(':', 1)
+                    world.mode = {1: modestr.strip()}
+                elif line.startswith('!logic'):
+                    _, logicstr = line.split(':', 1)
+                    world.logic = {1: logicstr.strip()}
+                elif line.startswith('!goal'):
+                    _, goalstr = line.split(':', 1)
+                    world.goal = {1: goalstr.strip()}
+                elif line.startswith('!owShuffle'):
+                    _, modestr = line.split(':', 1)
+                    world.owShuffle = {1: modestr.strip()}
+                elif line.startswith('!owCrossed'):
+                    _, modestr = line.split(':', 1)
+                    world.owCrossed = {1: modestr.strip()}
+                elif line.startswith('!owKeepSimilar'):
+                    _, modestr = line.split(':', 1)
+                    modestr = modestr.strip().lower()
+                    world.owKeepSimilar = {1: True if modestr in ('true', 'yes', 'on', 'enabled') else False}
+                elif line.startswith('!light_cone_sewers'):
+                    _, sewerstr = line.split(':', 1)
+                    world.sewer_light_cone = {1: sewerstr.strip().lower() == 'true'}
+                elif line.startswith('!light_cone_lw'):
+                    _, lwconestr = line.split(':', 1)
+                    world.light_world_light_cone = lwconestr.strip().lower() == 'true'
+                elif line.startswith('!light_cone_dw'):
+                    _, dwconestr = line.split(':', 1)
+                    world.dark_world_light_cone = dwconestr.strip().lower() == 'true'
+                elif line.startswith('!fix_trock_doors'):
+                    _, trdstr = line.split(':', 1)
+                    world.fix_trock_doors = {1: trdstr.strip().lower() == 'true'}
+                elif line.startswith('!fix_trock_exit'):
+                    _, trfstr = line.split(':', 1)
+                    world.fix_trock_exit = {1: trfstr.strip().lower() == 'true'}
+                elif line.startswith('!fix_gtower_exit'):
+                    _, gtfstr = line.split(':', 1)
+                    world.fix_gtower_exit = gtfstr.strip().lower() == 'true'
+                elif line.startswith('!fix_pod_exit'):
+                    _, podestr = line.split(':', 1)
+                    world.fix_palaceofdarkness_exit = {1: podestr.strip().lower() == 'true'}
+                elif line.startswith('!fix_skullwoods_exit'):
+                    _, swestr = line.split(':', 1)
+                    world.fix_skullwoods_exit = {1: swestr.strip().lower() == 'true'}
+                elif line.startswith('!check_beatable_only'):
+                    _, chkbtstr = line.split(':', 1)
+                    world.check_beatable_only = chkbtstr.strip().lower() == 'true'
+                elif line.startswith('!ganon_death_pyramid_respawn'):
+                    _, gnpstr = line.split(':', 1)
+                    world.ganon_at_pyramid = gnpstr.strip().lower() == 'true'
+                elif line.startswith('!save_quit_boss'):
+                    _, sqbstr = line.split(':', 1)
+                    world.save_and_quite_from_boss = sqbstr.strip().lower() == 'true'
+                elif line.startswith('!text_'):
+                    textname, text = line.split(':', 1)
+                    text_patches.append([textname.lstrip('!text_').strip(), 'text', text.strip()])
+                #temporarilly removed. New credits system not ready to handle this.
+                #elif line.startswith('!credits_'):
+                #    textname, text = line.split(':', 1)
+                #    text_patches.append([textname.lstrip('!credits_').strip(), 'credits', text.strip()])
+                continue
+            elif line.startswith('$'):
+                edge1, edge2 = line.split('=', 1)
+                if world.custom_overworld is None:
+                    world.custom_overworld = {1: []}
+                world.custom_overworld[1].append(edge1.strip(), edge2.strip())
+            #TODO: Do entrances similar to OW
+            elif '<=>' in line:
+                entrance, exit = line.split('<=>', 1)
+                #connect_two_way(world, entrance.strip(), exit.strip(), 1)
+            elif '=>' in line:
+                entrance, exit = line.split('=>', 1)
+                #connect_entrance(world, entrance.strip(), exit.strip(), 1)
+            elif '<=' in line:
+                entrance, exit = line.split('<=', 1)
+                #connect_exit(world, exit.strip(), entrance.strip(), 1)
+
+    world.required_medallions[1] = (mm_medallion, tr_medallion)
 
 
 def start():

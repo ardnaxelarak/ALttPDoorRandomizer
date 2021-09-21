@@ -1,14 +1,43 @@
 # New Features
 
-Bomb Logic added as an option. This removes your ability to use bombs until you find a "bomb bag", a +10 Bomb Capacity item. It is accounted for in the logic, so you aren't expected to get items behind bomb walls until you have found the bomb capacity item. The upgrades are removed from the upgrade fairy as well.
+## Shuffle SFX
+
+Shuffles a large portion of the sounds effects. Can be used with the adjuster.
+
+CLI: ```--shuffle_sfx```
  
-```
---bomblogic
-```
+## Bomb Logic 
+
+When enabling this option, you do not start with bomb capacity but rather you must find 1 of 2 bomb bags. (They are represented by the +10 capacity item.) Bomb capacity upgrades are otherwise unavailable.
+ 
+CLI: ```--bombbag```
+
 
 # Bug Fixes and Notes.
+
+* 0.5.1.1
+	* Shop hints in ER are now more generic instead of using "near X" because they aren't near that anymore
+	* Added memory location for mutliworld scripts to read what item was just obtain (longer than one frame)
+	* Fix for bias in boss shuffle "full"
+	* Fix for certain lone big chests in keysanity (allowed you to get contents without big key)
+	* Fix for pinball checking
+	* Fix for multi-entrance dungeons
+	* 2 fixes for big key placement logic
+		* ensure big key is placed early if the validator assumes it)
+		* Open big key doors appropriately when generating rules and big key is forced somewhere
+	* Updated cutoff entrances for intensity 3
+* 0.5.1.0
+	* Large logic refactor introducing a new method of key logic 
+	* Some performance optimization
+	* Some outstanding bug fixes (boss shuffle "full" picks three unique bosses to be duplicated, e.g.)
+* 0.5.0.3
+	* Fixed a bug in retro+vanilla and big key placement
+	* Fixed a problem with shops not registering in the Multiclient until you visit one
+	* Fixed a bug in the Mystery code with sfx
+* 0.5.0.2
+	* --shuffle_sfx option added 
 * 0.5.0.1
-	* --bomblogic option added 
+	* --bombbag option added 
 * 0.5.0.0
 	* Handles headered roms for enemizer (Thanks compiling)
 	* Warning added for earlier version of python (Thanks compiling)

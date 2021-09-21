@@ -9,14 +9,20 @@
         "full"
       ]
     },
-    "overworldswap": {
+    "crossed": {
       "type": "selectbox",
-      "default": "mixed",
+      "default": "vanilla",
       "options": [
-        "vanilla",
-        "mixed",
-        "crossed"
+        "none",
+        "polar",
+        "grouped",
+        "limited",
+        "chaos"
       ]
+    },
+    "mixed": {
+      "type": "checkbox",
+      "default": true
     },
     "overworldflute": {
       "type": "selectbox",

@@ -2,7 +2,7 @@
   "cli": {
     "yes": "Yes",
     "no": "No",
-    "app.title": "ALttP Door Randomizer Version %s - Seed: %s, Code: %s",
+    "app.title": "ALttP Door Randomizer Version %s : --seed %s --code %s",
     "version": "Version",
     "seed": "Seed",
     "player": "Player",
@@ -194,10 +194,8 @@
       "                which they are entered.",
       "Vanilla:        All entrances are in the same locations they were",
       "                in the base game.",
-      "Legacy shuffles preserve behavior from older versions of the",
-      "entrance randomizer including significant technical limitations.",
       "The dungeon variants only mix up dungeons and keep the rest of",
-      "the overworld vanilla."
+      "the entrances vanilla."
     ],
     "ow_shuffle": [
       "This shuffles the layout of the overworld.",
@@ -208,22 +206,27 @@
       "Full:           Overworld transitions are shuffled, but both worlds",
       "                will have an independent map shape."
     ],
-    "ow_swap": [
-      "This swaps the tiles of the overworld from one world to the other.",
-      "Vanilla:        All overworld tiles remain in their original world as",
-      "                they were in the base game.",
-      "Mixed:          Overworld tiles are randomly chosen to become part of",
-      "                the opposite world.",
-      "Crossed:        Overworld tiles remain in their original world, but",
-      "                the transitions are shuffled cross world."
+    "ow_crossed": [
+      "This allows cross-world connections to occur on the overworld.",
+      "None:           No transitions are cross-world connections.",
+      "Polar:          Only used when Mixed is enabled. This retains original",
+      "                connections even when overworld tiles are swapped.",
+      "Limited:        Exactly nine transitions are randomly chosen as",
+      "                cross-world connections (to emulate the nine portals).",
+      "Chaos:          Every transition has a 50/50 chance to become a",
+      "                crossworld connection."
     ],
     "ow_keepsimilar": [
       "This keeps similar edge transitions together. ie. the two west edges on",
       "Potion Shop will be paired with another similar pair." ],
+    "ow_mixed": [
+      "Overworld tiles are randomly chosen to become part of the opposite world."
+    ],
     "ow_fluteshuffle": [
       "This randomizes the flute spot destinations.",
       "Vanilla:        All flute spots remain unchanged.",
-      "Balanced:       New flute spots will be generated but prevents flute spots from being on any adjacent screen.",
+      "Balanced:       New flute spots will be generated but prevents flute",
+      "                spots from being on any adjacent screen.",
       "Random:         New flute spots will be generated with minimal bias."
     ],
     "door_shuffle": [
@@ -304,7 +307,7 @@
       "and a few other little things make this more like Zelda-1. (default: %(default)s)"
     ],
     "pseudoboots": [ " Players starts with pseudo boots that allow dashing but no item checks (default: %(default)s"],
-    "bomblogic": ["Start with 0 bomb capacity. Two capacity upgrades (+10) are added to the pool (default: %(default)s)" ],
+    "bombbag": ["Start with 0 bomb capacity. Two capacity upgrades (+10) are added to the pool (default: %(default)s)" ],
     "startinventory": [ "Specifies a list of items that will be in your starting inventory (separated by commas). (default: %(default)s)" ],
     "usestartinventory": [ "Toggle usage of Starting Inventory." ],
     "custom": [ "Not supported." ],
@@ -337,6 +340,7 @@
       "sprite that will be extracted."
     ],
     "reduce_flashing": [ "Reduce some in-game flashing (default: %(default)s)" ],
+    "shuffle_sfx": [ "Shuffle sounds effects (default: %(default)s)" ],
     "create_rom": [ "Create an output rom file. (default: %(default)s)" ],
     "gui": [ "Launch the GUI. (default: %(default)s)" ],
     "jsonout": [

@@ -31,6 +31,7 @@ def main():
     parser.add_argument('--rom')
     parser.add_argument('--enemizercli')
     parser.add_argument('--outputpath')
+    parser.add_argument('--loglevel', default='info', choices=['debug', 'info', 'warning', 'error', 'critical'])
     for player in range(1, multiargs.multi + 1):
         parser.add_argument(f'--p{player}', help=argparse.SUPPRESS)
     args = parser.parse_args()
@@ -63,6 +64,7 @@ def main():
     erargs.race = True
     erargs.outputname = seedname
     erargs.outputpath = args.outputpath
+    erargs.loglevel = args.loglevel
 
     if args.rom:
         erargs.rom = args.rom
@@ -133,9 +135,9 @@ def roll_settings(weights):
 
     overworld_shuffle = get_choice('overworld_shuffle')
     ret.ow_shuffle = overworld_shuffle if overworld_shuffle != 'none' else 'vanilla'
-    overworld_swap = get_choice('overworld_swap')
-    ret.ow_swap = overworld_swap if overworld_swap != 'none' else 'vanilla'
-    ret.ow_keepsimilar = get_choice('overworld_keepsimilar')
+    ret.ow_crossed = get_choice('overworld_crossed')
+    ret.ow_keepsimilar = get_choice('overworld_keepsimilar') == 'on'
+    ret.ow_mixed = get_choice('overworld_mixed') == 'on'
     overworld_flute = get_choice('flute_shuffle')
     ret.ow_fluteshuffle = overworld_flute if overworld_flute != 'none' else 'vanilla'
     entrance_shuffle = get_choice('entrance_shuffle')
@@ -186,7 +188,7 @@ def roll_settings(weights):
         ret.retro = True
     ret.retro = get_choice('retro') == 'on'  # this overrides world_state if used
 
-    ret.bomblogic = get_choice('bomblogic') == 'on'
+    ret.bombbag = get_choice('bombbag') == 'on'
 
     ret.hints = get_choice('hints') == 'on'
 
@@ -247,6 +249,7 @@ def roll_settings(weights):
         ret.heartbeep = get_choice('heartbeep', romweights)
         ret.ow_palettes = get_choice('ow_palettes', romweights)
         ret.uw_palettes = get_choice('uw_palettes', romweights)
+        ret.shuffle_sfx = get_choice('shuffle_sfx', romweights) == 'on'
 
     return ret
 
