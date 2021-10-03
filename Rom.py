@@ -908,10 +908,10 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         return 0x53+int(num), 0x79+int(num)
 
     def credits_string_top(string):
-        return map(lambda c: convert_char_to_credits(c)[0], string)
+        return list(map(lambda c: convert_char_to_credits(c)[0], string))
 
     def credits_string_bot(string):
-        return map(lambda c: convert_char_to_credits(c)[1], string)
+        return list(map(lambda c: convert_char_to_credits(c)[1], string))
 
     credits_total = 216
     if world.keydropshuffle[player]:
@@ -1897,7 +1897,9 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     rom.write_byte(0x65561, {'red': 0x05, 'blue': 0x0D, 'green': 0x19, 'yellow': 0x09}[color])
 
     # write link sprite if required
-    if sprite is not None:
+    if sprite is None:
+        logging.getLogger('').info('No sprite found.')
+    else:
         write_sprite(rom, sprite)
 
     # sprite author credits
