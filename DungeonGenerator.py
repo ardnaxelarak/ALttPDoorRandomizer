@@ -56,24 +56,6 @@ def pre_validate(builder, entrance_region_names, split_dungeon, world, player):
 
 
 def generate_dungeon(builder, entrance_region_names, split_dungeon, world, player):
-    stonewalls = check_for_stonewalls(builder)
-    sector = generate_dungeon_main(builder, entrance_region_names, split_dungeon, world, player)
-    for stonewall in stonewalls:
-        if not stonewall_valid(stonewall):
-            builder.pre_open_stonewalls.add(stonewall)
-    return sector
-
-
-def check_for_stonewalls(builder):
-    stonewalls = set()
-    for sector in builder.sectors:
-        for door in sector.outstanding_doors:
-            if door.stonewall:
-                stonewalls.add(door)
-    return stonewalls
-
-
-def generate_dungeon_main(builder, entrance_region_names, split_dungeon, world, player):
     if builder.valid_proposal:  # we made this earlier in gen, just use it
         proposed_map = builder.valid_proposal
     else:
@@ -112,6 +94,15 @@ def generate_dungeon_find_proposal(builder, entrance_region_names, split_dungeon
                 if (access_region.name in world.inaccessible_regions[player] and
                    region.name not in world.enabled_entrances[player]):
                     excluded[region] = None
+        elif len(region.entrances) == 1:  # for holes
+            access_region = next(x.parent_region for x in region.entrances
+                                 if x.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld]
+                                 or x.parent_region.name == 'Sewer Drop')
+            if access_region.name == 'Sewer Drop':
+                access_region = next(x.parent_region for x in access_region.entrances)
+            if (access_region.name in world.inaccessible_regions[player] and
+               region.name not in world.enabled_entrances[player]):
+                excluded[region] = None
     entrance_regions = [x for x in entrance_regions if x not in excluded.keys()]
     doors_to_connect = {}
     all_regions = set()
@@ -585,7 +576,8 @@ def determine_paths_for_dungeon(world, player, all_regions, name):
             paths.append(boss)
     if 'Thieves Boss' in all_r_names:
         paths.append('Thieves Boss')
-        paths.append(('Thieves Blind\'s Cell', 'Thieves Boss'))
+        if world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind':
+            paths.append(('Thieves Blind\'s Cell', 'Thieves Boss'))
     for drop_check in drop_path_checks:
         if drop_check in all_r_names:
             paths.append((drop_check, non_hole_portals))
@@ -609,35 +601,6 @@ def winnow_hangers(hangers, hooks):
                     removal_info.append((hanger, door))
     for hanger, door in removal_info:
         hangers[hanger].remove(door)
-
-
-def stonewall_valid(stonewall):
-    bad_door = stonewall.dest
-    if bad_door.blocked:
-        return True  # great we're done with this one
-    loop_region = stonewall.entrance.parent_region
-    start_regions = [bad_door.entrance.parent_region]
-    if bad_door.dependents:
-        for dep in bad_door.dependents:
-            start_regions.append(dep.entrance.parent_region)
-    queue = deque(start_regions)
-    visited = set(start_regions)
-    while len(queue) > 0:
-        region = queue.popleft()
-        if region == loop_region:
-            return False  # guaranteed loop
-        possible_entrances = list(region.entrances)
-        for entrance in possible_entrances:
-            parent = entrance.parent_region
-            if parent.type != RegionType.Dungeon:
-                return False  # you can get stuck from an entrance
-            else:
-                door = entrance.door
-                if (door is None or (door != stonewall and not door.blocked)) and parent not in visited:
-                    visited.add(parent)
-                    queue.append(parent)
-    # we didn't find anything bad
-    return True
 
 
 def create_graph_piece_from_state(door, o_state, b_state, proposed_map, exception):
@@ -1197,8 +1160,6 @@ class DungeonBuilder(object):
         self.path_entrances = None  # used for pathing/key doors, I think
         self.split_flag = False
 
-        self.pre_open_stonewalls = set()  # used by stonewall system
-
         self.candidates = None
         self.total_keys = None
         self.key_doors_num = None
@@ -1275,6 +1236,9 @@ def create_dungeon_builders(all_sectors, connections_tuple, world, player,
                 for r_name in ['Hyrule Dungeon Cellblock', 'Sanctuary']:  # need to deliver zelda
                     assign_sector(find_sector(r_name, candidate_sectors), current_dungeon,
                                   candidate_sectors, global_pole)
+            if key == 'Thieves Town' and world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind':
+                assign_sector(find_sector("Thieves Blind's Cell", candidate_sectors), current_dungeon,
+                              candidate_sectors, global_pole)
         entrances_map, potentials, connections = connections_tuple
         accessible_sectors, reverse_d_map = set(), {}
         for key in dungeon_entrances.keys():
@@ -3898,7 +3862,7 @@ dungeon_boss_sectors = {
     'Palace of Darkness': ['PoD Boss'],
     'Swamp Palace': ['Swamp Boss'],
     'Skull Woods': ['Skull Boss'],
-    'Thieves Town': ['Thieves Blind\'s Cell', 'Thieves Boss'],
+    'Thieves Town': ['Thieves Boss'],
     'Ice Palace': ['Ice Boss'],
     'Misery Mire': ['Mire Boss'],
     'Turtle Rock': ['TR Boss'],

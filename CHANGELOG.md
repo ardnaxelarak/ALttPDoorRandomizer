@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.9.2
+- Fixed spoiler log and mystery for new Crossed/Mixed structure
+- Minor preparations and tweaks to ER framework (added global Entrance/Exit pool)
+- ~~Merged DR v0.5.1.2 - Blind Prison shuffled outside TT/Keylogic Improvements~~
+
 ### 0.1.9.1
 - Fixed logic issue with leaving IP entrance not requiring flippers
 - ~~Merged DR v0.5.1.1 - Map Indicator Fix/Boss Shuffle Bias/Shop Hints~~

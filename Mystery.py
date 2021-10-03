@@ -137,7 +137,7 @@ def roll_settings(weights):
     ret.ow_shuffle = overworld_shuffle if overworld_shuffle != 'none' else 'vanilla'
     ret.ow_crossed = get_choice('overworld_crossed')
     ret.ow_keepsimilar = get_choice('overworld_keepsimilar') == 'on'
-    ret.ow_mixed = get_choice('overworld_mixed') == 'on'
+    ret.ow_mixed = get_choice('overworld_swap') == 'on'
     overworld_flute = get_choice('flute_shuffle')
     ret.ow_fluteshuffle = overworld_flute if overworld_flute != 'none' else 'vanilla'
     entrance_shuffle = get_choice('entrance_shuffle')

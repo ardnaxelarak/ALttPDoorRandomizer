@@ -2,7 +2,7 @@ import RaceRandom as random, logging, copy
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot, Entrance
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.1.9.1-u'
+__version__ = '0.1.9.2-u'
 
 def link_overworld(world, player):
     # setup mandatory connections

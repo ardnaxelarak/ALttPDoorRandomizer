@@ -12,7 +12,6 @@ except ImportError:
 
 
 from source.classes.BabelFish import BabelFish
-from EntranceShuffle import door_addresses, indirect_connections
 from Utils import int16_as_bytes
 from Tables import normal_offset_table, spiral_offset_table, multiply_lookup, divisor_lookup
 from RoomData import Room
@@ -613,6 +612,7 @@ class CollectionState(object):
                 self.path[new_region] = (new_region.name, self.path.get(connection, None))
 
                 # Retry connections if the new region can unblock them
+                from EntranceShuffle import indirect_connections
                 if new_region.name in indirect_connections:
                     new_entrance = self.world.get_entrance(indirect_connections[new_region.name], player)
                     if new_entrance in bc and new_entrance.parent_region in rrp:
@@ -1443,6 +1443,8 @@ class CollectionState(object):
     def collect(self, item, event=False, location=None):
         if location:
             self.locations_checked.add(location)
+        if not item:
+            return
         changed = False
         if item.name.startswith('Progressive '):
             if 'Sword' in item.name:
@@ -2618,6 +2620,7 @@ class Shop(object):
         # [id][roomID-low][roomID-high][doorID][zero][shop_config][shopkeeper_config][sram_index]
         entrances = self.region.entrances
         config = self.item_count
+        from EntranceShuffle import door_addresses
         if len(entrances) == 1 and entrances[0].name in door_addresses:
             door_id = door_addresses[entrances[0].name][0]+1
         else:
@@ -2885,8 +2888,8 @@ class Spoiler(object):
                 outfile.write('Overworld Layout Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_shuffle'][player])
                 if self.metadata['ow_shuffle'][player] != 'vanilla':
                     outfile.write('Keep Similar OW Edges Together:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_keepsimilar'][player] else 'No'))
-                outfile.write('Crossed OW:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_crossed'][player] else 'No'))
-                outfile.write('Mixed OW:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_mixed'][player] else 'No'))
+                outfile.write('Crossed OW:'.ljust(line_width) + '%s\n' % self.metadata['ow_crossed'][player])
+                outfile.write('Swapped OW (Mixed):'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_mixed'][player] else 'No'))
                 outfile.write('Flute Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_fluteshuffle'][player])
                 outfile.write('Entrance Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['shuffle'][player])
                 outfile.write('Door Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['door_shuffle'][player])
