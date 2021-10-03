@@ -1349,7 +1349,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     equip[0x36C] = 0x18
     equip[0x36D] = 0x18
     equip[0x379] = 0x68
-    if world.bombbag[player]:
+    if world.bombbag[player] or world.swords[player] == 'bombs':
         starting_max_bombs = 0
     else:
         starting_max_bombs = 10

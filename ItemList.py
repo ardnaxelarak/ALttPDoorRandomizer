@@ -321,6 +321,8 @@ def generate_itempool(world, player):
                         item = slot['item']
                         if shop.region.name == 'Capacity Upgrade' and world.difficulty[player] != 'normal':
                             pool.append('Rupees (20)')
+                        elif world.swords[player] == "bombs" and item in ['Single Bomb', 'Bombs (3)', 'Bombs (10)', 'Bomb Upgrade (+5)', 'Bomb Upgrade (+10)']:
+                            pool.append('Small Heart')
                         else:
                             pool.append(item)
 
