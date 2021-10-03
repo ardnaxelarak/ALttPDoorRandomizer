@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--teams', default=1, type=lambda value: max(int(value), 1))
     parser.add_argument('--create_spoiler', action='store_true')
     parser.add_argument('--rom')
+    parser.add_argument('--jsonout', action='store_true')
     parser.add_argument('--enemizercli')
     parser.add_argument('--outputpath')
     parser.add_argument('--loglevel', default='info', choices=['debug', 'info', 'warning', 'error', 'critical'])
@@ -43,19 +44,24 @@ def main():
         seed = args.seed
     random.seed(seed)
 
+    # set up logger
+    loglevel = {'error': logging.ERROR, 'info': logging.INFO, 'warning': logging.WARNING, 'debug': logging.DEBUG}[args.loglevel]
+    logging.basicConfig(format='%(message)s', level=loglevel)
+    logger = logging.getLogger('')
+
     seedname = f'M{random.randint(0, 999999999)}'
-    print(f"Generating mystery for {args.multi} player{'s' if args.multi > 1 else ''}, {seedname} Seed {seed}")
+    logger.info(f"Generating mystery for {args.multi} player{'s' if args.multi > 1 else ''}, {seedname} Seed {seed}")
 
     weights_cache = {}
     if args.weights:
         weights_cache[args.weights] = get_weights(args.weights)
-        print(f"Weights: {args.weights} >> {weights_cache[args.weights]['description']}")
+        logger.info(f"Weights: {args.weights} >> {weights_cache[args.weights]['description']}")
     for player in range(1, args.multi + 1):
         path = getattr(args, f'p{player}')
         if path:
             if path not in weights_cache:
                 weights_cache[path] = get_weights(path)
-            print(f"P{player} Weights: {path} >> {weights_cache[path]['description']}")
+            logger.info(f"P{player} Weights: {path} >> {weights_cache[path]['description']}")
 
     erargs = parse_cli(['--multi', str(args.multi)])
     erargs.seed = seed
@@ -68,6 +74,8 @@ def main():
 
     if args.rom:
         erargs.rom = args.rom
+    if args.jsonout:
+        erargs.jsonout = args.jsonout
     if args.enemizercli:
         erargs.enemizercli = args.enemizercli
 
@@ -82,10 +90,6 @@ def main():
                     getattr(erargs, k)[player] = v
         else:
             raise RuntimeError(f'No weights specified for player {player}')
-
-    # set up logger
-    loglevel = {'error': logging.ERROR, 'info': logging.INFO, 'warning': logging.WARNING, 'debug': logging.DEBUG}[erargs.loglevel]
-    logging.basicConfig(format='%(message)s', level=loglevel)
 
     DRMain(erargs, seed, BabelFish())
 
