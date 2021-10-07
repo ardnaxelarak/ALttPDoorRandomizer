@@ -661,7 +661,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     # patch overworld edges
     inverted_buffer = [0] * 0x82
-    if world.owShuffle[player] != 'vanilla' or world.owCrossed[player] != 'none' or world.owMixed[player]:
+    if world.owShuffle[player] != 'vanilla' or world.owCrossed[player] not in ['none', 'polar'] or world.owMixed[player]:
         owMode = 0
         if world.owShuffle[player] == 'parallel':
             owMode = 1

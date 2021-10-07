@@ -1,5 +1,13 @@
 # Changelog
 
+### 0.1.9.4
+- Hotfix for bad 0.1.9.3 version
+
+### 0.1.9.3
+- Moved flute spot from Northwest Lake Hylia to Southeast Lake Hylia
+- Fixed Links House start in Inverted ER
+- Minor accuracy improvements to ER, mostly preparations for future work
+
 ### 0.1.9.2
 - Fixed spoiler log and mystery for new Crossed/Mixed structure
 - Minor preparations and tweaks to ER framework (added global Entrance/Exit pool)
