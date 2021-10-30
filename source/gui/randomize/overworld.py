@@ -33,7 +33,7 @@ def overworld_page(parent):
                     packAttrs = {"side":LEFT, "pady":(18,0)}
                 elif key == "overworldflute":
                     packAttrs["pady"] = (20,0)
-                elif key == "mixed":
+                elif key in ["whirlpool", "mixed"]:
                     packAttrs = {"anchor":W, "padx":(79,0)}
                 
                 self.widgets[key].pack(packAttrs)

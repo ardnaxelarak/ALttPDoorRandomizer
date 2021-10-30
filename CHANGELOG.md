@@ -1,5 +1,26 @@
 # Changelog
 
+### 0.2.1.2
+- Fixed issue with whirlpools not changing world when in Crossed OW
+
+### 0.2.1.1
+- Many fixes to ER: infinite loops, preventing cross-world scenarios in non-cross-world modes
+- Spoiler log improvements, outputs in stages so a Spoiler is available if an error occurs
+- Added no_race option for Mystery
+- Fixed output_path in Mystery to use the saved setting if none is specified on CLI
+
+### 0.2.1.0
+- Implemented Whirlpool Shuffle
+
+### 0.2.0.0
+- Massive overhaul of ER algorithm
+- Added 2 new ER modes (Lite and Lean)
+- Added new mystery options (Logic/Shuffle Ganon)
+- Smith deletion on S+Q only occurs if Blacksmith not reachable from starting locations
+- Spoiler log improvements to prevent spoiling in the beginning 'meta' section
+- Various minor fixes and improvements
+- ~~Merged DR v0.5.1.4 - ROM bug fixes/keylogic improvements~~
+
 ### 0.1.9.4
 - Hotfix for bad 0.1.9.3 version
 

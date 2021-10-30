@@ -14,6 +14,10 @@ jsl OWEdgeTransition : nop #4 ;LDA $02A4E3,X : ORA $7EF3CA
 ;org $02e238 ;LDX #$9E : - DEX : DEX : CMP $DAEE,X : BNE -
 ;jsl OWSpecialTransition : nop #5
 
+; whirlpool shuffle cross world change
+org $02b3bd
+jsl OWWhirlpoolUpdate ;JSL $02EA6C
+
 ; flute menu cancel
 org $0ab7af ;LDA $F2 : ORA $F0 : AND #$C0
 jml OWFluteCancel2 : nop
@@ -121,6 +125,14 @@ OWWorldCheck16:
     phx
         ldx $8a : lda.l OWTileWorldAssoc,x
     plx : and.w #$00ff : rtl
+}
+
+OWWhirlpoolUpdate:
+{
+    jsl $02ea6c ; what we wrote over
+    lda.l OWFlags : and #$01 : beq +
+        ldx $8a : jsr OWWorldUpdate
+    + rtl
 }
 
 OWFluteCancel:
@@ -341,31 +353,38 @@ OWNewDestination:
     sep #$30 : lda OWOppSlotOffset,y : !add $04 : asl : and #$7f : sta $700
     
     ; crossed OW shuffle
-    LDA.l OWMode+1 : AND.b #!FLAG_OW_CROSSED : beq .return
-        ldx $05 : lda.l OWTileWorldAssoc,x : cmp.l $7ef3ca : beq .return
-            sta.l $7ef3ca ; change world
-            lda #$38 : sta $012f ; play sfx - #$3b is an alternative
-
-            ; toggle bunny mode
-            + lda $7ef357 : bne .nobunny
-            lda.l InvertedMode : bne .inverted
-                lda $7ef3ca : and.b #$40 : bra +
-                .inverted lda $7ef3ca : and.b #$40 : eor #$40
-            + cmp #$40 : bne .nobunny
-                ; turn into bunny
-                lda $5d : cmp #$04 : beq + ; if swimming, continue
-                    lda #$17 : sta $5d
-                + lda #$01 : sta $02e0 : sta $56
-                bra .return
-
-            .nobunny
-            lda $5d : cmp #$17 : bne + ; retain current state unless bunny
-                stz $5d
-            + stz $02e0 : stz $56
+    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .return
+        ldx $05 : jsr OWWorldUpdate
 
     .return
     lda $05 : sta $8a
     rep #$30 : rts
+}
+OWWorldUpdate: ; x = owid of destination screen
+{
+    lda.l OWTileWorldAssoc,x : cmp.l $7ef3ca : beq .return
+        sta.l $7ef3ca ; change world
+        lda #$38 : sta $012f ; play sfx - #$3b is an alternative
+
+        ; toggle bunny mode
+        + lda $7ef357 : bne .nobunny
+        lda.l InvertedMode : bne .inverted
+            lda $7ef3ca : and.b #$40 : bra +
+            .inverted lda $7ef3ca : and.b #$40 : eor #$40
+        + cmp #$40 : bne .nobunny
+            ; turn into bunny
+            lda $5d : cmp #$04 : beq + ; if swimming, continue
+                lda #$17 : sta $5d
+            + lda #$01 : sta $02e0 : sta $56
+            bra .return
+
+        .nobunny
+        lda $5d : cmp #$17 : bne + ; retain current state unless bunny
+            stz $5d
+        + stz $02e0 : stz $56
+
+    .return
+    rts
 }
 OWSpecialTransition:
 {
@@ -531,7 +550,7 @@ OWNorthEdges:
 ;   Min    Max   Width   Mid OW Slot/OWID VRAM *FREE* Dest Index
 dw $00a0, $00a0, $0000, $00a0, $0000, $0000, $0000, $0040 ;Lost Woods
 dw $0458, $0540, $00e8, $04cc, $0a0a, $0000, $0000, $0000
-dw $0f70, $0f90, $0020, $0f80, $0f0f, $0000, $0000, $0041
+dw $0f38, $0f60, $0028, $0f4c, $0f0f, $0000, $0000, $0041
 dw $0058, $0058, $0000, $0058, $1010, $0000, $0000, $0001
 dw $0178, $0178, $0000, $0178, $1010, $0000, $0000, $0002
 dw $0388, $0388, $0000, $0388, $1111, $0000, $0000, $0003

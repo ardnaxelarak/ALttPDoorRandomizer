@@ -969,7 +969,7 @@ OWTileRegions = bidict({
 })
 
 OWTileGroups = {
-    ("Woods", "Regular"): (
+    ("Woods", "Regular", "None"): (
         [
             0x00, 0x2d, 0x80
         ],
@@ -977,7 +977,7 @@ OWTileGroups = {
             0x40, 0x6d
         ]
     ),
-    ("Lumberjack", "Regular"): (
+    ("Lumberjack", "Regular", "None"): (
         [
             0x02
         ],
@@ -985,7 +985,7 @@ OWTileGroups = {
             0x42
         ]
     ),
-    ("West Mountain", "Regular"): (
+    ("West Mountain", "Regular", "None"): (
         [
             0x03
         ],
@@ -993,7 +993,7 @@ OWTileGroups = {
             0x43
         ]
     ),
-    ("East Mountain", "Regular"): (
+    ("East Mountain", "Regular", "None"): (
         [
             0x05
         ],
@@ -1001,23 +1001,31 @@ OWTileGroups = {
             0x45
         ]
     ),
-    ("East Mountain", "Entrance"): (
+    ("East Mountain", "Entrance", "None"): (
         [
-            0x07, 
+            0x07
         ],
         [
             0x47
         ]
     ),
-    ("Lake", "Regular"): (
+    ("Lake", "Regular", "Zora"): (
         [
-            0x0f, 0x35, 0x81
+            0x0f, 0x81
         ],
         [
-            0x4f, 0x75
+            0x4f
         ]
     ),
-    ("Mountain Entry", "Regular"): (
+    ("Lake", "Regular", "Lake"): (
+        [
+            0x35
+        ],
+        [
+            0x75
+        ]
+    ),
+    ("Mountain Entry", "Regular", "None"): (
         [
             0x0a
         ],
@@ -1025,7 +1033,7 @@ OWTileGroups = {
             0x4a
         ]
     ),
-    ("Woods Pass", "Regular"): (
+    ("Woods Pass", "Regular", "None"): (
         [
             0x10
         ],
@@ -1033,7 +1041,7 @@ OWTileGroups = {
             0x50
         ]
     ),
-    ("Fortune", "Regular"): (
+    ("Fortune", "Regular", "None"): (
         [
             0x11
         ],
@@ -1041,15 +1049,39 @@ OWTileGroups = {
             0x51
         ]
     ),
-    ("Whirlpools", "Regular"): (
+    ("Whirlpools", "Regular", "Pond"): (
         [
-            0x12, 0x15, 0x33, 0x3f
+            0x12
         ],
         [
-            0x52, 0x55, 0x73, 0x7f
+            0x52
         ]
     ),
-    ("Castle", "Entrance"): (
+    ("Whirlpools", "Regular", "Witch"): (
+        [
+            0x15
+        ],
+        [
+            0x55
+        ]
+    ),
+    ("Whirlpools", "Regular", "CWhirlpool"): (
+        [
+            0x33
+        ],
+        [
+            0x73
+        ]
+    ),
+    ("Whirlpools", "Regular", "Southeast"): (
+        [
+            0x3f
+        ],
+        [
+            0x7f
+        ]
+    ),
+    ("Castle", "Entrance", "None"): (
         [
             0x13, 0x14
         ],
@@ -1057,7 +1089,7 @@ OWTileGroups = {
             0x53, 0x54
         ]
     ),
-    ("Castle", "Regular"): (
+    ("Castle", "Regular", "None"): (
         [
             0x1a, 0x1b
         ],
@@ -1065,7 +1097,7 @@ OWTileGroups = {
             0x5a, 0x5b
         ]
     ),
-    ("Witch", "Regular"): (
+    ("Witch", "Regular", "None"): (
         [
             0x16
         ],
@@ -1073,7 +1105,7 @@ OWTileGroups = {
             0x56
         ]
     ),
-    ("Water Approach", "Regular"): (
+    ("Water Approach", "Regular", "None"): (
         [
             0x17
         ],
@@ -1081,7 +1113,7 @@ OWTileGroups = {
             0x57
         ]
     ),
-    ("Village", "Regular"): (
+    ("Village", "Regular", "None"): (
         [
             0x18
         ],
@@ -1089,7 +1121,7 @@ OWTileGroups = {
             0x58
         ]
     ),
-    ("Wooden Bridge", "Regular"): (
+    ("Wooden Bridge", "Regular", "None"): (
         [
             0x1d
         ],
@@ -1097,7 +1129,7 @@ OWTileGroups = {
             0x5d
         ]
     ),
-    ("Eastern", "Regular"): (
+    ("Eastern", "Regular", "None"): (
         [
             0x1e
         ],
@@ -1105,7 +1137,7 @@ OWTileGroups = {
             0x5e
         ]
     ),
-    ("Blacksmith", "Regular"): (
+    ("Blacksmith", "Regular", "None"): (
         [
             0x22
         ],
@@ -1113,7 +1145,7 @@ OWTileGroups = {
             0x62
         ]
     ),
-    ("Dunes", "Regular"): (
+    ("Dunes", "Regular", "None"): (
         [
             0x25
         ],
@@ -1121,7 +1153,7 @@ OWTileGroups = {
             0x65
         ]
     ),
-    ("Game", "Regular"): (
+    ("Game", "Regular", "None"): (
         [
             0x28, 0x29
         ],
@@ -1129,7 +1161,7 @@ OWTileGroups = {
             0x68, 0x69
         ]
     ),
-    ("Grove", "Regular"): (
+    ("Grove", "Regular", "None"): (
         [
             0x2a
         ],
@@ -1137,7 +1169,7 @@ OWTileGroups = {
             0x6a
         ]
     ),
-    ("Central Bonk Rocks", "Regular"): (
+    ("Central Bonk Rocks", "Regular", "None"): (
         [
             0x2b
         ],
@@ -1145,7 +1177,7 @@ OWTileGroups = {
             0x6b
         ]
     ),
-    # ("Links", "Regular"): (
+    # ("Links", "Regular", "None"): (
     #     [
     #         0x2c
     #     ],
@@ -1153,7 +1185,7 @@ OWTileGroups = {
     #         0x6c
     #     ]
     # ),
-    ("Tree Line", "Regular"): (
+    ("Tree Line", "Regular", "None"): (
         [
             0x2e
         ],
@@ -1161,7 +1193,7 @@ OWTileGroups = {
             0x6e
         ]
     ),
-    ("Nook", "Regular"): (
+    ("Nook", "Regular", "None"): (
         [
             0x2f
         ],
@@ -1169,7 +1201,7 @@ OWTileGroups = {
             0x6f
         ]
     ),
-    ("Desert", "Regular"): (
+    ("Desert", "Regular", "None"): (
         [
             0x30, 0x3a
         ],
@@ -1177,7 +1209,7 @@ OWTileGroups = {
             0x70, 0x7a
         ]
     ),
-    ("Grove Approach", "Regular"): (
+    ("Grove Approach", "Regular", "None"): (
         [
             0x32
         ],
@@ -1185,7 +1217,7 @@ OWTileGroups = {
             0x72
         ]
     ),
-    ("Hype", "Regular"): (
+    ("Hype", "Regular", "None"): (
         [
             0x34
         ],
@@ -1193,7 +1225,7 @@ OWTileGroups = {
             0x74
         ]
     ),
-    ("Shopping Mall", "Regular"): (
+    ("Shopping Mall", "Regular", "None"): (
         [
             0x37
         ],
@@ -1201,7 +1233,7 @@ OWTileGroups = {
             0x77
         ]
     ),
-    ("Swamp", "Regular"): (
+    ("Swamp", "Regular", "None"): (
         [
             0x3b
         ],
@@ -1209,7 +1241,7 @@ OWTileGroups = {
             0x7b
         ]
     ),
-    ("South Pass", "Regular"): (
+    ("South Pass", "Regular", "None"): (
         [
             0x3c
         ],
@@ -1354,3 +1386,459 @@ parallel_links = bidict({'Lost Woods SW': 'Skull Woods SW',
                         'Octoballoon WC': 'Bomber Corner WC',
                         'Octoballoon WS': 'Bomber Corner WS'
                         })
+
+OWExitTypes = {
+    'Ledge': ['West Death Mountain Drop',
+            'Spectacle Rock Drop',
+            'East Death Mountain Spiral Ledge Drop',
+            'East Death Mountain Fairy Ledge Drop',
+            'East Death Mountain Mimic Ledge Drop',
+            'Spiral Ledge Drop',
+            'Mimic Ledge Drop',
+            'Fairy Ascension Ledge Drop',
+            'Fairy Ascension Plateau Ledge Drop',
+            'TR Pegs Ledge Drop',
+            'Mountain Entry Entrance Ledge Drop',
+            'Mountain Entry Ledge Drop',
+            'Zora Waterfall Water Drop',
+            'Bonk Rock Ledge Drop',
+            'Graveyard Ledge Drop',
+            'River Bend Water Drop',
+            'River Bend East Water Drop',
+            'Potion Shop Water Drop',
+            'Potion Shop Northeast Water Drop',
+            'Zora Approach Bottom Ledge Drop',
+            'Zora Approach Water Drop',
+            'Zora Approach Ledge Drop',
+            'Hyrule Castle Ledge Drop',
+            'Hyrule Castle Ledge Courtyard Drop',
+            'Wooden Bridge Water Drop',
+            'Wooden Bridge Northeast Water Drop',
+            'Sand Dunes Ledge Drop',
+            'Stone Bridge East Ledge Drop',
+            'Tree Line Ledge Drop',
+            'Eastern Palace Ledge Drop',
+            'Maze Race Ledge Drop',
+            'Central Bonk Rocks Cliff Ledge Drop',
+            'Links House Cliff Ledge Drop',
+            'Stone Bridge Cliff Ledge Drop',
+            'Lake Hylia Area Cliff Ledge Drop',
+            'Lake Hylia Island FAWT Ledge Drop',
+            'Stone Bridge EC Cliff Water Drop',
+            'Tree Line WC Cliff Water Drop',
+            'C Whirlpool Outer Cliff Ledge Drop',
+            'C Whirlpool Cliff Ledge Drop',
+            'South Teleporter Cliff Ledge Drop',
+            'Statues Cliff Ledge Drop',
+            'Desert Ledge Drop',
+            'Checkerboard Ledge Drop',
+            'Desert Mouth Drop',
+            'Desert Teleporter Drop',
+            'Desert Boss Cliff Ledge Drop',
+            'Checkerboard Cliff Ledge Drop',
+            'Suburb Cliff Ledge Drop',
+            'Cave 45 Cliff Ledge Drop',
+            'Desert C Whirlpool Cliff Ledge Drop',
+            'Desert Pass Cliff Ledge Drop',
+            'Desert Pass Southeast Cliff Ledge Drop',
+            'Dam Cliff Ledge Drop',
+            'Bombos Tablet Drop',
+            'Cave 45 Ledge Drop',
+            'Lake Hylia Water Drop',
+            'Lake Hylia South Water Drop',
+            'Lake Hylia Northeast Water Drop',
+            'Lake Hylia Central Water Drop',
+            'Lake Hylia Island Water Drop',
+            'Desert Pass Ledge Drop',
+            'Octoballoon Water Drop',
+            'Octoballoon Waterfall Water Drop',
+            'Dark Death Mountain Drop (West)',
+            'Dark Death Mountain Drop (East)',
+            'Floating Island Drop',
+            'Turtle Rock Tail Ledge Drop',
+            'Turtle Rock Ledge Drop',
+            'Bumper Cave Ledge Drop',
+            'Bumper Cave Entrance Drop',
+            'Qirn Jump Water Drop',
+            'Qirn Jump East Water Drop',
+            'Dark Witch Water Drop',
+            'Dark Witch Northeast Water Drop',
+            'Catfish Approach Bottom Ledge Drop',
+            'Catfish Approach Water Drop',
+            'Catfish Approach Ledge Drop',
+            'Shield Shop Fence (Outer) Ledge Drop',
+            'Shield Shop Fence (Inner) Ledge Drop',
+            'Pyramid Exit Ledge Drop',
+            'Broken Bridge Water Drop',
+            'Broken Bridge Northeast Water Drop',
+            'Broken Bridge West Water Drop',
+            'Dark Dunes Ledge Drop',
+            'Hammer Bridge North Ledge Drop',
+            'Dark Tree Line Ledge Drop',
+            'Palace of Darkness Ledge Drop',
+            'Dig Game To Ledge Drop',
+            'Dig Game Ledge Drop',
+            'Frog Ledge Drop',
+            'Hammer Bridge Water Drop',
+            'Dark Bonk Rocks Cliff Ledge Drop',
+            'Bomb Shop Cliff Ledge Drop',
+            'Hammer Bridge South Cliff Ledge Drop',
+            'Ice Lake Area Cliff Ledge Drop',
+            'Ice Palace Island FAWT Ledge Drop',
+            'Hammer Bridge EC Cliff Water Drop',
+            'Dark Tree Line WC Cliff Water Drop',
+            'Dark C Whirlpool Outer Cliff Ledge Drop',
+            'Dark C Whirlpool Cliff Ledge Drop',
+            'Hype Cliff Ledge Drop',
+            'Dark South Teleporter Cliff Ledge Drop',
+            'Misery Mire Teleporter Ledge Drop',
+            'Mire Cliff Ledge Drop',
+            'Archery Game Cliff Ledge Drop',
+            'Stumpy Approach Cliff Ledge Drop',
+            'Mire C Whirlpool Cliff Ledge Drop',
+            'Swamp Nook Cliff Ledge Drop',
+            'Swamp Cliff Ledge Drop',
+            'Ice Lake Water Drop',
+            'Ice Lake Northeast Water Drop',
+            'Ice Lake Southwest Water Drop',
+            'Ice Lake Southeast Water Drop',
+            'Bomber Corner Water Drop',
+            'Bomber Corner Waterfall Water Drop'
+        ],
+    'OWTerrain': ['Lost Woods Bush (West)',
+                'Lost Woods Bush (East)',
+                'Spectacle Rock Approach',
+                'Spectacle Rock Leave',
+                'DM Hammer Bridge (West)',
+                'DM Hammer Bridge (East)',
+                'Floating Island Bridge (East)',
+                'Fairy Ascension Rocks (North)',
+                'DM Broken Bridge (West)',
+                'DM Broken Bridge (East)',
+                'Fairy Ascension Rocks (South)',
+                'Floating Island Bridge (West)',
+                'TR Pegs Ledge Entry',
+                'TR Pegs Ledge Leave',
+                'Mountain Entry Entrance Rock (West)',
+                'Mountain Entry Entrance Rock (East)',
+                'Zora Waterfall Water Entry',
+                'Waterfall of Wishing Cave Entry',
+                'Zora Waterfall Landing',
+                'Kings Grave Outer Rocks',
+                'Graveyard Ladder (Bottom)',
+                'Graveyard Ladder (Top)',
+                'Kings Grave Inner Rocks',
+                'River Bend West Pier',
+                'River Bend East Pier',
+                'Potion Shop Rock (South)',
+                'Potion Shop Rock (North)',
+                'Zora Approach Rocks (West)',
+                'Zora Approach Rocks (East)',
+                'Kakariko Southwest Bush (North)',
+                'Kakariko Yard Bush (South)',
+                'Kakariko Southwest Bush (South)',
+                'Kakariko Yard Bush (North)',
+                'Hyrule Castle Main Gate (South)',
+                'Hyrule Castle Inner East Rock',
+                'Hyrule Castle Southwest Bush (North)',
+                'Hyrule Castle Southwest Bush (South)',
+                'Hyrule Castle Courtyard Bush (South)',
+                'Hyrule Castle Main Gate (North)',
+                'Hyrule Castle Courtyard Bush (North)',
+                'Hyrule Castle Outer East Rock',
+                'Wooden Bridge Bush (South)',
+                'Wooden Bridge Bush (North)',
+                'Bat Cave Ledge Peg',
+                'Bat Cave Ledge Peg (East)',
+                'Maze Race Game',
+                'Desert Palace Statue Move',
+                'Checkerboard Ledge Approach',
+                'Desert Ledge Outer Rocks',
+                'Desert Ledge Inner Rocks',
+                'Checkerboard Ledge Leave',
+                'Flute Boy Bush (South)',
+                'Cave 45 Inverted Approach',
+                'Flute Boy Bush (North)',
+                'Cave 45 Inverted Leave',
+                'C Whirlpool Rock (Bottom)',
+                'C Whirlpool Water Entry',
+                'C Whirlpool Landing',
+                'C Whirlpool Rock (Top)',
+                'Statues Water Entry',
+                'Statues Landing',
+                'Lake Hylia Central Island Pier',
+                'Lake Hylia Island Pier',
+                'Lake Hylia West Pier',
+                'Lake Hylia East Pier',
+                'Desert Pass Ladder (South)',
+                'Desert Pass Rocks (North)',
+                'Desert Pass Rocks (South)',
+                'Desert Pass Ladder (North)',
+                'Octoballoon Pier',
+                'Skull Woods Bush Rock (East)',
+                'Skull Woods Bush Rock (West)',
+                'Skull Woods Forgotten Bush (West)',
+                'Skull Woods Forgotten Bush (East)',
+                'GT Entry Approach',
+                'Dark Death Mountain Ladder (North)',
+                'GT Entry Leave',
+                'Dark Death Mountain Ladder (South)',
+                'Bumper Cave Entrance Rock',
+                'Skull Woods Pass Bush Row (West)',
+                'Skull Woods Pass Bush Row (East)',
+                'Skull Woods Pass Rock (Top)',
+                'Skull Woods Pass Rock (Bottom)',
+                'Dark Graveyard Bush (South)',
+                'Dark Graveyard Bush (North)',
+                'Qirn Jump Pier',
+                'Dark Witch Rock (South)',
+                'Dark Witch Rock (North)',
+                'Catfish Approach Rocks (West)',
+                'Catfish Approach Rocks (East)',
+                'Village of Outcasts Pegs',
+                'Grassy Lawn Pegs',
+                'Broken Bridge Hammer Rock (South)',
+                'Broken Bridge Hammer Rock (North)',
+                'Broken Bridge Hookshot Gap',
+                'Peg Area Rocks (West)',
+                'Peg Area Rocks (East)',
+                'Frog Rock (Outer)',
+                'Archery Game Rock (North)',
+                'Frog Rock (Inner)',
+                'Archery Game Rock (South)',
+                'Hammer Bridge Pegs (North)',
+                'Hammer Bridge Pegs (South)',
+                'Hammer Bridge Pier',
+                'Stumpy Approach Bush (South)',
+                'Stumpy Approach Bush (North)',
+                'Dark C Whirlpool Rock (Bottom)',
+                'Dark C Whirlpool Water Entry',
+                'Dark C Whirlpool Landing',
+                'Dark C Whirlpool Rock (Top)',
+                'Hype Cave Water Entry',
+                'Hype Cave Landing',
+                'Ice Lake Northeast Pier',
+                'Ice Lake Moat Water Entry',
+                'Ice Lake Northeast Pier Bomb Jump',
+                'Ice Palace Approach',
+                'Ice Palace Leave',
+                'Bomber Corner Pier'
+            ],
+    'Portal': ['West Death Mountain Teleporter',
+                'East Death Mountain Teleporter',
+                'TR Pegs Teleporter',
+                'Kakariko Teleporter (Hammer)',
+                'Kakariko Teleporter (Rock)',
+                'Top of Pyramid',
+                'Top of Pyramid (Inner)',
+                'East Hyrule Teleporter',
+                'Desert Teleporter',
+                'South Hyrule Teleporter',
+                'Lake Hylia Teleporter',
+                'Dark Death Mountain Teleporter (West)',
+                'Dark Death Mountain Teleporter (East)',
+                'Turtle Rock Teleporter',
+                'West Dark World Teleporter (Hammer)',
+                'West Dark World Teleporter (Rock)',
+                'Post Aga Inverted Teleporter',
+                'East Dark World Teleporter',
+                'Misery Mire Teleporter',
+                'South Dark World Teleporter',
+                'Ice Palace Teleporter'
+            ],
+    'Whirlpool': ['Zora Whirlpool',
+                'Kakariko Pond Whirlpool',
+                'River Bend Whirlpool',
+                'C Whirlpool',
+                'Lake Hylia Whirlpool',
+                'Octoballoon Whirlpool',
+                'Qirn Jump Whirlpool',
+                'Bomber Corner Whirlpool'
+            ],
+    'Mirror': ['Skull Woods Back Mirror Spot',
+                'Skull Woods Forgotten (West) Mirror Spot',
+                'Skull Woods Forgotten (East) Mirror Spot',
+                'Skull Woods Portal Entry Mirror Spot',
+                'Skull Woods Forgotten (Middle) Mirror Spot',
+                'Skull Woods Front Mirror Spot',
+                'Dark Lumberjack Mirror Spot',
+                'West Dark Death Mountain (Top) Mirror Spot',
+                'Bubble Boy Mirror Spot',
+                'West Dark Death Mountain (Bottom) Mirror Spot',
+                'East Dark Death Mountain (Top West) Mirror Spot',
+                'East Dark Death Mountain (Top East) Mirror Spot',
+                'TR Ledge (West) Mirror Spot',
+                'TR Ledge (East) Mirror Spot',
+                'TR Isolated Mirror Spot',
+                'East Dark Death Mountain (Bottom Plateau) Mirror Spot',
+                'East Dark Death Mountain (Bottom Left) Mirror Spot',
+                'East Dark Death Mountain (Bottom) Mirror Spot',
+                'Dark Floating Island Mirror Spot',
+                'Turtle Rock Mirror Spot',
+                'Turtle Rock Ledge Mirror Spot',
+                'Bumper Cave Area Mirror Spot',
+                'Bumper Cave Entry Mirror Spot',
+                'Bumper Cave Ledge Mirror Spot',
+                'Catfish Mirror Spot',
+                'Skull Woods Pass West Mirror Spot',
+                'Skull Woods Pass East Top Mirror Spot',
+                'Skull Woods Pass East Bottom Mirror Spot',
+                'Outcast Fortune Mirror Spot',
+                'Outcast Pond Mirror Spot',
+                'Dark Chapel Mirror Spot',
+                'Dark Chapel Ledge Mirror Spot',
+                'Dark Graveyard Mirror Spot',
+                'Dark Graveyard Ledge Mirror Spot',
+                'Dark Graveyard Grave Mirror Spot',
+                'Qirn Jump Mirror Spot',
+                'Qirn Jump East Mirror Spot',
+                'Dark Witch Mirror Spot',
+                'Dark Witch Northeast Mirror Spot',
+                'Catfish Approach Mirror Spot',
+                'Catfish Approach Ledge Mirror Spot',
+                'Village of Outcasts Mirror Spot',
+                'Village of Outcasts Southwest Mirror Spot',
+                'Hammer House Mirror Spot',
+                'Shield Shop Mirror Spot',
+                'Pyramid Mirror Spot',
+                'Pyramid Pass Mirror Spot',
+                'Pyramid Courtyard Mirror Spot',
+                'Pyramid Uncle Mirror Spot',
+                'Pyramid From Ledge Mirror Spot',
+                'Pyramid Entry Mirror Spot',
+                'Broken Bridge West Mirror Spot',
+                'Broken Bridge East Mirror Spot',
+                'Broken Bridge Northeast Mirror Spot',
+                'Palace of Darkness Mirror Spot',
+                'Hammer Pegs Mirror Spot',
+                'Hammer Pegs Entry Mirror Spot',
+                'Dark Dunes Mirror Spot',
+                'Dig Game Mirror Spot',
+                'Dig Game Ledge Mirror Spot',
+                'Frog Mirror Spot',
+                'Frog Prison Mirror Spot',
+                'Archery Game Mirror Spot',
+                'Stumpy Mirror Spot',
+                'Stumpy Pass Mirror Spot',
+                'Dark Bonk Rocks Mirror Spot',
+                'Big Bomb Shop Mirror Spot',
+                'Hammer Bridge North Mirror Spot',
+                'Hammer Bridge South Mirror Spot',
+                'Dark Hobo Mirror Spot',
+                'Dark Tree Line Mirror Spot',
+                'Darkness Nook Mirror Spot',
+                'Misery Mire Mirror Spot',
+                'Misery Mire Ledge Mirror Spot',
+                'Misery Mire Blocked Mirror Spot',
+                'Misery Mire Main Mirror Spot',
+                'Stumpy Approach Mirror Spot',
+                'Stumpy Bush Entry Mirror Spot',
+                'Dark C Whirlpool Mirror Spot',
+                'Dark C Whirlpool Outer Mirror Spot',
+                'Hype Cave Mirror Spot',
+                'Ice Lake Mirror Spot',
+                'Ice Lake Southwest Mirror Spot',
+                'Ice Lake Southeast Mirror Spot',
+                'Ice Lake Northeast Mirror Spot',
+                'Ice Palace Mirror Spot',
+                'Shopping Mall Mirror Spot',
+                'Swamp Nook Mirror Spot',
+                'Swamp Nook Southeast Mirror Spot',
+                'Swamp Nook Pegs Mirror Spot',
+                'Swamp Mirror Spot',
+                'Dark South Pass Mirror Spot',
+                'Bomber Corner Mirror Spot',
+                'Lost Woods East Mirror Spot',
+                'Lost Woods Entry Mirror Spot',
+                'Lost Woods Pedestal Mirror Spot',
+                'Lost Woods Southwest Mirror Spot',
+                'Lost Woods East (Forgotten) Mirror Spot',
+                'Lost Woods West (Forgotten) Mirror Spot',
+                'Lumberjack Mirror Spot',
+                'West Death Mountain (Top) Mirror Spot',
+                'Spectacle Rock Mirror Spot',
+                'East Death Mountain (Top West) Mirror Spot',
+                'East Death Mountain (Top East) Mirror Spot',
+                'Fairy Ascension Mirror Spot',
+                'Death Mountain Bridge Mirror Spot',
+                'Spiral Cave Mirror Spot',
+                'Mimic Cave Mirror Spot',
+                'Isolated Ledge Mirror Spot',
+                'Floating Island Mirror Spot',
+                'TR Pegs Area Mirror Spot',
+                'Mountain Entry Mirror Spot',
+                'Mountain Entry Entrance Mirror Spot',
+                'Mountain Entry Ledge Mirror Spot',
+                'Zora Waterfall Mirror Spot',
+                'Lost Woods Pass West Mirror Spot',
+                'Lost Woods Pass East Top Mirror Spot',
+                'Lost Woods Pass East Bottom Mirror Spot',
+                'Kakariko Fortune Mirror Spot',
+                'Kakariko Pond Mirror Spot',
+                'Sanctuary Mirror Spot',
+                'Bonk Rock Ledge Mirror Spot',
+                'Graveyard Ledge Mirror Spot',
+                'Kings Grave Mirror Spot',
+                'River Bend Mirror Spot',
+                'River Bend East Mirror Spot',
+                'Potion Shop Mirror Spot',
+                'Potion Shop Northeast Mirror Spot',
+                'Zora Approach Mirror Spot',
+                'Zora Approach Ledge Mirror Spot',
+                'Kakariko Mirror Spot',
+                'Kakariko Grass Mirror Spot',
+                'Forgotton Forest Mirror Spot',
+                'Forgotton Forest Fence Mirror Spot',
+                'HC Ledge Mirror Spot',
+                'HC Courtyard Mirror Spot',
+                'HC Area Mirror Spot',
+                'HC East Entry Mirror Spot',
+                'HC Courtyard Left Mirror Spot',
+                'HC Area South Mirror Spot',
+                'Wooden Bridge Mirror Spot',
+                'Wooden Bridge Northeast Mirror Spot',
+                'Wooden Bridge West Mirror Spot',
+                'Eastern Palace Mirror Spot',
+                'Blacksmith Entry Mirror Spot',
+                'Blacksmith Mirror Spot',
+                'Bat Cave Ledge Mirror Spot',
+                'Sand Dunes Mirror Spot',
+                'Maze Race Mirror Spot',
+                'Maze Race Ledge Mirror Spot',
+                'Kakariko Suburb Mirror Spot',
+                'Kakariko Suburb South Mirror Spot',
+                'Flute Boy Mirror Spot',
+                'Flute Boy Pass Mirror Spot',
+                'Central Bonk Rocks Mirror Spot',
+                'Links House Mirror Spot',
+                'Stone Bridge Mirror Spot',
+                'Stone Bridge South Mirror Spot',
+                'Hobo Mirror Spot',
+                'Tree Line Mirror Spot',
+                'Eastern Nook Mirror Spot',
+                'Desert Mirror Spot',
+                'Desert Ledge Mirror Spot',
+                'Checkerboard Mirror Spot',
+                'DP Stairs Mirror Spot',
+                'DP Entrance (North) Mirror Spot',
+                'Bombos Tablet Ledge Mirror Spot',
+                'Cave 45 Mirror Spot',
+                'Flute Boy Entry Mirror Spot',
+                'C Whirlpool Mirror Spot',
+                'C Whirlpool Outer Mirror Spot',
+                'Statues Mirror Spot',
+                'Lake Hylia Mirror Spot',
+                'Lake Hylia Northeast Mirror Spot',
+                'South Shore Mirror Spot',
+                'South Shore East Mirror Spot',
+                'Lake Hylia Island Mirror Spot',
+                'Lake Hylia Water Mirror Spot',
+                'Lake Hylia Central Island Mirror Spot',
+                'Ice Cave Mirror Spot',
+                'Desert Pass Ledge Mirror Spot',
+                'Desert Pass Mirror Spot',
+                'Dam Mirror Spot',
+                'South Pass Mirror Spot',
+                'Octoballoon Mirror Spot'
+            ]
+}

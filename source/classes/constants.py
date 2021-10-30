@@ -80,6 +80,7 @@ SETTINGSTOPROCESS = {
       "crossed": "ow_crossed",
       "keepsimilar": "ow_keepsimilar",
       "mixed": "ow_mixed",
+      "whirlpool": "ow_whirlpool",
       "overworldflute": "ow_fluteshuffle"
     },
     "entrance": {

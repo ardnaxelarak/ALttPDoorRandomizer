@@ -136,6 +136,10 @@
     "action": "store_true",
     "type": "bool"
   },
+  "ow_whirlpool": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "ow_fluteshuffle": {
     "choices": [
       "vanilla",
@@ -149,6 +153,8 @@
       "simple",
       "restricted",
       "full",
+      "lite",
+      "lean",
       "crossed",
       "insanity",
       "dungeonsfull",

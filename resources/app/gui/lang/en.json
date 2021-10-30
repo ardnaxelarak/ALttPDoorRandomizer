@@ -123,8 +123,12 @@
     "randomizer.overworld.crossed.grouped": "Grouped",
     "randomizer.overworld.crossed.limited": "Limited",
     "randomizer.overworld.crossed.chaos": "Chaos",
+
     "randomizer.overworld.keepsimilar": "Keep Similar Edges Together",
+    
     "randomizer.overworld.mixed": "Tile Swap (Mixed)",
+
+    "randomizer.overworld.whirlpool": "Whirlpool Shuffle",
 
     "randomizer.overworld.overworldflute": "Flute Shuffle",
     "randomizer.overworld.overworldflute.vanilla": "Vanilla",
@@ -140,6 +144,8 @@
     "randomizer.entrance.entranceshuffle.simple": "Simple",
     "randomizer.entrance.entranceshuffle.restricted": "Restricted",
     "randomizer.entrance.entranceshuffle.full": "Full",
+    "randomizer.entrance.entranceshuffle.lite": "Lite",
+    "randomizer.entrance.entranceshuffle.lean": "Lean",
     "randomizer.entrance.entranceshuffle.crossed": "Crossed",
     "randomizer.entrance.entranceshuffle.insanity": "Insanity",
     "randomizer.entrance.entranceshuffle.restricted_legacy": "Restricted (Legacy)",

@@ -24,7 +24,8 @@ def set_rules(world, player):
     ow_bunny_rules(world, player)
 
     if world.mode[player] == 'standard':
-        standard_rules(world, player)
+        if world.get_region('Big Bomb Shop', player).entrances: # just some location that is placed late in the ER algorithm, prevent standard rules from applying when trying to search reachability in the overworld
+            standard_rules(world, player)
     elif world.mode[player] == 'open' or world.mode[player] == 'inverted':
         open_rules(world, player)
     else:
@@ -106,14 +107,15 @@ def mirrorless_path_to_castle_courtyard(world, player):
     queue = collections.deque([(start.connected_region, [])])
     while queue:
         (current, path) = queue.popleft()
-        for entrance in current.exits:
-            if entrance.connected_region not in seen:
-                new_path = path + [entrance.access_rule]
-                if entrance.connected_region == target:
-                    return new_path
-                else:
-                    queue.append((entrance.connected_region, new_path))
-                    seen.add(entrance.connected_region)
+        if current:
+            for entrance in current.exits:
+                if entrance.connected_region not in seen:
+                    new_path = path + [entrance.access_rule]
+                    if entrance.connected_region == target:
+                        return new_path
+                    else:
+                        queue.append((entrance.connected_region, new_path))
+                        seen.add(entrance.connected_region)
 
 def set_rule(spot, rule):
     spot.access_rule = rule
@@ -340,7 +342,12 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Mire Lobby Gap', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Post-Gap Gap', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Falling Bridge WN', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))  # this is due to the fact the the door opposite is blocked
-    set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.bomb_mode_check(player, 1) and (state.has_real_sword(player) or state.has('Fire Rod', player) or state.has('Ice Rod', player) or state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player) or state.has_bomb_level(player, 1)))  # need to defeat wizzrobes, bombs don't work ...
+    set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.bomb_mode_check(player, 1) and 
+            (state.has_real_sword(player) or
+             (state.has('Fire Rod', player) and (state.can_use_bombs(player) or state.can_extend_magic(player, 9))) or  # 9 fr shots or 8 with some bombs
+             (state.has('Ice Rod', player) and state.can_use_bombs(player)) or  # freeze popo and throw, bomb to finish
+             state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player) or state.has_bomb_level(player, 1)))  # need to defeat wizzrobes, bombs don't work ...
+            # byrna could work with sufficient magic
     set_rule(world.get_location('Misery Mire - Spike Chest', player), lambda state: (state.world.can_take_damage and state.has_hearts(player, 4)) or state.has('Cane of Byrna', player) or state.has('Cape', player))
     set_rule(world.get_entrance('Mire Left Bridge Hook Path', player), lambda state: state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Tile Room NW', player), lambda state: state.has_fire_source(player))
@@ -771,6 +778,7 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Hyrule Castle Inner East Rock', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Hyrule Castle Outer East Rock', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Bat Cave Ledge Peg', player), lambda state: state.has('Hammer', player))
+    set_rule(world.get_entrance('Bat Cave Ledge Peg (East)', player), lambda state: state.has('Hammer', player))
     set_rule(world.get_entrance('Desert Palace Statue Move', player), lambda state: state.has('Book of Mudora', player))
     set_rule(world.get_entrance('Desert Ledge Outer Rocks', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Desert Ledge Inner Rocks', player), lambda state: state.can_lift_rocks(player))
@@ -857,7 +865,7 @@ def ow_rules(world, player):
     if world.mode[player] != 'inverted':
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_sword(player, 2) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
         set_rule(world.get_entrance('GT Entry Approach', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
-        set_rule(world.get_entrance('GT Entry Leave', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player) or state.world.shuffle[player] in ('restricted', 'full', 'crossed', 'insanity'))
+        set_rule(world.get_entrance('GT Entry Leave', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player) or state.world.shuffle[player] in ('restricted', 'full', 'lite', 'lean', 'crossed', 'insanity'))
     else:
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
 
@@ -1017,6 +1025,7 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('HC Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('HC Courtyard Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('HC East Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
+        set_rule(world.get_entrance('HC Courtyard Left Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('HC Area South Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Top of Pyramid', player), lambda state: state.has('Beat Agahnim 1', player))
         set_rule(world.get_entrance('Top of Pyramid (Inner)', player), lambda state: state.has('Beat Agahnim 1', player))
@@ -1263,6 +1272,7 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('Wooden Bridge Bush (North)', player), player)
     add_bunny_rule(world.get_entrance('Wooden Bridge Bush (South)', player), player)
     add_bunny_rule(world.get_entrance('Bat Cave Ledge Peg', player), player)
+    add_bunny_rule(world.get_entrance('Bat Cave Ledge Peg (East)', player), player)
     add_bunny_rule(world.get_entrance('Desert Ledge Outer Rocks', player), player)
     add_bunny_rule(world.get_entrance('Desert Ledge Inner Rocks', player), player)
     add_bunny_rule(world.get_entrance('Flute Boy Bush (North)', player), player)
@@ -1356,7 +1366,8 @@ def no_glitches_rules(world, player):
     #     add_rule(world.get_location(location, player), lambda state: state.has('Hookshot', player))
     set_rule(world.get_entrance('Paradox Cave Push Block Reverse', player), lambda state: False)  # no glitches does not require block override
     forbid_bomb_jump_requirements(world, player)
-    add_conditional_lamps(world, player)
+    if world.get_region('Big Bomb Shop', player).entrances: # just some location that is placed late in the ER algorithm, prevent underworld rules from applying when trying to search reachability in the overworld
+        add_conditional_lamps(world, player)
 
 
 def fake_flipper_rules(world, player):
@@ -1895,7 +1906,7 @@ def set_big_bomb_rules(world, player):
             add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: (state.has('Flippers', player) or state.can_flute(player)))
         
         #TODO: Fix red bomb rules, artifically adding a bunch of rules to help reduce unbeatable seeds in OW shuffle
-        add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False)
+        set_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False)
         #add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: state.can_reach('Pyramid Area', 'Region', player))
         #add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: (state.can_lift_heavy_rocks(player) and state.has('Flippers', player) and state.can_flute(player) and state.has('Hammer', player) and state.has('Hookshot', player) and state.has_Pearl(player) and state.has_Mirror(player)))
 
@@ -2092,8 +2103,8 @@ def set_inverted_big_bomb_rules(world, player):
         else:
             raise Exception('No logic found for routing from %s to the pyramid.' % bombshop_entrance.name)
         
-        if world.owShuffle[player] != 'vanilla' or world.owMixed[player] or world.owCrossed[player] != 'none':
-            add_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False) #temp disable progression until routing to Pyramid get be guaranteed
+        if world.owShuffle[player] != 'vanilla' or world.owMixed[player] or world.owCrossed[player] not in ['none', 'polar']:
+            set_rule(world.get_entrance('Pyramid Fairy', player), lambda state: False) #temp disable progression until routing to Pyramid get be guaranteed
 
 
 def set_bunny_rules(world, player, inverted):
@@ -2232,7 +2243,7 @@ def set_bunny_rules(world, player, inverted):
 
     for ent_name in bunny_impassible_doors:
         bunny_exit = world.get_entrance(ent_name, player)
-        if is_bunny(bunny_exit.parent_region):
+        if bunny_exit.connected_region and is_bunny(bunny_exit.parent_region):
             add_rule(bunny_exit, get_rule_to_add(bunny_exit.parent_region))
 
     doors_to_check = [x for x in world.doors if x.player == player and x not in bunny_impassible_doors]
@@ -2369,7 +2380,11 @@ def add_key_logic_rules(world, player):
     key_logic = world.key_logic[player]
     for d_name, d_logic in key_logic.items():
         for door_name, rule in d_logic.door_rules.items():
-            add_rule(world.get_entrance(door_name, player), eval_small_key_door(door_name, d_name, player))
+            door_entrance = world.get_entrance(door_name, player)
+            add_rule(door_entrance, eval_small_key_door(door_name, d_name, player))
+            if door_entrance.door.dependents:
+                for dep in door_entrance.door.dependents:
+                    add_rule(dep.entrance, eval_small_key_door(door_name, d_name, player))
         for location in d_logic.bk_restricted:
             if not location.forced_item:
                 forbid_item(location, d_logic.bk_name, player)

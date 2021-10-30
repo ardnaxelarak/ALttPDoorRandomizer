@@ -178,14 +178,18 @@
     ],
     "shuffle": [
       "Select Entrance Shuffling Algorithm. (default: %(default)s)",
-      "Full:           Mix cave and dungeon entrances freely while limiting",
-      "                multi-entrance caves to one world.",
       "Simple:         Shuffle Dungeon Entrances/Exits between each other",
       "                and keep all 4-entrance dungeons confined to one",
       "                location. All caves outside of death mountain are",
       "                shuffled in pairs and matched by original type.",
       "Restricted:     Use Dungeons shuffling from Simple but freely",
       "                connect remaining entrances.",
+      "Full:           Mix cave and dungeon entrances freely while limiting",
+      "                multi-entrance caves to one world.",
+      "Lite:           Entrances are put into separate pools based on their",
+      "                vanilla location. Dungeons, dropdowns, connector caves,",
+      "                and locations that have an item are shuffled from",
+      "                individual pools. Non-item locations remain vanilla.",
       "Crossed:        Mix cave and dungeon entrances freely while allowing",
       "                caves to cross between worlds.",
       "Insanity:       Decouple entrances and exits from each other and",
@@ -221,6 +225,9 @@
       "Potion Shop will be paired with another similar pair." ],
     "ow_mixed": [
       "Overworld tiles are randomly chosen to become part of the opposite world."
+    ],
+    "ow_whirlpool": [
+      "Whirlpools will be shuffled and paired together."
     ],
     "ow_fluteshuffle": [
       "This randomizes the flute spot destinations.",

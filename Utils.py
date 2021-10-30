@@ -351,16 +351,6 @@ def update_deprecated_args(args):
         if "create_rom" in argVars:
             args.suppress_rom = not args.create_rom in truthy
 
-        # Shuffle Ganon defaults to TRUE
-        # Don't do: Yes
-        # Do:       No
-        if "no_shuffleganon" in argVars:
-            args.shuffleganon = not args.no_shuffleganon in truthy
-        # Don't do: No
-        # Do:       Yes
-        if "shuffleganon" in argVars:
-            args.no_shuffleganon = not args.shuffleganon in truthy
-
         # Playthrough defaults to TRUE
         # Don't do: Yes
         # Do:       No

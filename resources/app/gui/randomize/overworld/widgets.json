@@ -24,6 +24,10 @@
       "type": "checkbox",
       "default": true
     },
+    "whirlpool": {
+      "type": "checkbox",
+      "default": false
+    },
     "overworldflute": {
       "type": "selectbox",
       "default": "vanilla",

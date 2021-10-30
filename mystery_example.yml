@@ -15,6 +15,9 @@
   overworld_swap:
     on: 1
     off: 1
+  whirlpool_shuffle:
+    on: 1
+    off: 1
   flute_shuffle:
     vanilla: 0
     balanced: 1
@@ -46,8 +49,15 @@
     simple: 2
     restricted: 2
     full: 2
+    lite: 2
     crossed: 3
     insanity: 1
+  shufflelinks:
+    on: 1
+    off: 1
+  shuffleganon:
+    on: 1
+    off: 1
   world_state:
     standard: 1
     open: 1
@@ -81,6 +91,7 @@
     off: 1
   glitches_required:
     none: 1
+    owg: 0
     no_logic: 0
   accessibility:
     items: 1

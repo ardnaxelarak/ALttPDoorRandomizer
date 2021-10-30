@@ -30,7 +30,7 @@ from Fill import sell_potions, sell_keys, balance_multiworld_progression, balanc
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops
 from Utils import output_path, parse_player_names
 
-__version__ = '0.5.1.2-u'
+__version__ = '0.5.1.4-u'
 
 from source.classes.BabelFish import BabelFish
 
@@ -114,6 +114,7 @@ def main(args, seed=None, fish=None):
     world.ganon_item = {player: get_random_ganon_item(args.swords) if args.ganon_item[player] == 'random' else args.ganon_item[player] for player in range(1, world.players + 1)}
     world.ganon_item_orig = args.ganon_item.copy()
     world.owKeepSimilar = args.ow_keepsimilar.copy()
+    world.owWhirlpoolShuffle = args.ow_whirlpool.copy()
     world.owFluteShuffle = args.ow_fluteshuffle.copy()
     world.open_pyramid = args.openpyramid.copy()
     world.boss_shuffle = args.shufflebosses.copy()
@@ -156,6 +157,15 @@ def main(args, seed=None, fish=None):
         for player, name in enumerate(team, 1):
             world.player_names[player].append(name)
     logger.info('')
+
+    if world.owShuffle[1] != 'vanilla' or world.owCrossed[1] not in ['none', 'polar'] or world.owMixed[1] or str(world.seed).startswith('M'):
+        outfilebase = f'OR_{args.outputname if args.outputname else world.seed}'
+    else:
+        outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
+
+    if args.create_spoiler and not args.jsonout:
+        logger.info(world.fish.translate("cli","cli","patching.spoiler"))
+        world.spoiler.meta_to_file(output_path('%s_Spoiler.txt' % outfilebase))
 
     for player in range(1, world.players + 1):
         world.difficulty_requirements[player] = difficulties[world.difficulty[player]]
@@ -292,11 +302,6 @@ def main(args, seed=None, fish=None):
             customize_shops(world, player)
     balance_money_progression(world)
 
-    if world.owShuffle[1] != 'vanilla' or world.owCrossed[1] not in ['none', 'polar'] or world.owMixed[1] or str(world.seed).startswith('M'):
-        outfilebase = f'OR_{args.outputname if args.outputname else world.seed}'
-    else:
-        outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
-
     rom_names = []
     jsonout = {}
     enemized = False
@@ -364,6 +369,10 @@ def main(args, seed=None, fish=None):
                 with open(output_path('%s_multidata' % outfilebase), 'wb') as f:
                     f.write(multidata)
 
+    if args.create_spoiler and not args.jsonout:
+        logger.info(world.fish.translate("cli","cli","patching.spoiler"))
+        world.spoiler.to_file(output_path('%s_Spoiler.txt' % outfilebase))
+
     if not args.skip_playthrough:
         logger.info(world.fish.translate("cli","cli","calc.playthrough"))
         create_playthrough(world)
@@ -376,7 +385,7 @@ def main(args, seed=None, fish=None):
             with open(output_path('%s_Spoiler.json' % outfilebase), 'w') as outfile:
               outfile.write(world.spoiler.to_json())
         else:
-            world.spoiler.to_file(output_path('%s_Spoiler.txt' % outfilebase))
+            world.spoiler.playthru_to_file(output_path('%s_Spoiler.txt' % outfilebase))
 
     YES = world.fish.translate("cli","cli","yes")
     NO = world.fish.translate("cli","cli","no")
@@ -435,6 +444,7 @@ def copy_world(world):
     ret.ganon_item = world.ganon_item.copy()
     ret.ganon_item_orig = world.ganon_item_orig.copy()
     ret.owKeepSimilar = world.owKeepSimilar.copy()
+    ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()
     ret.owFluteShuffle = world.owFluteShuffle.copy()
     ret.open_pyramid = world.open_pyramid.copy()
     ret.boss_shuffle = world.boss_shuffle.copy()
@@ -542,7 +552,9 @@ def copy_world(world):
             connect_portal(portal, ret, player)
     ret.sanc_portal = world.sanc_portal
 
+    from OverworldShuffle import categorize_world_regions
     for player in range(1, world.players + 1):
+        categorize_world_regions(ret, player)
         set_rules(ret, player)
 
     return ret

@@ -152,8 +152,8 @@ def get_boots_clip_exits_lw(inverted = False):
     yield ('TR Pegs Ledge Clip', 'Death Mountain TR Pegs', 'Death Mountain TR Pegs Ledge')
     yield ('TR Pegs To EDM Clip', 'Death Mountain TR Pegs', 'East Death Mountain (Top East)')
     yield ('Zora DMD Clip', 'Death Mountain TR Pegs', 'Zora Waterfall Area')
-    yield ('Mountain Entry To Ledge Clip', 'Mountain Entry Area', 'Death Mountain Return Ledge')
-    yield ('Mountain Ledge Drop Clip', 'Death Mountain Return Ledge', 'Death Mountain Entrance')
+    yield ('Mountain Entry To Ledge Clip', 'Mountain Entry Area', 'Mountain Entry Ledge')
+    yield ('Mountain Ledge Drop Clip', 'Mountain Entry Ledge', 'Mountain Entry Entrance')
     yield ('Mountain Entry To Pond Clip', 'Mountain Entry Area', 'Kakariko Pond Area')
     yield ('Zora Waterfall Ledge Clip', 'Zora Waterfall Area', 'Zora Approach Area')
     
@@ -225,12 +225,12 @@ def get_boots_clip_exits_dw(inverted):
     yield ('DDM Glitched Bridge Clip', 'West Dark Death Mountain (Bottom)', 'East Dark Death Mountain (Top)')
     yield ('Chapel DMD Clip', 'West Dark Death Mountain (Bottom)', 'Dark Chapel Area')
     yield ('Dark Graveyard DMD Clip', 'West Dark Death Mountain (Bottom)', 'Dark Graveyard Area')
-    yield ('EDDM West Dropdown Clip', 'East Dark Death Mountain (Top)', 'East Dark Death Mountain (West Lip)')
+    yield ('EDDM West Dropdown Clip', 'East Dark Death Mountain (Top)', 'East Dark Death Mountain (Bottom Left)')
     yield ('EDDM To WDDM Clip', 'East Dark Death Mountain (Top)', 'West Dark Death Mountain (Top)')
     yield ('TR Bridge Clip', 'East Dark Death Mountain (Top)', 'Dark Death Mountain Ledge')
     yield ('Dark Witch DMD FAWT Clip', 'East Dark Death Mountain (Bottom)', 'Dark Witch Area')
-    yield ('Qirn Jump DMD Clip', 'East Dark Death Mountain (West Lip)', 'Qirn Jump Area')
-    yield ('WDDM To EDDM Clip', 'East Dark Death Mountain (West Lip)', 'East Dark Death Mountain (Bottom)')
+    yield ('Qirn Jump DMD Clip', 'East Dark Death Mountain (Bottom Left)', 'Qirn Jump Area')
+    yield ('WDDM To EDDM Clip', 'East Dark Death Mountain (Bottom Left)', 'East Dark Death Mountain (Bottom)')
     #yield ('DW Floating Island Clip', 'East Dark Death Mountain (Bottom)', 'Dark Death Mountain Floating Island') #cannot guarantee camera correction
     yield ('TR To EDDM Clip', 'Turtle Rock Area', 'East Dark Death Mountain (Top)')
     yield ('Catfish DMD Clip', 'Turtle Rock Area', 'Catfish Area')
@@ -312,8 +312,8 @@ def get_mirror_clip_spots_dw():
     """
     Out of bounds transitions using the mirror
     """
-    yield ('Qirn Jump Bunny DMD Clip', 'East Dark Death Mountain (West Lip)', 'Qirn Jump Area')
-    yield ('EDDM Mirror Clip', 'East Dark Death Mountain (West Lip)', 'East Dark Death Mountain (Bottom)')
+    yield ('Qirn Jump Bunny DMD Clip', 'East Dark Death Mountain (Bottom Left)', 'Qirn Jump Area')
+    yield ('EDDM Mirror Clip', 'East Dark Death Mountain (Bottom Left)', 'East Dark Death Mountain (Bottom)')
     yield ('Desert East Mirror Clip', 'Misery Mire Area', 'Desert Palace Mouth')
 
 

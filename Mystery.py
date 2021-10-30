@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--names', default='')
     parser.add_argument('--teams', default=1, type=lambda value: max(int(value), 1))
     parser.add_argument('--create_spoiler', action='store_true')
+    parser.add_argument('--no_race', action='store_true')
     parser.add_argument('--rom')
     parser.add_argument('--jsonout', action='store_true')
     parser.add_argument('--enemizercli')
@@ -67,9 +68,10 @@ def main():
     erargs.seed = seed
     erargs.names = args.names
     erargs.create_spoiler = args.create_spoiler
-    erargs.race = True
+    erargs.race = not args.no_race
     erargs.outputname = seedname
-    erargs.outputpath = args.outputpath
+    if args.outputpath:
+        erargs.outputpath = args.outputpath
     erargs.loglevel = args.loglevel
 
     if args.rom:
@@ -124,7 +126,7 @@ def roll_settings(weights):
     if glitches_required not in ['none', 'no_logic']:
         print("Only NMG and No Logic supported")
         glitches_required = 'none'
-    ret.logic = {'none': 'noglitches', 'no_logic': 'nologic'}[glitches_required]
+    ret.logic = {'none': 'noglitches', 'owg': 'owglitches', 'no_logic': 'nologic'}[glitches_required]
 
     item_placement = get_choice('item_placement')
     # not supported in ER
@@ -142,6 +144,7 @@ def roll_settings(weights):
     ret.ow_crossed = get_choice('overworld_crossed')
     ret.ow_keepsimilar = get_choice('overworld_keepsimilar') == 'on'
     ret.ow_mixed = get_choice('overworld_swap') == 'on'
+    ret.ow_whirlpool = get_choice('whirlpool_shuffle') == 'on'
     overworld_flute = get_choice('flute_shuffle')
     ret.ow_fluteshuffle = overworld_flute if overworld_flute != 'none' else 'vanilla'
     entrance_shuffle = get_choice('entrance_shuffle')
@@ -170,6 +173,8 @@ def roll_settings(weights):
                 'triforce-hunt': 'triforcehunt'
                 }[goal]
     ret.openpyramid = goal == 'fast_ganon' if ret.shuffle in ['vanilla', 'dungeonsfull', 'dungeonssimple'] else False
+
+    ret.shuffleganon = get_choice('shuffleganon') == 'on'
 
     ret.crystals_gt = get_choice('tower_open')
 

@@ -93,6 +93,8 @@ Every transition independently is a candidate to be chosen as a cross-world conn
 
 Note: Only parallel connections (a connection that also exists in the opposite world) are considered for cross-world connections, which means that the same connection in the opposite world will also connect cross-world.
 
+Note: If Whirlpool Shuffle is enabled, those connections can be cross-world but do not count towards the 9 transitions that are crossed.
+
 Motive: Why 9 connections? To imitate the effect of the 9 standard portals that exist.
 
 ### Chaos
@@ -110,6 +112,10 @@ Note: This affects OW Layout Shuffle mostly, but also affects Limited and Chaos 
 OW tiles are randomly chosen to become a part of the opposite world. When on the Overworld, there will be an L or D in the upper left corner, indicating which world you are currently in. Mirroring still works the same, you must be in the DW to mirror to the LW.
 
 Note: Tiles are put into groups that must be shuffled together when certain settings are enabled. For instance, if ER is disabled, then any tiles that have a connector cave that leads to another tile, those tiles must swap together; (an exception to this is the Old Man Rescue cave which has been modified similar to how Inverted modifies it, Old Man Rescue is ALWAYS accessible from the Light World)
+
+## Whirlpool Shuffle (--ow_whirlpool)
+
+When enabled, the whirlpool connections are shuffled. If Crossed OW is enabled, the whirlpools can also be cross-world as well. For Limited Crossed OW, this doesn't count towards the limited number of crossed edge transitions.
 
 ## Flute Shuffle (--ow_fluteshuffle)
 
@@ -129,6 +135,42 @@ New flute spots are chosen at random, with restrictions that limit the promixity
 
 New flute spots are chosen at random with minimum bias.
 
+## New Entrance Shuffle Options (--shuffle)
+
+### Lite
+
+This mode is intended to be a beginner-friendly introduction to playing ER. It focuses on reducing low% world traversal in late-game dungeons while reducing the number of entrances needing to be checked.
+
+This mode groups entrances into types and shuffles them freely within those groups.
+- Dungeons and Connectors (Multi-Entrance Caves)
+- Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop, includes Shops only if Shopsanity is enabled)
+- Dropdowns and their associated exits (Skull Woods dropdowns are handled the same as in Crossed)
+- Non-item locations (junk locations) all remain vanilla
+
+Lite mode shuffles all connectors same-world, to limit bunny traversal. And to prevent Low% enemy and boss combat, some dungeons are confined to specific worlds.
+
+The following dungeons are guaranteed to be in the Light World:
+- Hyrule Castle
+- Eastern Palace
+- Desert Palace
+- Tower of Hera
+- Agahnim's Tower
+
+The following are guaranteed to be in the Dark World:
+- Ice Palace
+- Misery Mire
+- Turtle Rock
+- Ganon's Tower
+
+### Lean
+
+This mode is intended to be a more refined and more competitive format to Crossed ER. It focuses on reducing the number of entrances needing to be checked, while giving the player unique routing options based on the entrance pools defined below, as opposed to mindlessly checking all the remaining entrances. The Dungeons/Connectors can connect cross-world.
+
+This mode groups entrances into types and shuffles them freely within those groups.
+- Dungeons and Connectors (Multi-Entrance Caves)
+- Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop, includes Shops only if Shopsanity is enabled)
+- Dropdowns and their associated exits (Skull Woods dropdowns are handled the same as in Crossed)
+- Non-item locations (junk locations) all remain vanilla
 
 ## Ganon Vulnerability Item (--ganon_item)
 

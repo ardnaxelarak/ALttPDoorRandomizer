@@ -1,8 +1,9 @@
 import RaceRandom as random, logging, copy
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot, Entrance
-from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OpenStd, parallel_links, IsParallel
+from Regions import mark_dark_world_regions, mark_light_world_regions
+from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.1.9.4-u'
+__version__ = '0.2.1.2-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -146,6 +147,8 @@ def link_overworld(world, player):
             for (exitname, regionname) in ow_connections[owid][1]:
                 connect_simple(world, exitname, regionname, player)
 
+    categorize_world_regions(world, player)
+    
     # crossed shuffle
     logging.getLogger('').debug('Crossing overworld edges')
     if world.owCrossed[player] in ['grouped', 'limited', 'chaos']:
@@ -169,7 +172,7 @@ def link_overworld(world, player):
                                 if world.owCrossed[player] == 'chaos' and random.randint(0, 1):
                                     crossed_edges.append(edge)
                                 elif world.owCrossed[player] == 'limited':
-                                    crossed_candidates.append(edge)
+                                    crossed_candidates.append([edge])
             if world.owCrossed[player] == 'limited':
                 random.shuffle(crossed_candidates)
                 for edge_set in crossed_candidates[:9]:
@@ -183,6 +186,44 @@ def link_overworld(world, player):
         
         trimmed_groups = performSwap(trimmed_groups, crossed_edges)
         assert len(crossed_edges) == 0, 'Not all edges were crossed successfully: ' + ', '.join(crossed_edges)
+
+    # whirlpool shuffle
+    logging.getLogger('').debug('Shuffling whirlpools')
+
+    if not world.owWhirlpoolShuffle[player]:
+        for (_, from_whirlpool, from_region), (_, to_whirlpool, to_region) in default_whirlpool_connections:
+            connect_simple(world, from_whirlpool, to_region, player)
+            connect_simple(world, to_whirlpool, from_region, player)
+    else:
+        whirlpool_candidates = [[],[]]
+        for (from_owid, from_whirlpool, from_region), (to_owid, to_whirlpool, to_region) in default_whirlpool_connections:
+            if world.owCrossed[player] != 'none':
+                whirlpool_candidates[0].append(tuple((from_owid, from_whirlpool, from_region)))
+                whirlpool_candidates[0].append(tuple((to_owid, to_whirlpool, to_region)))
+            else:
+                if world.get_region(from_region, player).type == RegionType.LightWorld:
+                    whirlpool_candidates[0].append(tuple((from_owid, from_whirlpool, from_region)))
+                else:
+                    whirlpool_candidates[1].append(tuple((from_owid, from_whirlpool, from_region)))
+                
+                if world.get_region(to_region, player).type == RegionType.LightWorld:
+                    whirlpool_candidates[0].append(tuple((to_owid, to_whirlpool, to_region)))
+                else:
+                    whirlpool_candidates[1].append(tuple((to_owid, to_whirlpool, to_region)))
+
+        # shuffle happens here
+        world.owwhirlpools[player] = [None] * 8
+        whirlpool_map = [ 0x35, 0x0f, 0x15, 0x33, 0x12, 0x3f, 0x55, 0x7f ]
+        for whirlpools in whirlpool_candidates:
+            random.shuffle(whirlpools)
+            while len(whirlpools):
+                from_owid, from_whirlpool, from_region = whirlpools.pop()
+                to_owid, to_whirlpool, to_region = whirlpools.pop()
+                connect_simple(world, from_whirlpool, to_region, player)
+                connect_simple(world, to_whirlpool, from_region, player)
+                world.owwhirlpools[player][next(i for i, v in enumerate(whirlpool_map) if v == to_owid)] = from_owid
+                world.owwhirlpools[player][next(i for i, v in enumerate(whirlpool_map) if v == from_owid)] = to_owid
+                world.spoiler.set_overworld(from_whirlpool, to_whirlpool, 'both', player)
 
     # layout shuffle
     logging.getLogger('').debug('Shuffling overworld layout')
@@ -253,6 +294,8 @@ def link_overworld(world, player):
                         logging.getLogger('').warning("Edge '%s' could not find a valid connection" % back_set[0])
     assert len(connected_edges) == len(default_connections) * 2, connected_edges
 
+    # TODO: Reshuffle some areas if impossible to reach, exception if non-dungeon ER enabled or if area is LW with no portal and flute shuffle is enabled
+
     # flute shuffle
     def connect_flutes(flute_destinations):
         for o in range(0, len(flute_destinations)):
@@ -276,7 +319,7 @@ def link_overworld(world, player):
                     region = world.get_region(regionname, player)
                     for exit in region.exits:
                         if exit.connected_region is not None and exit.connected_region.type in [RegionType.LightWorld, RegionType.DarkWorld] and exit.connected_region.name not in new_ignored:
-                            if OWTileRegions[exit.connected_region.name] in [base_owid, owid] or OWTileRegions[regionname] == base_owid:
+                            if exit.connected_region.name in OWTileRegions and (OWTileRegions[exit.connected_region.name] in [base_owid, owid] or OWTileRegions[regionname] == base_owid):
                                 new_ignored.add(exit.connected_region.name)
                                 getIgnored(exit.connected_region.name, base_owid, OWTileRegions[exit.connected_region.name])
 
@@ -382,22 +425,33 @@ def connect_two_way(world, edgename1, edgename2, player, connected_edges=None):
 
 def shuffle_tiles(world, groups, result_list, player):
     swapped_edges = list()
+    valid_whirlpool_parity = False
 
-    # tile shuffle happens here
-    removed = list()
-    for group in groups.keys():
-        if random.randint(0, 1):
-            removed.append(group)
-    
-    # save shuffled tiles to list
-    for group in groups.keys():
-        if group not in removed:
-            (owids, lw_regions, dw_regions) = groups[group]
-            (exist_owids, exist_lw_regions, exist_dw_regions) = result_list
-            exist_owids.extend(owids)
-            exist_lw_regions.extend(lw_regions)
-            exist_dw_regions.extend(dw_regions)
-            result_list = [exist_owids, exist_lw_regions, exist_dw_regions]
+    while not valid_whirlpool_parity:
+        # tile shuffle happens here
+        removed = list()
+        for group in groups.keys():
+            # if group[0] in ['Links', 'Central Bonk Rocks', 'Castle']: # TODO: Standard + Inverted
+            if random.randint(0, 1):
+                removed.append(group)
+        
+        # save shuffled tiles to list
+        new_results = [[],[],[]]
+        for group in groups.keys():
+            if group not in removed:
+                (owids, lw_regions, dw_regions) = groups[group]
+                (exist_owids, exist_lw_regions, exist_dw_regions) = new_results
+                exist_owids.extend(owids)
+                exist_lw_regions.extend(lw_regions)
+                exist_dw_regions.extend(dw_regions)
+
+        # check whirlpool parity
+        valid_whirlpool_parity = world.owCrossed[player] != 'none' or len(set(new_results[0]) & set({0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f})) % 2 == 0
+
+    (exist_owids, exist_lw_regions, exist_dw_regions) = result_list
+    exist_owids.extend(new_results[0])
+    exist_lw_regions.extend(new_results[1])
+    exist_dw_regions.extend(new_results[2])
 
     # replace LW edges with DW
     ignore_list = list() #TODO: Remove ignore_list when special OW areas are included in pool
@@ -421,34 +475,62 @@ def shuffle_tiles(world, groups, result_list, player):
 
 def reorganize_tile_groups(world, player):
     groups = {}
-    for (name, groupType) in OWTileGroups.keys():
-        if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks']:
-            if world.shuffle[player] in ['vanilla', 'simple', 'dungeonssimple']:
-                groups[(name,)] = ([], [], [])
+    for (name, groupType, whirlpoolGroup) in OWTileGroups.keys():
+        if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks'] \
+                or (world.mode[player] == 'standard' and world.shuffle[player] in ['lean', 'crossed', 'insanity'] and name == 'Castle' and groupType == 'Entrance'):
+            if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple', 'restricted']:
+                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
+                    groups[(name, whirlpoolGroup)] = ([], [], [])
+                else:
+                    groups[(name,)] = ([], [], [])
             else:
-                groups[(name, groupType)] = ([], [], [])
+                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
+                    groups[(name, groupType, whirlpoolGroup)] = ([], [], [])
+                else:
+                    groups[(name, groupType)] = ([], [], [])
 
-    for (name, groupType) in OWTileGroups.keys():
-        if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks']:
-            (lw_owids, dw_owids) = OWTileGroups[(name, groupType,)]
-            if world.shuffle[player] in ['vanilla', 'simple', 'dungeonssimple']:
-                (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name,)]
-                exist_owids.extend(lw_owids)
-                exist_owids.extend(dw_owids)
-                for owid in lw_owids:
-                    exist_lw_regions.extend(OWTileRegions.inverse[owid])
-                for owid in dw_owids:
-                    exist_dw_regions.extend(OWTileRegions.inverse[owid])
-                groups[(name,)] = (exist_owids, exist_lw_regions, exist_dw_regions)
+    for (name, groupType, whirlpoolGroup) in OWTileGroups.keys():
+        if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks'] \
+                or (world.mode[player] == 'standard' and world.shuffle[player] in ['lean', 'crossed', 'insanity'] and name == 'Castle' and groupType == 'Entrance'):
+            (lw_owids, dw_owids) = OWTileGroups[(name, groupType, whirlpoolGroup)]
+            if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple', 'restricted']:
+                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
+                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, whirlpoolGroup)]
+                    exist_owids.extend(lw_owids)
+                    exist_owids.extend(dw_owids)
+                    for owid in lw_owids:
+                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
+                    for owid in dw_owids:
+                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
+                    groups[(name, whirlpoolGroup)] = (exist_owids, exist_lw_regions, exist_dw_regions)
+                else:
+                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name,)]
+                    exist_owids.extend(lw_owids)
+                    exist_owids.extend(dw_owids)
+                    for owid in lw_owids:
+                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
+                    for owid in dw_owids:
+                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
+                    groups[(name,)] = (exist_owids, exist_lw_regions, exist_dw_regions)
             else:
-                (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, groupType)]
-                exist_owids.extend(lw_owids)
-                exist_owids.extend(dw_owids)
-                for owid in lw_owids:
-                    exist_lw_regions.extend(OWTileRegions.inverse[owid])
-                for owid in dw_owids:
-                    exist_dw_regions.extend(OWTileRegions.inverse[owid])
-                groups[(name, groupType)] = (exist_owids, exist_lw_regions, exist_dw_regions)
+                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
+                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, groupType, whirlpoolGroup)]
+                    exist_owids.extend(lw_owids)
+                    exist_owids.extend(dw_owids)
+                    for owid in lw_owids:
+                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
+                    for owid in dw_owids:
+                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
+                    groups[(name, groupType, whirlpoolGroup)] = (exist_owids, exist_lw_regions, exist_dw_regions)
+                else:
+                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, groupType)]
+                    exist_owids.extend(lw_owids)
+                    exist_owids.extend(dw_owids)
+                    for owid in lw_owids:
+                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
+                    for owid in dw_owids:
+                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
+                    groups[(name, groupType)] = (exist_owids, exist_lw_regions, exist_dw_regions)
     return groups
 
 def remove_reserved(world, groupedlist, connected_edges, player):
@@ -646,10 +728,19 @@ def create_flute_exits(world, player):
                 and (region.name not in world.owswaps[player][1] or region.name in world.owswaps[player][2])):
             exitname = 'Flute From ' + region.name
             exit = Entrance(region.player, exitname, region)
+            exit.spot_type = 'Flute'
             exit.access_rule = lambda state: state.can_flute(player)
             exit.connect(world.get_region('Flute Sky', player))
             region.exits.append(exit)
     world.initialize_regions()
+
+def categorize_world_regions(world, player):
+    for type in OWExitTypes:
+        for exitname in OWExitTypes[type]:
+            world.get_entrance(exitname, player).spot_type = type
+    
+    mark_light_world_regions(world, player)
+    mark_dark_world_regions(world, player)
 
 def update_world_regions(world, player):
     if world.owMixed[player]:
@@ -657,6 +748,52 @@ def update_world_regions(world, player):
             world.get_region(name, player).type = RegionType.DarkWorld
         for name in world.owswaps[player][2]:
             world.get_region(name, player).type = RegionType.LightWorld
+
+def can_reach_smith(world, player):
+    from Items import ItemFactory
+    from BaseClasses import CollectionState
+
+    invFlag = world.mode[player] == 'inverted'
+    
+    def explore_region(region_name, region=None):
+        nonlocal found
+        explored_regions.add(region_name)
+        if not found:
+            if not region:
+                region = world.get_region(region_name, player)
+            for exit in region.exits:
+                if not found and exit.connected_region is not None:
+                    if any(map(lambda i: i.name == 'Ocarina', world.precollected_items)) and exit.spot_type == 'Flute':
+                        fluteregion = exit.connected_region
+                        for flutespot in fluteregion.exits:
+                            if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
+                                explore_region(flutespot.connected_region.name, flutespot.connected_region)
+                    elif exit.connected_region.name not in explored_regions \
+                            and exit.connected_region.type in [RegionType.LightWorld, RegionType.DarkWorld] \
+                            and exit.access_rule(blank_state):
+                        explore_region(exit.connected_region.name, exit.connected_region)
+                    elif exit.name == 'Sanctuary S':
+                        sanc_region = exit.connected_region
+                        if len(sanc_region.exits) and sanc_region.exits[0].name == 'Sanctuary Exit':
+                            explore_region(sanc_region.exits[0].connected_region.name, sanc_region.exits[0].connected_region)
+                    elif exit.connected_region.name == 'Blacksmiths Hut' and exit.access_rule(blank_state):
+                        found = True
+    
+    blank_state = CollectionState(world)
+    if world.mode[player] == 'standard':
+        blank_state.collect(ItemFactory('Zelda Delivered', player), True)
+    if world.logic[player] in ['noglitches', 'minorglitches'] and world.get_region('Frog Prison', player).type == (RegionType.DarkWorld if not invFlag else RegionType.LightWorld):
+        blank_state.collect(ItemFactory('Titans Mitts', player), True)
+    
+    found = False
+    explored_regions = set()
+    explore_region('Links House')
+    if not found:
+        if not invFlag:
+            explore_region('Sanctuary')
+        else:
+            explore_region('Dark Sanctuary Hint')
+    return found
 
 test_connections = [
                     #('Links House ES', 'Octoballoon WS'),
@@ -671,17 +808,7 @@ temporary_mandatory_connections = [
                         ]
 
 # these are connections that cannot be shuffled and always exist. They link together separate parts of the world we need to divide into regions
-mandatory_connections = [# Whirlpool Connections
-                         ('C Whirlpool', 'River Bend Water'),
-                         ('River Bend Whirlpool', 'C Whirlpool Water'),
-                         ('Lake Hylia Whirlpool', 'Zora Waterfall Water'),
-                         ('Zora Whirlpool', 'Lake Hylia Water'),
-                         ('Kakariko Pond Whirlpool', 'Octoballoon Water'),
-                         ('Octoballoon Whirlpool', 'Kakariko Pond Area'),
-                         ('Qirn Jump Whirlpool', 'Bomber Corner Water'),
-                         ('Bomber Corner Whirlpool', 'Qirn Jump Water'),
-
-                         # Intra-tile OW Connections
+mandatory_connections = [# Intra-tile OW Connections
                          ('Lost Woods Bush (West)', 'Lost Woods East Area'), #pearl
                          ('Lost Woods Bush (East)', 'Lost Woods West Area'), #pearl
                          ('West Death Mountain Drop', 'West Death Mountain (Bottom)'),
@@ -744,6 +871,7 @@ mandatory_connections = [# Whirlpool Connections
                          ('Wooden Bridge Water Drop', 'Wooden Bridge Water'), #flippers
                          ('Wooden Bridge Northeast Water Drop', 'Wooden Bridge Water'), #flippers
                          ('Bat Cave Ledge Peg', 'Bat Cave Ledge'), #hammer
+                         ('Bat Cave Ledge Peg (East)', 'Blacksmith Area'), #hammer
                          ('Maze Race Game', 'Maze Race Prize'), #pearl
                          ('Maze Race Ledge Drop', 'Maze Race Area'),
                          ('Desert Palace Statue Move', 'Desert Palace Stairs'), #book
@@ -813,7 +941,7 @@ mandatory_connections = [# Whirlpool Connections
                          ('Grassy Lawn Pegs', 'Village of Outcasts Area'), #hammer
                          ('Shield Shop Fence (Outer) Ledge Drop', 'Shield Shop Fence'),
                          ('Shield Shop Fence (Inner) Ledge Drop', 'Shield Shop Area'),
-                         ('Pyramid Exit Ledge Drop', 'Pyramid Area'), #hammer(inverted)
+                         ('Pyramid Exit Ledge Drop', 'Pyramid Area'),
                          ('Broken Bridge Hammer Rock (South)', 'Broken Bridge Northeast'), #hammer/glove
                          ('Broken Bridge Hammer Rock (North)', 'Broken Bridge Area'), #hammer/glove
                          ('Broken Bridge Hookshot Gap', 'Broken Bridge West'), #hookshot
@@ -903,6 +1031,13 @@ mandatory_connections = [# Whirlpool Connections
                          ('Hammer Bridge EC Cliff Water Drop', 'Hammer Bridge Water'), #fake flipper
                          ('Dark Tree Line WC Cliff Water Drop', 'Dark Tree Line Water') #fake flipper
                          ]
+
+default_whirlpool_connections = [
+    ((0x33, 'C Whirlpool', 'C Whirlpool Water'),              (0x15, 'River Bend Whirlpool', 'River Bend Water')),
+    ((0x35, 'Lake Hylia Whirlpool', 'Lake Hylia Water'),      (0x0f, 'Zora Whirlpool', 'Zora Waterfall Water')),
+    ((0x12, 'Kakariko Pond Whirlpool', 'Kakariko Pond Area'), (0x3f, 'Octoballoon Whirlpool', 'Octoballoon Water')),
+    ((0x55, 'Qirn Jump Whirlpool', 'Qirn Jump Water'),        (0x7f, 'Bomber Corner Whirlpool', 'Bomber Corner Water'))
+]                         
 
 default_flute_connections = [
     0x0b, 0x16, 0x18, 0x2c, 0x2f, 0x38, 0x3b, 0x3f
@@ -1071,6 +1206,7 @@ ow_connections = {
             ('HC Ledge Mirror Spot', 'Hyrule Castle Ledge'),
             ('HC Courtyard Mirror Spot', 'Hyrule Castle Courtyard'),
             ('HC Area Mirror Spot', 'Hyrule Castle Area'),
+            ('HC Courtyard Left Mirror Spot', 'Hyrule Castle Courtyard'),
             ('HC Area South Mirror Spot', 'Hyrule Castle Area'),
             ('HC East Entry Mirror Spot', 'Hyrule Castle East Entry'),
             ('Top of Pyramid', 'Pyramid Area'),
@@ -1439,9 +1575,10 @@ flute_data = {
     0x2e: (['Tree Line Area',                 'Dark Tree Line Area'],               0x2e, 0x0100, 0x0a1a, 0x0c00, 0x0a78, 0x0c30, 0x0a87, 0x0c7d, 0x0006, 0x0000, 0x0a78, 0x0c58),
     0x2f: (['Eastern Nook Area',              'Palace of Darkness Nook Area'],      0x2f, 0x0798, 0x0afa, 0x0eb2, 0x0b58, 0x0f30, 0x0b67, 0x0f37, 0xfff6, 0x000e, 0x0b50, 0x0f30),
     0x38: (['Desert Palace Teleporter Ledge', 'Misery Mire Teleporter Ledge'],      0x30, 0x1880, 0x0f1e, 0x0000, 0x0fa8, 0x0078, 0x0f8d, 0x008d, 0x0000, 0x0000, 0x0fb0, 0x0070),
-    0x32: (['Flute Boy Approach Area',        'Stumpy Approach Area'],              0x32, 0x03a0, 0x0c6c, 0x0500, 0x0cd0, 0x05a8, 0x0cdb, 0x0585, 0x0002, 0x0000, 0x0cd6, 0x05a8),
+    0x32: (['Flute Boy Approach Area',        'Stumpy Approach Area'],              0x32, 0x03a0, 0x0c6c, 0x0500, 0x0cd0, 0x05a8, 0x0cdb, 0x0585, 0x0002, 0x0000, 0x0cd6, 0x0568),
     0x33: (['C Whirlpool Outer Area',         'Dark C Whirlpool Outer Area'],       0x33, 0x0180, 0x0c20, 0x0600, 0x0c80, 0x0628, 0x0c8f, 0x067d, 0x0000, 0x0000, 0x0c80, 0x0628),
     0x34: (['Statues Area',                   'Hype Cave Area'],                    0x34, 0x088e, 0x0d00, 0x0866, 0x0d60, 0x08d8, 0x0d6f, 0x08e3, 0x0000, 0x000a, 0x0d60, 0x08d8),
+    #0x35: (['Lake Hylia Area',                'Ice Lake Area'],                     0x35, 0x0d00, 0x0da6, 0x0a06, 0x0e08, 0x0a80, 0x0e13, 0x0a8b, 0xfffa, 0xfffa, 0x0d88, 0x0a88),
     0x3e: (['Lake Hylia South Shore',         'Ice Lake Ledge (East)'],             0x35, 0x1860, 0x0f1e, 0x0d00, 0x0f98, 0x0da8, 0x0f8b, 0x0d85, 0x0000, 0x0000, 0x0f90, 0x0da4),
     0x37: (['Ice Cave Area',                  'Shopping Mall Area'],                0x37, 0x0786, 0x0cf6, 0x0e2e, 0x0d58, 0x0ea0, 0x0d63, 0x0eab, 0x000a, 0x0002, 0x0d48, 0x0ed0),
     0x3a: (['Desert Pass Area',               'Swamp Nook Area'],                   0x3a, 0x001a, 0x0e08, 0x04c6, 0x0e70, 0x0540, 0x0e7d, 0x054b, 0x0006, 0x000a, 0x0e70, 0x0540),
