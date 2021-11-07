@@ -33,7 +33,7 @@ from source.classes.SFX import randomize_sfx
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '0a03e2d02ede95a7511fad81df24eea9'
+RANDOMIZERBASEHASH = '098cf0c6f15e162eeeb5e1740cc76792'
 
 
 class JsonRom(object):
@@ -1252,6 +1252,11 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         # remove regular bombs for sale from bomb shop and center the big bomb
         rom.write_bytes(0x0309DE, [0xA9, 0xFF, 0xEA, 0xEA])
         rom.write_byte(0x30A28, 0x2C)
+
+        # hack palette to make gold bombs actually gold
+        rom.write_bytes(0x0DD634, [0xBC, 0x02])
+        rom.write_bytes(0x0DD648, [0x5F, 0x4F])
+        rom.write_bytes(0x0DD658, [0x5F, 0x4F])
 
         # update sword references in credits to bombs
         rom.write_bytes(0x11807A, credits_string_top("FIRST BOMBS"))
