@@ -3,7 +3,7 @@ from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSl
 from Regions import mark_dark_world_regions, mark_light_world_regions
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.2.1.2-u'
+__version__ = '0.2.2.0-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -902,6 +902,7 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Desert Pass Ledge Drop', 'Desert Pass Area'),
                          ('Desert Pass Rocks (North)', 'Desert Pass Southeast'), #glove
                          ('Desert Pass Rocks (South)', 'Desert Pass Area'), #glove
+                         ('Middle Aged Man', 'Middle Aged Man'),
                          ('Octoballoon Water Drop', 'Octoballoon Water'), #flippers
                          ('Octoballoon Waterfall Water Drop', 'Octoballoon Water'), #flippers
                          ('Octoballoon Pier', 'Octoballoon Area'),
@@ -942,6 +943,7 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Shield Shop Fence (Outer) Ledge Drop', 'Shield Shop Fence'),
                          ('Shield Shop Fence (Inner) Ledge Drop', 'Shield Shop Area'),
                          ('Pyramid Exit Ledge Drop', 'Pyramid Area'),
+                         ('Pyramid Crack', 'Pyramid Crack'),
                          ('Broken Bridge Hammer Rock (South)', 'Broken Bridge Northeast'), #hammer/glove
                          ('Broken Bridge Hammer Rock (North)', 'Broken Bridge Area'), #hammer/glove
                          ('Broken Bridge Hookshot Gap', 'Broken Bridge West'), #hookshot
@@ -1023,7 +1025,8 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Dark Bonk Rocks Cliff Ledge Drop', 'Dark Bonk Rocks Area'),
                          ('Hammer Bridge South Cliff Ledge Drop', 'Hammer Bridge South Area'),
                          ('Ice Lake Area Cliff Ledge Drop', 'Ice Lake Area'),
-                         ('Ice Lake Northeast Pier Bomb Jump', 'Ice Lake Northeast Bank'),
+                         ('Ice Lake Northeast Pier Hop', 'Ice Lake Northeast Bank'),
+                         ('Ice Lake Moat Bomb Jump', 'Ice Lake Moat'),
                          ('Dark C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Area'),
                          ('Dark C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Outer Area'),
                          ('Hype Cliff Ledge Drop', 'Hype Cave Area'),

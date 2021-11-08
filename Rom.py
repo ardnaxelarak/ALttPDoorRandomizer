@@ -33,7 +33,7 @@ from source.classes.SFX import randomize_sfx
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '098cf0c6f15e162eeeb5e1740cc76792'
+RANDOMIZERBASEHASH = 'ad69dddbfd546f665e730c2ee9ed3674'
 
 
 class JsonRom(object):
@@ -1184,12 +1184,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     ])
 
     # set Fountain bottle exchange items
-    if world.difficulty[player] in ['hard', 'expert']:
-        rom.write_byte(0x348FF, [0x16, 0x2B, 0x2C, 0x2D, 0x3C, 0x48][random.randint(0, 5)])
-        rom.write_byte(0x3493B, [0x16, 0x2B, 0x2C, 0x2D, 0x3C, 0x48][random.randint(0, 5)])
-    else:
-        rom.write_byte(0x348FF, [0x16, 0x2B, 0x2C, 0x2D, 0x3C, 0x3D, 0x48][random.randint(0, 6)])
-        rom.write_byte(0x3493B, [0x16, 0x2B, 0x2C, 0x2D, 0x3C, 0x3D, 0x48][random.randint(0, 6)])
+    rom.write_byte(0x348FF, ItemFactory(world.bottle_refills[player][0], player).code)
+    rom.write_byte(0x3493B, ItemFactory(world.bottle_refills[player][1], player).code)
 
     #enable Fat Fairy Chests
     rom.write_bytes(0x1FC16, [0xB1, 0xC6, 0xF9, 0xC9, 0xC6, 0xF9])
@@ -1653,6 +1649,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x180176, 0x0A if world.retro[player] else 0x00)  # wood arrow cost
     rom.write_byte(0x180178, 0x32 if world.retro[player] else 0x00)  # silver arrow cost
     rom.write_byte(0x301FC, 0xDA if world.retro[player] else 0xE1)  # rupees replace arrows under pots
+    if enemized:
+        rom.write_byte(0x1B152e, 0xDA if world.retro[player] else 0xE1)
     rom.write_byte(0x30052, 0xDB if world.retro[player] else 0xE2) # replace arrows in fish prize from bottle merchant
     rom.write_bytes(0xECB4E, [0xA9, 0x00, 0xEA, 0xEA] if world.retro[player] else [0xAF, 0x77, 0xF3, 0x7E])  # Thief steals rupees instead of arrows
     rom.write_bytes(0xF0D96, [0xA9, 0x00, 0xEA, 0xEA] if world.retro[player] else [0xAF, 0x77, 0xF3, 0x7E])  # Pikit steals rupees instead of arrows
@@ -1818,13 +1816,16 @@ def write_custom_shops(rom, world, player):
                 loc_item = ItemFactory(item['item'], player)
             if (not world.shopsanity[player] and shop.region.name == 'Capacity Upgrade'
                and world.difficulty[player] != 'normal'):
-                continue  # skip cap upgrades except in normal/shopsanity
-            item_id = loc_item.code
-            price = int16_as_bytes(item['price'])
-            replace = ItemFactory(item['replacement'], player).code if item['replacement'] else 0xFF
-            replace_price = int16_as_bytes(item['replacement_price'])
+                # really should be 5A instead of B0 -- surprise!!!
+                item_id, price, replace, replace_price, item_max = 0xB0, [0, 0], 0xFF, [0, 0], 1
+            else:
+                item_id = loc_item.code
+                price = int16_as_bytes(item['price'])
+                replace = ItemFactory(item['replacement'], player).code if item['replacement'] else 0xFF
+                replace_price = int16_as_bytes(item['replacement_price'])
+                item_max = item['max']
             item_player = 0 if item['player'] == player else item['player']
-            item_data = [shop_id,  item_id] + price + [item['max'], replace] + replace_price + [item_player]
+            item_data = [shop_id,  item_id] + price + [item_max, replace] + replace_price + [item_player]
             items_data.extend(item_data)
 
     rom.write_bytes(0x184800, shop_data)

@@ -186,10 +186,10 @@
       "                connect remaining entrances.",
       "Full:           Mix cave and dungeon entrances freely while limiting",
       "                multi-entrance caves to one world.",
-      "Lite:           Entrances are put into separate pools based on their",
-      "                vanilla location. Dungeons, dropdowns, connector caves,",
-      "                and locations that have an item are shuffled from",
-      "                individual pools. Non-item locations remain vanilla.",
+      "Lite:           Beginner-friendly. Dungeons/connectors, dropdowns, and",
+      "                item locations are shuffled in separate pools. Non-item",
+      "                locations remain vanilla. Connectors are same-world.",
+      "Lean:           Same as Lite, except connectors can travel cross worlds.",
       "Crossed:        Mix cave and dungeon entrances freely while allowing",
       "                caves to cross between worlds.",
       "Insanity:       Decouple entrances and exits from each other and",
@@ -313,7 +313,7 @@
       "Keys are universal, shooting arrows costs rupees,",
       "and a few other little things make this more like Zelda-1. (default: %(default)s)"
     ],
-    "pseudoboots": [ " Players starts with pseudo boots that allow dashing but no item checks (default: %(default)s"],
+    "pseudoboots": [ " Players starts with pseudo boots that allow dashing but no item checks (default: %(default)s)"],
     "bombbag": ["Start with 0 bomb capacity. Two capacity upgrades (+10) are added to the pool (default: %(default)s)" ],
     "startinventory": [ "Specifies a list of items that will be in your starting inventory (separated by commas). (default: %(default)s)" ],
     "usestartinventory": [ "Toggle usage of Starting Inventory." ],
@@ -327,8 +327,8 @@
       "None:           You will be able to reach enough locations to beat the game."
     ],
     "hints": [ "Make telepathic tiles and storytellers give helpful hints. (default: %(default)s)" ],
-    "shuffleganon": [
-      "Include the Ganon's Tower and Pyramid Hole in the",
+    "no_shuffleganon": [
+      "Don't include the Ganon's Tower and Pyramid Hole in the",
       "entrance shuffle pool. (default: %(default)s)"
     ],
     "shufflelinks": [

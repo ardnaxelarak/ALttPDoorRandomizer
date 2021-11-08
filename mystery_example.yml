@@ -50,6 +50,7 @@
     restricted: 2
     full: 2
     lite: 2
+    lean: 2
     crossed: 3
     insanity: 1
   shufflelinks:

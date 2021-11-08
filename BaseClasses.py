@@ -110,6 +110,7 @@ class World(object):
             set_player_attr('owwhirlpools', [])
             set_player_attr('remote_items', False)
             set_player_attr('required_medallions', ['Ether', 'Quake'])
+            set_player_attr('bottle_refills', ['Bottle (Green Potion)', 'Bottle (Green Potion)'])
             set_player_attr('swamp_patch_required', False)
             set_player_attr('powder_patch_required', False)
             set_player_attr('ganon_at_pyramid', True)
@@ -954,7 +955,7 @@ class CollectionState(object):
             # try to resolve a name
             if resolution_hint == 'Location':
                 spot = self.world.get_location(spot, player)
-            elif resolution_hint in ['Entrance', 'OWEdge']:
+            elif resolution_hint in ['Entrance', 'OWEdge', 'OWTerrain', 'Ledge', 'Portal', 'Whirlpool', 'Mirror', 'Flute']:
                 spot = self.world.get_entrance(spot, player)
             else:
                 # default to Region
@@ -1699,14 +1700,70 @@ class Entrance(object):
         self.player = player
         self.door = None
         self.hide_path = False
+        self.temp_path = []
 
     def can_reach(self, state):
-        if self.parent_region.can_reach(state) and self.access_rule(state):
-            if not self.hide_path and not self in state.path:
-                state.path[self] = (self.name, state.path.get(self.parent_region, (self.parent_region.name, None)))
-            return True
+                                # Destination        Pickup                   OW Only  No Ledges  Can S&Q
+        multi_step_locations = { 'Pyramid Crack':   ('Big Bomb',              True,    True,      False),
+                                 'Missing Smith':   ('Frog',                  True,    False,     True),
+                                 'Middle Aged Man': ('Dark Blacksmith Ruins', True,    False,     True) }
+
+        if self.name in multi_step_locations:
+            if self not in state.path:
+                world = self.parent_region.world if self.parent_region else None
+                step_location = world.get_location(multi_step_locations[self.name][0], self.player)
+                if step_location.can_reach(state) and self.can_reach_thru(state, step_location.parent_region, multi_step_locations[self.name][1], multi_step_locations[self.name][2], multi_step_locations[self.name][3]) and self.access_rule(state):
+                    if not self in state.path:
+                        path = state.path.get(step_location.parent_region, (step_location.parent_region.name, None))
+                        item_name = step_location.item.name if step_location.item else 'Pick Up Item'
+                        path = (f'{step_location.parent_region.name} Exit', (item_name, path))
+                        while len(self.temp_path):
+                            exit = self.temp_path.pop(0)
+                            path = (exit.name, (exit.parent_region.name, path))
+                        item_name = self.connected_region.locations[0].item.name if self.connected_region.locations[0].item else 'Deliver Item'
+                        path = (item_name, (self.parent_region.name, path))
+                        state.path[self] = (self.name, path)
+                    return True
+            else:
+                return True
+        else:
+            if self.parent_region.can_reach(state) and self.access_rule(state):
+                if not self.hide_path and not self in state.path:
+                    state.path[self] = (self.name, state.path.get(self.parent_region, (self.parent_region.name, None)))
+                return True
 
         return False
+
+    def can_reach_thru(self, state, start_region, ignore_underworld=False, ignore_ledges=False, allow_save_quit=False):
+        def explore_region(region, path = []):
+            nonlocal found
+            if region not in explored_regions or len(explored_regions[region]) > len(path):
+                explored_regions[region] = path
+                for exit in region.exits:
+                    if exit.connected_region and (not ignore_ledges or exit.spot_type != 'Ledge') \
+                            and exit.connected_region.name not in ['Dig Game Area'] \
+                            and exit.access_rule(state):
+                        if exit.connected_region == self.parent_region:
+                            found = True
+                            explored_regions[self.parent_region] = path + [exit]
+                        elif not ignore_underworld or region.type == exit.connected_region.type or exit.connected_region.type not in [RegionType.Cave, RegionType.Dungeon]:
+                            explore_region(exit.connected_region, path + [exit])
+
+        found = False
+        explored_regions = {}
+        explore_region(start_region.entrances[0].parent_region)
+        if found:
+            self.temp_path = explored_regions[self.parent_region]
+        elif allow_save_quit:
+            world = self.parent_region.world if self.parent_region else None
+            exit = world.get_entrance('Links House S&Q', self.player)
+            explore_region(exit.connected_region, [exit])
+            if found:
+                self.temp_path = explored_regions[self.parent_region]
+        
+        #TODO: Implement residual mirror portal placing for the previous leg, to be used for the final destination
+
+        return found
 
     def connect(self, region, addresses=None, target=None, vanilla=None):
         self.connected_region = region
@@ -2680,6 +2737,7 @@ class Spoiler(object):
         self.doorTypes = {}
         self.lobbies = {}
         self.medallions = {}
+        self.bottles = {}
         self.playthrough = {}
         self.unreachables = []
         self.startinventory = []
@@ -2780,6 +2838,15 @@ class Spoiler(object):
                 self.medallions[f'Misery Mire ({self.world.get_player_names(player)})'] = self.world.required_medallions[player][0]
                 self.medallions[f'Turtle Rock ({self.world.get_player_names(player)})'] = self.world.required_medallions[player][1]
 
+        self.bottles = OrderedDict()
+        if self.world.players == 1:
+            self.bottles['Waterfall Bottle'] = self.world.bottle_refills[1][0]
+            self.bottles['Pyramid Bottle'] = self.world.bottle_refills[1][1]
+        else:
+            for player in range(1, self.world.players + 1):
+                self.bottles[f'Waterfall Bottle ({self.world.get_player_names(player)})'] = self.world.bottle_refills[player][0]
+                self.bottles[f'Pyramid Bottle ({self.world.get_player_names(player)})'] = self.world.bottle_refills[player][1]
+        
         self.locations = OrderedDict()
         listed_locations = set()
 
@@ -2862,6 +2929,7 @@ class Spoiler(object):
         out.update(self.locations)
         out['Starting Inventory'] = self.startinventory
         out['Special'] = self.medallions
+        out['Bottles'] = self.bottles
         if self.hashes:
             out['Hashes'] = {f"{self.world.player_names[player][team]} (Team {team+1})": hash for (player, team), hash in self.hashes.items()}
         if self.shops:
@@ -2911,12 +2979,14 @@ class Spoiler(object):
                 outfile.write('Whirlpool Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_whirlpool'][player] else 'No'))
                 outfile.write('Flute Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_fluteshuffle'][player])
                 outfile.write('Entrance Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['shuffle'][player])
-                outfile.write('Shuffle GT/Ganon:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shuffleganon'][player] else 'No'))
-                outfile.write('Shuffle Links:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shufflelinks'][player] else 'No'))
+                if self.metadata['shuffle'][player] != 'vanilla':
+                    outfile.write('Shuffle GT/Ganon:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shuffleganon'][player] else 'No'))
+                    outfile.write('Shuffle Links:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shufflelinks'][player] else 'No'))
                 outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
                 outfile.write('Door Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['door_shuffle'][player])
-                outfile.write('Intensity:'.ljust(line_width) + '%s\n' % self.metadata['intensity'][player])
-                outfile.write('Experimental:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['experimental'][player] else 'No'))
+                if self.metadata['door_shuffle'][player] != 'vanilla':
+                    outfile.write('Intensity:'.ljust(line_width) + '%s\n' % self.metadata['intensity'][player])
+                    outfile.write('Experimental:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['experimental'][player] else 'No'))
                 outfile.write('Pot Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['potshuffle'][player] else 'No'))
                 outfile.write('Key Drop Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['keydropshuffle'][player] else 'No'))
                 outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['mapshuffle'][player] else 'No'))
@@ -2931,7 +3001,7 @@ class Spoiler(object):
             
             if self.startinventory:
                 outfile.write('Starting Inventory:'.ljust(line_width))
-                outfile.write('\n'.ljust(line_width+1).join(self.startinventory))
+                outfile.write('\n'.ljust(line_width+1).join(self.startinventory) + '\n')
 
     def to_file(self, filename):
         self.parse_data()
@@ -2945,6 +3015,7 @@ class Spoiler(object):
                 if len(self.hashes) > 0:
                     for team in range(self.world.teams):
                         outfile.write('%s%s\n' % (f"Hash - {self.world.player_names[player][team]} (Team {team+1}): " if self.world.teams > 1 else 'Hash: ', self.hashes[player, team]))
+            
             outfile.write('\n\nRequirements:\n\n')
             for dungeon, medallion in self.medallions.items():
                 outfile.write(f'{dungeon}:'.ljust(line_width) + '%s Medallion\n' % medallion)
@@ -2955,6 +3026,10 @@ class Spoiler(object):
                 if self.world.crystals_ganon_orig[player] == 'random':
                     outfile.write(str('Crystals Required for Ganon' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player])))
             
+            outfile.write('\n\nBottle Refills:\n\n')
+            for fairy, bottle in self.bottles.items():
+                outfile.write(f'{fairy}: {bottle}\n')
+
             if self.overworlds:
                 # overworlds: overworld transitions;
                 outfile.write('\n\nOverworld:\n\n')
@@ -3133,7 +3208,7 @@ access_mode = {"items": 0, "locations": 1, "none": 2}
 boss_mode = {"none": 0, "simple": 1, "full": 2, "random": 3, "chaos": 3}
 enemy_mode = {"none": 0, "shuffled": 1, "random": 2, "chaos": 2, "legacy": 3}
 
-# byte 7: HHHD DPR? (enemy_health, enemy_dmg, potshuffle, retro, ?)
+# byte 7: HHHD DPBS (enemy_health, enemy_dmg, potshuffle, bomb logic, shuffle links)
 e_health = {"default": 0, "easy": 1, "normal": 2, "hard": 3, "expert": 4}
 e_dmg = {"default": 0, "shuffled": 1, "random": 2}
 
@@ -3163,7 +3238,8 @@ class Settings(object):
             | (0x20 if w.mapshuffle[p] else 0) | (0x10 if w.compassshuffle[p] else 0)
             | (boss_mode[w.boss_shuffle[p]] << 2) | (enemy_mode[w.enemy_shuffle[p]]),
 
-            (e_health[w.enemy_health[p]] << 5) | (e_dmg[w.enemy_damage[p]] << 3) | (0x4 if w.potshuffle[p] else 0) | (0x2 if w.retro[p] else 0)])
+            (e_health[w.enemy_health[p]] << 5) | (e_dmg[w.enemy_damage[p]] << 3) | (0x4 if w.potshuffle[p] else 0)
+            | (0x2 if w.bombbag[p] else 0) | (1 if w.shufflelinks[p] else 0)])
         return base64.b64encode(code, "+-".encode()).decode()
 
     @staticmethod
@@ -3208,6 +3284,8 @@ class Settings(object):
         args.enemy_health[p] = r(e_health)[(settings[7] & 0xE0) >> 5]
         args.enemy_damage[p] = r(e_dmg)[(settings[7] & 0x18) >> 3]
         args.shufflepots[p] = True if settings[7] & 0x4 else False
+        args.bombbag[p] = True if settings[7] & 0x2 else False
+        args.shufflelinks[p] = True if settings[7] & 0x1 else False
 
 
 class KeyRuleType(FastEnum):

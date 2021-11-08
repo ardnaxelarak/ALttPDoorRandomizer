@@ -58,7 +58,7 @@ def main(args):
 
     fill_world(world, args.plando)
 
-    if world.get_entrance('Dam', 1).connected_region.name != 'Dam' or world.get_entrance('Swamp Palace', 1).connected_region.name != 'Swamp Palace (Entrance)':
+    if not (world.get_entrance('Dam', 1).connected_region.name in ['Dam', 'Swamp Portal'] and world.get_entrance('Swamp Palace', 1).connected_region.name in ['Swamp Portal', 'Dam']):
         world.swamp_patch_required[1] = True
 
     logger.info('Calculating playthrough.')

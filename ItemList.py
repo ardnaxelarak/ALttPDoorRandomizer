@@ -217,6 +217,9 @@ def generate_itempool(world, player):
     world.push_item(world.get_location('Dark Blacksmith Ruins', player), ItemFactory('Pick Up Purple Chest', player), False)
     world.get_location('Dark Blacksmith Ruins', player).event = True
     world.get_location('Dark Blacksmith Ruins', player).locked = True
+    world.push_item(world.get_location('Middle Aged Man', player), ItemFactory('Deliver Purple Chest', player), False)
+    world.get_location('Middle Aged Man', player).event = True
+    world.get_location('Middle Aged Man', player).locked = True
     world.push_item(world.get_location('Frog', player), ItemFactory('Get Frog', player), False)
     world.get_location('Frog', player).event = True
     world.get_location('Frog', player).locked = True
@@ -226,6 +229,12 @@ def generate_itempool(world, player):
     world.push_item(world.get_location('Floodgate', player), ItemFactory('Open Floodgate', player), False)
     world.get_location('Floodgate', player).event = True
     world.get_location('Floodgate', player).locked = True
+    world.push_item(world.get_location('Big Bomb', player), ItemFactory('Pick Up Big Bomb', player), False)
+    world.get_location('Big Bomb', player).event = True
+    world.get_location('Big Bomb', player).locked = True
+    world.push_item(world.get_location('Pyramid Crack', player), ItemFactory('Detonate Big Bomb', player), False)
+    world.get_location('Pyramid Crack', player).event = True
+    world.get_location('Pyramid Crack', player).locked = True
     world.push_item(world.get_location('Trench 1 Switch', player), ItemFactory('Trench 1 Filled', player), False)
     world.get_location('Trench 1 Switch', player).event = True
     world.get_location('Trench 1 Switch', player).locked = True
@@ -384,6 +393,15 @@ def generate_itempool(world, player):
     mm_medallion = ['Ether', 'Quake', 'Bombos'][random.randint(0, 2)]
     tr_medallion = ['Ether', 'Quake', 'Bombos'][random.randint(0, 2)]
     world.required_medallions[player] = (mm_medallion, tr_medallion)
+
+    # shuffle bottle refills
+    if world.difficulty[player] in ['hard', 'expert']:
+        waterfall_bottle = hardbottles[random.randint(0, 5)]
+        pyramid_bottle = hardbottles[random.randint(0, 5)]
+    else:
+        waterfall_bottle = normalbottles[random.randint(0, 6)]
+        pyramid_bottle = normalbottles[random.randint(0, 6)]
+    world.bottle_refills[player] = (waterfall_bottle, pyramid_bottle)
 
     set_up_shops(world, player)
 

@@ -14,12 +14,11 @@ This is a very new mode of LTTPR so the tools and info is very limited.
 - There is an [OW OWG Reference Sheet](https://zelda.codemann8.com/images/shared/ow-owg-reference-sheet.png) that shows all the in-logic places where boots/mirror clips and fake flippers are expected from the player.
 
 # Known Issues
-(Updated 2021-08-26)
+(Updated 2021-11-06)
 
 ### If you want to playtest this, know these things:
-- Big Red Bomb may require bomb duping as ledge drops may be in the way of your path to the Pyramid Fairy crack
-- If you fake flipper, beware of transitioning south. You could end up at the top of the waterfall in the southeast of either world. If you mistakenly drop down, it is important to NOT make any other movements and S+Q immediately when the game allows you to (might take several seconds, the game has to scroll back to the original point of water entry) or there will be a hardlock. Falling from the waterfall is avoidable but it is super easy to do as it is super close to the transition.
-- In Crossed OW, there are some interesting bunny swimming situations that can occur, these are meant to be out-of-logic but beware of logic bugs around this area. But also, hardlocks can occur; if you take damage, be sure to S+Q immediately before moving in any direction, or you may get an infinite screen wrap glitch.
+- If you fake flipper, beware of transitioning south. You could end up at the top of the waterfall in the southeast of either world. If you mistakenly drop down, it is important to know that altho the game may appear as frozen for a bit of time, the game is simply scrolling Link back to the original point of water entry. Upon "landing", you'll be able to S+Q properly. Falling from the waterfall is avoidable but it is super easy to do as it is super close to the transition.
+- In Crossed OW, there are some interesting bunny swimming situations that can occur, these ARE in logic currently, just be careful and avoid taking a hit from an enemy.
 
 ### Known bugs:
 - Screens that loop on itself and also have free-standing items, the sprites are duplicated and can cause item duplication

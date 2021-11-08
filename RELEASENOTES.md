@@ -15,6 +15,17 @@ CLI: ```--bombbag```
 
 # Bug Fixes and Notes.
 
+* 0.5.1.5
+	* Fix for hard pool capacity upgrades missing
+	* Bonk Fairy (Light) is no longer in logic for ER Standard and is forbidden to be a connector, so rain state isn't exitable
+	* Bug fix for retro + enemizer and arrows appearing under pots
+	* Added bombbag and shufflelinks to settings code
+	* Catobat fixes:
+		* Fairy refills in spoiler
+		* Subweights support in mystery
+		* More defaults for mystery weights
+		* Less camera jank for straight stair transitions
+		* Bug with Straight stairs with vanilla doors where Link's walking animation stopped early is fixed		 
 * 0.5.1.4
 	* Revert quadrant glitch fix for baserom
 	* Fix for inverted

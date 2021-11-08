@@ -91,8 +91,9 @@ def link_doors_main(world, player):
             world.get_portal('Desert East', player).destination = True
             if (world.mode[player] == 'inverted') != (0x30 in world.owswaps[player][0] and world.owMixed[player]):
                 world.get_portal('Desert West', player).destination = True
-            else:
+            if (world.mode[player] == 'inverted') == (0x00 in world.owswaps[player][0] and world.owMixed[player]):
                 world.get_portal('Skull 2 West', player).destination = True
+            if (world.mode[player] == 'inverted') == (0x05 in world.owswaps[player][0] and world.owMixed[player]):
                 world.get_portal('Turtle Rock Lazy Eyes', player).destination = True
                 world.get_portal('Turtle Rock Eye Bridge', player).destination = True
         else:

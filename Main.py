@@ -30,7 +30,7 @@ from Fill import sell_potions, sell_keys, balance_multiworld_progression, balanc
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops
 from Utils import output_path, parse_player_names
 
-__version__ = '0.5.1.4-u'
+__version__ = '0.5.1.5-u'
 
 from source.classes.BabelFish import BabelFish
 
@@ -163,10 +163,6 @@ def main(args, seed=None, fish=None):
     else:
         outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
 
-    if args.create_spoiler and not args.jsonout:
-        logger.info(world.fish.translate("cli","cli","patching.spoiler"))
-        world.spoiler.meta_to_file(output_path('%s_Spoiler.txt' % outfilebase))
-
     for player in range(1, world.players + 1):
         world.difficulty_requirements[player] = difficulties[world.difficulty[player]]
 
@@ -178,7 +174,12 @@ def main(args, seed=None, fish=None):
             item = ItemFactory(tok.strip(), player)
             if item:
                 world.push_precollected(item)
+    
+    if args.create_spoiler and not args.jsonout:
+        logger.info(world.fish.translate("cli","cli","patching.spoiler"))
+        world.spoiler.meta_to_file(output_path('%s_Spoiler.txt' % outfilebase))
 
+    for player in range(1, world.players + 1):
         create_regions(world, player)
         create_dungeon_regions(world, player)
         create_owedges(world, player)
@@ -414,6 +415,7 @@ def copy_world(world):
     ret.player_names = copy.deepcopy(world.player_names)
     ret.remote_items = world.remote_items.copy()
     ret.required_medallions = world.required_medallions.copy()
+    ret.bottle_refills = world.bottle_refills.copy()
     ret.swamp_patch_required = world.swamp_patch_required.copy()
     ret.ganon_at_pyramid = world.ganon_at_pyramid.copy()
     ret.powder_patch_required = world.powder_patch_required.copy()
@@ -594,7 +596,7 @@ def create_playthrough(world):
 
     # get locations containing progress items
     prog_locations = [location for location in world.get_filled_locations() if location.item.advancement]
-    optional_locations = ['Trench 1 Switch', 'Trench 2 Switch', 'Ice Block Drop']
+    optional_locations = ['Trench 1 Switch', 'Trench 2 Switch', 'Ice Block Drop', 'Big Bomb']
     state_cache = [None]
     collection_spheres = []
     state = CollectionState(world)

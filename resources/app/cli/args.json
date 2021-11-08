@@ -381,13 +381,13 @@
     "help": "suppress"
   },
   "shuffleganon": {
-    "action": "store_false",
-    "type": "bool"
+    "action": "store_true",
+    "type": "bool",
+    "help": "suppress"
   },
   "no_shuffleganon": {
     "action": "store_true",
-    "dest": "shuffleganon",
-    "help": "suppress"
+    "dest": "shuffleganon"
   },
   "shufflelinks": {
     "action": "store_true",
