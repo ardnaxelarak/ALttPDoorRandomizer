@@ -215,7 +215,7 @@ def roll_settings(weights):
     ret.hints = get_choice('hints') == 'on'
 
     swords = get_choice('weapons')
-    if sowrds is not None:
+    if swords is not None:
         ret.swords = {'randomized': 'random',
                       'assured': 'assured',
                       'vanilla': 'vanilla',
