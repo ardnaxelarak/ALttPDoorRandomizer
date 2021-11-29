@@ -3,7 +3,7 @@ from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSl
 from Regions import mark_dark_world_regions, mark_light_world_regions
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.2.2.0-u'
+__version__ = '0.2.3.2-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -137,6 +137,24 @@ def link_overworld(world, player):
         assert len(swapped_edges) == 0, 'Not all edges were swapped successfully: ' + ', '.join(swapped_edges )
         
         update_world_regions(world, player)
+
+        # update spoiler
+        s = list(map(lambda x: ' ' if x not in world.owswaps[player][0] else 'S', [i for i in range(0x40)]))
+        text_output = tile_swap_spoiler_table.replace('s', '%s') % (             s[0x02],                                s[0x07],
+                                                                                    s[0x00],                s[0x03],        s[0x05],
+            s[0x00],        s[0x02],s[0x03],        s[0x05],        s[0x07],                 s[0x0a],                                s[0x0f],
+                            s[0x0a],                                s[0x0f],
+            s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17], s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17],
+            s[0x18],        s[0x1a],s[0x1b],        s[0x1d],s[0x1e],
+                            s[0x22],                s[0x25],                                 s[0x1a],                s[0x1d],
+            s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],     s[0x18],                s[0x1b],                s[0x1e],
+            s[0x30],        s[0x32],s[0x33],s[0x34],s[0x35],        s[0x37],                 s[0x22],                s[0x25],
+                            s[0x3a],s[0x3b],s[0x3c],                s[0x3f],
+                                                                                s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],
+                                                                                                s[0x32],s[0x33],s[0x34],                s[0x37],
+                                                                                    s[0x30],                                s[0x35],
+                                                                                            s[0x3a],s[0x3b],s[0x3c],                 s[0x3f])
+        world.spoiler.set_map('swaps', text_output, world.owswaps[player][0], player)
     
     # apply tile logical connections
     for owid in ow_connections.keys():
@@ -153,7 +171,8 @@ def link_overworld(world, player):
     logging.getLogger('').debug('Crossing overworld edges')
     if world.owCrossed[player] in ['grouped', 'limited', 'chaos']:
         if world.owCrossed[player] == 'grouped':
-            crossed_edges = shuffle_tiles(world, tile_groups, [[],[],[]], player)
+            ow_crossed_tiles = [[],[],[]]
+            crossed_edges = shuffle_tiles(world, tile_groups, ow_crossed_tiles, player)
         elif world.owCrossed[player] in ['limited', 'chaos']:
             crossed_edges = list()
             crossed_candidates = list()
@@ -196,23 +215,31 @@ def link_overworld(world, player):
             connect_simple(world, to_whirlpool, from_region, player)
     else:
         whirlpool_candidates = [[],[]]
+        world.owwhirlpools[player] = [None] * 8
         for (from_owid, from_whirlpool, from_region), (to_owid, to_whirlpool, to_region) in default_whirlpool_connections:
-            if world.owCrossed[player] != 'none':
-                whirlpool_candidates[0].append(tuple((from_owid, from_whirlpool, from_region)))
-                whirlpool_candidates[0].append(tuple((to_owid, to_whirlpool, to_region)))
+            if world.owCrossed[player] == 'polar' and world.owMixed[player] and from_owid == 0x55:
+                # connect the 2 DW whirlpools in Polar Mixed
+                connect_simple(world, from_whirlpool, to_region, player)
+                connect_simple(world, to_whirlpool, from_region, player)
+                world.owwhirlpools[player][7] = from_owid
+                world.owwhirlpools[player][6] = to_owid
+                world.spoiler.set_overworld(from_whirlpool, to_whirlpool, 'both', player)
             else:
-                if world.get_region(from_region, player).type == RegionType.LightWorld:
+                if ((world.owCrossed[player] == 'none' or (world.owCrossed[player] == 'polar' and not world.owMixed[player])) and (world.get_region(from_region, player).type == RegionType.LightWorld)) \
+                        or world.owCrossed[player] not in ['none', 'polar', 'grouped'] \
+                        or (world.owCrossed[player] == 'grouped' and ((from_owid < 0x40) == (from_owid not in ow_crossed_tiles[0]))):
                     whirlpool_candidates[0].append(tuple((from_owid, from_whirlpool, from_region)))
                 else:
                     whirlpool_candidates[1].append(tuple((from_owid, from_whirlpool, from_region)))
                 
-                if world.get_region(to_region, player).type == RegionType.LightWorld:
+                if ((world.owCrossed[player] == 'none' or (world.owCrossed[player] == 'polar' and not world.owMixed[player])) and (world.get_region(to_region, player).type == RegionType.LightWorld)) \
+                        or world.owCrossed[player] not in ['none', 'polar', 'grouped'] \
+                        or (world.owCrossed[player] == 'grouped' and ((to_owid < 0x40) == (to_owid not in ow_crossed_tiles[0]))):
                     whirlpool_candidates[0].append(tuple((to_owid, to_whirlpool, to_region)))
                 else:
                     whirlpool_candidates[1].append(tuple((to_owid, to_whirlpool, to_region)))
 
         # shuffle happens here
-        world.owwhirlpools[player] = [None] * 8
         whirlpool_map = [ 0x35, 0x0f, 0x15, 0x33, 0x12, 0x3f, 0x55, 0x7f ]
         for whirlpools in whirlpool_candidates:
             random.shuffle(whirlpools)
@@ -446,7 +473,7 @@ def shuffle_tiles(world, groups, result_list, player):
                 exist_dw_regions.extend(dw_regions)
 
         # check whirlpool parity
-        valid_whirlpool_parity = world.owCrossed[player] != 'none' or len(set(new_results[0]) & set({0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f})) % 2 == 0
+        valid_whirlpool_parity = world.owCrossed[player] not in ['none', 'grouped'] or len(set(new_results[0]) & set({0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f})) % 2 == 0
 
     (exist_owids, exist_lw_regions, exist_dw_regions) = result_list
     exist_owids.extend(new_results[0])
@@ -723,9 +750,7 @@ def reorganize_groups(world, groups, player):
 
 def create_flute_exits(world, player):
     for region in (r for r in world.regions if r.player == player and r.terrain == Terrain.Land and r.name not in ['Zoras Domain', 'Master Sword Meadow', 'Hobo Bridge']):
-        if (not world.owMixed[player] and region.type == RegionType.LightWorld) \
-            or (world.owMixed[player] and region.type in [RegionType.LightWorld, RegionType.DarkWorld] \
-                and (region.name not in world.owswaps[player][1] or region.name in world.owswaps[player][2])):
+        if region.type == (RegionType.LightWorld if world.mode != 'inverted' else RegionType.DarkWorld):
             exitname = 'Flute From ' + region.name
             exit = Entrance(region.player, exitname, region)
             exit.spot_type = 'Flute'
@@ -1589,3 +1614,23 @@ flute_data = {
     0x3c: (['South Pass Area',                'Dark South Pass Area'],              0x3c, 0x0584, 0x0ed0, 0x081e, 0x0f38, 0x0898, 0x0f45, 0x08a3, 0xfffe, 0x0002, 0x0f38, 0x0898),
     0x3f: (['Octoballoon Area',               'Bomber Corner Area'],                0x3f, 0x0810, 0x0f05, 0x0e75, 0x0f67, 0x0ef3, 0x0f72, 0x0efa, 0xfffb, 0x000b, 0x0f80, 0x0ef0)
 }
+
+tile_swap_spoiler_table = \
+"""                       0 1 2 3 4 5 6 7
+                      +---+-+---+---+-+
+      01234567   A(00)|   |s|   |   |s|
+     +--------+       | s +-+ s | s +-+
+A(00)|s ss s s|  B(08)|   |s|   |   |s|
+B(08)|  s    s|       +-+-+-+-+-+-+-+-+
+C(10)|ssssssss|  C(10)|s|s|s|s|s|s|s|s|
+D(18)|s ss ss |       +-+-+-+-+-+-+-+-+
+E(20)|  s  s  |  D(18)|   |s|   |s|   |
+F(28)|ssssssss|       | s +-+ s +-+ s |
+G(30)|s ssss s|  E(20)|   |s|   |s|   |
+H(38)|  sss  s|       +-+-+-+-+-+-+-+-+
+     +--------+  F(28)|s|s|s|s|s|s|s|s|
+                      +-+-+-+-+-+-+-+-+
+                 G(30)|   |s|s|s|   |s|
+                      | s +-+-+-+ s +-+
+                 H(38)|   |s|s|s|   |s|
+                      +---+-+-+-+---+-+"""

@@ -157,8 +157,8 @@ def main(args, seed=None, fish=None):
         for player, name in enumerate(team, 1):
             world.player_names[player].append(name)
     logger.info('')
-
-    if world.owShuffle[1] != 'vanilla' or world.owCrossed[1] not in ['none', 'polar'] or world.owMixed[1] or str(world.seed).startswith('M'):
+    
+    if world.owShuffle[1] != 'vanilla' or world.owCrossed[1] not in ['none', 'polar'] or world.owMixed[1] or str(args.outputname).startswith('M'):
         outfilebase = f'OR_{args.outputname if args.outputname else world.seed}'
     else:
         outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
@@ -596,7 +596,7 @@ def create_playthrough(world):
 
     # get locations containing progress items
     prog_locations = [location for location in world.get_filled_locations() if location.item.advancement]
-    optional_locations = ['Trench 1 Switch', 'Trench 2 Switch', 'Ice Block Drop', 'Big Bomb']
+    optional_locations = ['Trench 1 Switch', 'Trench 2 Switch', 'Ice Block Drop']
     state_cache = [None]
     collection_spheres = []
     state = CollectionState(world)
@@ -703,9 +703,6 @@ def create_playthrough(world):
     old_world.spoiler.paths = dict()
     for player in range(1, world.players + 1):
         old_world.spoiler.paths.update({location.gen_name(): get_path(state, location.parent_region) for sphere in collection_spheres for location in sphere if location.player == player})
-        for path in dict(old_world.spoiler.paths).values():
-            if any(exit == 'Pyramid Fairy' for (_, exit) in path):
-                old_world.spoiler.paths[str(world.get_region('Big Bomb Shop', player))] = get_path(state, world.get_region('Big Bomb Shop', player))
 
     # we can finally output our playthrough
     old_world.spoiler.playthrough = {"0": [str(item) for item in world.precollected_items if item.advancement]}

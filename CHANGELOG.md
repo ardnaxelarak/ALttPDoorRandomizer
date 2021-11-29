@@ -1,5 +1,28 @@
 # Changelog
 
+### 0.2.3.0/1/2
+- Fixed issue in Crossed OW where mirror portal sprites would disappear when changing worlds
+- Added Big Red Bomb logic to support using residual mirror portals for later re-entry
+- Suppressed irrelevant paths in spoiler playthru
+- Suppressed identical paths in spoiler playthru if multiple locations within the same region contain progression
+
+### 0.2.2.3
+- Fixed GT entrance not being opened when Inverted and WDM is Tile Swapped
+- The Goal sign is moved to the area where the hole will be (always in opposite world as starting)
+
+### 0.2.2.2
+- Fixed Whirlpool Shuffle with Grouped Crossed OW
+- Made filename not spoil OWR in Mystery
+- Fixed Triforce Hunt goal
+
+### 0.2.2.1
+- Allow normal Link speed with Old Man following if not in his cave or WDM
+- Fixed issue with Flute exits not getting placed on the correct tiles
+- Hints in Lite/Lean ER no longer refer to entrances that are guaranteed vanilla
+- Added Links House entrance to hint candidate list in ER when it is shuffled
+- Added Tile Swaps ASCII map to Spoiler Log when Tile Swap is enabled
+- Fixed issue with Whirlpool Shuffle not abiding by Polar rules
+
 ### 0.2.2.0
 - Delivering Big Red Bomb is now in logic
 - Smith/Purple Chest have proper dynamic pathing to fix logical issues

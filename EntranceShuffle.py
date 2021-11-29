@@ -428,13 +428,21 @@ def link_entrances(world, player):
         caves = Cave_Base + (dw_dungeons if not invFlag else lw_dungeons)
         connector_entrances = [e for e in list(zip(*default_connector_connections + default_dungeon_connections + open_default_dungeon_connections))[0] if e in (dw_entrances if not invFlag else lw_entrances)]
         connect_inaccessible_regions(world, [], connector_entrances, caves, player)
+        if invFlag:
+            lw_dungeons = list(set(lw_dungeons) & set(caves))
+        else:
+            dw_dungeons = list(set(dw_dungeons) & set(caves))
         
         caves = list(set(Cave_Base) & set(caves)) + (lw_dungeons if not invFlag else dw_dungeons)
         connector_entrances = [e for e in list(zip(*default_connector_connections + default_dungeon_connections + open_default_dungeon_connections))[0] if e in (lw_entrances if not invFlag else dw_entrances)]
         connect_inaccessible_regions(world, connector_entrances, [], caves, player)
+        if not invFlag:
+            lw_dungeons = list(set(lw_dungeons) & set(caves))
+        else:
+            dw_dungeons = list(set(dw_dungeons) & set(caves))
         
-        lw_dungeons = list(set(lw_dungeons) & set(caves)) + (Old_Man_House if not invFlag else [])
-        dw_dungeons = list(set(dw_dungeons) & set(caves)) + ([] if not invFlag else Old_Man_House)
+        lw_dungeons = lw_dungeons + (Old_Man_House if not invFlag else [])
+        dw_dungeons = dw_dungeons + ([] if not invFlag else Old_Man_House)
         caves = list(set(Cave_Base) & set(caves)) + DW_Mid_Dungeon_Exits
         
         # place old man, has limited options

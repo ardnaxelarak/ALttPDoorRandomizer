@@ -14,6 +14,9 @@ jsl OWEdgeTransition : nop #4 ;LDA $02A4E3,X : ORA $7EF3CA
 ;org $02e238 ;LDX #$9E : - DEX : DEX : CMP $DAEE,X : BNE -
 ;jsl OWSpecialTransition : nop #5
 
+org $05af75
+jsl OWPreserveMirrorSprite : nop #2 ; LDA $7EF3CA : BNE $05AFDF
+
 ; whirlpool shuffle cross world change
 org $02b3bd
 jsl OWWhirlpoolUpdate ;JSL $02EA6C
@@ -36,6 +39,10 @@ db #$b0 ; BCS to replace BEQ
 ; load Stumpy per screen's original world, not current world flag
 org $06907f ; < 3107f - sprite_prep.asm:2170 (LDA $7EF3CA)
 lda $8a : and.b #$40
+
+; override Link speed with Old Man following
+org $09a32e ; < bank_09.asm:7457 (LDA.b #$0C : STA.b $5E)
+jsl OWOldManSpeed
 
 ; Dark Bonk Rocks Rain Sequence Guards (allowing Tile Swap on Dark Bonk Rocks)
 ;org $09c957 ; <- 4c957
@@ -137,6 +144,19 @@ OWWhirlpoolUpdate:
     rtl
 }
 
+OWPreserveMirrorSprite:
+{
+    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .vanilla
+        rtl ; if OW Crossed, skip world check and continue
+    .vanilla
+    lda $7ef3ca : bne .deleteMirror
+        rtl
+
+    .deleteMirror
+    pla : lda #$de : pha ; in vanilla, if in dark world, jump to $05afdf
+    rtl
+}
+
 OWFluteCancel:
 {
     lda.l OWFlags+1 : and #$01 : bne +
@@ -161,6 +181,22 @@ OWSmithAccept:
     cmp #$08 : beq +
         clc : rtl
     + sec : rtl
+}
+OWOldManSpeed:
+{
+    lda $1b : beq .outdoors
+        lda $a0 : and #$fe : cmp #$f0 : beq .vanilla ; if in cave where you find Old Man
+        bra .normalspeed
+    .outdoors
+        lda $8a : cmp #$03 : beq .vanilla ; if on WDM screen
+
+    .normalspeed
+    lda $5e : cmp #$0c : rtl
+        stz $5e : rtl
+
+    .vanilla
+    lda #$0c : sta $5e ; what we wrote over
+    rtl
 }
 
 org $aa9000
@@ -374,7 +410,7 @@ OWWorldUpdate: ; x = owid of destination screen
         lda #$38 : sta $012f ; play sfx - #$3b is an alternative
 
         ; toggle bunny mode
-        + lda $7ef357 : bne .nobunny
+        lda $7ef357 : bne .nobunny
         lda.l InvertedMode : bne .inverted
             lda $7ef3ca : and.b #$40 : bra +
             .inverted lda $7ef3ca : and.b #$40 : eor #$40

@@ -1703,16 +1703,16 @@ class Entrance(object):
         self.temp_path = []
 
     def can_reach(self, state):
-                                # Destination        Pickup                   OW Only  No Ledges  Can S&Q
-        multi_step_locations = { 'Pyramid Crack':   ('Big Bomb',              True,    True,      False),
-                                 'Missing Smith':   ('Frog',                  True,    False,     True),
-                                 'Middle Aged Man': ('Dark Blacksmith Ruins', True,    False,     True) }
+                                # Destination        Pickup                   OW Only  No Ledges  Can S&Q  Allow Mirror
+        multi_step_locations = { 'Pyramid Crack':   ('Big Bomb',              True,    True,      False,   True),
+                                 'Missing Smith':   ('Frog',                  True,    False,     True,    True),
+                                 'Middle Aged Man': ('Dark Blacksmith Ruins', True,    False,     True,    True) }
 
         if self.name in multi_step_locations:
             if self not in state.path:
-                world = self.parent_region.world if self.parent_region else None
+                world = self.parent_region.world
                 step_location = world.get_location(multi_step_locations[self.name][0], self.player)
-                if step_location.can_reach(state) and self.can_reach_thru(state, step_location.parent_region, multi_step_locations[self.name][1], multi_step_locations[self.name][2], multi_step_locations[self.name][3]) and self.access_rule(state):
+                if step_location.can_reach(state) and self.can_reach_thru(state, step_location, multi_step_locations[self.name][1], multi_step_locations[self.name][2], multi_step_locations[self.name][3], multi_step_locations[self.name][4]) and self.access_rule(state):
                     if not self in state.path:
                         path = state.path.get(step_location.parent_region, (step_location.parent_region.name, None))
                         item_name = step_location.item.name if step_location.item else 'Pick Up Item'
@@ -1734,35 +1734,141 @@ class Entrance(object):
 
         return False
 
-    def can_reach_thru(self, state, start_region, ignore_underworld=False, ignore_ledges=False, allow_save_quit=False):
-        def explore_region(region, path = []):
+    def can_reach_thru(self, state, step_location, ignore_underworld=False, ignore_ledges=False, allow_save_quit=False, allow_mirror_reentry=False):
+        def explore_region(region, destination, path = []):
             nonlocal found
-            if region not in explored_regions or len(explored_regions[region]) > len(path):
+            if region not in explored_regions:
                 explored_regions[region] = path
                 for exit in region.exits:
                     if exit.connected_region and (not ignore_ledges or exit.spot_type != 'Ledge') \
                             and exit.connected_region.name not in ['Dig Game Area'] \
                             and exit.access_rule(state):
-                        if exit.connected_region == self.parent_region:
+                        if exit.connected_region == destination:
                             found = True
-                            explored_regions[self.parent_region] = path + [exit]
+                            explored_regions[destination] = path + [exit]
                         elif not ignore_underworld or region.type == exit.connected_region.type or exit.connected_region.type not in [RegionType.Cave, RegionType.Dungeon]:
-                            explore_region(exit.connected_region, path + [exit])
+                            exits_to_traverse.append(tuple((exit, path)))
 
-        found = False
-        explored_regions = {}
-        explore_region(start_region.entrances[0].parent_region)
-        if found:
-            self.temp_path = explored_regions[self.parent_region]
-        elif allow_save_quit:
-            world = self.parent_region.world if self.parent_region else None
-            exit = world.get_entrance('Links House S&Q', self.player)
-            explore_region(exit.connected_region, [exit])
+        def traverse_paths(region, destination, start_path=[]):
+            nonlocal explored_regions, exits_to_traverse
+            explored_regions = {}
+            exits_to_traverse = list()
+            explore_region(region, destination, start_path)
+            while not found and len(exits_to_traverse):
+                exit, path = exits_to_traverse.pop(0)
+                explore_region(exit.connected_region, destination, path + [exit])
             if found:
-                self.temp_path = explored_regions[self.parent_region]
+                self.temp_path = explored_regions[destination]
         
-        #TODO: Implement residual mirror portal placing for the previous leg, to be used for the final destination
+        start_region = step_location.parent_region
+        explored_regions = {}
+        exits_to_traverse = list()
+        found = False
+        
+        if not found and allow_mirror_reentry and state.has('Magic Mirror', self.player):
+            # check for path using mirror portal re-entry at location of the follower pickup
+            # this is checked first as this often the shortest path
+            follower_region = start_region
+            if follower_region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
+                follower_region = start_region.entrances[0].parent_region
+            if (follower_region.world.mode[self.player] != 'inverted') == (follower_region.type == RegionType.LightWorld):
+                from OWEdges import OWTileRegions
+                from OverworldShuffle import ow_connections
+                owid = OWTileRegions[follower_region.name]
+                (mirror_map, other_world) = ow_connections[owid % 0x40]
+                mirror_map.extend(other_world)
+                mirror_exit = None
+                while len(mirror_map):
+                    if mirror_map[0][1] == follower_region.name:
+                        mirror_exit = mirror_map[0][0]
+                        break
+                    mirror_map.pop(0)
+                if mirror_exit:
+                    mirror_region = follower_region.world.get_entrance(mirror_exit, self.player).parent_region
+                    if mirror_region.can_reach(state):
+                        traverse_paths(mirror_region, self.parent_region)
+                        if found:
+                            path = state.path.get(mirror_region, (mirror_region.name, None))
+                            path = (follower_region.name, (mirror_exit, path))
+                            item_name = step_location.item.name if step_location.item else 'Pick Up Item'
+                            if start_region.name != follower_region.name:
+                                path = (start_region.name, (start_region.entrances[0].name, path))
+                                path = (f'{step_location.parent_region.name} Exit', ('Leave Item Area', (item_name, path)))
+                            else:
+                                path = (item_name, path)
+                            path = ('Use Mirror Portal', (follower_region.name, path))
+                            while len(self.temp_path):
+                                exit = self.temp_path.pop(0)
+                                path = (exit.name, (exit.parent_region.name, path))
+                            item_name = self.connected_region.locations[0].item.name if self.connected_region.locations[0].item else 'Deliver Item'
+                            path = (self.parent_region.name, path)
+                            state.path[self] = (self.name, path)
+        
+        if not found:
+            # check normal paths
+            traverse_paths(start_region.entrances[0].parent_region, self.parent_region)
 
+        if not found and allow_save_quit:
+            # check paths involving save and quit
+            exit = self.parent_region.world.get_entrance('Links House S&Q', self.player)
+            traverse_paths(exit.connected_region, self.parent_region, [exit])
+        
+        if not found and allow_mirror_reentry and state.has('Magic Mirror', self.player):
+            # check for paths using mirror portal re-entry at location of final destination
+            # this is checked last as this is the most complicated/exhaustive check
+            follower_region = start_region
+            if follower_region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
+                follower_region = start_region.entrances[0].parent_region
+            if (follower_region.world.mode[self.player] != 'inverted') == (follower_region.type == RegionType.LightWorld):
+                dest_region = self.parent_region
+                if dest_region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
+                    dest_region = start_region.entrances[0].parent_region
+                if (dest_region.world.mode[self.player] != 'inverted') != (dest_region.type == RegionType.LightWorld):
+                    from OWEdges import OWTileRegions
+                    from OverworldShuffle import ow_connections
+                    owid = OWTileRegions[dest_region.name]
+                    (mirror_map, other_world) = ow_connections[owid % 0x40]
+                    mirror_map.extend(other_world)
+                    mirror_map = [(x, d) for (x, d) in mirror_map if x in [e.name for e in dest_region.exits]]
+                    # loop thru potential places to leave a mirror portal
+                    while len(mirror_map) and not found:
+                        mirror_exit = dest_region.world.get_entrance(mirror_map[0][0], self.player)
+                        if mirror_exit.connected_region.type != dest_region.type:
+                            # find path from placed mirror portal to the follower pickup
+                            from Items import ItemFactory
+                            mirror_item = ItemFactory('Magic Mirror', self.player)
+                            while state.prog_items['Magic Mirror', self.player]:
+                                state.remove(mirror_item)
+                            temp_ignore_ledges = ignore_ledges
+                            ignore_ledges = False
+                            traverse_paths(mirror_exit.connected_region, start_region)
+                            ignore_ledges = temp_ignore_ledges
+                            state.collect(mirror_item, True)
+                            if found:
+                                path_to_pickup = self.temp_path
+                                # find path from follower pickup to placed mirror portal
+                                found = False
+                                state.remove(mirror_item)
+                                traverse_paths(follower_region, mirror_exit.connected_region)
+                                state.collect(mirror_item, True)
+                        mirror_map.pop(0)
+                    if found:
+                        path = state.path.get(self.parent_region, (self.parent_region.name, None))
+                        path = (mirror_exit.name, path)
+                        
+                        while len(path_to_pickup):
+                            exit = path_to_pickup.pop(0)
+                            path = (exit.name, (exit.parent_region.name, path))
+                        item_name = step_location.item.name if step_location.item else 'Pick Up Item'
+                        path = (f'{step_location.parent_region.name} Exit', (item_name, path))
+                        
+                        while len(self.temp_path):
+                            exit = self.temp_path.pop(0)
+                            path = (exit.name, (exit.parent_region.name, path))
+                        path = ('Use Mirror Portal', (mirror_exit.connected_region.name, path))
+                        path = (self.parent_region.name, path)
+                        state.path[self] = (self.name, path)
+        
         return found
 
     def connect(self, region, addresses=None, target=None, vanilla=None):
@@ -2732,6 +2838,7 @@ class Spoiler(object):
         self.world = world
         self.hashes = {}
         self.overworlds = {}
+        self.maps = {}
         self.entrances = {}
         self.doors = {}
         self.doorTypes = {}
@@ -2747,11 +2854,21 @@ class Spoiler(object):
         self.shops = []
         self.bosses = OrderedDict()
 
+        self.suppress_spoiler_locations = ['Big Bomb', 'Dark Blacksmith Ruins', 'Frog', 'Middle Aged Man']
+
     def set_overworld(self, entrance, exit, direction, player):
         if self.world.players == 1:
             self.overworlds[(entrance, direction, player)] = OrderedDict([('entrance', entrance), ('exit', exit), ('direction', direction)])
         else:
             self.overworlds[(entrance, direction, player)] = OrderedDict([('player', player), ('entrance', entrance), ('exit', exit), ('direction', direction)])
+
+    def set_map(self, type, text, data, player):
+        if type not in self.maps:
+            self.maps[type] = {}
+        if self.world.players == 1:
+            self.maps[type][player] = OrderedDict([('text', text), ('data', data)])
+        else:
+            self.maps[type][player] = OrderedDict([('player', player), ('text', text), ('data', data)])
 
     def set_entrance(self, entrance, exit, direction, player):
         if self.world.players == 1:
@@ -2922,6 +3039,7 @@ class Spoiler(object):
         self.parse_data()
         out = OrderedDict()
         out['Overworld'] = list(self.overworlds.values())
+        out['Maps'] = list(self.maps.values())
         out['Entrances'] = list(self.entrances.values())
         out['Doors'] = list(self.doors.values())
         out['Lobbies'] = list(self.lobbies.values())
@@ -2935,7 +3053,7 @@ class Spoiler(object):
         if self.shops:
             out['Shops'] = self.shops
         out['playthrough'] = self.playthrough
-        out['paths'] = self.paths
+        out['paths'] = {l:p for (l, p) in self.paths.items() if l not in self.suppress_spoiler_locations}
         out['Bosses'] = self.bosses
         out['meta'] = self.metadata
 
@@ -3031,8 +3149,16 @@ class Spoiler(object):
                 outfile.write(f'{fairy}: {bottle}\n')
 
             if self.overworlds:
-                # overworlds: overworld transitions;
                 outfile.write('\n\nOverworld:\n\n')
+                # overworld tile swaps
+                if 'swaps' in self.maps:
+                    outfile.write('OW Tile Swaps:\n')
+                    for player in self.maps['swaps']:
+                        if self.world.players > 1:
+                            outfile.write(str('(Player ' + str(player) + ')\n')) # player name
+                        outfile.write(self.maps['swaps'][player]['text'] + '\n\n')
+
+                # overworld transitions
                 outfile.write('\n'.join(['%s%s %s %s' % (f'{self.world.get_player_names(entry["player"])}: ' if self.world.players > 1 else '', self.world.fish.translate("meta","overworlds",entry['entrance']), '<=>' if entry['direction'] == 'both' else '<=' if entry['direction'] == 'exit' else '=>', self.world.fish.translate("meta","overworlds",entry['exit'])) for entry in self.overworlds.values()]))
             
             if self.entrances:
@@ -3096,14 +3222,21 @@ class Spoiler(object):
             # locations: Change up location names; in the instance of a location with multiple sections, it'll try to translate the room name
             outfile.write('\n\nPaths:\n\n')
             path_listings = []
+            displayed_regions = []
             for location, path in sorted(self.paths.items()):
-                path_lines = []
-                for region, exit in path:
-                    if exit is not None:
-                        path_lines.append("{} -> {}".format(self.world.fish.translate("meta","rooms",region), self.world.fish.translate("meta","entrances",exit)))
-                    else:
-                        path_lines.append(self.world.fish.translate("meta","rooms",region))
-                path_listings.append("{}\n        {}".format(self.world.fish.translate("meta","locations",location), "\n   =>   ".join(path_lines)))
+                if self.world.players == 1:
+                    region = self.world.get_location(location.split(' @', 1)[0], 1).parent_region
+                    if region.name in displayed_regions:
+                        continue
+                    displayed_regions.append(region.name)
+                if location not in self.suppress_spoiler_locations:
+                    path_lines = []
+                    for region, exit in path:
+                        if exit is not None:
+                            path_lines.append("{} -> {}".format(self.world.fish.translate("meta","rooms",region), self.world.fish.translate("meta","entrances",exit)))
+                        else:
+                            path_lines.append(self.world.fish.translate("meta","rooms",region))
+                    path_listings.append("{}\n        {}".format(self.world.fish.translate("meta","locations",location), "\n   =>   ".join(path_lines)))
 
             outfile.write('\n'.join(path_listings))
 
