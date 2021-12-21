@@ -171,7 +171,7 @@ def main(args, seed=None, fish=None):
                 world.escape_assist[player].append('bombs') # enemized escape assumes infinite bombs available and will likely be unbeatable without it
 
         for tok in filter(None, args.startinventory[player].split(',')):
-            item = ItemFactory(tok.strip(), player)
+            item = ItemFactory(tok.replace("_", " ").strip(), player)
             if item:
                 world.push_precollected(item)
     
