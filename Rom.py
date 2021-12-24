@@ -33,7 +33,7 @@ from source.classes.SFX import randomize_sfx
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '7c1873254dcd5fb8b18934d806cd1949'
+RANDOMIZERBASEHASH = 'b61fd3ea2d9c4c0465317052fa30a721'
 
 
 class JsonRom(object):
@@ -1006,7 +1006,10 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     TRIFORCE_PIECE = ItemFactory('Triforce Piece', player).code
     GREEN_CLOCK = ItemFactory('Green Clock', player).code
 
-    rom.write_byte(0x18004F, 0x01)  # Byrna Invulnerability: on
+    if world.swords[player] in ['byrna', 'cane']:
+        rom.write_byte(0x18004F, 0x00)  # Byrna Invulnerability: off
+    else:
+        rom.write_byte(0x18004F, 0x01)  # Byrna Invulnerability: on
 
     # handle difficulty_adjustments
     if world.difficulty_adjustments[player] == 'hard':
@@ -1060,8 +1063,6 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x180085, 0x80)  # full
         #Cape magic cost
         rom.write_bytes(0x3ADA7, [0x04, 0x08, 0x10])
-        # Byrna Invulnerability: on
-        rom.write_byte(0x18004F, 0x01)
         #Enable catching fairies
         rom.write_byte(0x34FD6, 0xF0)
         # Rupoor negative value
@@ -1267,6 +1268,64 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_bytes(0x118188, credits_string_bot("TEMPERED BOMBS"))
         rom.write_bytes(0x1181A6, credits_string_top("GOLD BOMBS"))
         rom.write_bytes(0x1181C4, credits_string_bot("GOLD BOMBS"))
+    elif world.swords[player] in ['byrna', 'somaria', 'cane']:
+        rom.write_byte(0x180040, 0x01)  # open curtains
+        rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
+        rom.write_byte(0x180034, 0x00)  # starting max bombs = 0
+
+        # remove magic cost of cane(s)
+        if world.swords[player] in ['byrna', 'cane']:
+            rom.write_bytes(0x045C42, [0x00, 0x00, 0x00])
+            rom.write_bytes(0x045CC7, [0xEA, 0xEA])
+            rom.write_byte(0x045CCD, 0x81)
+            rom.write_bytes(0x03B088, [0x00, 0x00, 0x00])
+            rom.write_bytes(0x03B0A8, [0xEA, 0xEA])
+            rom.write_byte(0x03B0AE, 0x81)
+            rom.write_bytes(0x18016B, [0x00, 0x00, 0x00])
+        if world.swords[player] in ['somaria', 'cane']:
+            rom.write_bytes(0x03B07C, [0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+            rom.write_bytes(0x03B0A8, [0xEA, 0xEA])
+            rom.write_byte(0x03B0AE, 0x81)
+
+        if world.swords[player] == 'byrna':
+            rom.write_byte(0x18002F, 0x03)
+            colr = 0x2C
+        elif world.swords[player] == 'somaria':
+            rom.write_byte(0x18002F, 0x04)
+            colr = 0x24
+        elif world.swords[player] == 'cane':
+            rom.write_byte(0x18002F, 0x05)
+            colr = 0x28
+
+        spritedata = [
+            0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x17, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x18, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x19, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x1A, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x1B, colr,
+            0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x17, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x18, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x19, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x1A, colr,
+            0xDC, colr, 0xDD, colr, 0xEC, colr, 0x1B, colr,
+        ];
+        rom.write_bytes(0x06FC51, spritedata)
+
+        # update sword references in credits to cane
+        rom.write_bytes(0x11807A, credits_string_top("FIRST CANE "))
+        rom.write_bytes(0x118098, credits_string_bot("FIRST CANE "))
+        rom.write_bytes(0x1180B6, credits_string_top("CANELESS "))
+        rom.write_bytes(0x1180D4, credits_string_bot("CANELESS "))
+        rom.write_bytes(0x1180F2, credits_string_top("FIGHTER'S CANE "))
+        rom.write_bytes(0x118110, credits_string_bot("FIGHTER'S CANE "))
+        rom.write_bytes(0x11812E, credits_string_top("MASTER CANE "))
+        rom.write_bytes(0x11814C, credits_string_bot("MASTER CANE "))
+        rom.write_bytes(0x11816A, credits_string_top("TEMPERED CANE "))
+        rom.write_bytes(0x118188, credits_string_bot("TEMPERED CANE "))
+        rom.write_bytes(0x1181A6, credits_string_top("GOLD CANE "))
+        rom.write_bytes(0x1181C4, credits_string_bot("GOLD CANE "))
 
     # set up clocks for timed modes
     if world.shuffle[player] == 'vanilla':
@@ -1387,15 +1446,15 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     elif startingstate.has('Fighter Sword', player):
         equip[0x359] = 1
 
-    if startingstate.has('L5 Bombs', player):
+    if startingstate.has('L5 Bombs', player) or startingstate.has('L5 Cane', player):
         equip[0x38F] = 5
-    elif startingstate.has('L4 Bombs', player):
+    elif startingstate.has('L4 Bombs', player) or startingstate.has('L4 Cane', player):
         equip[0x38F] = 4
-    elif startingstate.has('L3 Bombs', player):
+    elif startingstate.has('L3 Bombs', player) or startingstate.has('L3 Cane', player):
         equip[0x38F] = 3
-    elif startingstate.has('L2 Bombs', player):
+    elif startingstate.has('L2 Bombs', player) or startingstate.has('L2 Cane', player):
         equip[0x38F] = 2
-    elif startingstate.has('L1 Bombs', player):
+    elif startingstate.has('L1 Bombs', player) or startingstate.has('L1 Cane', player) or world.swords[player] == 'cane':
         equip[0x38F] = 1
 
     if startingstate.has('Mirror Shield', player):
@@ -1425,6 +1484,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
                          'Titans Mitts', 'Power Glove', 'Progressive Glove',
                          'Golden Sword', 'Tempered Sword', 'Master Sword', 'Fighter Sword', 'Progressive Sword',
                          'L5 Bombs', 'L4 Bombs', 'L3 Bombs', 'L2 Bombs', 'L1 Bombs', 'Progressive Bombs',
+                         'L5 Cane', 'L4 Cane', 'L3 Cane', 'L2 Cane', 'L1 Cane', 'Progressive Cane',
                          'Mirror Shield', 'Red Shield', 'Blue Shield', 'Progressive Shield',
                          'Red Mail', 'Blue Mail', 'Progressive Armor',
                          'Magic Upgrade (1/4)', 'Magic Upgrade (1/2)']:

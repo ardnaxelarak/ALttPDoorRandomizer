@@ -337,11 +337,11 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Mire Lobby Gap', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Post-Gap Gap', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Falling Bridge WN', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))  # this is due to the fact the the door opposite is blocked
-    set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.bomb_mode_check(player, 1) and 
+    set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.special_weapon_check(player, 1) and 
             (state.has_real_sword(player) or
              (state.has('Fire Rod', player) and (state.can_use_bombs(player) or state.can_extend_magic(player, 9))) or  # 9 fr shots or 8 with some bombs
              (state.has('Ice Rod', player) and state.can_use_bombs(player)) or  # freeze popo and throw, bomb to finish
-             state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player) or state.has_bomb_level(player, 1)))  # need to defeat wizzrobes, bombs don't work ...
+             state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player) or state.has_special_weapon_level(player, 1)))  # need to defeat wizzrobes, bombs don't work ...
             # byrna could work with sufficient magic
     set_rule(world.get_location('Misery Mire - Spike Chest', player), lambda state: (state.world.can_take_damage and state.has_hearts(player, 4)) or state.has('Cane of Byrna', player) or state.has('Cape', player))
     set_rule(world.get_entrance('Mire Left Bridge Hook Path', player), lambda state: state.has('Hookshot', player))
@@ -593,7 +593,7 @@ def global_rules(world, player):
 
     set_rule(
         world.get_location('Ganon', player),
-        lambda state: (state.has_real_sword(player, 2) or state.has_bomb_level(player, 3))
+        lambda state: (state.has_real_sword(player, 2) or state.has_special_weapon_level(player, 3))
             and state.has_fire_source(player)
             and state.has_crystals(world.crystals_needed_for_ganon[player], player)
             and (state.has_real_sword(player, 3) or
@@ -604,7 +604,7 @@ def global_rules(world, player):
 
     set_rule(
         world.get_entrance('Ganon Drop', player),
-        lambda state: state.has_real_sword(player, 2) or state.has_bomb_level(player, 3))
+        lambda state: state.has_real_sword(player, 2) or state.has_special_weapon_level(player, 3))
         # need to damage ganon to get tiles to drop
 
 def bomb_rules(world, player):
@@ -860,6 +860,8 @@ def default_rules(world, player):
         swordless_rules(world, player)
     if world.swords[player] == 'bombs':
         bomb_mode_rules(world, player)
+    if world.swords[player] in ['byrna', 'somaria', 'cane']:
+        cane_mode_rules(world, player)
     if world.swords[player] in ['pseudo', 'assured_pseudo']:
         pseudo_sword_mode_rules(world, player)
 
@@ -1531,11 +1533,25 @@ def bomb_mode_rules(world, player):
     set_rule(world.get_entrance('Tower Altar NW', player), lambda state: True)
     set_rule(world.get_entrance('Skull Vines NW', player), lambda state: True)
 
-    set_rule(world.get_location('Ether Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_bomb_level(player, 2))
-    set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_bomb_level(player, 2))
+    set_rule(world.get_location('Ether Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_special_weapon_level(player, 2))
+    set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_special_weapon_level(player, 2))
 
     if world.mode[player] != 'inverted':
-        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_bomb_level(player, 2) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
+        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_special_weapon_level(player, 2) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
+
+    set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has_turtle_rock_medallion(player) and state.can_reach('Turtle Rock Ledge', 'Region', player))   # sword not required to use medallion in bomb-only
+    add_bunny_rule(world.get_entrance('Turtle Rock', player), player)
+    add_bunny_rule(world.get_entrance('Misery Mire', player), player)
+
+def cane_mode_rules(world, player):
+    set_rule(world.get_entrance('Tower Altar NW', player), lambda state: True)
+    set_rule(world.get_entrance('Skull Vines NW', player), lambda state: True)
+
+    set_rule(world.get_location('Ether Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_special_weapon_level(player, 2))
+    set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_special_weapon_level(player, 2))
+
+    if world.mode[player] != 'inverted':
+        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_special_weapon_level(player, 2) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
 
     set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has_turtle_rock_medallion(player) and state.can_reach('Turtle Rock Ledge', 'Region', player))   # sword not required to use medallion in bomb-only
     add_bunny_rule(world.get_entrance('Turtle Rock', player), player)

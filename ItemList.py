@@ -34,7 +34,7 @@ normalfinal25extra = ['Rupees (20)'] * 23 + ['Rupees (5)'] * 2
 
 Difficulty = namedtuple('Difficulty',
                         ['baseitems', 'bottles', 'bottle_count', 'same_bottle', 'progressiveshield',
-                         'basicshield', 'progressivearmor', 'basicarmor', 'swordless', 'bombs_only',
+                         'basicshield', 'progressivearmor', 'basicarmor', 'swordless', 'bombs_only', 'cane_only',
                          'progressivesword', 'basicsword', 'basicbow', 'timedohko', 'timedother',
                          'retro', 'bombbag',
                          'extras', 'progressive_sword_limit', 'progressive_shield_limit',
@@ -55,6 +55,7 @@ difficulties = {
         basicarmor = ['Blue Mail', 'Red Mail'],
         swordless = ['Rupees (20)'] * 4,
         bombs_only = ['Progressive Bombs'] * 4,
+        cane_only = ['Progressive Cane'] * 3 + ['Rupees (20)'],
         progressivesword = ['Progressive Sword'] * 4,
         basicsword = ['Fighter Sword', 'Master Sword', 'Tempered Sword', 'Golden Sword'],
         basicbow = ['Bow', 'Silver Arrows'],
@@ -82,6 +83,7 @@ difficulties = {
         basicarmor = ['Progressive Armor'] * 2, # neither will count
         swordless =  ['Rupees (20)'] * 4,
         bombs_only = ['Progressive Bombs'] * 4,
+        cane_only = ['Progressive Cane'] * 3 + ['Rupees (20)'],
         progressivesword =  ['Progressive Sword'] * 4,
         basicsword = ['Fighter Sword', 'Master Sword', 'Master Sword', 'Tempered Sword'],
         basicbow = ['Bow'] * 2,
@@ -109,6 +111,7 @@ difficulties = {
         basicarmor = ['Progressive Armor'] * 2, # neither will count
         swordless = ['Rupees (20)'] * 4,
         bombs_only = ['Progressive Bombs'] * 4,
+        cane_only = ['Progressive Cane'] * 3 + ['Rupees (20)'],
         progressivesword = ['Progressive Sword'] * 4,
         basicsword = ['Fighter Sword', 'Fighter Sword', 'Master Sword', 'Master Sword'],
         basicbow = ['Bow'] * 2,
@@ -283,12 +286,27 @@ def generate_itempool(world, player):
     for item in precollected_items:
         world.push_precollected(ItemFactory(item, player))
 
-    if (world.mode[player] == 'standard' and not (world.state.has_bomb_level(player, 1) if world.swords[player] else world.state.has_blunt_weapon(player))
-            and not world.state.has_bomb_level(player, 1)):
+    if world.mode[player] == 'standard' and not (world.state.has_special_weapon_level(player, 1) if world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane'] else world.state.has_blunt_weapon(player)):
         if world.swords[player] == 'bombs' and "Link's Uncle" not in placed_items:
             possible_weapons = []
             for item in pool:
                 if item in ['Progressive Bombs', 'L1 Bombs', 'L2 Bombs', 'L3 Bombs', 'L4 Bombs', 'L5 Bombs']:
+                    possible_weapons.append(item)
+            starting_weapon = random.choice(possible_weapons)
+            placed_items["Link's Uncle"] = starting_weapon
+            pool.remove(starting_weapon)
+        elif world.swords[player] in ['byrna', 'somaria'] and "Link's Uncle" not in placed_items:
+            possible_weapons = []
+            for item in pool:
+                if item in ['Progressive Cane', 'L1 Cane', 'L2 Cane', 'L3 Cane', 'L4 Cane', 'L5 Cane']:
+                    possible_weapons.append(item)
+            starting_weapon = random.choice(possible_weapons)
+            placed_items["Link's Uncle"] = starting_weapon
+            pool.remove(starting_weapon)
+        elif world.swords[player] in ['cane'] and "Link's Uncle" not in placed_items:
+            possible_weapons = []
+            for item in pool:
+                if item in ['Cane of Byrna', 'Cane of Somaria']:
                     possible_weapons.append(item)
             starting_weapon = random.choice(possible_weapons)
             placed_items["Link's Uncle"] = starting_weapon
@@ -866,6 +884,14 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
         pool.extend(diff.swordless)
     elif swords == 'bombs':
         pool.extend(diff.bombs_only)
+    elif swords == 'byrna':
+        pool = [item.replace('Cane of Byrna', 'Progressive Cane') for item in pool]
+        pool.extend(diff.cane_only)
+    elif swords == 'somaria':
+        pool = [item.replace('Cane of Somaria', 'Progressive Cane') for item in pool]
+        pool.extend(diff.cane_only)
+    elif swords == 'cane':
+        pool.extend(diff.cane_only)
     elif swords == 'vanilla':
         swords_to_use = diff.progressivesword.copy() if want_progressives() else diff.basicsword.copy()
         random.shuffle(swords_to_use)
@@ -974,7 +1000,7 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
     itemtotal = itemtotal + customitemarray["generickeys"]
 
     customitems = [
-      "Bow", "Silver Arrows", "Blue Boomerang", "Red Boomerang", "Hookshot", "Mushroom", "Magic Powder", "Fire Rod", "Ice Rod", "Bombos", "Ether", "Quake", "Lamp", "Hammer", "Shovel", "Ocarina", "Bug Catching Net", "Book of Mudora", "Cane of Somaria", "Cane of Byrna", "Cape", "Pegasus Boots", "Power Glove", "Titans Mitts", "Progressive Glove", "Flippers", "Piece of Heart", "Boss Heart Container", "Sanctuary Heart Container", "Master Sword", "Tempered Sword", "Golden Sword", "L1 Bombs", "L2 Bombs", "L3 Bombs", "L4 Bombs", "L5 Bombs", "Progressive Bombs", "Blue Shield", "Red Shield", "Mirror Shield", "Progressive Shield", "Blue Mail", "Red Mail", "Progressive Armor", "Magic Upgrade (1/2)", "Magic Upgrade (1/4)", "Bomb Upgrade (+5)", "Bomb Upgrade (+10)", "Arrow Upgrade (+5)", "Arrow Upgrade (+10)", "Single Arrow", "Arrows (10)", "Single Bomb", "Bombs (3)", "Rupee (1)", "Rupees (5)", "Rupees (20)", "Rupees (50)", "Rupees (100)", "Rupees (300)", "Rupoor", "Blue Clock", "Green Clock", "Red Clock", "Progressive Bow", "Bombs (10)", "Triforce Piece", "Triforce"
+      "Bow", "Silver Arrows", "Blue Boomerang", "Red Boomerang", "Hookshot", "Mushroom", "Magic Powder", "Fire Rod", "Ice Rod", "Bombos", "Ether", "Quake", "Lamp", "Hammer", "Shovel", "Ocarina", "Bug Catching Net", "Book of Mudora", "Cane of Somaria", "Cane of Byrna", "Cape", "Pegasus Boots", "Power Glove", "Titans Mitts", "Progressive Glove", "Flippers", "Piece of Heart", "Boss Heart Container", "Sanctuary Heart Container", "Master Sword", "Tempered Sword", "Golden Sword", "L1 Bombs", "L2 Bombs", "L3 Bombs", "L4 Bombs", "L5 Bombs", "Progressive Bombs", "L1 Cane", "L2 Cane", "L3 Cane", "L4 Cane", "L5 Cane", "Progressive Cane", "Blue Shield", "Red Shield", "Mirror Shield", "Progressive Shield", "Blue Mail", "Red Mail", "Progressive Armor", "Magic Upgrade (1/2)", "Magic Upgrade (1/4)", "Bomb Upgrade (+5)", "Bomb Upgrade (+10)", "Arrow Upgrade (+5)", "Arrow Upgrade (+10)", "Single Arrow", "Arrows (10)", "Single Bomb", "Bombs (3)", "Rupee (1)", "Rupees (5)", "Rupees (20)", "Rupees (50)", "Rupees (100)", "Rupees (300)", "Rupoor", "Blue Clock", "Green Clock", "Red Clock", "Progressive Bow", "Bombs (10)", "Triforce Piece", "Triforce"
     ]
     for customitem in customitems:
         pool.extend([customitem] * customitemarray[get_custom_array_key(customitem)])
@@ -1049,7 +1075,7 @@ def test():
         for goal in ['ganon', 'triforcehunt', 'pedestal']:
             for timer in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown']:
                 for mode in ['open', 'standard', 'inverted', 'retro']:
-                    for swords in ['random', 'assured', 'swordless', 'vanilla', 'bombs']:
+                    for swords in ['random', 'assured', 'swordless', 'vanilla', 'bombs', 'byrna', 'somaria', 'cane']:
                         for progressive in ['on', 'off']:
                             for shuffle in ['vanilla', 'full', 'crossed', 'insanity']:
                                 for logic in ['noglitches', 'minorglitches', 'owglitches', 'nologic']:

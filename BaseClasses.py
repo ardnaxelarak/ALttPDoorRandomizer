@@ -365,6 +365,19 @@ class World(object):
                         ret.prog_items['L2 Bombs', item.player] += 1
                     else:
                         ret.prog_items['L1 Bombs', item.player] += 1
+                elif 'Cane' in item.name:
+                    if ret.has('L5 Cane', item.player):
+                        pass
+                    elif ret.has('L4 Cane', item.player):
+                        ret.prog_items['L5 Cane', item.player] += 1
+                    elif ret.has('L3 Cane', item.player):
+                        ret.prog_items['L4 Cane', item.player] += 1
+                    elif ret.has('L2 Cane', item.player):
+                        ret.prog_items['L3 Cane', item.player] += 1
+                    elif ret.has('L1 Cane', item.player):
+                        ret.prog_items['L2 Cane', item.player] += 1
+                    else:
+                        ret.prog_items['L1 Cane', item.player] += 1
                 elif 'Glove' in item.name:
                     if ret.has('Titans Mitts', item.player):
                         pass
@@ -393,6 +406,11 @@ class World(object):
                     ret.prog_items[item.name, item.player] += 1
             elif item.advancement or item.smallkey or item.bigkey:
                 ret.prog_items[item.name, item.player] += 1
+            if item.name.endswith(' Cane'):
+                if ret.world.swords[item.player] == 'byrna' and not ret.has('Cane of Byrna', item.player):
+                    ret.prog_items['Cane of Byrna', item.player] += 1
+                if ret.world.swords[item.player] == 'somaria' and not ret.has('Cane of Somaria', item.player):
+                    ret.prog_items['Cane of Somaria', item.player] += 1
 
         for item in self.itempool:
             soft_collect(item)
@@ -1239,8 +1257,8 @@ class CollectionState(object):
         return basemagic >= smallmagic
 
     def can_kill_most_things(self, player, enemies=5):
-        return (self.bomb_mode_check(player, 1) and
-            (self.has_blunt_weapon(player) or self.has_bomb_level(player, 1)
+        return (self.special_weapon_check(player, 1) and
+            (self.has_blunt_weapon(player) or self.has_special_weapon_level(player, 1)
                 or self.has('Cane of Somaria', player)
                 or (self.has('Cane of Byrna', player) and (enemies < 6 or self.can_extend_magic(player)))
                 or self.can_shoot_arrows(player)
@@ -1259,7 +1277,7 @@ class CollectionState(object):
     # In the future, this can be used to check if the player starts without bombs
     def can_use_bombs(self, player):
         if self.world.swords[player] == 'bombs':
-            return self.has_bomb_level(player, 1)
+            return self.has_special_weapon_level(player, 1)
         return (not self.world.bombbag[player] or self.has('Bomb Upgrade (+10)', player)) and ((hasattr(self.world, "override_bomb_check") and self.world.override_bomb_check) or self.can_farm_bombs(player))
 
     def can_hit_crystal(self, player):
@@ -1316,23 +1334,41 @@ class CollectionState(object):
             return False;
         return self.has_sword(player, level)
 
-    def has_bomb_level(self, player, level):
-        if self.world.swords[player] != 'bombs':
+    def has_special_weapon_level(self, player, level):
+        if self.world.swords[player] == 'bombs':
+            if level == 5:
+                return self.has('L5 Bombs', player)
+            elif level == 4:
+                return self.has('L5 Bombs', player) or self.has('L4 Bombs', player)
+            elif level == 3:
+                return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player)
+            elif level == 2:
+                return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player)
+            elif level == 1:
+                return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player) or self.has('L1 Bombs', player)
+            return True
+        elif self.world.swords[player] in ['byrna', 'somaria', 'cane']:
+            if self.world.swords[player] == 'cane' and not self.has('Cane of Somaria', player) and not self.has('Cane of Byrna', player):
+                return False
+            if level == 5:
+                return self.has('L5 Cane', player)
+            elif level == 4:
+                return self.has('L5 Cane', player) or self.has('L4 Cane', player)
+            elif level == 3:
+                return self.has('L5 Cane', player) or self.has('L4 Cane', player) or self.has('L3 Cane', player)
+            elif level == 2:
+                return self.has('L5 Cane', player) or self.has('L4 Cane', player) or self.has('L3 Cane', player) or self.has('L2 Cane', player)
+            elif level == 1:
+                return self.has('L5 Cane', player) or self.has('L4 Cane', player) or self.has('L3 Cane', player) or self.has('L2 Cane', player) or self.has('L1 Cane', player)
+            return True
+        else:
             return False
-        if level == 5:
-            return self.has('L5 Bombs', player)
-        elif level == 4:
-            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player)
-        elif level == 3:
-            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player)
-        elif level == 2:
-            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player)
-        elif level == 1:
-            return self.has('L5 Bombs', player) or self.has('L4 Bombs', player) or self.has('L3 Bombs', player) or self.has('L2 Bombs', player) or self.has('L1 Bombs', player)
-        return True
 
-    def bomb_mode_check(self, player, level):
-        return self.world.swords[player] != 'bombs' or self.has_bomb_level(player, level)
+    def special_weapon_check(self, player, level):
+        if self.world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane']:
+            return self.has_special_weapon_level(player, level)
+        else:
+            return True
 
     def can_hit_stunned_ganon(self, player):
         ganon_item = self.world.ganon_item[player]
@@ -1375,7 +1411,7 @@ class CollectionState(object):
             return False
 
     def can_use_medallions(self, player):
-        return self.has_sword(player) or self.world.swords[player] == 'bombs'
+        return self.has_sword(player) or self.world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane']
 
     def has_blunt_weapon(self, player):
         return self.has_real_sword(player) or self.has('Hammer', player)
@@ -1491,6 +1527,24 @@ class CollectionState(object):
                 else:
                     self.prog_items['L1 Bombs', item.player] += 1
                     changed = True
+            elif 'Cane' in item.name:
+                if self.has('L5 Cane', item.player):
+                    pass
+                elif self.has('L4 Cane', item.player):
+                    self.prog_items['L5 Cane', item.player] += 1
+                    changed = True
+                elif self.has('L3 Cane', item.player):
+                    self.prog_items['L4 Cane', item.player] += 1
+                    changed = True
+                elif self.has('L2 Cane', item.player):
+                    self.prog_items['L3 Cane', item.player] += 1
+                    changed = True
+                elif self.has('L1 Cane', item.player):
+                    self.prog_items['L2 Cane', item.player] += 1
+                    changed = True
+                else:
+                    self.prog_items['L1 Cane', item.player] += 1
+                    changed = True
             elif 'Glove' in item.name:
                 if self.has('Titans Mitts', item.player):
                     pass
@@ -1541,6 +1595,13 @@ class CollectionState(object):
         elif event or item.advancement:
             self.prog_items[item.name, item.player] += 1
             changed = True
+        if item.name.endswith(' Cane'):
+            if self.world.swords[item.player] == 'byrna' and not self.has('Cane of Byrna', item.player):
+                self.prog_items['Cane of Byrna', item.player] += 1
+                changed = True
+            if self.world.swords[item.player] == 'somaria' and not self.has('Cane of Somaria', item.player):
+                self.prog_items['Cane of Somaria', item.player] += 1
+                changed = True
 
         self.stale[item.player] = True
 
@@ -1576,6 +1637,19 @@ class CollectionState(object):
                         to_remove = 'L1 Bombs'
                     else:
                         to_remove = None
+                elif 'Cane' in to_remove:
+                    if self.has('L5 Cane', item.player):
+                        to_remove = 'L5 Cane'
+                    elif self.has('L4 Cane', item.player):
+                        to_remove = 'L4 Cane'
+                    elif self.has('L3 Cane', item.player):
+                        to_remove = 'L3 Cane'
+                    elif self.has('L2 Cane', item.player):
+                        to_remove = 'L2 Cane'
+                    elif self.has('L1 Cane', item.player):
+                        to_remove = 'L1 Cane'
+                    else:
+                        to_remove = None
                 elif 'Glove' in item.name:
                     if self.has('Titans Mitts', item.player):
                         to_remove = 'Titans Mitts'
@@ -1601,7 +1675,15 @@ class CollectionState(object):
                         to_remove = None
 
             if to_remove is not None:
-
+                if to_remove.endswith(' Cane') and not self.has('L5 Cane', item.player) and not self.has('L4 Cane', item.player) and not self.has('L3 Cane', item.player) and not self.has('L2 Cane', item.player) and not self.has('L1 Cane', item.player):
+                    if self.world.swords[item.player] == 'byrna':
+                        self.prog_items['Cane of Byrna', item.player] -= 1
+                        if self.prog_items['Cane of Byrna', item.player] < 1:
+                            del (self.prog_items['Cane of Byrna', item.player])
+                    if self.world.swords[item.player] == 'somaria':
+                        self.prog_items['Cane of Somaria', item.player] -= 1
+                        if self.prog_items['Cane of Somaria', item.player] < 1:
+                            del (self.prog_items['Cane of Somaria', item.player])
                 self.prog_items[to_remove, item.player] -= 1
                 if self.prog_items[to_remove, item.player] < 1:
                     del (self.prog_items[to_remove, item.player])
@@ -2940,8 +3022,8 @@ class Spoiler(object):
                          'experimental': self.world.experimental,
                          'keydropshuffle': self.world.keydropshuffle,
                          'shopsanity': self.world.shopsanity,
-						 'triforcegoal': self.world.treasure_hunt_count,
-						 'triforcepool': self.world.treasure_hunt_total,
+                         'triforcegoal': self.world.treasure_hunt_count,
+                         'triforcepool': self.world.treasure_hunt_total,
                          'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
                          }
 
@@ -3320,7 +3402,7 @@ er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "lite": 4, "le
 # byte 1: LLLW WSSS (logic, mode, sword)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
 world_mode = {"open": 0, "standard": 1, "inverted": 2}
-sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 6}
+sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 5, "byrna": 6, "somaria": 6, "cane": 6}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4}

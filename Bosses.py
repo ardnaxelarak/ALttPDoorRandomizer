@@ -16,7 +16,7 @@ def BossFactory(boss, player):
 
 def ArmosKnightsDefeatRule(state, player):
     # Magic amounts are probably a bit overkill
-    return (state.bomb_mode_check(player, 1) and
+    return (state.special_weapon_check(player, 1) and
         (state.has_blunt_weapon(player) or
         state.can_shoot_arrows(player) or
         (state.has('Cane of Somaria', player) and state.can_extend_magic(player, 10)) or
@@ -25,38 +25,38 @@ def ArmosKnightsDefeatRule(state, player):
         (state.has('Fire Rod', player) and state.can_extend_magic(player, 32)) or
         state.has('Blue Boomerang', player) or
         state.has('Red Boomerang', player) or
-        state.has_bomb_level(player, 1)))
+        state.has_special_weapon_level(player, 1)))
 
 def LanmolasDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 1) and
+    return (state.special_weapon_check(player, 1) and
         (state.has_blunt_weapon(player) or
         state.has('Fire Rod', player) or
         state.has('Ice Rod', player) or
         state.has('Cane of Somaria', player) or
         state.has('Cane of Byrna', player) or
         state.can_shoot_arrows(player) or
-        state.has_bomb_level(player, 1)))
+        state.has_special_weapon_level(player, 1)))
 
 def MoldormDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 1) and
-        (state.has_blunt_weapon(player) or state.has_bomb_level(player, 1)))
+    return (state.special_weapon_check(player, 1) and
+        (state.has_blunt_weapon(player) or state.has_special_weapon_level(player, 1)))
 
 def HelmasaurKingDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 2) and
+    return (state.special_weapon_check(player, 2) and
         (state.has('Hammer', player) or state.can_use_bombs(player)) and
-        (state.has_real_sword(player) or state.can_shoot_arrows(player) or state.has_bomb_level(player, 2)))
+        (state.has_real_sword(player) or state.can_shoot_arrows(player) or state.has_special_weapon_level(player, 2)))
 
 def ArrghusDefeatRule(state, player):
     if not state.has('Hookshot', player):
         return False
 
-    if not state.bomb_mode_check(player, 2):
+    if not state.special_weapon_check(player, 2):
         return False
 
     # TODO: ideally we would have a check for bow and silvers, which combined with the
     # hookshot is enough. This is not coded yet because the silvers that only work in pyramid feature
     # makes this complicated
-    if state.has_blunt_weapon(player) or state.has_bomb_level(player, 2):
+    if state.has_blunt_weapon(player) or state.has_special_weapon_level(player, 2):
         return True
 
     return ((state.has('Fire Rod', player) and (state.can_shoot_arrows(player) or state.can_extend_magic(player, 12))) or #assuming mostly gitting two puff with one shot
@@ -64,7 +64,7 @@ def ArrghusDefeatRule(state, player):
 
 
 def MothulaDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 1) and
+    return (state.special_weapon_check(player, 1) and
         (state.has_blunt_weapon(player) or
         (state.has('Fire Rod', player) and state.can_extend_magic(player, 10)) or
         # TODO: Not sure how much (if any) extend magic is needed for these two, since they only apply
@@ -72,15 +72,15 @@ def MothulaDefeatRule(state, player):
         (state.has('Cane of Somaria', player) and state.can_extend_magic(player, 16)) or
         (state.has('Cane of Byrna', player) and state.can_extend_magic(player, 16)) or
         state.can_get_good_bee(player) or
-        state.has_bomb_level(player, 1)))
+        state.has_special_weapon_level(player, 1)))
 
 def BlindDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 1) and
+    return (state.special_weapon_check(player, 1) and
         (state.has_blunt_weapon(player) or state.has('Cane of Somaria', player) or
-        state.has('Cane of Byrna', player) or state.has_bomb_level(player, 1)))
+        state.has('Cane of Byrna', player) or state.has_special_weapon_level(player, 1)))
 
 def KholdstareDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 2) and
+    return (state.special_weapon_check(player, 2) and
         (
             state.has('Fire Rod', player) or
             (
@@ -90,7 +90,7 @@ def KholdstareDefeatRule(state, player):
             )
         ) and
         (
-            state.has_bomb_level(player, 2) or state.has_blunt_weapon(player) or
+            state.has_special_weapon_level(player, 2) or state.has_blunt_weapon(player) or
             (state.has('Fire Rod', player) and state.can_extend_magic(player, 20)) or
             # FIXME: this actually only works for the vanilla location for swordless
             (
@@ -102,21 +102,21 @@ def KholdstareDefeatRule(state, player):
         ))
 
 def VitreousDefeatRule(state, player):
-    return (state.bomb_mode_check(player, 2) and
+    return (state.special_weapon_check(player, 2) and
         (state.can_shoot_arrows(player) or state.has_blunt_weapon(player) or
-        state.has_bomb_level(player, 2)))
+        state.has_special_weapon_level(player, 2)))
 
 def TrinexxDefeatRule(state, player):
     if not (state.has('Fire Rod', player) and state.has('Ice Rod', player)):
         return False
-    if not state.bomb_mode_check(player, 2):
+    if not state.special_weapon_check(player, 2):
         return False
     return (state.has('Hammer', player) or
             state.has_real_sword(player, 3) or
-            state.has_bomb_level(player, 4) or
-            ((state.has_real_sword(player, 2) or state.has_bomb_level(player, 3))
+            state.has_special_weapon_level(player, 4) or
+            ((state.has_real_sword(player, 2) or state.has_special_weapon_level(player, 3))
                 and state.can_extend_magic(player, 16)) or
-            ((state.has_real_sword(player) or state.has_bomb_level(player, 2))
+            ((state.has_real_sword(player) or state.has_special_weapon_level(player, 2))
                 and state.can_extend_magic(player, 32)))
 
 def AgahnimDefeatRule(state, player):
