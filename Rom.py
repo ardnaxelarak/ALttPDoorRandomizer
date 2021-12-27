@@ -33,7 +33,7 @@ from source.classes.SFX import randomize_sfx
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'b61fd3ea2d9c4c0465317052fa30a721'
+RANDOMIZERBASEHASH = '88d2b2f989e71ff7f9ea9811faa4a4d0'
 
 
 class JsonRom(object):
@@ -1393,7 +1393,12 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x180171, 0x01 if world.ganon_at_pyramid[player] else 0x00)  # Enable respawning on pyramid after ganon death
     rom.write_byte(0x180173, 0x01) # Bob is enabled
     rom.write_byte(0x180168, 0x08)  # Spike Cave Damage
-    rom.write_bytes(0x18016B, [0x04, 0x02, 0x01]) # Set spike cave and MM spike room Byrna usage
+
+    # Set spike cave and MM spike room Byrna usage
+    if world.swords[player] in ['byrna', 'cane']:
+        rom.write_bytes(0x18016B, [0x00, 0x00, 0x00])
+    else:
+        rom.write_bytes(0x18016B, [0x04, 0x02, 0x01])
     rom.write_bytes(0x18016E, [0x04, 0x08, 0x10]) # Set spike cave and MM spike room Cape usage
     rom.write_bytes(0x50563, [0x3F, 0x14]) # disable below ganon chest
     rom.write_byte(0x50599, 0x00) # disable below ganon chest
