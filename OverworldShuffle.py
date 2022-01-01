@@ -1,9 +1,10 @@
 import RaceRandom as random, logging, copy
+from collections import OrderedDict
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot, Entrance
 from Regions import mark_dark_world_regions, mark_light_world_regions
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.2.3.2-u'
+__version__ = '0.2.3.5-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -140,8 +141,8 @@ def link_overworld(world, player):
 
         # update spoiler
         s = list(map(lambda x: ' ' if x not in world.owswaps[player][0] else 'S', [i for i in range(0x40)]))
-        text_output = tile_swap_spoiler_table.replace('s', '%s') % (             s[0x02],                                s[0x07],
-                                                                                    s[0x00],                s[0x03],        s[0x05],
+        text_output = tile_swap_spoiler_table.replace('s', '%s') % (                         s[0x02],                                s[0x07],
+                                                                                 s[0x00],                s[0x03],        s[0x05],
             s[0x00],        s[0x02],s[0x03],        s[0x05],        s[0x07],                 s[0x0a],                                s[0x0f],
                             s[0x0a],                                s[0x0f],
             s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17], s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17],
@@ -150,10 +151,10 @@ def link_overworld(world, player):
             s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],     s[0x18],                s[0x1b],                s[0x1e],
             s[0x30],        s[0x32],s[0x33],s[0x34],s[0x35],        s[0x37],                 s[0x22],                s[0x25],
                             s[0x3a],s[0x3b],s[0x3c],                s[0x3f],
-                                                                                s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],
-                                                                                                s[0x32],s[0x33],s[0x34],                s[0x37],
-                                                                                    s[0x30],                                s[0x35],
-                                                                                            s[0x3a],s[0x3b],s[0x3c],                 s[0x3f])
+                                                                             s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],
+                                                                                             s[0x32],s[0x33],s[0x34],                s[0x37],
+                                                                                 s[0x30],                                s[0x35],
+                                                                                             s[0x3a],s[0x3b],s[0x3c],                s[0x3f])
         world.spoiler.set_map('swaps', text_output, world.owswaps[player][0], player)
     
     # apply tile logical connections
@@ -265,6 +266,8 @@ def link_overworld(world, player):
                 assert len(forward_set) == len(back_set)
                 for (forward_edge, back_edge) in zip(forward_set, back_set):
                     connect_two_way(world, forward_edge, back_edge, player, connected_edges)
+
+        world.owsectors[player] = build_sectors(world, player)
     else:
         if world.owKeepSimilar[player] and world.owShuffle[player] in ['vanilla', 'parallel']:
             for exitname, destname in parallelsimilar_connections:
@@ -280,50 +283,61 @@ def link_overworld(world, player):
         trimmed_groups = remove_reserved(world, trimmed_groups, connected_edges, player)
         groups = reorganize_groups(world, trimmed_groups, player)
         
-        if world.mode[player] == 'standard':
-            random.shuffle(groups[2:]) # keep first 2 groups (Standard) first
-        else:
-            random.shuffle(groups)
+        tries = 10
+        valid_layout = False
+        connected_edge_cache = connected_edges.copy()
+        while not valid_layout and tries > 0:
+            connected_edges = connected_edge_cache.copy()
 
-        for (forward_edge_sets, back_edge_sets) in groups:
-            assert len(forward_edge_sets) == len(back_edge_sets)
-            random.shuffle(forward_edge_sets)
-            random.shuffle(back_edge_sets)
-            if len(forward_edge_sets) > 0:
-                f = 0
-                b = 0
-                while f < len(forward_edge_sets) and b < len(back_edge_sets):
-                    forward_set = forward_edge_sets[f]
-                    back_set = back_edge_sets[b]
-                    while forward_set[0] in connected_edges:
+            if world.mode[player] == 'standard':
+                random.shuffle(groups[2:]) # keep first 2 groups (Standard) first
+            else:
+                random.shuffle(groups)
+
+            for (forward_edge_sets, back_edge_sets) in groups:
+                assert len(forward_edge_sets) == len(back_edge_sets)
+                random.shuffle(forward_edge_sets)
+                random.shuffle(back_edge_sets)
+                if len(forward_edge_sets) > 0:
+                    f = 0
+                    b = 0
+                    while f < len(forward_edge_sets) and b < len(back_edge_sets):
+                        forward_set = forward_edge_sets[f]
+                        back_set = back_edge_sets[b]
+                        while forward_set[0] in connected_edges:
+                            f += 1
+                            if f < len(forward_edge_sets):
+                                forward_set = forward_edge_sets[f]
+                            else:
+                                forward_set = None
+                                break
                         f += 1
-                        if f < len(forward_edge_sets):
-                            forward_set = forward_edge_sets[f]
-                        else:
-                            forward_set = None
-                            break
-                    f += 1
-                    while back_set[0] in connected_edges:
+                        while back_set[0] in connected_edges:
+                            b += 1
+                            if b < len(back_edge_sets):
+                                back_set = back_edge_sets[b]
+                            else:
+                                back_set = None
+                                break
                         b += 1
-                        if b < len(back_edge_sets):
-                            back_set = back_edge_sets[b]
-                        else:
-                            back_set = None
-                            break
-                    b += 1
-                    if forward_set is not None and back_set is not None:
-                        assert len(forward_set) == len(back_set)
-                        for (forward_edge, back_edge) in zip(forward_set, back_set):
-                            connect_two_way(world, forward_edge, back_edge, player, connected_edges)
-                    elif forward_set is not None:
-                        logging.getLogger('').warning("Edge '%s' could not find a valid connection" % forward_set[0])
-                    elif back_set is not None:
-                        logging.getLogger('').warning("Edge '%s' could not find a valid connection" % back_set[0])
-    assert len(connected_edges) == len(default_connections) * 2, connected_edges
+                        if forward_set is not None and back_set is not None:
+                            assert len(forward_set) == len(back_set)
+                            for (forward_edge, back_edge) in zip(forward_set, back_set):
+                                connect_two_way(world, forward_edge, back_edge, player, connected_edges)
+                        elif forward_set is not None:
+                            logging.getLogger('').warning("Edge '%s' could not find a valid connection" % forward_set[0])
+                        elif back_set is not None:
+                            logging.getLogger('').warning("Edge '%s' could not find a valid connection" % back_set[0])
+            assert len(connected_edges) == len(default_connections) * 2, connected_edges
+            
+            world.owsectors[player] = build_sectors(world, player)
+            valid_layout = validate_layout(world, player)
 
-    # TODO: Reshuffle some areas if impossible to reach, exception if non-dungeon ER enabled or if area is LW with no portal and flute shuffle is enabled
+            tries -= 1
+        assert valid_layout, 'Could not find a valid OW layout'
 
     # flute shuffle
+    logging.getLogger('').debug('Shuffling flute spots')
     def connect_flutes(flute_destinations):
         for o in range(0, len(flute_destinations)):
             owslot = flute_destinations[o]
@@ -366,23 +380,37 @@ def link_overworld(world, player):
             flute_pool.remove(owid)
             new_spots.append(owid)
             return True
+        
+        # determine sectors (isolated groups of regions) to place flute spots
+        flute_regions = {(f[0][0] if f[1] not in world.owswaps[player][0] else f[0][1]) : o for o, f in flute_data.items()}
+        flute_sectors = [(len([r for l in s for r in l]), [r for l in s for r in l if r in flute_regions]) for s in world.owsectors[player]]
+        flute_sectors = [s for s in flute_sectors if len(s[1]) > 0]
+        region_total = sum([c for c,_ in flute_sectors])
+        sector_total = len(flute_sectors)
 
-        # guarantee desert/mire access
-        addSpot(0x38)
+        # reserve a number of flute spots for each sector
+        flute_spots = 8
+        for sector in flute_sectors:
+            sector_total -= 1
+            spots_to_place = min(flute_spots - sector_total, max(1, round((sector[0] * (flute_spots - sector_total) / region_total) + 0.5)))
+            target_spots = len(new_spots) + spots_to_place
+            
+            if 'Desert Palace Teleporter Ledge' in sector[1] or 'Misery Mire Teleporter Ledge' in sector[1]:
+                addSpot(0x38) # guarantee desert/mire access
 
-        # guarantee mountain access
-        if world.owShuffle[player] == 'vanilla':
-            mountainIds = [0x0b, 0x0e, 0x07]
-            addSpot(mountainIds[random.randint(0, 2)])
+            random.shuffle(sector[1])
+            f = 0
+            while len(new_spots) < target_spots:
+                if f >= len(sector[1]):
+                    f = 0
+                if sector[1][f] not in new_spots:
+                    addSpot(flute_regions[sector[1][f]])
+                f += 1
 
-        random.shuffle(flute_pool)
-        f = 0
-        while len(new_spots) < 8:
-            if f >= len(flute_pool):
-                f = 0
-            if flute_pool[f] not in new_spots:
-                addSpot(flute_pool[f])
-            f += 1
+            region_total -= sector[0]
+            flute_spots -= spots_to_place
+        
+        # connect new flute spots
         new_spots.sort()
         world.owflutespots[player] = new_spots
         connect_flutes(new_spots)
@@ -473,7 +501,7 @@ def shuffle_tiles(world, groups, result_list, player):
                 exist_dw_regions.extend(dw_regions)
 
         # check whirlpool parity
-        valid_whirlpool_parity = world.owCrossed[player] not in ['none', 'grouped'] or len(set(new_results[0]) & set({0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f})) % 2 == 0
+        valid_whirlpool_parity = world.owCrossed[player] not in ['none', 'grouped'] or len(OrderedDict.fromkeys(new_results[0] + [0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f])) % 2 == 0
 
     (exist_owids, exist_lw_regions, exist_dw_regions) = result_list
     exist_owids.extend(new_results[0])
@@ -782,7 +810,7 @@ def can_reach_smith(world, player):
     
     def explore_region(region_name, region=None):
         nonlocal found
-        explored_regions.add(region_name)
+        explored_regions.append(region_name)
         if not found:
             if not region:
                 region = world.get_region(region_name, player)
@@ -811,7 +839,7 @@ def can_reach_smith(world, player):
         blank_state.collect(ItemFactory('Titans Mitts', player), True)
     
     found = False
-    explored_regions = set()
+    explored_regions = list()
     explore_region('Links House')
     if not found:
         if not invFlag:
@@ -820,6 +848,118 @@ def can_reach_smith(world, player):
             explore_region('Dark Sanctuary Hint')
     return found
 
+def build_sectors(world, player):
+    from Main import copy_world
+    from OWEdges import OWTileRegions
+    
+    # perform accessibility check on duplicate world
+    for p in range(1, world.players + 1):
+        world.key_logic[p] = {}
+    base_world = copy_world(world)
+    world.key_logic = {}
+    
+    # build lists of contiguous regions accessible with full inventory (excl portals/mirror/flute/entrances)
+    regions = list(OWTileRegions.copy().keys())
+    sectors = list()
+    while(len(regions) > 0):
+        explored_regions = build_accessible_region_list(base_world, regions[0], player, False, False, False, False)
+        regions = [r for r in regions if r not in explored_regions]
+        unique_regions = [_ for i in range(len(sectors)) for _ in sectors[i]]
+        if (any(r in unique_regions for r in explored_regions)):
+            for s in range(len(sectors)):
+                if (any(r in sectors[s] for r in explored_regions)):
+                    sectors[s] = list(list(sectors[s]) + list(explored_regions))
+                    break
+        else:
+            sectors.append(explored_regions)
+    
+    # remove water regions if Flippers not in starting inventory
+    if not any(map(lambda i: i.name == 'Flippers', world.precollected_items)):
+        for s in range(len(sectors)):
+            terrains = list()
+            for regionname in sectors[s]:
+                region = world.get_region(regionname, player)
+                if region.terrain == Terrain.Land:
+                    terrains.append(regionname)
+            sectors[s] = terrains
+    
+    # within each group, split into contiguous regions accessible only with starting inventory
+    for s in range(len(sectors)):
+        regions = list(sectors[s]).copy()
+        sectors2 = list()
+        while(len(regions) > 0):
+            explored_regions = build_accessible_region_list(base_world, regions[0], player, False, False, True, False)
+            regions = [r for r in regions if r not in explored_regions]
+            unique_regions = [_ for i in range(len(sectors2)) for _ in sectors2[i]]
+            if (any(r in unique_regions for r in explored_regions)):
+                for s2 in range(len(sectors2)):
+                    if (any(r in sectors2[s2] for r in explored_regions)):
+                        sectors2[s2] = list(sectors2[s2] + explored_regions)
+                        break
+            else:
+                sectors2.append(explored_regions)
+        sectors[s] = sectors2
+
+    return sectors
+
+def build_accessible_region_list(world, start_region, player, build_copy_world=False, cross_world=False, region_rules=True, ignore_ledges = False):
+    from Main import copy_world
+    from BaseClasses import CollectionState
+    from Items import ItemFactory
+    from Utils import stack_size3a
+    
+    def explore_region(region_name, region=None):
+        if stack_size3a() > 500:
+            raise GenerationException(f'Infinite loop detected for "{start_region}" located at \'build_accessible_region_list\'')
+
+        explored_regions.append(region_name)
+        if not region:
+            region = base_world.get_region(region_name, player)
+        for exit in region.exits:
+            if exit.connected_region is not None:
+                if any(map(lambda i: i.name == 'Ocarina', base_world.precollected_items)) and exit.spot_type == 'Flute':
+                    fluteregion = exit.connected_region
+                    for flutespot in fluteregion.exits:
+                        if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
+                            explore_region(flutespot.connected_region.name, flutespot.connected_region)
+                elif exit.connected_region.name not in explored_regions \
+                        and (exit.connected_region.type == region.type 
+                            or exit.name in OWExitTypes['OWEdge'] or (cross_world and exit.name in (OWExitTypes['Portal'] + OWExitTypes['Mirror']))) \
+                        and (not region_rules or exit.access_rule(blank_state)) and (not ignore_ledges or exit.name not in OWExitTypes['Ledge']):
+                    explore_region(exit.connected_region.name, exit.connected_region)
+    
+    if build_copy_world:
+        for p in range(1, world.players + 1):
+            world.key_logic[p] = {}
+        base_world = copy_world(world)
+        base_world.override_bomb_check = True
+        world.key_logic = {}
+    else:
+        base_world = world
+    
+    connect_simple(base_world, 'Links House S&Q', start_region, player)
+    blank_state = CollectionState(base_world)
+    if base_world.mode[player] == 'standard':
+        blank_state.collect(ItemFactory('Zelda Delivered', player), True)
+    explored_regions = list()
+    explore_region(start_region)
+
+    return explored_regions
+
+def validate_layout(world, player):
+    sectors = [[r for l in s for r in l] for s in world.owsectors[player]]
+    for sector in sectors:
+        entrances_present = False
+        for region_name in sector:
+            region = world.get_region(region_name, player)
+            if any(x.spot_type == 'Entrance' for x in region.exits):
+                entrances_present = True
+                break
+        if not entrances_present and not all(r in isolated_regions for r in sector):
+            return False
+
+    return True
+    
 test_connections = [
                     #('Links House ES', 'Octoballoon WS'),
                     #('Links House NE', 'Lost Woods Pass SW')
@@ -860,6 +1000,10 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Zora Waterfall Water Drop', 'Zora Waterfall Water'), #flippers
                          ('Zora Waterfall Water Entry', 'Zora Waterfall Water'), #flippers
                          ('Waterfall of Wishing Cave Entry', 'Waterfall of Wishing Cave'), #flippers
+                         ('Lost Woods Pass Hammer (North)', 'Lost Woods Pass Portal Area'), #hammer
+                         ('Lost Woods Pass Hammer (South)', 'Lost Woods Pass East Top Area'), #hammer
+                         ('Lost Woods Pass Rock (North)', 'Lost Woods Pass East Bottom Area'), #mitts
+                         ('Lost Woods Pass Rock (South)', 'Lost Woods Pass Portal Area'), #mitts
                          ('Bonk Rock Ledge Drop', 'Sanctuary Area'),
                          ('Graveyard Ledge Drop', 'Graveyard Area'),
                          ('Kings Grave Outer Rocks', 'Kings Grave Area'), #mitts
@@ -947,8 +1091,10 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Bumper Cave Entrance Drop', 'Bumper Cave Area'),
                          ('Skull Woods Pass Bush Row (West)', 'Skull Woods Pass East Top Area'), #pearl
                          ('Skull Woods Pass Bush Row (East)', 'Skull Woods Pass West Area'), #pearl
-                         ('Skull Woods Pass Rock (Top)', 'Skull Woods Pass East Bottom Area'), #mitts
-                         ('Skull Woods Pass Rock (Bottom)', 'Skull Woods Pass East Top Area'), #mitts
+                         ('Skull Woods Pass Bush (North)', 'Skull Woods Pass Portal Area'), #pearl
+                         ('Skull Woods Pass Bush (South)', 'Skull Woods Pass East Top Area'), #pearl
+                         ('Skull Woods Pass Rock (North)', 'Skull Woods Pass East Bottom Area'), #mitts
+                         ('Skull Woods Pass Rock (South)', 'Skull Woods Pass Portal Area'), #mitts
                          ('Dark Graveyard Bush (South)', 'Dark Graveyard North'), #pearl
                          ('Dark Graveyard Bush (North)', 'Dark Graveyard Area'), #pearl
                          ('Qirn Jump Water Drop', 'Qirn Jump Water'), #flippers
@@ -1158,15 +1304,15 @@ ow_connections = {
     0x10: ([
             ('Lost Woods Pass West Mirror Spot', 'Lost Woods Pass West Area'),
             ('Lost Woods Pass East Top Mirror Spot', 'Lost Woods Pass East Top Area'),
+            ('Lost Woods Pass Portal Mirror Spot', 'Lost Woods Pass Portal Area'),
             ('Lost Woods Pass East Bottom Mirror Spot', 'Lost Woods Pass East Bottom Area'),
-            ('Kakariko Teleporter (Hammer)', 'Skull Woods Pass East Top Area'),
-            ('Kakariko Teleporter (Rock)', 'Skull Woods Pass East Top Area')
+            ('Kakariko Teleporter', 'Skull Woods Pass Portal Area')
         ], [
             ('Skull Woods Pass West Mirror Spot', 'Skull Woods Pass West Area'),
             ('Skull Woods Pass East Top Mirror Spot', 'Skull Woods Pass East Top Area'),
+            ('Skull Woods Pass Portal Mirror Spot', 'Skull Woods Pass Portal Area'),
             ('Skull Woods Pass East Bottom Mirror Spot', 'Skull Woods Pass East Bottom Area'),
-            ('West Dark World Teleporter (Hammer)', 'Lost Woods Pass East Top Area'),
-            ('West Dark World Teleporter (Rock)', 'Lost Woods Pass East Bottom Area')
+            ('West Dark World Teleporter', 'Lost Woods Pass Portal Area')
         ]),
     0x11: ([
             ('Kakariko Fortune Mirror Spot', 'Kakariko Fortune Area')
@@ -1569,6 +1715,11 @@ default_connections = [#('Lost Woods NW', 'Master Sword Meadow SC'),
                         ('West Dark Death Mountain ES', 'East Dark Death Mountain WS'),
                         ('East Dark Death Mountain EN', 'Turtle Rock WN')
                         ]
+
+isolated_regions = [
+    'Death Mountain Floating Island',
+    'Mimic Cave Ledge'
+]
 
 flute_data = {
     #Slot    LW Region                         DW Region                            OWID   VRAM    BG Y    BG X   Link Y  Link X   Cam Y   Cam X   Unk1    Unk2   IconY   IconX    AltY    AltX

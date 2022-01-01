@@ -34,8 +34,9 @@ def create_regions(world, player):
         create_lw_region(player, 'Waterfall of Wishing Cave', None, ['Zora Waterfall Water Drop', 'Waterfall of Wishing']),
         create_lw_region(player, 'Zoras Domain', ['King Zora', 'Zora\'s Ledge'], ['Zoras Domain SW']),
         create_lw_region(player, 'Lost Woods Pass West Area', None, ['Skull Woods Pass West Mirror Spot', 'Lost Woods Pass NW', 'Lost Woods Pass SW']),
-        create_lw_region(player, 'Lost Woods Pass East Top Area', None, ['Skull Woods Pass East Top Mirror Spot', 'Kakariko Teleporter (Hammer)', 'Lost Woods Pass NE']),
-        create_lw_region(player, 'Lost Woods Pass East Bottom Area', None, ['Skull Woods Pass East Bottom Mirror Spot', 'Kakariko Teleporter (Rock)', 'Lost Woods Pass SE']),
+        create_lw_region(player, 'Lost Woods Pass East Top Area', None, ['Skull Woods Pass East Top Mirror Spot', 'Lost Woods Pass Hammer (North)', 'Lost Woods Pass NE']),
+        create_lw_region(player, 'Lost Woods Pass Portal Area', None, ['Skull Woods Pass Portal Mirror Spot', 'Kakariko Teleporter', 'Lost Woods Pass Hammer (South)', 'Lost Woods Pass Rock (North)']),
+        create_lw_region(player, 'Lost Woods Pass East Bottom Area', None, ['Skull Woods Pass East Bottom Mirror Spot', 'Lost Woods Pass Rock (South)', 'Lost Woods Pass SE']),
         create_lw_region(player, 'Kakariko Fortune Area', None, ['Fortune Teller (Light)', 'Outcast Fortune Mirror Spot', 'Kakariko Fortune NE', 'Kakariko Fortune EN', 'Kakariko Fortune ES', 'Kakariko Fortune SC']),
         create_lw_region(player, 'Kakariko Pond Area', None, ['Outcast Pond Mirror Spot', 'Kakariko Pond NE', 'Kakariko Pond WN', 'Kakariko Pond WS', 'Kakariko Pond SW', 'Kakariko Pond SE', 'Kakariko Pond EN', 'Kakariko Pond ES', 'Kakariko Pond Whirlpool']),
         create_lw_region(player, 'Sanctuary Area', None, ['Sanctuary', 'Dark Chapel Mirror Spot', 'Sanctuary WS', 'Sanctuary EC']),
@@ -144,8 +145,9 @@ def create_regions(world, player):
         create_dw_region(player, 'Bumper Cave Ledge', ['Bumper Cave Ledge'], ['Bumper Cave Entrance Drop', 'Bumper Cave (Top)', 'Mountain Entry Ledge Mirror Spot']),
         create_dw_region(player, 'Catfish Area', ['Catfish'], ['Zora Waterfall Mirror Spot', 'Catfish SE']),
         create_dw_region(player, 'Skull Woods Pass West Area', None, ['Skull Woods Pass Bush Row (West)', 'Lost Woods Pass West Mirror Spot', 'Skull Woods Pass NW', 'Skull Woods Pass SW']),
-        create_dw_region(player, 'Skull Woods Pass East Top Area', None, ['Skull Woods Pass Bush Row (East)', 'Skull Woods Pass Rock (Top)', 'West Dark World Teleporter (Hammer)', 'West Dark World Teleporter (Rock)', 'Lost Woods Pass East Top Mirror Spot', 'Skull Woods Pass NE']),
-        create_dw_region(player, 'Skull Woods Pass East Bottom Area', None, ['Skull Woods Pass Rock (Bottom)', 'Lost Woods Pass East Bottom Mirror Spot', 'Skull Woods Pass SE']),
+        create_dw_region(player, 'Skull Woods Pass East Top Area', None, ['Lost Woods Pass East Top Mirror Spot', 'Skull Woods Pass Bush Row (East)', 'Skull Woods Pass Bush (North)', 'Skull Woods Pass NE']),
+        create_dw_region(player, 'Skull Woods Pass Portal Area', None, ['Lost Woods Pass Portal Mirror Spot', 'West Dark World Teleporter', 'Skull Woods Pass Bush (South)', 'Skull Woods Pass Rock (North)']),
+        create_dw_region(player, 'Skull Woods Pass East Bottom Area', None, ['Lost Woods Pass East Bottom Mirror Spot', 'Skull Woods Pass Rock (South)', 'Skull Woods Pass SE']),
         create_dw_region(player, 'Dark Fortune Area', None, ['Fortune Teller (Dark)', 'Kakariko Fortune Mirror Spot', 'Dark Fortune NE', 'Dark Fortune EN', 'Dark Fortune ES', 'Dark Fortune SC']),
         create_dw_region(player, 'Outcast Pond Area', None, ['Kakariko Pond Mirror Spot', 'Outcast Pond NE', 'Outcast Pond WN', 'Outcast Pond WS', 'Outcast Pond SW', 'Outcast Pond SE', 'Outcast Pond EN', 'Outcast Pond ES']),
         create_dw_region(player, 'Dark Chapel Area', None, ['Dark Sanctuary Hint', 'Sanctuary Mirror Spot', 'Bonk Rock Ledge Mirror Spot', 'Dark Chapel WN', 'Dark Chapel WS', 'Dark Chapel EC']),
@@ -1119,9 +1121,12 @@ def mark_dark_world_regions(world, player):
 def create_shops(world, player):
     world.shops[player] = []
     for region_name, (room_id, type, shopkeeper, custom, locked, inventory, sram) in shop_table.items():
-        if (world.mode[player] == 'inverted') != (0x35 in world.owswaps[player][0] and world.owMixed[player]) and region_name == 'Dark Lake Hylia Shop':
-            locked = True
-            inventory = [('Blue Potion', 160), ('Blue Shield', 50), ('Bombs (10)', 50)]
+        if world.mode[player] == 'inverted':
+            if (0x35 not in world.owswaps[player][0] and region_name == 'Dark Lake Hylia Shop') \
+                    or (0x35 in world.owswaps[player][0] and region_name == 'Cave Shop (Lake Hylia)'):
+                locked = True
+                custom = True
+                inventory = [('Blue Potion', 160), ('Blue Shield', 50), ('Bombs (10)', 50)]
         region = world.get_region(region_name, player)
         shop = Shop(region, room_id, type, shopkeeper, custom, locked, sram)
         region.shop = shop

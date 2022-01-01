@@ -148,13 +148,23 @@ OWPreserveMirrorSprite:
 {
     lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .vanilla
         rtl ; if OW Crossed, skip world check and continue
+    
     .vanilla
-    lda $7ef3ca : bne .deleteMirror
+    lda InvertedMode : beq +
+        lda $7ef3ca : beq .deleteMirror
+        rtl
+    + lda $7ef3ca : bne .deleteMirror
         rtl
 
     .deleteMirror
     pla : lda #$de : pha ; in vanilla, if in dark world, jump to $05afdf
     rtl
+}
+OWMirrorSpriteMove:
+{
+    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq +
+        lda $1acf : eor #$80 : sta $1acf
+    + lda #$2c : jml.l $07A985 ; what we wrote over
 }
 
 OWFluteCancel:
@@ -407,6 +417,14 @@ OWWorldUpdate: ; x = owid of destination screen
 {
     lda.l OWTileWorldAssoc,x : cmp.l $7ef3ca : beq .return
         sta.l $7ef3ca ; change world
+
+        ; moving mirror portal off screen when in DW
+        cmp #0 : beq + : lda #1
+        + cmp.l InvertedMode : bne +
+            lda $1acf : and #$0f : sta $1acf : bra .playSfx ; bring portal back into position
+        + lda $1acf : eor #$80 : sta $1acf ; move portal off screen
+        
+        .playSfx
         lda #$38 : sta $012f ; play sfx - #$3b is an alternative
 
         ; toggle bunny mode

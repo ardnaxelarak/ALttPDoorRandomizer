@@ -1,5 +1,25 @@
 # Changelog
 
+### 0.2.3.5
+- Fixed issue with multiworld generation
+- Added infinite loop detection
+- Move mirror portal off screen during mirror bonk in Crossed OW
+
+### 0.2.3.4
+- Fixed major issue with subsequent seeds using same seed/settings resulting different
+- Flute Shuffle now awards separated regions a prorated number of flute spots based on size
+- Fixed spoiler log, was missing OW Tile Swap map
+- Fixed spoiler log JSON output
+- Fake flipper damage fix improved to skip the long delay after the scroll
+- Fixed missing Blue Potion in Lake Shop in Inverted
+- Added legacy OW Crossed option 'None (Allowed)' to support old behavior when invalid option was used in Mystery
+- ~~Merged DR v0.5.1.6 - Money balancing fix/Boss logic fixes with Bombbag~~
+
+### 0.2.3.3
+- Added OW Layout validation that reduces the cases where some screens are unreachable
+- Fixed issue with mirror portals showing up in DW in Crossed OW
+- Corrected Lost/Skull Woods Pass regions to be more accurate
+
 ### 0.2.3.0/1/2
 - Fixed issue in Crossed OW where mirror portal sprites would disappear when changing worlds
 - Added Big Red Bomb logic to support using residual mirror portals for later re-entry

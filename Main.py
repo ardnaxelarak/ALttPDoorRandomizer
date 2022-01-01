@@ -30,7 +30,7 @@ from Fill import sell_potions, sell_keys, balance_multiworld_progression, balanc
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops
 from Utils import output_path, parse_player_names
 
-__version__ = '0.5.1.5-u'
+__version__ = '0.5.1.6-u'
 
 from source.classes.BabelFish import BabelFish
 
@@ -202,6 +202,7 @@ def main(args, seed=None, fish=None):
 
     for player in range(1, world.players + 1):
         link_overworld(world, player)
+        create_shops(world, player)
         update_world_regions(world, player)
         create_flute_exits(world, player)
 

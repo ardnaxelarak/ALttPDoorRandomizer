@@ -119,6 +119,7 @@
 
     "randomizer.overworld.crossed": "Crossed",
     "randomizer.overworld.crossed.none": "None",
+    "randomizer.overworld.crossed.allowed": "None (Allowed)",
     "randomizer.overworld.crossed.polar": "Polar",
     "randomizer.overworld.crossed.grouped": "Grouped",
     "randomizer.overworld.crossed.limited": "Limited",

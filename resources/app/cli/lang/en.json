@@ -213,6 +213,7 @@
     "ow_crossed": [
       "This allows cross-world connections to occur on the overworld.",
       "None:           No transitions are cross-world connections.",
+      "Allowed:        Only entrances/whirlpools can end up cross-world.",
       "Polar:          Only used when Mixed is enabled. This retains original",
       "                connections even when overworld tiles are swapped.",
       "Limited:        Exactly nine transitions are randomly chosen as",

@@ -68,6 +68,8 @@ OW Transitions are shuffled within each world separately.
 
 This allows OW connections to be shuffled cross-world.
 
+'None (Allowed)' allows entrance connectors and whirlpools to result in cross-world behavior, but edge transitions will not. This isn't a recommended option.
+
 Polar and Grouped both are guaranteed to result in two separated planes of tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a LW tile that was previously unreachable
 
 Limited and Chaos are not bound to follow a two-plane framework. This means that it could be possible to travel on foot to every tile without entering a normal portal.

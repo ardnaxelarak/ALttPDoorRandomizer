@@ -7,6 +7,7 @@ import sys
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from functools import reduce
+from itertools import count
 
 
 def int16_as_bytes(value):
@@ -672,6 +673,21 @@ def extract_data_from_jp_rom(rom):
         print(f'SecretLoc {secretloc:06x}')
         print_data_block(secretdata)
         print()
+
+
+def stack_size3a(size=2):
+    # See reference: https://stackoverflow.com/questions/34115298/how-do-i-get-the-current-depth-of-the-python-interpreter-stack
+    """Get stack size for caller's frame."""
+    frame = sys._getframe(size)
+    try:
+        for size in count(size, 8):
+            frame = frame.f_back.f_back.f_back.f_back.\
+                f_back.f_back.f_back.f_back
+    except AttributeError:
+        while frame:
+            frame = frame.f_back
+            size += 1
+        return size - 1
 
 
 class bidict(dict):

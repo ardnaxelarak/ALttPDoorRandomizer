@@ -307,9 +307,10 @@ def global_rules(world, player):
     set_rule(world.get_location('Thieves\' Town - Big Chest', player), lambda state: state.has('Hammer', player))
     for entrance in ['Thieves Basement Block Path', 'Thieves Blocked Entry Path', 'Thieves Conveyor Block Path', 'Thieves Conveyor Bridge Block Path']:
         set_rule(world.get_entrance(entrance, player), lambda state: state.can_lift_rocks(player))
-    for location in ['Thieves\' Town - Blind\'s Cell', 'Thieves\' Town - Boss']:
-        forbid_item(world.get_location(location, player), 'Big Key (Thieves Town)', player)
-    forbid_item(world.get_location('Thieves\' Town - Blind\'s Cell', player), 'Big Key (Thieves Town)', player)
+
+    # I think these rules are unnecessary now - testing needed
+    # for location in ['Thieves\' Town - Blind\'s Cell', 'Thieves\' Town - Boss']:
+    #     forbid_item(world.get_location(location, player), 'Big Key (Thieves Town)', player)
     for location in ['Suspicious Maiden', 'Thieves\' Town - Blind\'s Cell']:
         set_rule(world.get_location(location, player), lambda state: state.has('Big Key (Thieves Town)', player))
     set_rule(world.get_location('Revealing Light', player), lambda state: state.has('Shining Light', player) and state.has('Maiden Rescued', player))
@@ -730,7 +731,7 @@ def default_rules(world, player):
 
     # Underworld Logic
     set_rule(world.get_entrance('Old Man Cave Exit (West)', player), lambda state: False)  # drop cannot be climbed up
-    set_rule(world.get_entrance('Paradox Cave Push Block Reverse', player), lambda state: state.has('Magic Mirror', player))  # can erase block
+    set_rule(world.get_entrance('Paradox Cave Push Block Reverse', player), lambda state: state.has_Mirror(player))  # can erase block, overwritten in noglitches
     set_rule(world.get_entrance('Bumper Cave Exit (Top)', player), lambda state: state.has('Cape', player))
     set_rule(world.get_entrance('Bumper Cave Exit (Bottom)', player), lambda state: state.has('Cape', player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Superbunny Cave Exit (Bottom)', player), lambda state: False)  # Cannot get to bottom exit from top. Just exists for shuffling
@@ -770,6 +771,10 @@ def default_rules(world, player):
     set_rule(world.get_entrance('TR Pegs Ledge Leave', player), lambda state: state.can_lift_heavy_rocks(player))
     set_rule(world.get_entrance('Mountain Entry Entrance Rock (West)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Mountain Entry Entrance Rock (East)', player), lambda state: state.can_lift_rocks(player))
+    set_rule(world.get_entrance('Lost Woods Pass Hammer (North)', player), lambda state: state.has('Hammer', player))
+    set_rule(world.get_entrance('Lost Woods Pass Hammer (South)', player), lambda state: state.has('Hammer', player))
+    set_rule(world.get_entrance('Lost Woods Pass Rock (North)', player), lambda state: state.can_lift_heavy_rocks(player))
+    set_rule(world.get_entrance('Lost Woods Pass Rock (South)', player), lambda state: state.can_lift_heavy_rocks(player))
     set_rule(world.get_entrance('Kings Grave Outer Rocks', player), lambda state: state.can_lift_heavy_rocks(player))
     set_rule(world.get_entrance('Kings Grave Inner Rocks', player), lambda state: state.can_lift_heavy_rocks(player))
     set_rule(world.get_entrance('Potion Shop Rock (South)', player), lambda state: state.can_lift_rocks(player))
@@ -792,8 +797,8 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Skull Woods Bush Rock (West)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Skull Woods Bush Rock (East)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Bumper Cave Entrance Rock', player), lambda state: state.can_lift_rocks(player))
-    set_rule(world.get_entrance('Skull Woods Pass Rock (Top)', player), lambda state: state.can_lift_heavy_rocks(player))
-    set_rule(world.get_entrance('Skull Woods Pass Rock (Bottom)', player), lambda state: state.can_lift_heavy_rocks(player))
+    set_rule(world.get_entrance('Skull Woods Pass Rock (North)', player), lambda state: state.can_lift_heavy_rocks(player))
+    set_rule(world.get_entrance('Skull Woods Pass Rock (South)', player), lambda state: state.can_lift_heavy_rocks(player))
     set_rule(world.get_entrance('Dark Witch Rock (North)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Dark Witch Rock (South)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Catfish Approach Rocks (West)', player), lambda state: state.can_lift_heavy_rocks(player) or state.has_Boots(player))
@@ -949,15 +954,14 @@ def ow_rules(world, player):
     if (world.mode[player] == 'inverted') == (0x10 in world.owswaps[player][0] and world.owMixed[player]):
         set_rule(world.get_entrance('Lost Woods Pass West Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Lost Woods Pass East Top Mirror Spot', player), lambda state: state.has_Mirror(player))
+        set_rule(world.get_entrance('Lost Woods Pass Portal Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Lost Woods Pass East Bottom Mirror Spot', player), lambda state: state.has_Mirror(player))
-        set_rule(world.get_entrance('Kakariko Teleporter (Hammer)', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player)) # bunny cannot lift bushes
-        set_rule(world.get_entrance('Kakariko Teleporter (Rock)', player), lambda state: state.can_lift_heavy_rocks(player) and state.has_Pearl(player)) # bunny cannot lift bushes
+        set_rule(world.get_entrance('Kakariko Teleporter', player), lambda state: state.can_lift_rocks(player))
     else:
         set_rule(world.get_entrance('Skull Woods Pass West Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Pass East Top Mirror Spot', player), lambda state: state.has_Mirror(player))
+        set_rule(world.get_entrance('Skull Woods Pass Portal Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Pass East Bottom Mirror Spot', player), lambda state: state.has_Mirror(player))
-        set_rule(world.get_entrance('West Dark World Teleporter (Hammer)', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player))
-        set_rule(world.get_entrance('West Dark World Teleporter (Rock)', player), lambda state: state.can_lift_heavy_rocks(player) and state.has_Pearl(player)) # bunny cannot lift bushes
 
     if (world.mode[player] == 'inverted') == (0x11 in world.owswaps[player][0] and world.owMixed[player]):
         set_rule(world.get_entrance('Kakariko Fortune Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1258,6 +1262,10 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('TR Pegs Ledge Entry', player), player)
     add_bunny_rule(world.get_entrance('Mountain Entry Entrance Rock (West)', player), player)
     add_bunny_rule(world.get_entrance('Mountain Entry Entrance Rock (East)', player), player)
+    add_bunny_rule(world.get_entrance('Lost Woods Pass Hammer (North)', player), player)
+    add_bunny_rule(world.get_entrance('Lost Woods Pass Hammer (South)', player), player)
+    add_bunny_rule(world.get_entrance('Lost Woods Pass Rock (North)', player), player)
+    add_bunny_rule(world.get_entrance('Lost Woods Pass Rock (South)', player), player)
     add_bunny_rule(world.get_entrance('Kings Grave Outer Rocks', player), player)
     add_bunny_rule(world.get_entrance('Kings Grave Inner Rocks', player), player)
     add_bunny_rule(world.get_entrance('Potion Shop Rock (South)', player), player)
@@ -1294,8 +1302,10 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('Bumper Cave Entrance Rock', player), player)
     add_bunny_rule(world.get_entrance('Skull Woods Pass Bush Row (West)', player), player)
     add_bunny_rule(world.get_entrance('Skull Woods Pass Bush Row (East)', player), player)
-    add_bunny_rule(world.get_entrance('Skull Woods Pass Rock (Top)', player), player)
-    add_bunny_rule(world.get_entrance('Skull Woods Pass Rock (Bottom)', player), player)
+    add_bunny_rule(world.get_entrance('Skull Woods Pass Bush (North)', player), player)
+    add_bunny_rule(world.get_entrance('Skull Woods Pass Bush (South)', player), player)
+    add_bunny_rule(world.get_entrance('Skull Woods Pass Rock (North)', player), player)
+    add_bunny_rule(world.get_entrance('Skull Woods Pass Rock (South)', player), player)
     add_bunny_rule(world.get_entrance('Dark Graveyard Bush (South)', player), player)
     add_bunny_rule(world.get_entrance('Dark Graveyard Bush (North)', player), player)
     add_bunny_rule(world.get_entrance('Dark Witch Rock (North)', player), player)

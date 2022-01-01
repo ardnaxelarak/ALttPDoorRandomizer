@@ -326,6 +326,8 @@ def create_owedges(world, player):
     world.initialize_owedges(edges)
 
 def create_owedge(player, name, owIndex, direction, terrain, edge_id, owSlotIndex=0xff):
+    if name not in OWExitTypes['OWEdge']:
+        OWExitTypes['OWEdge'].append(name)
     return OWEdge(player, name, owIndex, direction, terrain, edge_id, owSlotIndex)
 
 
@@ -720,6 +722,7 @@ OWTileRegions = bidict({
 
     'Lost Woods Pass West Area': 0x10,
     'Lost Woods Pass East Top Area': 0x10,
+    'Lost Woods Pass Portal Area': 0x10,
     'Lost Woods Pass East Bottom Area': 0x10,
 
     'Kakariko Fortune Area': 0x11,
@@ -862,6 +865,7 @@ OWTileRegions = bidict({
 
     'Skull Woods Pass West Area': 0x50,
     'Skull Woods Pass East Top Area': 0x50,
+    'Skull Woods Pass Portal Area': 0x50,
     'Skull Woods Pass East Bottom Area': 0x50,
 
     'Dark Fortune Area': 0x51,
@@ -1390,6 +1394,7 @@ parallel_links = bidict({'Lost Woods SW': 'Skull Woods SW',
                         })
 
 OWExitTypes = {
+    'OWEdge': [],
     'Ledge': ['West Death Mountain Drop',
             'Spectacle Rock Drop',
             'East Death Mountain Spiral Ledge Drop',
@@ -1518,6 +1523,10 @@ OWExitTypes = {
                 'Zora Waterfall Water Entry',
                 'Waterfall of Wishing Cave Entry',
                 'Zora Waterfall Landing',
+                'Lost Woods Pass Hammer (North)',
+                'Lost Woods Pass Hammer (South)',
+                'Lost Woods Pass Rock (North)',
+                'Lost Woods Pass Rock (South)',
                 'Kings Grave Outer Rocks',
                 'Graveyard Ladder (Bottom)',
                 'Graveyard Ladder (Top)',
@@ -1587,8 +1596,10 @@ OWExitTypes = {
                 'Bumper Cave Entrance Rock',
                 'Skull Woods Pass Bush Row (West)',
                 'Skull Woods Pass Bush Row (East)',
-                'Skull Woods Pass Rock (Top)',
-                'Skull Woods Pass Rock (Bottom)',
+                'Skull Woods Pass Bush (North)',
+                'Skull Woods Pass Bush (South)',
+                'Skull Woods Pass Rock (North)',
+                'Skull Woods Pass Rock (South)',
                 'Dark Graveyard Bush (South)',
                 'Dark Graveyard Bush (North)',
                 'Qirn Jump East Water Drop',
@@ -1632,8 +1643,7 @@ OWExitTypes = {
     'Portal': ['West Death Mountain Teleporter',
                 'East Death Mountain Teleporter',
                 'TR Pegs Teleporter',
-                'Kakariko Teleporter (Hammer)',
-                'Kakariko Teleporter (Rock)',
+                'Kakariko Teleporter',
                 'Top of Pyramid',
                 'Top of Pyramid (Inner)',
                 'East Hyrule Teleporter',
@@ -1643,8 +1653,7 @@ OWExitTypes = {
                 'Dark Death Mountain Teleporter (West)',
                 'Dark Death Mountain Teleporter (East)',
                 'Turtle Rock Teleporter',
-                'West Dark World Teleporter (Hammer)',
-                'West Dark World Teleporter (Rock)',
+                'West Dark World Teleporter',
                 'Post Aga Inverted Teleporter',
                 'East Dark World Teleporter',
                 'Misery Mire Teleporter',
@@ -1687,6 +1696,7 @@ OWExitTypes = {
                 'Catfish Mirror Spot',
                 'Skull Woods Pass West Mirror Spot',
                 'Skull Woods Pass East Top Mirror Spot',
+                'Skull Woods Pass Portal Mirror Spot',
                 'Skull Woods Pass East Bottom Mirror Spot',
                 'Outcast Fortune Mirror Spot',
                 'Outcast Pond Mirror Spot',
@@ -1777,6 +1787,7 @@ OWExitTypes = {
                 'Zora Waterfall Mirror Spot',
                 'Lost Woods Pass West Mirror Spot',
                 'Lost Woods Pass East Top Mirror Spot',
+                'Lost Woods Pass Portal Mirror Spot',
                 'Lost Woods Pass East Bottom Mirror Spot',
                 'Kakariko Fortune Mirror Spot',
                 'Kakariko Pond Mirror Spot',
