@@ -339,8 +339,8 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Mire Falling Bridge WN', player), lambda state: state.has_Boots(player) or state.has('Hookshot', player))  # this is due to the fact the the door opposite is blocked
     set_rule(world.get_entrance('Mire 2 NE', player), lambda state: state.special_weapon_check(player, 1) and 
             (state.has_real_sword(player) or
-             (state.has('Fire Rod', player) and (state.can_use_bombs(player) or state.can_extend_magic(player, 9))) or  # 9 fr shots or 8 with some bombs
-             (state.has('Ice Rod', player) and state.can_use_bombs(player)) or  # freeze popo and throw, bomb to finish
+             (state.has('Fire Rod', player) and (state.can_kill_with_bombs(player) or state.can_extend_magic(player, 9))) or  # 9 fr shots or 8 with some bombs
+             (state.has('Ice Rod', player) and state.can_kill_with_bombs(player)) or  # freeze popo and throw, bomb to finish
              state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player) or state.has_special_weapon_level(player, 1)))  # need to defeat wizzrobes, bombs don't work ...
             # byrna could work with sufficient magic
     set_rule(world.get_location('Misery Mire - Spike Chest', player), lambda state: (state.world.can_take_damage and state.has_hearts(player, 4)) or state.has('Cane of Byrna', player) or state.has('Cape', player))
@@ -527,7 +527,7 @@ def global_rules(world, player):
 
     set_rule(world.get_entrance('Mire Conveyor to Crystal', player), lambda state: state.can_hit_crystal(player))
     set_rule(world.get_entrance('Mire Tall Dark and Roomy to Ranged Crystal', player), lambda state: True) # Can always throw pots
-    set_rule(world.get_entrance('Mire Fishbone Blue Barrier Bypass', player), lambda state: False) # (state.world.can_take_damage or state.has('Cape', player) or state.has('Cane of Byrna', player)) and state.can_tastate.can_use_bombs(player) // Easy to do but obscure. Should it be in logic?
+    set_rule(world.get_entrance('Mire Fishbone Blue Barrier Bypass', player), lambda state: False) # (state.world.can_take_damage or state.has('Cape', player) or state.has('Cane of Byrna', player)) and state.can_use_bombs(player) // Easy to do but obscure. Should it be in logic?
 
     set_rule(world.get_location('Turtle Rock - Chain Chomps', player), lambda state: state.can_reach('TR Chain Chomps Top', 'Region', player) and state.can_hit_crystal_through_barrier(player))
     set_rule(world.get_entrance('TR Chain Chomps Top to Bottom Barrier - Orange', player), lambda state: state.can_reach_orange(world.get_region('TR Chain Chomps Top', player), player))
@@ -632,9 +632,9 @@ def bomb_rules(world, player):
 
     cave_kill_locations = ['Mini Moldorm Cave - Far Left', 'Mini Moldorm Cave - Far Right', 'Mini Moldorm Cave - Left', 'Mini Moldorm Cave - Right', 'Mini Moldorm Cave - Generous Guy', 'Spiral Cave']
     for location in cave_kill_locations:
-        add_rule(world.get_location(location, player), lambda state: state.can_kill_most_things(player) or state.can_use_bombs(player))
+        add_rule(world.get_location(location, player), lambda state: state.can_kill_most_things(player) or state.can_kill_with_bombs(player))
         add_bunny_rule(world.get_location(location, player), player)
-    add_rule(world.get_entrance('Spiral Cave (top to bottom)', player), lambda state: state.can_kill_most_things(player) or state.can_use_bombs(player))
+    add_rule(world.get_entrance('Spiral Cave (top to bottom)', player), lambda state: state.can_kill_most_things(player) or state.can_kill_with_bombs(player))
     add_bunny_rule(world.get_entrance('Spiral Cave (top to bottom)', player), player)
 
     paradox_switch_chests = ['Paradox Cave Lower - Far Left', 'Paradox Cave Lower - Left', 'Paradox Cave Lower - Right', 'Paradox Cave Lower - Far Right', 'Paradox Cave Lower - Middle']
@@ -660,11 +660,11 @@ def bomb_rules(world, player):
     ]
     for killdoor,bombable in easy_kill_rooms:
         if bombable:
-            add_rule(world.get_entrance(killdoor, player), lambda state: (state.can_use_bombs(player) or state.can_kill_most_things(player)))
+            add_rule(world.get_entrance(killdoor, player), lambda state: (state.can_kill_with_bombs(player) or state.can_kill_most_things(player)))
         else:
             add_rule(world.get_entrance(killdoor, player), lambda state: state.can_kill_most_things(player))
     add_rule(world.get_entrance('Ice Stalfos Hint SE', player), lambda state: state.can_use_bombs(player)) # Need bombs for big stalfos knights
-    add_rule(world.get_entrance('Mire Cross ES', player), lambda state: state.can_kill_most_things(player)) # 4 Sluggulas. Bombs don't work // or (state.can_use_bombs(player) and state.has('Magic Powder'), player)
+    add_rule(world.get_entrance('Mire Cross ES', player), lambda state: state.can_kill_most_things(player)) # 4 Sluggulas. Bombs don't work // or (state.can_kill_with_bombs(player) and state.has('Magic Powder'), player)
 
     enemy_kill_drops = [ # Location, bool-bombable
         ('Hyrule Castle - Map Guard Key Drop', True),
@@ -686,7 +686,7 @@ def bomb_rules(world, player):
     ]
     for location,bombable in enemy_kill_drops:
         if bombable:
-            add_rule(world.get_location(location, player), lambda state: state.can_use_bombs(player) or state.can_kill_most_things(player))
+            add_rule(world.get_location(location, player), lambda state: state.can_kill_with_bombs(player) or state.can_kill_most_things(player))
         else:
             add_rule(world.get_location(location, player), lambda state: state.can_kill_most_things(player))
 

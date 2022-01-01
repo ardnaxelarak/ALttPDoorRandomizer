@@ -1280,6 +1280,11 @@ class CollectionState(object):
             return self.has_special_weapon_level(player, 1)
         return (not self.world.bombbag[player] or self.has('Bomb Upgrade (+10)', player)) and ((hasattr(self.world, "override_bomb_check") and self.world.override_bomb_check) or self.can_farm_bombs(player))
 
+    def can_kill_with_bombs(self, player):
+        if self.world.swords[player] in ['cane', 'somaria', 'byrna']:
+            return False
+        return self.can_use_bombs(player)
+
     def can_hit_crystal(self, player):
         return (self.can_use_bombs(player)
                 or self.can_shoot_arrows(player)
