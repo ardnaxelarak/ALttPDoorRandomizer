@@ -108,7 +108,9 @@
       "All Dungeons:   Collect all crystals, pendants, beat both",
       "                Agahnim fights and then defeat Ganon.",
       "Triforce Hunt:  Places 30 Triforce Pieces in the world, collect",
-      "                20 of them to beat the game."
+      "                20 of them to beat the game.",
+      "Trinity:        Can beat the game by defeating Ganon, pulling",
+      "                Pedestal, or delivering Triforce Pieces."
     ],
     "difficulty": [
       "Select game difficulty. Affects available itempool. (default: %(default)s)",

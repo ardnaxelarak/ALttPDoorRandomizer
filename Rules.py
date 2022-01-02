@@ -55,7 +55,7 @@ def set_rules(world, player):
     elif world.goal[player] == 'ganon':
         # require aga2 to beat ganon
         add_rule(world.get_location('Ganon', player), lambda state: state.has('Beat Agahnim 2', player))
-    elif world.goal[player] == 'triforcehunt':
+    elif world.goal[player] in ['triforcehunt', 'trinity']:
         if ('Murahdahla', player) in world._location_cache:
             add_rule(world.get_location('Murahdahla', player), lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
 
@@ -1028,7 +1028,7 @@ def ow_rules(world, player):
     if (world.mode[player] == 'inverted') == (0x1b in world.owswaps[player][0] and world.owMixed[player]):
         set_rule(world.get_entrance('Inverted Pyramid Hole', player), lambda state: False)
         set_rule(world.get_entrance('Inverted Pyramid Entrance', player), lambda state: False)
-        set_rule(world.get_entrance('Pyramid Hole', player), lambda state: state.has('Beat Agahnim 2', player) or world.open_pyramid[player])
+        set_rule(world.get_entrance('Pyramid Hole', player), lambda state: world.open_pyramid[player] or world.goal[player] == 'trinity' or state.has('Beat Agahnim 2', player))
 
         set_rule(world.get_entrance('HC Area Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('HC Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1039,7 +1039,7 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Top of Pyramid', player), lambda state: state.has('Beat Agahnim 1', player))
         set_rule(world.get_entrance('Top of Pyramid (Inner)', player), lambda state: state.has('Beat Agahnim 1', player))
     else:
-        set_rule(world.get_entrance('Inverted Pyramid Hole', player), lambda state: state.has('Beat Agahnim 2', player) or world.open_pyramid[player])
+        set_rule(world.get_entrance('Inverted Pyramid Hole', player), lambda state: world.open_pyramid[player] or world.goal[player] == 'trinity' or state.has('Beat Agahnim 2', player))
         add_rule(world.get_entrance('Pyramid Hole', player), lambda state: False)
         set_rule(world.get_entrance('Pyramid Entrance', player), lambda state: False)
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))

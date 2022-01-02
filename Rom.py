@@ -613,14 +613,14 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
             # patch music
             music_addresses = dungeon_music_addresses[location.name]
-            if world.mapshuffle[player]:
+            if world.mapshuffle[player] or world.goal[player] == 'trinity':
                 music = random.choice([0x11, 0x16])
             else:
                 music = 0x11 if 'Pendant' in location.item.name else 0x16
             for music_address in music_addresses:
                 rom.write_byte(music_address, music)
 
-    if world.mapshuffle[player]:
+    if world.mapshuffle[player] or world.goal[player] == 'trinity':
         rom.write_byte(0x155C9, random.choice([0x11, 0x16]))  # Randomize GT music too with map shuffle
 
     if world.pot_contents[player]:
@@ -770,7 +770,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     dr_flags = DROptions.Eternal_Mini_Bosses if world.doorShuffle[player] == 'vanilla' else DROptions.Town_Portal
     if world.doorShuffle[player] == 'crossed':
         dr_flags |= DROptions.Map_Info
-    if world.experimental[player] and world.goal[player] != 'triforcehunt':
+    if world.experimental[player] and world.goal[player] not in ['triforcehunt', 'trinity']:
         dr_flags |= DROptions.Debug
     if world.doorShuffle[player] == 'crossed' and world.logic[player] != 'nologic'\
        and world.mixed_travel[player] == 'prevent':
@@ -1372,9 +1372,9 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     # set up goals for treasure hunt
     rom.write_bytes(0x180165, [0x0E, 0x28] if world.treasure_hunt_icon[player] == 'Triforce Piece' else [0x0D, 0x28])
-    if world.goal[player] == 'triforcehunt':
+    if world.goal[player] in ['triforcehunt', 'trinity']:
         rom.write_byte(0x180167, int(world.treasure_hunt_count[player]) % 256)
-    rom.write_byte(0x180194, 1)  # Must turn in triforced pieces (instant win not enabled)
+    rom.write_byte(0x180194, 1)  # Must turn in triforce pieces (instant win not enabled)
 
     rom.write_bytes(0x180213, [0x00, 0x01])  # Not a Tournament Seed
 
@@ -1403,7 +1403,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_bytes(0x50563, [0x3F, 0x14]) # disable below ganon chest
     rom.write_byte(0x50599, 0x00) # disable below ganon chest
     rom.write_bytes(0xE9A5, [0x7E, 0x00, 0x24]) # disable below ganon chest
-    rom.write_byte(0x18008B, 0x01 if world.open_pyramid[player] else 0x00) # pre-open Pyramid Hole
+    rom.write_byte(0x18008B, 0x01 if world.open_pyramid[player] or world.goal[player] == 'trinity' else 0x00) # pre-open Pyramid Hole
     rom.write_byte(0x18008C, 0x01 if world.crystals_needed_for_gt[player] == 0 else 0x00) # GT pre-opened if crystal requirement is 0
     rom.write_byte(0xF5D73, 0xF0) # bees are catchable
     rom.write_byte(0xF5F10, 0xF0) # bees are catchable
@@ -1601,7 +1601,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x18003E, 0x01)  # make ganon invincible
     elif world.goal[player] in ['dungeons']:
         rom.write_byte(0x18003E, 0x02)  # make ganon invincible until all dungeons are beat
-    elif world.goal[player] in ['crystals']:
+    elif world.goal[player] in ['crystals', 'trinity']:
         rom.write_byte(0x18003E, 0x04)  # make ganon invincible until all crystals
     else:
         rom.write_byte(0x18003E, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
@@ -1657,7 +1657,12 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
                                      | (0x02 if world.compassshuffle[player] else 0x00)
                                      | (0x04 if world.mapshuffle[player] else 0x00)
                                      | (0x08 if world.bigkeyshuffle[player] else 0x00)))  # free roaming item text boxes
-    rom.write_byte(0x18003B, 0x01 if world.mapshuffle[player] else 0x00)  # maps showing crystals on overworld
+
+    # maps showing crystals on overworld
+    if world.mapshuffle[player] or world.goal[player] == 'trinity':
+        rom.write_byte(0x18003B, 0x01)
+    else:
+        rom.write_byte(0x18003B, 0x00)
 
     # compasses showing dungeon count
     if world.clock_mode != 'none' or world.dungeon_counters[player] == 'off':
@@ -1705,8 +1710,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             return reveal_bytes.get(location.parent_region.dungeon.name, 0x0000)
         return 0x0000
 
-    write_int16(rom, 0x18017A, get_reveal_bytes('Green Pendant') if world.mapshuffle[player] else 0x0000) # Sahasrahla reveal
-    write_int16(rom, 0x18017C, get_reveal_bytes('Crystal 5')|get_reveal_bytes('Crystal 6') if world.mapshuffle[player] else 0x0000) # Bomb Shop Reveal
+    write_int16(rom, 0x18017A, get_reveal_bytes('Green Pendant') if world.mapshuffle[player] or world.goal[player] == 'trinity' else 0x0000) # Sahasrahla reveal
+    write_int16(rom, 0x18017C, get_reveal_bytes('Crystal 5')|get_reveal_bytes('Crystal 6') if world.mapshuffle[player] or world.goal[player] == 'trinity' else 0x0000) # Bomb Shop Reveal
 
     rom.write_byte(0x180172, 0x01 if world.retro[player] else 0x00)  # universal keys
     rom.write_byte(0x180175, 0x01 if world.retro[player] else 0x00)  # rupee bow
@@ -2575,6 +2580,10 @@ def write_strings(rom, world, player, team):
         tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'
         tt['sign_ganon'] = 'You need to get to the pedestal... Ganon is invincible!'
     else:
+        if world.goal[player] in ['trinity']:
+            trinity_crystal_text = ('%d crystal to beat Ganon.' if world.crystals_needed_for_ganon[player] == 1 else '%d crystals to beat Ganon.') % world.crystals_needed_for_ganon[player]
+            tt['sign_ganon'] = 'Three ways to victory! %s Get to it!' % trinity_crystal_text
+            tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! you can see me? I knew I should have\nhidden in  a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % int(world.treasure_hunt_count[player])
         tt['ganon_fall_in'] = Ganon1_texts[random.randint(0, len(Ganon1_texts) - 1)]
         tt['ganon_fall_in_alt'] = 'You cannot defeat me until you finish your goal!'
         tt['ganon_phase_3_alt'] = 'Got wax in\nyour ears?\nI can not die!'

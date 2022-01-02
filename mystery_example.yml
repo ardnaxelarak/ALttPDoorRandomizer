@@ -73,6 +73,7 @@
     dungeons: 1
     pedestal: 2
     triforce-hunt: 2
+    trinity: 1
   triforce_goal_min: 10
   triforce_goal_max: 30
   triforce_pool_min: 20
@@ -135,6 +136,10 @@
     assured: 3
     vanilla: 3
     swordless: 1
+    bombs: 1
+    byrna: 1
+    somaria: 1
+    cane: 1
   item_pool:
     normal: 3
     hard: 1

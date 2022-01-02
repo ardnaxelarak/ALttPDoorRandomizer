@@ -358,7 +358,7 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
         if not gftower_trash or not world.ganonstower_vanilla[player] or world.doorShuffle[player] == 'crossed' or world.logic[player] in ['owglitches', 'nologic']:
             continue
 
-        gftower_trash_count = (random.randint(15, 50) if world.goal[player] == 'triforcehunt' else random.randint(0, 15))
+        gftower_trash_count = (random.randint(15, 50) if world.goal[player] in ['triforcehunt', 'trinity'] else random.randint(0, 15))
 
         gtower_locations = [location for location in fill_locations if 'Ganons Tower' in location.name and location.player == player]
         random.shuffle(gtower_locations)
