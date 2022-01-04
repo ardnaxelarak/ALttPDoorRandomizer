@@ -34,7 +34,7 @@ def link_entrances(world, player):
         world.owsectors[player] = build_sectors(world, player)
 
     # modifications to lists
-    if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x1b, player):
         drop_connections.append(tuple(('Pyramid Hole', 'Pyramid')))
         dropexit_connections.append(tuple(('Pyramid Entrance', 'Pyramid Exit')))
         connect_simple(world, 'Other World S&Q', 'Pyramid Area', player)
@@ -47,7 +47,7 @@ def link_entrances(world, player):
         dropexit_connections.append(tuple(('Inverted Pyramid Entrance', 'Pyramid Exit')))
         connect_simple(world, 'Other World S&Q', 'Hyrule Castle Ledge', player)
         
-    if invFlag == (0x03 in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x03, player):
         connect_simple(world, 'Old Man S&Q', 'Old Man House', player)
     else:
         connect_simple(world, 'Old Man S&Q', 'West Dark Death Mountain (Bottom)', player)
@@ -89,18 +89,16 @@ def link_entrances(world, player):
         # inverted entrance mods
         ignore_pool = True
         for owid in swapped_connections.keys():
-            if invFlag != (owid in world.owswaps[player][0] and world.owMixed[player]):
+            if world.is_tile_swapped(owid, player):
                 for (entrancename, exitname) in swapped_connections[owid]:
                     try:
                         connect_two_way(world, entrancename, exitname, player)
                     except RuntimeError:
                         connect_entrance(world, entrancename, exitname, player)
         
-        if invFlag != (0x03 in world.owswaps[player][0] and world.owMixed[player]) and \
-            invFlag == (0x0a in world.owswaps[player][0] and world.owMixed[player]):
+        if world.is_tile_swapped(0x03, player) and not world.is_tile_swapped(0x0a, player):
             connect_entrance(world, 'Death Mountain Return Cave (West)', 'Dark Death Mountain Healer Fairy', player)
-        elif invFlag != (0x0a in world.owswaps[player][0] and world.owMixed[player]) and \
-            invFlag == (0x03 in world.owswaps[player][0] and world.owMixed[player]):
+        elif world.is_tile_swapped(0x0a, player) and not world.is_tile_swapped(0x03, player):
             connect_two_way(world, 'Bumper Cave (Top)', 'Death Mountain Return Cave Exit (West)', player)
         ignore_pool = False
 
@@ -144,15 +142,15 @@ def link_entrances(world, player):
         Two_Door_Caves_Directional = list()
         Two_Door_Caves = [('Elder House (East)', 'Elder House (West)'),
                           ('Superbunny Cave (Bottom)', 'Superbunny Cave (Top)')]
-        if invFlag == (0x0a in world.owswaps[player][0] and world.owMixed[player]):
+        if not world.is_tile_swapped(0x0a, player):
             Two_Door_Caves_Directional.append(tuple({'Bumper Cave (Bottom)', 'Bumper Cave (Top)'}))
         else:
             Two_Door_Caves_Directional.append(tuple({'Old Man Cave (West)', 'Death Mountain Return Cave (West)'}))
-        if invFlag == (0x05 in world.owswaps[player][0] and world.owMixed[player]):
+        if not world.is_tile_swapped(0x05, player):
             Two_Door_Caves_Directional.append(tuple({'Hookshot Cave', 'Hookshot Cave Back Entrance'}))
         else:
             Two_Door_Caves.append(tuple({'Hookshot Cave', 'Hookshot Cave Back Entrance'}))
-        if invFlag == (0x28 in world.owswaps[player][0] and world.owMixed[player]):
+        if not world.is_tile_swapped(0x28, player):
             Two_Door_Caves.append(tuple({'Two Brothers House (East)', 'Two Brothers House (West)'}))
         else:
             Two_Door_Caves_Directional.append(tuple({'Two Brothers House (East)', 'Two Brothers House (West)'}))
@@ -181,14 +179,14 @@ def link_entrances(world, player):
         caves.extend(list(Old_Man_House))
         caves.extend(list(three_exit_caves))
 
-        if invFlag == (0x18 in world.owswaps[player][0] and world.owMixed[player]) or invFlag == (0x03 in world.owswaps[player][0] and world.owMixed[player]): # ability to activate flute in LW
+        if (not world.is_tile_swapped(0x18, player)) or (not world.is_tile_swapped(0x03, player)): # ability to activate flute in LW
             candidates = [e for e in lw_wdm_entrances if e != 'Old Man House (Bottom)']
             random.shuffle(candidates)
             old_man_exit = candidates.pop()
             lw_wdm_entrances.remove(old_man_exit)
             connect_two_way(world, old_man_exit, 'Old Man Cave Exit (East)', player)
 
-            if invFlag == (0x0a in world.owswaps[player][0] and world.owMixed[player]):
+            if not world.is_tile_swapped(0x0a, player):
                 lw_wdm_entrances.extend(['Old Man Cave (West)', 'Death Mountain Return Cave (West)'])
             else:
                 lw_wdm_entrances.extend(['Bumper Cave (Bottom)', 'Bumper Cave (Top)'])
@@ -213,7 +211,7 @@ def link_entrances(world, player):
             connect_two_way(world, old_man_exit, 'Old Man Cave Exit (East)', player)
             
             # place old man, bumper cave bottom to DDM entrances not in east bottom
-            if invFlag == (0x0a in world.owswaps[player][0] and world.owMixed[player]):
+            if not world.is_tile_swapped(0x0a, player):
                 connect_two_way(world, 'Old Man Cave (West)', 'Old Man Cave Exit (West)', player)
             else:
                 connect_two_way(world, 'Bumper Cave (Bottom)', 'Old Man Cave Exit (West)', player)
@@ -223,7 +221,7 @@ def link_entrances(world, player):
             connect_caves(world, lw_wdm_entrances + lw_edm_entrances, [], caves, player)
         else:
             # place Old Man House in WDM if not swapped
-            if invFlag == (0x03 in world.owswaps[player][0] and world.owMixed[player]):
+            if not world.is_tile_swapped(0x03, player):
                 connect_caves(world, lw_wdm_entrances, [], list(Old_Man_House), player)
             else:
                 connect_caves(world, lw_edm_entrances, [], list(Old_Man_House), player)
@@ -258,7 +256,7 @@ def link_entrances(world, player):
     
         # place bomb shop, has limited options
         bomb_shop_doors = list(entrance_pool)
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
         bomb_shop = random.choice(bomb_shop_doors)
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
@@ -303,7 +301,7 @@ def link_entrances(world, player):
         
         # place bomb shop, has limited options
         bomb_shop_doors = list(entrance_pool)
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
         bomb_shop = random.choice(bomb_shop_doors)
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
@@ -360,7 +358,7 @@ def link_entrances(world, player):
         
         # place bomb shop, has limited options
         bomb_shop_doors = [e for e in entrance_pool if e not in list(zip(*drop_connections + dropexit_connections))[0]]
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in bomb_shop_doors if e not in ['Pyramid Fairy']]
         bomb_shop = random.choice(bomb_shop_doors)
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
@@ -462,7 +460,7 @@ def link_entrances(world, player):
         
         # place bomb shop, has limited options
         bomb_shop_doors = list(entrance_pool)
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
         bomb_shop = random.choice(bomb_shop_doors)
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
@@ -516,7 +514,7 @@ def link_entrances(world, player):
         
         # place bomb shop, has limited options
         bomb_shop_doors = list(entrance_pool)
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
         bomb_shop = random.choice(bomb_shop_doors)
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
@@ -565,7 +563,7 @@ def link_entrances(world, player):
     
         # place bomb shop, has limited options
         bomb_shop_doors = list(entrance_pool)
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
         bomb_shop = random.choice(bomb_shop_doors)
         connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
@@ -604,11 +602,11 @@ def link_entrances(world, player):
 
         if not world.shuffle_ganon:
             connect_two_way(world, 'Ganons Tower' if not invFlag else 'Agahnims Tower', 'Ganons Tower Exit', player)
-            connect_two_way(world, 'Pyramid Entrance' if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]) else 'Inverted Pyramid Entrance', 'Pyramid Exit', player)
-            connect_entrance(world, 'Pyramid Hole' if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]) else 'Inverted Pyramid Hole', 'Pyramid', player)
+            connect_two_way(world, 'Pyramid Entrance' if not world.is_tile_swapped(0x1b, player) else 'Inverted Pyramid Entrance', 'Pyramid Exit', player)
+            connect_entrance(world, 'Pyramid Hole' if not world.is_tile_swapped(0x1b, player) else 'Inverted Pyramid Hole', 'Pyramid', player)
         else:
             caves.extend(['Ganons Tower Exit', 'Pyramid Exit'])
-            hole_entrances.append('Pyramid Hole' if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]) else 'Inverted Pyramid Hole')
+            hole_entrances.append('Pyramid Hole' if not world.is_tile_swapped(0x1b, player) else 'Inverted Pyramid Hole')
             hole_targets.append('Pyramid')
 
         # shuffle holes
@@ -648,7 +646,7 @@ def link_entrances(world, player):
 
         # place bomb shop, has limited options
         bomb_shop_doors = list(entrance_pool)
-        if world.logic[player] in ['noglitches', 'minorglitches'] or (invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+        if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
         random.shuffle(bomb_shop_doors)
         bomb_shop = bomb_shop_doors.pop()
@@ -693,7 +691,7 @@ def link_entrances(world, player):
         world.powder_patch_required[player] = True
 
     # check for ganon location
-    if world.get_entrance('Pyramid Hole' if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]) else 'Inverted Pyramid Hole', player).connected_region.name != 'Pyramid':
+    if world.get_entrance('Pyramid Hole' if not world.is_tile_swapped(0x1b, player) else 'Inverted Pyramid Hole', player).connected_region.name != 'Pyramid':
         world.ganon_at_pyramid[player] = False
 
     # check for Ganon's Tower location
@@ -1074,7 +1072,7 @@ def scramble_holes(world, player):
         hole_targets.append(('Hyrule Castle Secret Entrance Exit', 'Hyrule Castle Secret Entrance'))
     
     if world.shuffle_ganon:
-        hole_entrances.append(('Pyramid Entrance', 'Pyramid Hole') if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]) else ('Inverted Pyramid Entrance', 'Inverted Pyramid Hole'))
+        hole_entrances.append(('Pyramid Entrance', 'Pyramid Hole') if not world.is_tile_swapped(0x1b, player) else ('Inverted Pyramid Entrance', 'Inverted Pyramid Hole'))
         hole_targets.append(('Pyramid Exit', 'Pyramid'))
 
     # shuffle sanctuary hole in same world as other HC entrances
@@ -1099,11 +1097,11 @@ def scramble_holes(world, player):
         else:
             # checks if drop candidates exist in LW
             drop_owids = [ 0x00, 0x02, 0x13, 0x15, 0x18, 0x1b, 0x22 ]
-            hc_in_lw = any([invFlag == (owid in world.owswaps[player][0] and world.owMixed[player]) for owid in drop_owids])
+            hc_in_lw = any([not world.is_tile_swapped(owid, player) for owid in drop_owids])
 
         candidate_drops = list()
         for door, drop in hole_entrances:
-            if hc_in_lw == (drop_owid_map[door][1] == (invFlag == (drop_owid_map[door][0] in world.owswaps[player][0] and world.owMixed[player]))):
+            if hc_in_lw == (drop_owid_map[door][1] == (not world.is_tile_swapped(drop_owid_map[door][0], player))):
                 candidate_drops.append(tuple((door, drop)))
         
         random.shuffle(candidate_drops)
@@ -1117,7 +1115,7 @@ def scramble_holes(world, player):
     # place pyramid hole
     if not world.shuffle_ganon:
         exit, target = ('Pyramid Exit', 'Pyramid')
-        if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]):
+        if not world.is_tile_swapped(0x1b, player):
             connect_two_way(world, 'Pyramid Entrance', exit, player)
             connect_entrance(world, 'Pyramid Hole', target, player)
         else:
@@ -1183,16 +1181,16 @@ def simple_shuffle_dungeons(world, player):
         
         # checks if drop candidates exist in LW
         drop_owids = [ 0x00, 0x02, 0x13, 0x15, 0x18, 0x1b, 0x22 ]
-        drops_in_light_world = any([invFlag == (owid in world.owswaps[player][0] and world.owMixed[player]) for owid in drop_owids])
+        drops_in_light_world = any([not world.is_tile_swapped(owid, player) for owid in drop_owids])
         
         # placing HC in guaranteed same-world as available dropdowns
         if not drops_in_light_world or not invFlag:
             candidate_dungeons = list()
             for d in multi_dungeons:
-                if not drops_in_light_world and dungeon_owid_map[d][1] == (invFlag != (dungeon_owid_map[d][0] in world.owswaps[player][0] and world.owMixed[player])):
+                if not drops_in_light_world and dungeon_owid_map[d][1] == world.is_tile_swapped(dungeon_owid_map[d][0], player):
                     # only adding DW candidates
                     candidate_dungeons.append(d)
-                elif not invFlag and dungeon_owid_map[d][1] == (invFlag == (dungeon_owid_map[d][0] in world.owswaps[player][0] and world.owMixed[player])):
+                elif not invFlag and dungeon_owid_map[d][1] == (not world.is_tile_swapped(dungeon_owid_map[d][0], player)):
                     # only adding LW candidates
                     candidate_dungeons.append(d)
             random.shuffle(candidate_dungeons)
@@ -1218,7 +1216,7 @@ def simple_shuffle_dungeons(world, player):
     elif hc_target == 'Turtle Rock':
         connect_two_way(world, 'Turtle Rock', 'Hyrule Castle Exit (South)', player)
         connect_two_way(world, 'Dark Death Mountain Ledge (West)', 'Hyrule Castle Exit (West)', player)
-        if invFlag == (0x45 in world.owswaps[player][0] and world.owMixed[player]):
+        if not world.is_tile_swapped(0x45, player):
             connect_two_way(world, 'Turtle Rock Isolated Ledge Entrance', 'Hyrule Castle Exit (East)', player)
             connect_two_way(world, 'Dark Death Mountain Ledge (East)', at_door, player)
         else:
@@ -1302,7 +1300,7 @@ def full_shuffle_dungeons(world, Dungeon_Exits, player):
     lw_entrances = list()
     dw_entrances = list()
     for owid in dungeon_owid_map.keys():
-        if dungeon_owid_map[owid][1] == (invFlag == (owid in world.owswaps[player][0] and world.owMixed[player])):
+        if dungeon_owid_map[owid][1] == (not world.is_tile_swapped(owid, player)):
             lw_entrances.extend([e for e in dungeon_owid_map[owid][0] if e in entrance_pool])
         else:
             dw_entrances.extend([e for e in dungeon_owid_map[owid][0] if e in entrance_pool])
@@ -1315,7 +1313,7 @@ def full_shuffle_dungeons(world, Dungeon_Exits, player):
     dw_must_exit = list()
     lw_related = list()
     dw_related = list()
-    if invFlag == (0x45 in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x45, player):
         dw_entrances.remove('Turtle Rock Isolated Ledge Entrance')
         dw_must_exit.append('Turtle Rock Isolated Ledge Entrance')
         if 'Dark Death Mountain Ledge' in world.inaccessible_regions[player]:
@@ -1324,7 +1322,7 @@ def full_shuffle_dungeons(world, Dungeon_Exits, player):
             random.shuffle(ledge)
             dw_must_exit.append(ledge.pop())
             dw_related.extend(ledge)
-    if invFlag == (0x30 in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x30, player):
         if 'Desert Palace Mouth' in world.inaccessible_regions[player]:
             lw_entrances.remove('Desert Palace Entrance (East)')
             lw_must_exit.append('Desert Palace Entrance (East)')
@@ -1337,7 +1335,7 @@ def full_shuffle_dungeons(world, Dungeon_Exits, player):
             random.shuffle(ledge)
             dw_must_exit.append(ledge.pop())
             dw_related.extend(ledge)
-    if invFlag == (0x1b in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x1b, player):
         if 'Hyrule Castle Ledge' in world.inaccessible_regions[player]:
             ledge = ['Hyrule Castle Entrance (West)', 'Hyrule Castle Entrance (East)', 'Agahnims Tower']
             lw_entrances = [e for e in lw_entrances if e not in ledge]
@@ -1352,7 +1350,7 @@ def full_shuffle_dungeons(world, Dungeon_Exits, player):
     hyrule_castle_exits = list([tuple(e for e in hyrule_castle_exits if e in exit_pool)])
     hyrule_castle_exits.extend([e for e in dungeon_exits if isinstance(e, str)])
     dungeon_exits = [e for e in dungeon_exits if not isinstance(e, str)]
-    if invFlag == (0x13 in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x13, player):
         connect_mandatory_exits(world, lw_entrances, hyrule_castle_exits, lw_must_exit, player, False)
         dungeon_exits.extend([e for e in hyrule_castle_exits if isinstance(e, str)])
         hyrule_castle_exits = [e for e in hyrule_castle_exits if not isinstance(e, str)]
@@ -1444,7 +1442,7 @@ def place_blacksmith(world, links_house, player):
 
 def place_old_man(world, pool, player, ignore_list=[]):
     # exit has to come from specific set of doors, the entrance is free to move about
-    if (world.mode[player] == 'inverted') == (0x03 in world.owswaps[player][0] and world.owMixed[player]):
+    if not world.is_tile_swapped(0x03, player):
         region_name = 'West Death Mountain (Top)'
     else:
         region_name = 'West Dark Death Mountain (Top)'
@@ -1537,7 +1535,7 @@ def connect_inaccessible_regions(world, lw_entrances, dw_entrances, caves, playe
     for region_name in inaccessible_regions.copy():
         region = world.get_region(region_name, player)
         if region.type not in [RegionType.LightWorld, RegionType.DarkWorld] or not any((not exit.connected_region and exit.spot_type == 'Entrance') for exit in region.exits) \
-                or (region_name == 'Pyramid Exit Ledge' and world.shuffle[player] != 'insanity' or invFlag != (0x1b in world.owswaps[player][0] and world.owMixed[player])):
+                or (region_name == 'Pyramid Exit Ledge' and world.shuffle[player] != 'insanity' or world.is_tile_swapped(0x1b, player)):
             inaccessible_regions.remove(region_name)
         elif region.type == (RegionType.LightWorld if not invFlag else RegionType.DarkWorld):
             must_exit_regions.append(region_name)

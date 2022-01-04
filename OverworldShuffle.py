@@ -1,10 +1,11 @@
 import RaceRandom as random, logging, copy
 from collections import OrderedDict
+from DungeonGenerator import GenerationException
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot, Entrance
 from Regions import mark_dark_world_regions, mark_light_world_regions
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.2.3.5-u'
+__version__ = '0.2.3.6-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -159,7 +160,7 @@ def link_overworld(world, player):
     
     # apply tile logical connections
     for owid in ow_connections.keys():
-        if (world.mode[player] == 'inverted') == (owid in world.owswaps[player][0] and world.owMixed[player]):
+        if not world.is_tile_swapped(owid, player):
             for (exitname, regionname) in ow_connections[owid][0]:
                 connect_simple(world, exitname, regionname, player)
         else:
@@ -342,7 +343,7 @@ def link_overworld(world, player):
         for o in range(0, len(flute_destinations)):
             owslot = flute_destinations[o]
             regions = flute_data[owslot][0]
-            if (world.mode[player] == 'inverted') == (flute_data[owslot][1] in world.owswaps[player][0] and world.owMixed[player]):
+            if not world.is_tile_swapped(flute_data[owslot][1], player):
                 connect_simple(world, 'Flute Spot ' + str(o + 1), regions[0], player)
             else:
                 connect_simple(world, 'Flute Spot ' + str(o + 1), regions[1], player)
@@ -364,7 +365,7 @@ def link_overworld(world, player):
                                 new_ignored.add(exit.connected_region.name)
                                 getIgnored(exit.connected_region.name, base_owid, OWTileRegions[exit.connected_region.name])
 
-                if (world.mode[player] == 'inverted') == (flute_data[owid][1] in world.owswaps[player][0] and world.owMixed[player]):
+                if not world.is_tile_swapped(flute_data[owid][1], player):
                     new_region = flute_data[owid][0][0]
                 else:
                     new_region = flute_data[owid][0][1]

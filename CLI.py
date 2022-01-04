@@ -177,13 +177,13 @@ def parse_settings():
         "mixed_travel": "prevent",
         "standardize_palettes": "standardize",
 
-        "triforce_pool": 30,
-        "triforce_goal": 20,
+        "triforce_pool": 0,
+        "triforce_goal": 0,
         "triforce_pool_min": 0,
         "triforce_pool_max": 0,
         "triforce_goal_min": 0,
         "triforce_goal_max": 0,
-        "triforce_min_difference": 10,
+        "triforce_min_difference": 0,
 
         "code": "",
         "multi": 1,

@@ -136,6 +136,12 @@ New flute spots are chosen at random, with restrictions that limit the promixity
 
 New flute spots are chosen at random with minimum bias.
 
+## New Goal Options (--goal)
+
+### Trinity
+
+This goal gives you the choice between 3 goals, only one of which the player needs to complete: Defeat Ganon (no Aga2), Pulling Pedestal, or turn in TF pieces to Murahdulah. By default, you need to find 8 of 10 total TF pieces but this can be changed with a Custom Item Pool. It is recommended to set GT Entry to 7 crystals and Ganon to 5 crystals or Random crystals, although the player can flexibly change these settings as they seem fit.
+
 ## New Entrance Shuffle Options (--shuffle)
 
 ### Lite

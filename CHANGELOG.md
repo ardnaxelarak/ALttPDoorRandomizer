@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.2.3.6
+- Added Trinity goal (8/10 default TF pieces)
+- Many improvements to TFH pool allocation
+- Fixed some issues with Multiworld generation with Custom Item Pools
+
 ### 0.2.3.5
 - Fixed issue with multiworld generation
 - Added infinite loop detection

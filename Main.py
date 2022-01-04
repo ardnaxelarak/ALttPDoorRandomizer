@@ -131,8 +131,8 @@ def main(args, seed=None, fish=None):
     world.keydropshuffle = args.keydropshuffle.copy()
     world.mixed_travel = args.mixed_travel.copy()
     world.standardize_palettes = args.standardize_palettes.copy()
-    world.treasure_hunt_count = args.triforce_goal.copy()
-    world.treasure_hunt_total = args.triforce_pool.copy()
+    world.treasure_hunt_count = {player: int(args.triforce_goal[player]) for player in range(1, world.players + 1)}
+    world.treasure_hunt_total = {player: int(args.triforce_pool[player]) for player in range(1, world.players + 1)}
     world.shufflelinks = args.shufflelinks.copy()
     world.pseudoboots = args.pseudoboots.copy()
 

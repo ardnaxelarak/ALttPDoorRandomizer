@@ -301,6 +301,9 @@ class World(object):
                     return edge
             return None
 
+    def is_tile_swapped(self, owid, player):
+        return (self.mode[player] == 'inverted') != (owid in self.owswaps[player][0] and self.owMixed[player])
+
     def check_for_door(self, doorname, player):
         if isinstance(doorname, Door):
             return doorname
@@ -3038,12 +3041,12 @@ class Spoiler(object):
                          'triforcepool': self.world.treasure_hunt_total,
                          'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
                          }
-        if self.world.custom:
-            for p in range(1, self.world.players + 1):
-                if self.world.customitemarray[p]["triforcepiecesgoal"] > 0:
-                    self.metadata['triforcegoal'][p] = max(min(self.world.customitemarray[p]["triforcepiecesgoal"], 99), 1)
-                if self.world.customitemarray[p]["triforcepieces"] > 0:
-                    self.metadata['triforcepool'][p] = max(min(self.world.customitemarray[p]["triforcepieces"], 168), self.metadata['triforcegoal'][p])
+        for p in range(1, self.world.players + 1):
+            from ItemList import set_default_triforce
+            if self.world.custom and p in self.world.customitemarray:
+                self.metadata['triforcegoal'][p], self.metadata['triforcepool'][p] = set_default_triforce(self.metadata['goal'][p], self.world.customitemarray[p]["triforcepiecesgoal"], self.world.customitemarray[p]["triforcepieces"])
+            else:
+                self.metadata['triforcegoal'][p], self.metadata['triforcepool'][p] = set_default_triforce(self.metadata['goal'][p], self.world.treasure_hunt_count[p], self.world.treasure_hunt_total[p])
 
     def parse_data(self):
         self.medallions = OrderedDict()
@@ -3200,7 +3203,8 @@ class Spoiler(object):
                 if self.metadata['shuffle'][player] != 'vanilla':
                     outfile.write('Shuffle GT/Ganon:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shuffleganon'][player] else 'No'))
                     outfile.write('Shuffle Links:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shufflelinks'][player] else 'No'))
-                outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
+                if self.metadata['goal'][player] != 'trinity':
+                    outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
                 outfile.write('Door Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['door_shuffle'][player])
                 if self.metadata['door_shuffle'][player] != 'vanilla':
                     outfile.write('Intensity:'.ljust(line_width) + '%s\n' % self.metadata['intensity'][player])
