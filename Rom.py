@@ -33,7 +33,7 @@ from source.classes.SFX import randomize_sfx
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '9bd966f2eabdfdaecf54c59d3921f470'
+RANDOMIZERBASEHASH = '4fe27f1d5b874373e48233b7dffe4a6a'
 
 
 class JsonRom(object):
@@ -349,6 +349,7 @@ def patch_enemizer(world, player, rom, local_rom, enemizercli, random_sprite_on_
         rom.write_bytes(0xEA081, [0x5c, 0x00, 0x80, 0xb7, 0xc9, 0x6, 0xf0, 0x24,
                                   0xad, 0x3, 0x4, 0x29, 0x20, 0xf0, 0x1d])
         rom.write_byte(0x200101, 0)  # Do not close boss room door on entry.
+        rom.write_byte(0x1B0101, 0)  # Do not close boss room door on entry. (for Ijwu's enemizer)
 
     if random_sprite_on_hit:
         _populate_sprite_table()
@@ -643,21 +644,33 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             offset = 0x40
 
         write_int16(rom, snes_to_pc(0x02E849 + (o * 2)), data[1] + offset) # owid
-        write_int16(rom, snes_to_pc(0x02E86B + (o * 2)), data[2]) #vram
-        write_int16(rom, snes_to_pc(0x02E88D + (o * 2)), data[3]) # BG scroll Y
-        write_int16(rom, snes_to_pc(0x02E8AF + (o * 2)), data[4]) # BG scroll X
         write_int16(rom, snes_to_pc(0x02E8D1 + (o * 2)), data[13] if offset > 0 and len(data) > 13 else data[5]) # link Y
         write_int16(rom, snes_to_pc(0x02E8F3 + (o * 2)), data[14] if offset > 0 and len(data) > 13 else data[6]) # link X
-        write_int16(rom, snes_to_pc(0x02E915 + (o * 2)), data[7]) # cam Y
-        write_int16(rom, snes_to_pc(0x02E937 + (o * 2)), data[8]) # cam X
-        write_int16(rom, snes_to_pc(0x02E959 + (o * 2)), data[9]) # unknown 1
-        write_int16(rom, snes_to_pc(0x02E97B + (o * 2)), data[10]) # unknown 2
-
-        # flute menu blips
-        rom.write_byte(snes_to_pc(0x0AB783 + o), data[12] & 0xff) # X low byte
-        rom.write_byte(snes_to_pc(0x0AB78B + o), data[12] // 0x100) # X high byte
-        rom.write_byte(snes_to_pc(0x0AB793 + o), data[11] & 0xff) # Y low byte
-        rom.write_byte(snes_to_pc(0x0AB79B + o), data[11] // 0x100) # Y high byte
+        
+        if offset == 0 or len(data) <= 15:
+            write_int16(rom, snes_to_pc(0x02E86B + (o * 2)), data[2]) # vram
+            write_int16(rom, snes_to_pc(0x02E88D + (o * 2)), data[3]) # BG scroll Y
+            write_int16(rom, snes_to_pc(0x02E8AF + (o * 2)), data[4]) # BG scroll X
+            write_int16(rom, snes_to_pc(0x02E915 + (o * 2)), data[7]) # cam Y
+            write_int16(rom, snes_to_pc(0x02E937 + (o * 2)), data[8]) # cam X
+            write_int16(rom, snes_to_pc(0x02E959 + (o * 2)), data[9]) # unknown 1
+            write_int16(rom, snes_to_pc(0x02E97B + (o * 2)), data[10]) # unknown 2
+            rom.write_byte(snes_to_pc(0x0AB783 + o), data[12] & 0xff) # flute menu blip - X low byte
+            rom.write_byte(snes_to_pc(0x0AB78B + o), data[12] // 0x100) # flute menu blip - X high byte
+            rom.write_byte(snes_to_pc(0x0AB793 + o), data[11] & 0xff) # flute menu blip - Y low byte
+            rom.write_byte(snes_to_pc(0x0AB79B + o), data[11] // 0x100) # flute menu blip - Y high byte
+        else: # use alternate flute data
+            write_int16(rom, snes_to_pc(0x02E86B + (o * 2)), data[15]) # vram
+            write_int16(rom, snes_to_pc(0x02E88D + (o * 2)), data[16]) # BG scroll Y
+            write_int16(rom, snes_to_pc(0x02E8AF + (o * 2)), data[17]) # BG scroll X
+            write_int16(rom, snes_to_pc(0x02E915 + (o * 2)), data[18]) # cam Y
+            write_int16(rom, snes_to_pc(0x02E937 + (o * 2)), data[19]) # cam X
+            write_int16(rom, snes_to_pc(0x02E959 + (o * 2)), data[20]) # unknown 1
+            write_int16(rom, snes_to_pc(0x02E97B + (o * 2)), data[21]) # unknown 2
+            rom.write_byte(snes_to_pc(0x0AB783 + o), data[23] & 0xff) # flute menu blip - X low byte
+            rom.write_byte(snes_to_pc(0x0AB78B + o), data[23] // 0x100) # flute menu blip - X high byte
+            rom.write_byte(snes_to_pc(0x0AB793 + o), data[22] & 0xff) # flute menu blip - Y low byte
+            rom.write_byte(snes_to_pc(0x0AB79B + o), data[22] // 0x100) # flute menu blip - Y high byte
 
     # patch whirlpools
     if world.owWhirlpoolShuffle[player]:
@@ -814,10 +827,13 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     if should_be_bunny(sanc_region, world.mode[player]):
         rom.write_bytes(0x13fff2, [0x12, 0x00])
 
-    lh_name = 'Links House'
+    if not world.is_bombshop_start(player):
+        lh_name = 'Links House'
+    else:
+        lh_name = 'Big Bomb Shop'
     links_house = world.get_region(lh_name, player)
     if should_be_bunny(links_house, world.mode[player]):
-        rom.write_bytes(0x13fff0, [0x04, 0x01])
+        rom.write_bytes(0x13fff0, [0x04 if lh_name == 'Links House' else 0x1C, 0x01])
 
     old_man_house = world.get_region('Old Man House', player)
     if should_be_bunny(old_man_house, world.mode[player]):
@@ -876,7 +892,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x138006, 1)
 
     # swap in non-ER Lobby Shuffle Inverted - but only then
-    if world.mode[player] == 'inverted' and world.intensity[player] >= 3 and world.doorShuffle[player] != 'vanilla' and world.shuffle[player] == 'vanilla':
+    if world.is_atgt_swapped(player) and world.intensity[player] >= 3 and world.doorShuffle[player] != 'vanilla' and world.shuffle[player] == 'vanilla':
         aga_portal = world.get_portal('Agahnims Tower', player)
         gt_portal = world.get_portal('Ganons Tower', player)
         aga_portal.exit_offset, gt_portal.exit_offset = gt_portal.exit_offset, aga_portal.exit_offset
@@ -1385,10 +1401,17 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         gametype |= 0x01  # enemizer
     rom.write_byte(0x180211, gametype)  # Game type
 
+    warningflags = 0x00 # none
+    if world.logic[player] in ['owglitches', 'nologic']:
+        warningflags |= 0x20
+    if world.logic[player] in ['minorglitches', 'owglitches', 'nologic']:
+        warningflags |= 0x40
+    rom.write_byte(0x180212, warningflags)  # Warning flags
+
     # assorted fixes
     rom.write_byte(0x1800A2, 0x01 if world.fix_fake_world else 0x00)  # remain in real dark world when dying in dark world dungeon before killing aga1
     rom.write_byte(0x180169, 0x01 if world.lock_aga_door_in_escape else 0x00)  # Lock or unlock aga tower door during escape sequence.
-    if world.mode[player] == 'inverted':
+    if world.is_atgt_swapped(player):
         rom.write_byte(0x180169, 0x02)  # lock aga/ganon tower door with crystals in inverted
     rom.write_byte(0x180171, 0x01 if world.ganon_at_pyramid[player] else 0x00)  # Enable respawning on pyramid after ganon death
     rom.write_byte(0x180173, 0x01) # Bob is enabled
@@ -1405,6 +1428,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_bytes(0xE9A5, [0x7E, 0x00, 0x24]) # disable below ganon chest
     rom.write_byte(0x18008B, 0x01 if world.open_pyramid[player] or world.goal[player] == 'trinity' else 0x00) # pre-open Pyramid Hole
     rom.write_byte(0x18008C, 0x01 if world.crystals_needed_for_gt[player] == 0 else 0x00) # GT pre-opened if crystal requirement is 0
+    rom.write_byte(0x18008F, 0x01 if world.is_atgt_swapped(player) else 0x00) # AT/GT swapped
     rom.write_byte(0xF5D73, 0xF0) # bees are catchable
     rom.write_byte(0xF5F10, 0xF0) # bees are catchable
     rom.write_byte(0x180086, 0x00 if world.aga_randomness else 0x01)  # set blue ball and ganon warp randomness
@@ -1412,6 +1436,10 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x1800A1, 0x01)  # enable overworld screen transition draining for water level inside swamp
     rom.write_byte(0x180174, 0x01 if world.fix_fake_world[player] else 0x00)
     rom.write_byte(0x18017E, 0x01) # Fairy fountains only trade in bottles
+
+    # starting overworld flags
+    assert len(world.initial_overworld_flags[player]) == 0x80 and all([i < 0x100 for i in world.initial_overworld_flags[player]])
+    rom.write_bytes(0x183280, world.initial_overworld_flags[player])
 
     # Starting equipment
     if world.pseudoboots[player]:
@@ -1582,9 +1610,9 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x180043, equip[0x359])
 
     assert equip[:0x340] == [0] * 0x340
-    rom.write_bytes(0x183000, equip[0x340:])
+    rom.write_bytes(0x183340, equip[0x340:])
     rom.write_bytes(0x271A6, equip[0x340:0x340+60])
-
+    
     rom.write_byte(0x18004A, 0x00 if world.mode[player] != 'inverted' else 0x01)  # Inverted mode
     rom.write_byte(0x18005D, 0x00) # Hammer always breaks barrier
     rom.write_byte(0x03A943, 0xD0 if world.mode[player] != 'inverted' else 0xF0) # Mirror: Normal  (D0=Dark to Light, F0=light to dark, 42 = both)
@@ -1730,6 +1758,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x1800A3, 0x01)  # enable correct world setting behaviour after agahnim kills
     rom.write_byte(0x1800A4, 0x01 if world.logic[player] != 'nologic' else 0x00)  # enable POD EG fix
     rom.write_byte(0x180042, 0x01 if world.save_and_quit_from_boss else 0x00)  # Allow Save and Quit after boss kill
+    rom.write_byte(0x180358, 0x01 if world.logic[player] == 'nologic' else 0x00)
 
     # remove shield from uncle
     rom.write_bytes(0x6D253, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
@@ -1825,7 +1854,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     from Main import __version__
     seedstring = f'{world.seed:09}' if isinstance(world.seed, int) else world.seed
     # todo: change to DR when Enemizer is okay with DR
-    rom.name = bytearray(f'ER{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+    rom.name = bytearray(f'ER{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}O\0', 'utf8')[:21]
     rom.name.extend([0] * (21 - len(rom.name)))
     rom.write_bytes(0x7FC0, rom.name)
 
@@ -2309,7 +2338,7 @@ def write_strings(rom, world, player, team):
         entrances_to_hint = {}
         entrances_to_hint.update(InconvenientDungeonEntrances)
         if world.shuffle_ganon:
-            if world.mode[player] == 'inverted':
+            if world.is_atgt_swapped(player):
                 entrances_to_hint.update({'Agahnims Tower': 'The sealed castle door'})
             else:
                 entrances_to_hint.update({'Ganons Tower': 'Ganon\'s Tower'})
@@ -2342,7 +2371,7 @@ def write_strings(rom, world, player, team):
         if world.shuffle[player] not in ['simple', 'restricted', 'restricted_legacy']:
             entrances_to_hint.update(ConnectorEntrances)
             entrances_to_hint.update(DungeonEntrances)
-            if world.mode[player] == 'inverted':
+            if world.is_atgt_swapped(player):
                 entrances_to_hint.update({'Ganons Tower': 'The dark mountain tower'})
             else:
                 entrances_to_hint.update({'Agahnims Tower': 'The sealed castle door'})
@@ -2355,14 +2384,10 @@ def write_strings(rom, world, player, team):
         elif world.shopsanity[player]:
             entrances_to_hint.update(ShopEntrances)
         if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-            if world.is_tile_swapped(0x2c, player):
-                entrances_to_hint.update({'Links House': 'The hero\'s old residence'})
-                if world.shufflelinks[player]:
-                    entrances_to_hint.update({'Big Bomb Shop': 'The old bomb shop'})
-            else:
+            if not world.is_bombshop_start(player):
                 entrances_to_hint.update({'Big Bomb Shop': 'The old bomb shop'})
-                if world.shufflelinks[player]:
-                    entrances_to_hint.update({'Links House': 'The hero\'s old residence'})
+            else:
+                entrances_to_hint.update({'Links House': 'The hero\'s old residence'})
         entrances_to_hint.update({'Dark Sanctuary Hint': 'The dark sanctuary cave'})
         if world.shuffle[player] in ['insanity', 'madness_legacy', 'insanity_legacy']:
             entrances_to_hint.update(InsanityEntrances)
@@ -2438,13 +2463,19 @@ def write_strings(rom, world, player, team):
         
         # Lastly we write hints to show where certain interesting items are. It is done the way it is to re-use the silver code and also to give one hint per each type of item regardless of how many exist. This supports many settings well.
         items_to_hint = RelevantItems.copy()
+        flute_item = 'Ocarina'
+        if world.is_tile_swapped(0x18, player):
+            items_to_hint.remove(flute_item)
+            flute_item = 'Ocarina (Activated)'
+            items_to_hint.append(flute_item)
         if world.owShuffle[player] != 'vanilla' or world.owMixed[player]:
             # Adding a guaranteed hint for the Flute in overworld shuffle.
-            this_location = world.find_items_not_key_only('Ocarina', player)
+            this_location = world.find_items_not_key_only(flute_item, player)
             if this_location:
                 this_hint = this_location[0].item.hint_text + ' can be found ' + hint_text(this_location[0]) + '.'
+                this_hint = this_hint.capitalize()
                 tt[hint_locations.pop(0)] = this_hint
-            items_to_hint.remove('Ocarina')
+            items_to_hint.remove(flute_item)
         if world.keyshuffle[player]:
             items_to_hint.extend(SmallKeys)
         if world.bigkeyshuffle[player]:
@@ -2459,6 +2490,7 @@ def write_strings(rom, world, player, team):
             random.shuffle(this_location)
             if this_location:
                 this_hint = this_location[0].item.hint_text + ' can be found ' + hint_text(this_location[0]) + '.'
+                this_hint = this_hint.capitalize()
                 tt[hint_locations.pop(0)] = this_hint
                 hint_count -= 1
 
@@ -2615,8 +2647,8 @@ def write_strings(rom, world, player, team):
 
     # inverted spawn menu changes
     if world.mode[player] == 'inverted':
-        tt['menu_start_2'] = "{MENU}\n{SPEED0}\n≥@'s house\n Dark Chapel\n{CHOICE3}"
-        tt['menu_start_3'] = "{MENU}\n{SPEED0}\n≥@'s house\n Dark Chapel\n Mountain Cave\n{CHOICE2}"
+        tt['menu_start_2'] = "{MENU}\n{SPEED0}\n≥@'s House\n Dark Chapel\n{CHOICE3}"
+        tt['menu_start_3'] = "{MENU}\n{SPEED0}\n≥@'s House\n Dark Chapel\n Mountain Cave\n{CHOICE2}"
         tt['intro_main'] = CompressedTextMapper.convert(
                             "{INTRO}\n Episode  III\n{PAUSE3}\n A Link to\n   the Past\n"
                             + "{PAUSE3}\nInverted\n  Randomizer\n{PAUSE3}\nAfter mostly disregarding what happened in the first two games.\n"
@@ -2697,38 +2729,15 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         write_int16(rom, snes_to_pc(0x02D998), 0x0000)
         write_int16(rom, snes_to_pc(0x02D9A6), 0x005A)
         rom.write_byte(snes_to_pc(0x02D9B3), 0x12)
+    
+    # switch AT and GT
+    if world.shuffle[player] == 'vanilla' and world.is_atgt_swapped(player):
+        rom.write_byte(0xDBB73 + 0x23, 0x37)
+        rom.write_byte(0xDBB73 + 0x36, 0x24)
+        if world.doorShuffle[player] == 'vanilla' or world.intensity[player] < 3:
+            write_int16(rom, 0x15AEE + 2*0x38, 0x00E0)
+            write_int16(rom, 0x15AEE + 2*0x25, 0x000C)
 
-        if world.shuffle[player] == 'vanilla':
-            rom.write_byte(0xDBB73 + 0x23, 0x37)  # switch AT and GT
-            rom.write_byte(0xDBB73 + 0x36, 0x24)
-            if world.doorShuffle[player] == 'vanilla' or world.intensity[player] < 3:
-                write_int16(rom, 0x15AEE + 2*0x38, 0x00E0)
-                write_int16(rom, 0x15AEE + 2*0x25, 0x000C)
-
-    if world.is_tile_swapped(0x03, player):
-        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] \
-                or (world.shuffle[player] == 'simple' and world.is_tile_swapped(0x05, player)):
-            rom.write_bytes(snes_to_pc(0x308350), [0x00, 0x00, 0x01])  # mountain cave starts on OW
-
-            write_int16(rom, snes_to_pc(0x02D8DE), 0x00F1)  # change mountain cave spawn point to just outside old man cave
-            rom.write_bytes(snes_to_pc(0x02D910), [0x1F, 0x1E, 0x1F, 0x1F, 0x03, 0x02, 0x03, 0x03])
-            write_int16(rom, snes_to_pc(0x02D924), 0x0300)
-            write_int16(rom, snes_to_pc(0x02D932), 0x1F10)
-            write_int16(rom, snes_to_pc(0x02D940), 0x1FC0)
-            write_int16(rom, snes_to_pc(0x02D94E), 0x0378)
-            write_int16(rom, snes_to_pc(0x02D95C), 0x0187)
-            write_int16(rom, snes_to_pc(0x02D96A), 0x017F)
-            rom.write_byte(snes_to_pc(0x02D972), 0x06)
-            rom.write_byte(snes_to_pc(0x02D979), 0x00)
-            rom.write_byte(snes_to_pc(0x02D980), 0xFF)
-            rom.write_byte(snes_to_pc(0x02D987), 0x00)
-            rom.write_byte(snes_to_pc(0x02D98E), 0x22)
-            rom.write_byte(snes_to_pc(0x02D995), 0x12)
-            write_int16(rom, snes_to_pc(0x02D9A2), 0x0000)
-            write_int16(rom, snes_to_pc(0x02D9B0), 0x0007)
-            rom.write_byte(snes_to_pc(0x02D9B8), 0x12)
-
-            rom.write_bytes(0x180247, [0x00, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x00])  # indicates the overworld door being used for the single entrance spawn point
     if world.is_tile_swapped(0x05, player):
         rom.write_bytes(snes_to_pc(0x1BC655), [0x4A, 0x1D, 0x82])  # add warp under rock
         rom.write_byte(snes_to_pc(0x1BC428), 0x00) # remove secret portal
@@ -2737,6 +2746,8 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         rom.write_bytes(snes_to_pc(0x1BD1DD), [0xA4, 0x06, 0x82, 0x9E, 0x06, 0x82, 0xFF, 0xFF])  # add warps under rocks
         rom.write_byte(0x180089, 0x01)  # open TR after exit
         rom.write_bytes(0x0086E, [0x5C, 0x00, 0xA0, 0xA1]) # TR tail
+        rom.write_bytes(snes_to_pc(0x04E7A3), [0x20, 0x06]) # Top peg moved down, for peg puzzle
+        rom.write_byte(snes_to_pc(0x04E7E4), 0x10) # Remove TR portal overlay
         if world.shuffle[player] in ['vanilla']:
             world.fix_trock_doors[player] = True
     if world.is_tile_swapped(0x10, player):
@@ -2850,10 +2861,25 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
     if world.is_tile_swapped(0x29, player):
         rom.write_bytes(snes_to_pc(0x06B2AB), [0xF0, 0xE1, 0x05])  # frog pickup on contact
     if world.is_tile_swapped(0x2c, player):
-        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-            rom.write_byte(0x15B8C, 0x6C)  # exit links at bomb shop area
-            rom.write_byte(0xDBB73 + 0x00, 0x53)  # switch bomb shop and links house
-            rom.write_byte(0xDBB73 + 0x52, 0x01)
+        if world.is_bombshop_start(player):
+            rom.write_bytes(snes_to_pc(0x03F484), [0xFD, 0x4B, 0x68]) # place bed in bomb shop
+            
+            # spawn in bomb shop
+            patch_shuffled_bomb_shop(world, rom, player)
+            rom.write_byte(snes_to_pc(0x02D8D2), 0x1C)
+            rom.write_bytes(snes_to_pc(0x02D8E0), [0x23, 0x22, 0x23, 0x23, 0x18, 0x18, 0x18, 0x19])
+            rom.write_byte(snes_to_pc(0x02D919), 0x18)
+            rom.write_byte(snes_to_pc(0x02D927), 0x23)
+            write_int16(rom, snes_to_pc(0x02D934), 0x2398)
+            rom.write_byte(snes_to_pc(0x02D943), 0x18)
+            write_int16(rom, snes_to_pc(0x02D950), 0x0087)
+            write_int16(rom, snes_to_pc(0x02D95E), 0x0081)
+            rom.write_byte(snes_to_pc(0x02D9A4), 0x53)
+
+            # disable custom exit on links house exit
+            rom.write_byte(snes_to_pc(0x02E225), 0x1C)
+            rom.write_byte(snes_to_pc(0x02DAEE), 0x1C)
+            rom.write_byte(snes_to_pc(0x02DB8C), 0x6C)
     if world.is_tile_swapped(0x2f, player):
         rom.write_bytes(snes_to_pc(0x1BC80D), [0xB2, 0x0B, 0x82])  # add warp under rock
         rom.write_byte(snes_to_pc(0x1BC590), 0x00) # remove secret portal
@@ -2865,7 +2891,8 @@ def set_inverted_mode(world, player, rom, inverted_buffer):
         rom.write_bytes(snes_to_pc(0x1BD1D8), [0xA8, 0x02, 0x82, 0xFF, 0xFF])  # add warp under rock
         rom.write_byte(snes_to_pc(0x1BC5B1), 0x00) # remove secret portal
     if world.is_tile_swapped(0x35, player):
-        rom.write_bytes(snes_to_pc(0x1BC85A), [0x50, 0x0F, 0x82])  # add warp under rock
+        #rom.write_bytes(snes_to_pc(0x1BC85A), [0x50, 0x0F, 0x82])  # add warp under rock
+        rom.write_bytes(snes_to_pc(0x1BC85A), [0x52, 0x13, 0x82])  # add warp under rock
         rom.write_byte(snes_to_pc(0x1BC5C7), 0x00) # remove secret portal
 
     # apply inverted map changes
@@ -2877,6 +2904,7 @@ def patch_shuffled_dark_sanc(world, rom, player):
     dark_sanc_entrance = str([i for i in dark_sanc.entrances if i.parent_region.name != 'Menu'][0].name)
     room_id, ow_area, vram_loc, scroll_y, scroll_x, link_y, link_x, camera_y, camera_x, unknown_1, unknown_2, door_1, door_2 = door_addresses[dark_sanc_entrance][1]
     door_index = door_addresses[str(dark_sanc_entrance)][0]
+    world.initial_overworld_flags[player][ow_area] |= door_addresses[dark_sanc_entrance][2]
 
     rom.write_byte(0x180241, 0x01)
     rom.write_byte(0x180248, door_index + 1)
@@ -2884,6 +2912,22 @@ def patch_shuffled_dark_sanc(world, rom, player):
     rom.write_byte(0x180252, ow_area)
     write_int16s(rom, 0x180253, [vram_loc, scroll_y, scroll_x, link_y, link_x, camera_y, camera_x])
     rom.write_bytes(0x180262, [unknown_1, unknown_2, 0x00])
+
+
+def patch_shuffled_bomb_shop(world, rom, player):
+    bomb_shop = world.get_region('Big Bomb Shop', player)
+    bomb_shop_entrance = str([i for i in bomb_shop.entrances if i.parent_region.name != 'Menu'][0].name)
+    room_id, ow_area, vram_loc, scroll_y, scroll_x, link_y, link_x, camera_y, camera_x, unknown_1, unknown_2, door_1, door_2 = door_addresses[bomb_shop_entrance][1]
+    door_index = door_addresses[str(bomb_shop_entrance)][0]
+    world.initial_overworld_flags[player][ow_area] |= door_addresses[bomb_shop_entrance][2]
+
+    rom.write_byte(0x180240, 0x02)
+    rom.write_byte(0x180247, door_index + 1)
+    write_int16(rom, 0x180264, room_id)
+    rom.write_byte(0x180266, ow_area)
+    write_int16s(rom, 0x180267, [vram_loc, scroll_y, scroll_x, link_y, link_x, camera_y, camera_x])
+    rom.write_bytes(0x180275, [unknown_1, unknown_2, 0x00])
+    write_int16(rom, snes_to_pc(0x02D996), door_1)
 
 
 def update_compasses(rom, world, player):

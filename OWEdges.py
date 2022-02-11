@@ -703,6 +703,7 @@ OWTileRegions = bidict({
     'East Death Mountain (Top East)': 0x05,
     'Spiral Cave Ledge': 0x05,
     'Mimic Cave Ledge': 0x05,
+    'Spiral Mimic Ledge Extend': 0x05,
     'Fairy Ascension Ledge': 0x05,
     'Fairy Ascension Plateau': 0x05,
     'East Death Mountain (Bottom Left)': 0x05,
@@ -819,6 +820,7 @@ OWTileRegions = bidict({
     'Lake Hylia Central Island': 0x35,
     'Lake Hylia Island': 0x35,
     'Lake Hylia Water': 0x35,
+    'Lake Hylia Water D': 0x35,
 
     'Ice Cave Area': 0x37,
 
@@ -991,7 +993,7 @@ OWTileGroups = {
             0x42
         ]
     ),
-    ("West Mountain", "Regular", "None"): (
+    ("Mountain Entry", "Entrance", "None"): (
         [
             0x03
         ],
@@ -1183,14 +1185,14 @@ OWTileGroups = {
             0x6b
         ]
     ),
-    # ("Links", "Regular", "None"): (
-    #     [
-    #         0x2c
-    #     ],
-    #     [
-    #         0x6c
-    #     ]
-    # ),
+    ("Links", "Regular", "None"): (
+        [
+            0x2c
+        ],
+        [
+            0x6c
+        ]
+    ),
     ("Tree Line", "Regular", "None"): (
         [
             0x2e
@@ -1402,6 +1404,7 @@ OWExitTypes = {
             'East Death Mountain Mimic Ledge Drop',
             'Spiral Ledge Drop',
             'Mimic Ledge Drop',
+            'Spiral Mimic Ledge Drop',
             'Fairy Ascension Ledge Drop',
             'Fairy Ascension Plateau Ledge Drop',
             'TR Pegs Ledge Drop',
@@ -1514,6 +1517,10 @@ OWExitTypes = {
                 'Fairy Ascension Rocks (North)',
                 'DM Broken Bridge (West)',
                 'DM Broken Bridge (East)',
+                'Spiral Mimic Bridge (West)',
+                'Spiral Mimic Bridge (East)',
+                'Spiral Ledge Approach',
+                'Mimic Ledge Approach',
                 'Fairy Ascension Rocks (South)',
                 'Floating Island Bridge (West)',
                 'TR Pegs Ledge Entry',
@@ -1578,6 +1585,7 @@ OWExitTypes = {
                 'Lake Hylia West Pier',
                 'Lake Hylia Northeast Water Drop',
                 'Lake Hylia East Pier',
+                'Lake Hylia Water D Entry',
                 'Desert Pass Ladder (South)',
                 'Desert Pass Rocks (North)',
                 'Desert Pass Rocks (South)',
@@ -1590,9 +1598,7 @@ OWExitTypes = {
                 'Skull Woods Forgotten Bush (West)',
                 'Skull Woods Forgotten Bush (East)',
                 'GT Entry Approach',
-                'Dark Death Mountain Ladder (North)',
                 'GT Entry Leave',
-                'Dark Death Mountain Ladder (South)',
                 'Bumper Cave Entrance Rock',
                 'Skull Woods Pass Bush Row (West)',
                 'Skull Woods Pass Bush Row (East)',
@@ -1635,8 +1641,6 @@ OWExitTypes = {
                 'Ice Lake Northeast Pier',
                 'Ice Lake Northeast Pier Hop',
                 'Ice Lake Moat Water Entry',
-                'Ice Palace Approach',
-                'Ice Palace Leave',
                 'Bomber Corner Water Drop',
                 'Bomber Corner Pier'
             ],
@@ -1756,6 +1760,7 @@ OWExitTypes = {
                 'Ice Lake Southeast Mirror Spot',
                 'Ice Lake Northeast Mirror Spot',
                 'Ice Palace Mirror Spot',
+                'Ice Lake Moat Mirror Spot',
                 'Shopping Mall Mirror Spot',
                 'Swamp Nook Mirror Spot',
                 'Swamp Nook Southeast Mirror Spot',

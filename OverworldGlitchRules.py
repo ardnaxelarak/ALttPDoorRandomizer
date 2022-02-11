@@ -150,6 +150,7 @@ def get_boots_clip_exits_lw(inverted = False):
     yield ('WDM DMD To River Bend Clip', 'East Death Mountain (Bottom Left)', 'River Bend Area')
     yield ('EDM DMD To River Bend Clip', 'East Death Mountain (Bottom)', 'River Bend Area')
     yield ('TR Pegs Ledge Clip', 'Death Mountain TR Pegs', 'Death Mountain TR Pegs Ledge')
+    yield ('TR Pegs Ledge Descent Clip', 'Death Mountain TR Pegs Ledge', 'Death Mountain TR Pegs')
     yield ('TR Pegs To EDM Clip', 'Death Mountain TR Pegs', 'East Death Mountain (Top East)')
     yield ('Zora DMD Clip', 'Death Mountain TR Pegs', 'Zora Waterfall Area')
     yield ('Mountain Entry To Ledge Clip', 'Mountain Entry Area', 'Mountain Entry Ledge')

@@ -610,7 +610,7 @@ def global_rules(world, player):
 
 def bomb_rules(world, player):
     bonkable_doors = ['Two Brothers House Exit (West)', 'Two Brothers House Exit (East)'] # Technically this is incorrectly defined, but functionally the same as what is intended.
-    bombable_doors = ['Ice Rod Cave', 'Light World Bomb Hut', 'Light World Death Mountain Shop', 'Mini Moldorm Cave',
+    bombable_doors = ['Ice Rod Cave', 'Light World Bomb Hut', 'Light World Death Mountain Shop', 'Light Hype Fairy', 'Mini Moldorm Cave',
                       'Hookshot Cave Back to Middle', 'Hookshot Cave Front to Middle', 'Hookshot Cave Middle to Front','Hookshot Cave Middle to Back',
                       'Dark Lake Hylia Ledge Fairy', 'Hype Cave', 'Brewery']
     for entrance in bonkable_doors:
@@ -838,6 +838,7 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Lake Hylia Northeast Water Drop', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Lake Hylia Central Water Drop', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Lake Hylia Island Water Drop', player), lambda state: state.has('Flippers', player))
+    set_rule(world.get_entrance('Lake Hylia Water D Entry', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Ice Cave SW', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Octoballoon Water Drop', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Octoballoon Waterfall Water Drop', player), lambda state: state.has('Flippers', player))
@@ -872,12 +873,12 @@ def default_rules(world, player):
 
 
 def ow_rules(world, player):
-    if world.mode[player] != 'inverted':
+    if world.is_atgt_swapped(player):
+        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
+    else:
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_sword(player, 2) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
         set_rule(world.get_entrance('GT Entry Approach', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
         set_rule(world.get_entrance('GT Entry Leave', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player) or state.world.shuffle[player] in ('restricted', 'full', 'lite', 'lean', 'crossed', 'insanity'))
-    else:
-        set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
 
     if not world.is_tile_swapped(0x00, player):
         set_rule(world.get_entrance('Lost Woods East Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -906,7 +907,9 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('West Dark Death Mountain (Top) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Bubble Boy Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('West Dark Death Mountain (Bottom) Mirror Spot', player), lambda state: state.has_Mirror(player))
-
+        set_rule(world.get_entrance('Spectacle Rock Approach', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'] and state.has_Pearl(player))
+        set_rule(world.get_entrance('Spectacle Rock Leave', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'] and state.has_Pearl(player))
+        
     if not world.is_tile_swapped(0x05, player):
         set_rule(world.get_entrance('East Death Mountain (Top West) Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('East Death Mountain (Top East) Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -935,8 +938,11 @@ def ow_rules(world, player):
     else:
         set_rule(world.get_entrance('Turtle Rock Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Turtle Rock Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
-        set_rule(world.get_entrance('Turtle Rock Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_heavy_rocks(player) and state.has_Pearl(player))
-
+        set_rule(world.get_entrance('Turtle Rock Teleporter', player), lambda state: state.can_lift_heavy_rocks(player))
+        set_rule(world.get_entrance('TR Pegs Ledge Drop', player), lambda state: False)
+        set_rule(world.get_entrance('TR Pegs Ledge Leave', player), lambda state: state.has('Hammer', player) and state.can_lift_heavy_rocks(player) and state.has_Pearl(player))
+        set_rule(world.get_entrance('Turtle Rock Tail Ledge Drop', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        
     if not world.is_tile_swapped(0x0a, player):
         set_rule(world.get_entrance('Mountain Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Mountain Entry Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -962,7 +968,8 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Skull Woods Pass East Top Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Pass Portal Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Skull Woods Pass East Bottom Mirror Spot', player), lambda state: state.has_Mirror(player))
-
+        set_rule(world.get_entrance('West Dark World Teleporter', player), lambda state: state.can_lift_rocks(player))
+        
     if not world.is_tile_swapped(0x11, player):
         set_rule(world.get_entrance('Kakariko Fortune Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
@@ -984,8 +991,8 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Graveyard Ledge Mirror Spot', player), lambda state: state.has_Pearl(player) and state.has_Mirror(player))
         set_rule(world.get_entrance('Kings Grave Mirror Spot', player), lambda state: state.has_Pearl(player) and state.has_Mirror(player))
     else:
-        set_rule(world.get_entrance('Graveyard Ladder (Top)', player), lambda state: state.has_Pearl(player))
-        set_rule(world.get_entrance('Graveyard Ladder (Bottom)', player), lambda state: state.has_Pearl(player))
+        set_rule(world.get_entrance('Graveyard Ladder (Top)', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'] and state.has_Pearl(player))
+        set_rule(world.get_entrance('Graveyard Ladder (Bottom)', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'] and state.has_Pearl(player))
         set_rule(world.get_entrance('Dark Graveyard Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Graveyard Ledge Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark Graveyard Grave Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1147,14 +1154,18 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Misery Mire Blocked Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Misery Mire Main Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Misery Mire Teleporter', player), lambda state: state.can_lift_heavy_rocks(player))
-
+        set_rule(world.get_entrance('Checkerboard Ledge Approach', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        set_rule(world.get_entrance('Checkerboard Ledge Leave', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        
     if not world.is_tile_swapped(0x32, player):
         set_rule(world.get_entrance('Cave 45 Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Flute Boy Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
         set_rule(world.get_entrance('Stumpy Approach Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Stumpy Bush Entry Mirror Spot', player), lambda state: state.has_Mirror(player))
-
+        set_rule(world.get_entrance('Cave 45 Inverted Approach', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        set_rule(world.get_entrance('Cave 45 Inverted Leave', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        
     if not world.is_tile_swapped(0x33, player):
         set_rule(world.get_entrance('C Whirlpool Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('C Whirlpool Outer Mirror Spot', player), lambda state: state.has_Mirror(player))
@@ -1187,7 +1198,8 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Ice Lake Northeast Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Ice Palace Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Ice Palace Teleporter', player), lambda state: state.can_lift_heavy_rocks(player))
-
+        set_rule(world.get_entrance('Lake Hylia Island Pier', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        
     if not world.is_tile_swapped(0x37, player):
         set_rule(world.get_entrance('Ice Cave Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
@@ -1200,7 +1212,9 @@ def ow_rules(world, player):
         set_rule(world.get_entrance('Swamp Nook Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Swamp Nook Southeast Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Swamp Nook Pegs Mirror Spot', player), lambda state: state.has_Mirror(player))
-
+        set_rule(world.get_entrance('Desert Pass Ladder (South)', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        set_rule(world.get_entrance('Desert Pass Ladder (North)', player), lambda state: world.logic[player] in ['noglitches', 'minorglitches'])
+        
     if not world.is_tile_swapped(0x3b, player):
         set_rule(world.get_entrance('Dam Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
@@ -1530,8 +1544,8 @@ def swordless_rules(world, player):
     set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has('Hammer', player))
     set_rule(world.get_location('Ganon', player), lambda state: state.has('Hammer', player) and state.has_fire_source(player) and state.has('Silver Arrows', player) and state.can_shoot_arrows(player) and state.has_crystals(world.crystals_needed_for_ganon[player], player))
     set_rule(world.get_entrance('Ganon Drop', player), lambda state: state.has('Hammer', player))  # need to damage ganon to get tiles to drop
-
-    if world.mode[player] != 'inverted':
+    
+    if not world.is_atgt_swapped(player):
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has('Hammer', player) or state.has('Beat Agahnim 1', player))  # barrier gets removed after killing agahnim, relevant for entrance shuffle
 
     set_rule(world.get_entrance('Misery Mire', player), lambda state: state.has_misery_mire_medallion(player))   # sword not required to use medallion for opening in swordless (!)

@@ -5,7 +5,7 @@ from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSl
 from Regions import mark_dark_world_regions, mark_light_world_regions
 from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
 
-__version__ = '0.2.3.6-u'
+__version__ = '0.2.6.0-u'
 
 def link_overworld(world, player):
     # setup mandatory connections
@@ -67,8 +67,12 @@ def link_overworld(world, player):
                     # move both sets
                     if parallel == IsParallel.Yes and not (all(edge in orig_swaps for edge in map(getParallel, forward_set)) and all(edge in orig_swaps for edge in map(getParallel, back_set))):
                         raise Exception('Cannot move a parallel edge without the other')
-                    new_groups[(OpenStd.Open, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)][0].append(forward_set)
-                    new_groups[(OpenStd.Open, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)][1].append(back_set)
+                    new_mode = OpenStd.Open
+                    if tuple((OpenStd.Open, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)) not in new_groups.keys():
+                        # when Links House tile is swapped, the DW edges need to get put into existing Standard group
+                        new_mode = OpenStd.Standard
+                    new_groups[(new_mode, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)][0].append(forward_set)
+                    new_groups[(new_mode, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)][1].append(back_set)
                     for edge in forward_set:
                         swaps.remove(edge)
                     for edge in back_set:
@@ -416,6 +420,24 @@ def link_overworld(world, player):
         world.owflutespots[player] = new_spots
         connect_flutes(new_spots)
 
+        # update spoiler
+        s = list(map(lambda x: ' ' if x not in new_spots else 'F', [i for i in range(0x40)]))
+        text_output = tile_swap_spoiler_table.replace('s', '%s') % (                         s[0x02],                                s[0x07],
+                                                                                 s[0x00],                s[0x03],        s[0x05],
+            s[0x00],        s[0x02],s[0x03],        s[0x05],        s[0x07],                 s[0x0a],                                s[0x0f],
+                            s[0x0a],                                s[0x0f],
+            s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17], s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17],
+            s[0x18],        s[0x1a],s[0x1b],        s[0x1d],s[0x1e],
+                            s[0x22],                s[0x25],                                 s[0x1a],                s[0x1d],
+            s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],     s[0x18],                s[0x1b],                s[0x1e],
+            s[0x30],        s[0x32],s[0x33],s[0x34],s[0x35],        s[0x37],                 s[0x22],                s[0x25],
+                            s[0x3a],s[0x3b],s[0x3c],                s[0x3f],
+                                                                             s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],
+                                                                                             s[0x32],s[0x33],s[0x34],                s[0x37],
+                                                                                 s[0x30],                                s[0x35],
+                                                                                             s[0x3a],s[0x3b],s[0x3c],                s[0x3f])
+        world.spoiler.set_map('flute', text_output, new_spots, player)
+
 def connect_custom(world, connected_edges, player):
     if hasattr(world, 'custom_overworld') and world.custom_overworld[player]:
         for edgename1, edgename2 in world.custom_overworld[player]:
@@ -502,7 +524,7 @@ def shuffle_tiles(world, groups, result_list, player):
                 exist_dw_regions.extend(dw_regions)
 
         # check whirlpool parity
-        valid_whirlpool_parity = world.owCrossed[player] not in ['none', 'grouped'] or len(OrderedDict.fromkeys(new_results[0] + [0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f])) % 2 == 0
+        valid_whirlpool_parity = world.owCrossed[player] not in ['none', 'grouped'] or len([o for o in new_results[0] if o in [0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f]]) % 2 == 0
 
     (exist_owids, exist_lw_regions, exist_dw_regions) = result_list
     exist_owids.extend(new_results[0])
@@ -817,7 +839,7 @@ def can_reach_smith(world, player):
                 region = world.get_region(region_name, player)
             for exit in region.exits:
                 if not found and exit.connected_region is not None:
-                    if any(map(lambda i: i.name == 'Ocarina', world.precollected_items)) and exit.spot_type == 'Flute':
+                    if any(map(lambda i: i.name in ['Ocarina', 'Ocarina (Activated)'], world.precollected_items)) and exit.spot_type == 'Flute':
                         fluteregion = exit.connected_region
                         for flutespot in fluteregion.exits:
                             if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
@@ -841,7 +863,11 @@ def can_reach_smith(world, player):
     
     found = False
     explored_regions = list()
-    explore_region('Links House')
+    if not world.is_bombshop_start(player):
+        start_region = 'Links House'
+    else:
+        start_region = 'Big Bomb Shop'
+    explore_region(start_region)
     if not found:
         if not invFlag:
             explore_region('Sanctuary')
@@ -869,7 +895,7 @@ def build_sectors(world, player):
         if (any(r in unique_regions for r in explored_regions)):
             for s in range(len(sectors)):
                 if (any(r in sectors[s] for r in explored_regions)):
-                    sectors[s] = list(list(sectors[s]) + list(explored_regions))
+                    sectors[s] = list(dict.fromkeys(list(sectors[s]) + list(explored_regions)))
                     break
         else:
             sectors.append(explored_regions)
@@ -895,7 +921,7 @@ def build_sectors(world, player):
             if (any(r in unique_regions for r in explored_regions)):
                 for s2 in range(len(sectors2)):
                     if (any(r in sectors2[s2] for r in explored_regions)):
-                        sectors2[s2] = list(sectors2[s2] + explored_regions)
+                        sectors2[s2] = list(dict.fromkeys(sectors2[s2] + explored_regions))
                         break
             else:
                 sectors2.append(explored_regions)
@@ -918,7 +944,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
             region = base_world.get_region(region_name, player)
         for exit in region.exits:
             if exit.connected_region is not None:
-                if any(map(lambda i: i.name == 'Ocarina', base_world.precollected_items)) and exit.spot_type == 'Flute':
+                if any(map(lambda i: i.name in ['Ocarina', 'Ocarina (Activated)'], base_world.precollected_items)) and exit.spot_type == 'Flute':
                     fluteregion = exit.connected_region
                     for flutespot in fluteregion.exits:
                         if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
@@ -948,17 +974,152 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
     return explored_regions
 
 def validate_layout(world, player):
-    sectors = [[r for l in s for r in l] for s in world.owsectors[player]]
-    for sector in sectors:
-        entrances_present = False
-        for region_name in sector:
-            region = world.get_region(region_name, player)
-            if any(x.spot_type == 'Entrance' for x in region.exits):
-                entrances_present = True
-                break
-        if not entrances_present and not all(r in isolated_regions for r in sector):
-            return False
+    if world.accessibility[player] == 'beatable':
+        return True
+    
+    entrance_connectors = {
+        'East Death Mountain (Bottom)':       ['East Death Mountain (Top East)'],
+        'Kakariko Suburb Area':               ['Maze Race Ledge'],
+        'Maze Race Ledge':                    ['Kakariko Suburb Area'],
+        'Desert Area':                        ['Desert Ledge', 'Desert Palace Mouth'],
+        'East Dark Death Mountain (Top)':     ['Dark Death Mountain Floating Island'],
+        'East Dark Death Mountain (Bottom)':  ['East Dark Death Mountain (Top)'],
+        'Turtle Rock Area':                   ['Dark Death Mountain Ledge',
+                                               'Dark Death Mountain Isolated Ledge'],
+        'Dark Death Mountain Ledge':          ['Turtle Rock Area'],
+        'Dark Death Mountain Isolated Ledge': ['Turtle Rock Area']
+    }
+    sane_connectors = {
+        # guaranteed dungeon access
+        'Skull Woods Forest':                 ['Skull Woods Forest (West)'],
+        'Skull Woods Forest (West)':          ['Skull Woods Forest'],
+        # guaranteed dropdown access
+        'Graveyard Area':                     ['Sanctuary Area'],
+        'Pyramid Area':                       ['Pyramid Exit Ledge']
+    }
 
+    if not world.is_tile_swapped(0x0a, player):
+        if not world.is_tile_swapped(0x03, player):
+            entrance_connectors['Mountain Entry Entrance'] = ['West Death Mountain (Bottom)']
+            entrance_connectors['Mountain Entry Ledge'] = ['West Death Mountain (Bottom)']
+            entrance_connectors['West Death Mountain (Bottom)'] = ['Mountain Entry Ledge']
+        else:
+            entrance_connectors['Mountain Entry Entrance'] = ['West Dark Death Mountain (Bottom)']
+        entrance_connectors['Bumper Cave Entrance'] = ['Bumper Cave Ledge']
+    else:
+        if not world.is_tile_swapped(0x03, player):
+            entrance_connectors['Bumper Cave Entrance'] = ['West Death Mountain (Bottom)']
+            entrance_connectors['Bumper Cave Ledge'] = ['West Death Mountain (Bottom)']
+            entrance_connectors['West Death Mountain (Bottom)'] = ['Bumper Cave Ledge']
+        else:
+            entrance_connectors['Bumper Cave Entrance'] = ['West Dark Death Mountain (Bottom)']
+        entrance_connectors['Mountain Entry Entrance'] = ['Mountain Entry Ledge']
+    
+    from Main import copy_world
+    from Utils import stack_size3a
+    from EntranceShuffle import default_dungeon_connections, default_connector_connections, default_item_connections, default_shop_connections, default_drop_connections, default_dropexit_connections
+    
+    dungeon_entrances = list(zip(*default_dungeon_connections + [('Ganons Tower', '')]))[0]
+    connector_entrances = list(zip(*default_connector_connections))[0]
+    item_entrances = list(zip(*default_item_connections))[0]
+    shop_entrances = list(zip(*default_shop_connections))[0]
+    drop_entrances = list(zip(*default_drop_connections + default_dropexit_connections))[0]
+    
+    def explore_region(region_name, region=None):
+        if stack_size3a() > 500:
+            raise GenerationException(f'Infinite loop detected for "{region_name}" located at \'validate_layout\'')
+
+        explored_regions.append(region_name)
+        if not region:
+            region = base_world.get_region(region_name, player)
+        for exit in region.exits:
+            if exit.connected_region is not None and exit.connected_region.name not in explored_regions \
+                    and exit.connected_region.type in [RegionType.LightWorld, RegionType.DarkWorld]:
+                explore_region(exit.connected_region.name, exit.connected_region)
+        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple'] \
+                and region_name in entrance_connectors:
+            for dest_region in entrance_connectors[region_name]:
+                if dest_region not in explored_regions:
+                    explore_region(dest_region)
+        if world.shuffle[player] not in ['insanity'] and region_name in sane_connectors:
+            for dest_region in sane_connectors[region_name]:
+                if dest_region not in explored_regions:
+                    explore_region(dest_region)
+    
+    for p in range(1, world.players + 1):
+        world.key_logic[p] = {}
+    base_world = copy_world(world)
+    world.key_logic = {}
+    explored_regions = list()
+
+    if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] or not world.shufflelinks[player]:
+        if not world.is_bombshop_start(player):
+            start_region = 'Links House Area'
+        else:
+            start_region = 'Big Bomb Shop Area'
+        explore_region(start_region)
+
+    if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'lite', 'lean'] and world.mode == 'inverted':
+        start_region = 'Dark Chapel Area'
+        explore_region(start_region)
+
+    if not world.is_tile_swapped(0x30, player):
+        start_region = 'Desert Palace Teleporter Ledge'
+    else:
+        start_region = 'Misery Mire Teleporter Ledge'
+    explore_region(start_region)
+    
+    if not world.is_tile_swapped(0x1b, player):
+        start_region = 'Pyramid Area'
+    else:
+        start_region = 'Hyrule Castle Ledge'
+    explore_region(start_region)
+
+    unreachable_regions = OrderedDict()
+    unreachable_count = -1
+    while unreachable_count != len(unreachable_regions):
+        # find unreachable regions
+        unreachable_regions = {}
+        flat_sectors = [[r for l in s for r in l] for s in world.owsectors[player]]
+        for sector in flat_sectors:
+            for region_name in sector:
+                if region_name not in explored_regions and region_name not in isolated_regions:
+                    region = base_world.get_region(region_name, player)
+                    unreachable_regions[region_name] = region
+        
+        # loop thru unreachable regions to check if some can be excluded
+        unreachable_count = len(unreachable_regions)
+        for region_name in reversed(unreachable_regions):
+            # check if can be accessed flute
+            if unreachable_regions[region_name].type == RegionType.LightWorld:
+                owid = OWTileRegions[region_name]
+                if owid < 0x80 and any(f[1] == owid and region_name in f[0] for f in flute_data.values()):
+                    if world.owFluteShuffle[player] != 'vanilla' or owid % 0x40 in [0x03, 0x16, 0x18, 0x2c, 0x2f, 0x3b, 0x3f]:
+                        unreachable_regions.pop(region_name)
+                        explore_region(region_name)
+                        break
+            # check if entrances in region could be used to access region
+            if world.shuffle[player] != 'vanilla':
+                for entrance in [e for e in unreachable_regions[region_name].exits if e.spot_type == 'Entrance']:
+                    if (entrance.name == 'Links House' and (world.mode == 'inverted' or not world.shufflelinks[player] or world.shuffle[player] in ['dungeonssimple', 'dungeonsfull', 'lite', 'lean'])) \
+                            or (entrance.name == 'Big Bomb Shop' and (world.mode != 'inverted' or not world.shufflelinks[player] or world.shuffle[player] in ['dungeonssimple', 'dungeonsfull', 'lite', 'lean'])) \
+                            or (entrance.name == 'Ganons Tower' and (world.mode != 'inverted' and not world.shuffle_ganon[player])) \
+                            or (entrance.name in ['Skull Woods First Section Door', 'Skull Woods Second Section Door (East)', 'Skull Woods Second Section Door (West)'] and world.shuffle[player] not in ['insanity']) \
+                            or entrance.name == 'Tavern North':
+                        continue # these are fixed entrances and cannot be used for gaining access to region
+                    if entrance.name not in drop_entrances \
+                            and ((entrance.name in dungeon_entrances and world.shuffle[player] not in ['dungeonssimple', 'simple', 'restricted']) \
+                                or (entrance.name in connector_entrances and world.shuffle[player] not in ['dungeonssimple', 'dungeonsfull', 'simple']) \
+                                or (entrance.name in item_entrances + (tuple() if world.shopsanity[player] else shop_entrances) and world.shuffle[player] not in ['dungeonssimple', 'dungeonsfull', 'lite', 'lean'])):
+                        unreachable_regions.pop(region_name)
+                        explore_region(region_name)
+                        break
+                if unreachable_count != len(unreachable_regions):
+                    break
+    
+    if len(unreachable_regions):
+        return False
+    
     return True
     
 test_connections = [
@@ -1069,6 +1230,7 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Lake Hylia Central Island Pier', 'Lake Hylia Central Island'),
                          ('Lake Hylia West Pier', 'Lake Hylia Area'),
                          ('Lake Hylia East Pier', 'Lake Hylia Northeast Bank'),
+                         ('Lake Hylia Water D Entry', 'Lake Hylia Water'), #flippers
                          ('Desert Pass Ledge Drop', 'Desert Pass Area'),
                          ('Desert Pass Rocks (North)', 'Desert Pass Southeast'), #glove
                          ('Desert Pass Rocks (South)', 'Desert Pass Area'), #glove
@@ -1246,8 +1408,6 @@ ow_connections = {
         ], [
             ('Spectacle Rock Leave', 'West Death Mountain (Top)'),
             ('Spectacle Rock Approach', 'Spectacle Rock Ledge'),
-            ('Dark Death Mountain Ladder (North)', 'West Dark Death Mountain (Bottom)'),
-            ('Dark Death Mountain Ladder (South)', 'West Dark Death Mountain (Top)'),
             ('West Dark Death Mountain (Top) Mirror Spot', 'West Dark Death Mountain (Top)'),
             ('Bubble Boy Mirror Spot', 'West Dark Death Mountain (Bottom)'),
             ('West Dark Death Mountain (Bottom) Mirror Spot', 'West Dark Death Mountain (Bottom)'),
@@ -1268,6 +1428,11 @@ ow_connections = {
             ('Floating Island Bridge (East)', 'Death Mountain Floating Island'),
             ('East Death Mountain Mimic Ledge Drop', 'Mimic Cave Ledge'),
             ('Mimic Ledge Drop', 'East Death Mountain (Bottom)'),
+            ('Spiral Mimic Bridge (West)', 'Spiral Mimic Ledge Extend'),
+            ('Spiral Mimic Bridge (East)', 'Spiral Mimic Ledge Extend'),
+            ('Spiral Ledge Approach', 'Spiral Cave Ledge'),
+            ('Mimic Ledge Approach', 'Mimic Cave Ledge'),
+            ('Spiral Mimic Ledge Drop', 'Fairy Ascension Ledge'),
             ('East Dark Death Mountain (Top West) Mirror Spot', 'East Dark Death Mountain (Top)'),
             ('East Dark Death Mountain (Top East) Mirror Spot', 'East Dark Death Mountain (Top)'),
             ('TR Ledge (West) Mirror Spot', 'Dark Death Mountain Ledge'),
@@ -1527,14 +1692,13 @@ ow_connections = {
             ('Lake Hylia Teleporter', 'Ice Palace Area')
         ], [
             ('Lake Hylia Island Pier', 'Lake Hylia Island'),
-            ('Ice Palace Approach', 'Ice Palace Area'),
-            ('Ice Palace Leave', 'Ice Lake Moat'),
             ('Ice Lake Mirror Spot', 'Ice Lake Area'),
             ('Ice Lake Southwest Mirror Spot', 'Ice Lake Ledge (West)'),
             ('Ice Lake Southeast Mirror Spot', 'Ice Lake Ledge (East)'),
             ('Ice Lake Northeast Mirror Spot', 'Ice Lake Northeast Bank'),
             ('Ice Palace Mirror Spot', 'Ice Palace Area'),
-            ('Ice Palace Teleporter', 'Lake Hylia Central Island')
+            ('Ice Lake Moat Mirror Spot', 'Ice Lake Moat'),
+            ('Ice Palace Teleporter', 'Lake Hylia Water D')
         ]),
     0x37: ([
             ('Ice Cave Mirror Spot', 'Ice Cave Area')
@@ -1719,14 +1883,26 @@ default_connections = [#('Lost Woods NW', 'Master Sword Meadow SC'),
 
 isolated_regions = [
     'Death Mountain Floating Island',
-    'Mimic Cave Ledge'
+    'Mimic Cave Ledge',
+    'Spiral Mimic Ledge Extend',
+    'Mountain Entry Ledge',
+    'Maze Race Prize',
+    'Maze Race Ledge',
+    'Desert Ledge',
+    'Desert Palace Entrance (North) Spot',
+    'Desert Palace Mouth',
+    'Dark Death Mountain Floating Island',
+    'Dark Death Mountain Ledge',
+    'Dark Death Mountain Isolated Ledge',
+    'Bumper Cave Ledge',
+    'Pyramid Exit Ledge'
 ]
 
 flute_data = {
-    #Slot    LW Region                         DW Region                            OWID   VRAM    BG Y    BG X   Link Y  Link X   Cam Y   Cam X   Unk1    Unk2   IconY   IconX    AltY    AltX
+    #Slot    LW Region                         DW Region                            OWID   VRAM    BG Y    BG X   Link Y  Link X   Cam Y   Cam X   Unk1    Unk2   IconY   IconX    AltY    AltX  AltVRAM  AltBGY  AltBGX  AltCamY AltCamX AltUnk1 AltUnk2 AltIconY AltIconX
     0x09: (['Lost Woods East Area',           'Skull Woods Forest'],                0x00, 0x1042, 0x022e, 0x0202, 0x0290, 0x0288, 0x029b, 0x028f, 0xfff2, 0x000e, 0x0290, 0x0288, 0x0290, 0x0290),
     0x02: (['Lumberjack Area',                'Dark Lumberjack Area'],              0x02, 0x059c, 0x00d6, 0x04e6, 0x0138, 0x0558, 0x0143, 0x0563, 0xfffa, 0xfffa, 0x0138, 0x0550),
-    0x0b: (['West Death Mountain (Bottom)',   'West Dark Death Mountain (Bottom)'], 0x03, 0x1600, 0x02ca, 0x060e, 0x0328, 0x0678, 0x0337, 0x0683, 0xfff6, 0xfff2, 0x035b, 0x0680),
+    0x0b: (['West Death Mountain (Bottom)',   'West Dark Death Mountain (Top)'],    0x03, 0x1600, 0x02ca, 0x060e, 0x0328, 0x0678, 0x0337, 0x0683, 0xfff6, 0xfff2, 0x035b, 0x0680, 0x0118, 0x0860, 0x05c0, 0x00b8, 0x07ec, 0x0127, 0x086b, 0xfff8, 0x0004, 0x0148, 0x0850),
     0x0e: (['East Death Mountain (Bottom)',   'East Dark Death Mountain (Bottom)'], 0x05, 0x1860, 0x031e, 0x0d00, 0x0388, 0x0da8, 0x038d, 0x0d7d, 0x0000, 0x0000, 0x0388, 0x0da8),
     0x07: (['Death Mountain TR Pegs',         'Turtle Rock Area'],                  0x07, 0x0804, 0x0102, 0x0e1a, 0x0160, 0x0e90, 0x016f, 0x0e97, 0xfffe, 0x0006, 0x0160, 0x0f20),
     0x0a: (['Mountain Entry Area',            'Bumper Cave Area'],                  0x0a, 0x0180, 0x0220, 0x0406, 0x0280, 0x0488, 0x028f, 0x0493, 0x0000, 0xfffa, 0x0280, 0x0488),

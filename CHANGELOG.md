@@ -1,5 +1,47 @@
 # Changelog
 
+### 0.2.6.0
+- New text engine font!
+- Fixed invisible Witch item bug
+- Added 'O' to ROM Header for autotrackers
+- Fixed generation error with Shopsanity + OWR Layout
+- Fixed OWR validation error with Insanity ER + OWR Layout
+- Fixed issue with TR Peg Puzzle not spawning a valid portal
+
+### 0.2.5.3
+- Changed AT/GT Swap to favor vanilla, only swapping if GT entrance is the only choice in starting world
+- Fixed issue with Links House not swapping in OW Mixed
+- Added Flute Spots to spoiler log
+- Fixed issue with Light Hype Fairy excluded from bombable door list
+
+### 0.2.5.1
+- Fixed missing rule for Inverted VoO Portal access
+
+### 0.2.5.0
+- Many updates to Inverted OW Terrain:
+    - Links House start now spawns in Big Bomb Shop
+    - Old Man Cave/Bumper Cave returned to vanilla
+    - Mountain Cave S+Q now spawns in his usual Cave
+    - Flute Spot 1 is moved to Top of Dark Death Mountain
+    - Ladder is removed from West Dark Death Mountain
+    - When finding Flute, it comes pre-activated (will hear SFX on collecting)
+    - Spiral and Mimic Cave are now bridged together
+    - TR Peg Puzzle is restored but instead reveals a ladder
+    - Houlihan now exits same place as Big Bomb Shop does (OWR branch always had this)
+    - Ice Palace has been re-sealed to vanilla, portal moved to outer edge of moat
+    - Glitched modes will now use vanilla terrain except where necessary
+- Fixed errors with OW Layout Shuffle
+- Fixed issue with incorrect Mirror bonking
+- Fixed issue with old man follower death to Pyramid
+- Fixed Hera boss music not playing when boss not defeated
+- ~~Merged DR v0.5.1.7 - TT boss trap door fix/Applied Glitched flag~~
+
+### 0.2.4.0
+- Added Guaranteed OWR Reachability
+- Fixed incorrect parity calc for Whirlpool Shuffle
+- Fixed error with generating seeds with GUI
+- CLI fixes for triforce piece arguments
+
 ### 0.2.3.6
 - Added Trinity goal (8/10 default TF pieces)
 - Many improvements to TFH pool allocation

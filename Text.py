@@ -627,8 +627,8 @@ class MultiByteCoreTextMapper(object):
     }
 
     @classmethod
-    def convert(cls, text, pause=True, wrap=14):
-        text = text.upper()
+    def convert(cls, text, pause=True, wrap=19):
+        #text = text.upper()
         lines = text.split('\n')
         outbuf = bytearray()
         lineindex = 0
@@ -655,7 +655,7 @@ class MultiByteCoreTextMapper(object):
             pending_space = False
             while words:
                 word = words.pop(0)
-                # sanity check: if the word we have is more than 14 characters, we take as much as we can still fit and push the rest back for later
+                # sanity check: if the word we have is more than 19 characters, we take as much as we can still fit and push the rest back for later
                 if cls.wordlen(word) > wrap:
                     (word_first, word_rest) = cls.splitword(word, linespace)
                     words.insert(0, word_rest)
@@ -736,7 +736,7 @@ class CompressedTextMapper(object):
     }
 
     @classmethod
-    def convert(cls, text, pause=True, max_bytes_expanded=0x800, wrap=14):
+    def convert(cls, text, pause=True, max_bytes_expanded=0x800, wrap=19):
         inbuf = MultiByteCoreTextMapper.convert(text, pause, wrap)
 
         # Links name will need 8 bytes in the target buffer
@@ -772,20 +772,24 @@ class CompressedTextMapper(object):
 class CharTextMapper(object):
     number_offset = None
     alpha_offset = 0
+    alpha_lower_offset = 0
     char_map = {}
     @classmethod
     def map_char(cls, char):
         if cls.number_offset is not None:
             if  0x30 <= ord(char) <= 0x39:
                 return ord(char) + cls.number_offset
+        if 0x41 <= ord(char) <= 0x5A:
+            return ord(char) + 0x20 + cls.alpha_offset
         if 0x61 <= ord(char) <= 0x7A:
-            return ord(char) + cls.alpha_offset
+            return ord(char) + cls.alpha_lower_offset
         return cls.char_map.get(char, cls.char_map[' '])
 
     @classmethod
     def convert(cls, text):
         buf = bytearray()
-        for char in text.lower():
+        #for char in text.lower():
+        for char in text:
             buf.append(cls.map_char(char))
         return buf
 
@@ -1240,6 +1244,7 @@ class RawMBTextMapper(CharTextMapper):
              "月": 0xFE,
              "姫": 0xFF}
     alpha_offset = 0x49
+    alpha_lower_offset = -0x31
     number_offset = 0x70
 
     @classmethod
@@ -1251,7 +1256,8 @@ class RawMBTextMapper(CharTextMapper):
     @classmethod
     def convert(cls, text):
         buf = bytearray()
-        for char in text.lower():
+        #for char in text.lower():
+        for char in text:
             res = cls.map_char(char)
             if isinstance(res, int):
                 buf.extend([0x00, res])
@@ -1267,16 +1273,19 @@ class GoldCreditMapper(CharTextMapper):
                 '-': 0x36,
                 '.': 0x37,}
     alpha_offset = -0x47
+    alpha_lower_offset = -0x47
 
 
 class GreenCreditMapper(CharTextMapper):
     char_map = {' ': 0x9F,
                 '·': 0x52}
     alpha_offset = -0x29
+    alpha_lower_offset = -0x29
 
 class RedCreditMapper(CharTextMapper):
     char_map = {' ': 0x9F}
     alpha_offset = -0x61
+    alpha_lower_offset = -0x61
 
 class LargeCreditTopMapper(CharTextMapper):
     char_map = {' ': 0x9F,
@@ -1296,6 +1305,7 @@ class LargeCreditTopMapper(CharTextMapper):
                 '◢': 0xAA,
                 '◣': 0xAB,}
     alpha_offset = -0x04
+    alpha_lower_offset = -0x04
     number_offset = 0x23
 
 
@@ -1317,6 +1327,7 @@ class LargeCreditBottomMapper(CharTextMapper):
                 '◢': 0xCA,
                 '◣': 0xCB,}
     alpha_offset = 0x22
+    alpha_lower_offset = 0x22
     number_offset = 0x49
 
 class TextTable(object):
@@ -1903,7 +1914,7 @@ class TextTable(object):
         text['pond_of_wishing_good_luck'] = CompressedTextMapper.convert("\n is good luck")
         text['pond_of_wishing_meh_luck'] = CompressedTextMapper.convert("\n is meh luck")
         # Repurposed to no items in Randomizer
-        text['pond_of_wishing_bad_luck'] = CompressedTextMapper.convert("Why you come in here and pretend like you have something this fountain wants? Come back with bottles!")
+        text['pond_of_wishing_bad_luck'] = CompressedTextMapper.convert("Why come in here and pretend like you have something this fountain wants? Come back with bottles!")
         text['pond_of_wishing_fortune'] = CompressedTextMapper.convert("by the way, your fortune,")
         text['item_get_14_heart'] = CompressedTextMapper.convert("3 more to go\n      ¼\nYay!")
         text['item_get_24_heart'] = CompressedTextMapper.convert("2 more to go\n      ½\nWhee!")
@@ -1955,16 +1966,16 @@ class TextTable(object):
         text['game_chest_lost_woods'] = CompressedTextMapper.convert("Pay 100 rupees open 1 chest. Are you lucky?\nSo, Play game?\n  ≥ play\n    never!\n{CHOICE}")
         text['kakariko_flophouse_man_no_flippers'] = CompressedTextMapper.convert("I really hate mowing my yard.\nI moved my house and everyone else's to avoid it.\n{PAGEBREAK}\nI hope you don't mind.")
         text['kakariko_flophouse_man'] = CompressedTextMapper.convert("I really hate mowing my yard.\nI moved my house and everyone else's to avoid it.\n{PAGEBREAK}\nI hope you don't mind.")
-        text['menu_start_2'] = CompressedTextMapper.convert("{MENU}\n{SPEED0}\n≥@'s house\n Sanctuary\n{CHOICE3}", False)
-        text['menu_start_3'] = CompressedTextMapper.convert("{MENU}\n{SPEED0}\n≥@'s house\n Sanctuary\n Mountain Cave\n{CHOICE2}", False)
-        text['menu_pause'] = CompressedTextMapper.convert("{SPEED0}\n≥continue\n save and quit\n{CHOICE3}", False)
+        text['menu_start_2'] = CompressedTextMapper.convert("{MENU}\n{SPEED0}\n≥@'s House\n Sanctuary\n{CHOICE3}", False)
+        text['menu_start_3'] = CompressedTextMapper.convert("{MENU}\n{SPEED0}\n≥@'s House\n Sanctuary\n Mountain Cave\n{CHOICE2}", False)
+        text['menu_pause'] = CompressedTextMapper.convert("{SPEED0}\n≥Continue\n Save and Quit\n{CHOICE3}", False)
         text['game_digging_choice'] = CompressedTextMapper.convert("Have 80 Rupees? Want to play digging game?\n  ≥yes\n   no\n{CHOICE}")
         text['game_digging_start'] = CompressedTextMapper.convert("Okay, use the shovel with Y!")
         text['game_digging_no_cash'] = CompressedTextMapper.convert("Shovel rental is 80 rupees.\nI have all day")
         text['game_digging_end_time'] = CompressedTextMapper.convert("Time's up!\nTime for you to go.")
         text['game_digging_come_back_later'] = CompressedTextMapper.convert("Come back later, I have to bury things.")
         text['game_digging_no_follower'] = CompressedTextMapper.convert("Something is following you. I don't like.")
-        text['menu_start_4'] = CompressedTextMapper.convert("{MENU}\n{SPEED0}\n≥@'s house\n Mountain Cave\n{CHOICE3}", False)
+        text['menu_start_4'] = CompressedTextMapper.convert("{MENU}\n{SPEED0}\n≥@'s House\n Mountain Cave\n{CHOICE3}", False)
         # Start of new text data
         text['ganon_fall_in_alt'] = CompressedTextMapper.convert("You think you\nare ready to\nface me?\n\nI will not die\n\nunless you\ncomplete your\ngoals. Dingus!")
         text['ganon_phase_3_alt'] = CompressedTextMapper.convert("Got wax in\nyour ears?\nI cannot die!")
