@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.2.6.1
+- Fixed issue with mirror bonking deleting portal in Crossed OW
+- Fixed issue with mirror portal not spawning when entering the OW from the DW, in Crossed OW
+- Updated some text with proper capitalization/spacing
+- Updated tournament winners text
+
 ### 0.2.6.0
 - New text engine font!
 - Fixed invisible Witch item bug
