@@ -1489,6 +1489,11 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         equip[0x38F] = 2
     elif startingstate.has('L1 Bombs', player) or startingstate.has('L1 Cane', player) or world.swords[player] == 'cane':
         equip[0x38F] = 1
+    if startingstate.has('L1 Cane', player) or startingstate.has('L2 Cane', player) or startingstate.has('L3 Cane', player) or startingstate.has('L4 Cane', player) or startingstate.has('L5 Cane', player):
+        if world.swords[player] == 'byrna':
+            equip[0x351] = 1
+        elif world.swords[player] == 'somaria':
+            equip[0x350] = 1
 
     if startingstate.has('Mirror Shield', player):
         equip[0x35A] = 3
