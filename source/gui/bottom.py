@@ -275,4 +275,9 @@ def create_guiargs(parent):
 
     guiargs = update_deprecated_args(guiargs)
 
+    # Key drop shuffle stuff
+    if guiargs.keydropshuffle:
+        guiargs.dropshuffle = 1
+        guiargs.pottery = 'keys' if guiargs.pottery == 'none' else guiargs.pottery
+
     return guiargs

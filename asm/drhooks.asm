@@ -176,7 +176,7 @@ org $02d9ce ; <- Bank02.asm : Dungeon_LoadEntrance 10829 (STA $A0 : STA $048E)
 JSL CheckDarkWorldSpawn : NOP
 
 org $01891e ; <- Bank 01.asm : 991 Dungeon_LoadType2Object (LDA $00 : XBA : AND.w #$00FF)
-JSL RainPrevention : NOP #2
+JSL RainPrevention : BCC + : RTS : NOP : +
 
 org $1edabf ; <- sprite_energy_ball.asm : 86-7 Sprite_EnergyBall (LDA.b #$10 : LDX.b #$00)
 JSL StandardAgaDmg

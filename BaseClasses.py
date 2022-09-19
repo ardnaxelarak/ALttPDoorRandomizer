@@ -15,6 +15,8 @@ from source.classes.BabelFish import BabelFish
 from Utils import int16_as_bytes
 from Tables import normal_offset_table, spiral_offset_table, multiply_lookup, divisor_lookup
 from RoomData import Room
+from source.dungeon.RoomObject import RoomObject
+
 
 class World(object):
 
@@ -52,7 +54,7 @@ class World(object):
         self._entrance_cache = {}
         self._location_cache = {}
         self.required_locations = []
-        self.shuffle_bonk_prizes = False
+        self.shuffle_bonk_drops = {}
         self.light_world_light_cone = False
         self.dark_world_light_cone = False
         self.clock_mode = 'none'
@@ -60,8 +62,9 @@ class World(object):
         self.aga_randomness = True
         self.lock_aga_door_in_escape = False
         self.save_and_quit_from_boss = True
+        self.override_bomb_check = False
+        self.is_copied_world = False
         self.accessibility = accessibility.copy()
-        self.initial_overworld_flags = {}
         self.fix_skullwoods_exit = {}
         self.fix_palaceofdarkness_exit = {}
         self.fix_trock_exit = {}
@@ -98,6 +101,7 @@ class World(object):
         self._portal_cache = {}
         self.sanc_portal = {}
         self.fish = BabelFish()
+        self.pot_contents = {}
 
         for player in range(1, players + 1):
             # If World State is Retro, set to Open and set Retro flag
@@ -119,8 +123,7 @@ class World(object):
             set_player_attr('ganon_at_pyramid', True)
             set_player_attr('ganonstower_vanilla', True)
             set_player_attr('sewer_light_cone', self.mode[player] == 'standard')
-            set_player_attr('initial_overworld_flags', [0] * 0x80)
-            set_player_attr('fix_trock_doors', self.shuffle[player] != 'vanilla' or ((self.mode[player] == 'inverted') != 0x05 in self.owswaps[player][0]))
+            set_player_attr('fix_trock_doors', self.shuffle[player] != 'vanilla' or self.is_tile_swapped(0x05, player))
             set_player_attr('fix_skullwoods_exit', self.shuffle[player] not in ['vanilla', 'simple', 'restricted', 'dungeonssimple'] or self.doorShuffle[player] not in ['vanilla'])
             set_player_attr('fix_palaceofdarkness_exit', self.shuffle[player] not in ['vanilla', 'simple', 'restricted', 'dungeonssimple'])
             set_player_attr('fix_trock_exit', self.shuffle[player] not in ['vanilla', 'simple', 'restricted', 'dungeonssimple'])
@@ -133,6 +136,7 @@ class World(object):
             set_player_attr('compassshuffle', False)
             set_player_attr('keyshuffle', False)
             set_player_attr('bigkeyshuffle', False)
+            set_player_attr('restrict_boss_items', 'none')
             set_player_attr('bombbag', False)
             set_player_attr('difficulty_requirements', None)
             set_player_attr('boss_shuffle', 'none')
@@ -147,16 +151,18 @@ class World(object):
             set_player_attr('crystals_gt_orig', {})
             set_player_attr('ganon_item', 'default')
             set_player_attr('ganon_item_orig', 'default')
-            set_player_attr('open_pyramid', False)
+            set_player_attr('open_pyramid', 'auto')
             set_player_attr('treasure_hunt_icon', 'Triforce Piece')
             set_player_attr('treasure_hunt_count', 0)
             set_player_attr('treasure_hunt_total', 0)
             set_player_attr('potshuffle', False)
             set_player_attr('pot_contents', None)
             set_player_attr('pseudoboots', False)
+            set_player_attr('collection_rate', False)
+            set_player_attr('colorizepots', False)
+            set_player_attr('pot_pool', {})
 
             set_player_attr('shopsanity', False)
-            set_player_attr('keydropshuffle', False)
             set_player_attr('mixed_travel', 'prevent')
             set_player_attr('standardize_palettes', 'standardize')
             set_player_attr('force_fix', {'gt': False, 'sw': False, 'pod': False, 'tr': False})
@@ -258,6 +264,11 @@ class World(object):
                         return r_location
         raise RuntimeError('No such location %s for player %d' % (location, player))
 
+    def get_location_unsafe(self, location, player):
+        if (location, player) in self._location_cache:
+            return self._location_cache[(location, player)]
+        return None
+
     def get_dungeon(self, dungeonname, player):
         if isinstance(dungeonname, Dungeon):
             return dungeonname
@@ -307,11 +318,24 @@ class World(object):
         return (self.mode[player] == 'inverted') != (owid in self.owswaps[player][0] and self.owMixed[player])
 
     def is_atgt_swapped(self, player):
-        return (0x03 in self.owswaps[player][0]) == (0x1b in self.owswaps[player][0]) == (self.mode[player] != 'inverted')
+        return self.is_tile_swapped(0x03, player) and self.is_tile_swapped(0x1b, player)
 
     def is_bombshop_start(self, player):
         return self.is_tile_swapped(0x2c, player) and (self.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] or not self.shufflelinks[player])
 
+    def is_pyramid_open(self, player):
+        if self.open_pyramid[player] == 'yes':
+            return True
+        elif self.open_pyramid[player] == 'no':
+            return False
+        else:
+            if self.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
+                return False
+            elif self.goal[player] in ['crystals', 'trinity']:
+                return True
+            else:
+                return False
+    
     def check_for_door(self, doorname, player):
         if isinstance(doorname, Door):
             return doorname
@@ -417,7 +441,7 @@ class World(object):
             elif item.name.startswith('Bottle'):
                 if ret.bottle_count(item.player) < self.difficulty_requirements[item.player].progressive_bottle_limit:
                     ret.prog_items[item.name, item.player] += 1
-            elif item.advancement or item.smallkey or item.bigkey:
+            elif item.advancement or item.smallkey or item.bigkey or item.compass or item.map:
                 ret.prog_items[item.name, item.player] += 1
             if item.name.endswith(' Cane'):
                 if ret.world.swords[item.player] == 'byrna' and not ret.has('Cane of Byrna', item.player):
@@ -437,6 +461,8 @@ class World(object):
                         key_list += [dungeon.big_key.name]
                     if len(dungeon.small_keys) > 0:
                         key_list += [x.name for x in dungeon.small_keys]
+                    # map/compass may be required now
+                    key_list += [x.name for x in dungeon.dungeon_items]
                 from Items import ItemFactory
                 for item in ItemFactory(key_list, p):
                     soft_collect(item)
@@ -467,6 +493,8 @@ class World(object):
             location.item = item
             item.location = location
             item.world = self
+            if location.player != item.player and location.type == LocationType.Pot:
+                self.pot_contents[location.player].multiworld_count += 1
             if collect:
                 self.state.collect(item, location.event, location)
 
@@ -948,7 +976,7 @@ class CollectionState(object):
         reduced = Counter()
         for item, cnt in self.prog_items.items():
             item_name, item_player = item
-            if item_player == player and self.check_if_progressive(item_name):
+            if item_player == player and self.check_if_progressive(item_name, player):
                 if item_name.startswith('Bottle'):  # I think magic requirements can require multiple bottles
                     bottle_count += cnt
                 elif item_name in ['Boss Heart Container', 'Sanctuary Heart Container', 'Piece of Heart']:
@@ -964,8 +992,7 @@ class CollectionState(object):
             reduced[('Heart Container', player)] = 1
         return frozenset(reduced.items())
 
-    @staticmethod
-    def check_if_progressive(item_name):
+    def check_if_progressive(self, item_name, player):
         return (item_name in
                 ['Bow', 'Progressive Bow', 'Progressive Bow (Alt)', 'Book of Mudora', 'Hammer', 'Hookshot',
                  'Magic Mirror', 'Ocarina', 'Pegasus Boots', 'Power Glove', 'Cape', 'Mushroom', 'Shovel',
@@ -974,10 +1001,11 @@ class CollectionState(object):
                  'Golden Sword', 'Progressive Sword', 'Progressive Glove', 'Silver Arrows', 'Green Pendant',
                  'Blue Pendant', 'Red Pendant', 'Crystal 1', 'Crystal 2', 'Crystal 3', 'Crystal 4', 'Crystal 5',
                  'Crystal 6', 'Crystal 7', 'Blue Boomerang', 'Red Boomerang', 'Blue Shield', 'Red Shield',
-                 'Mirror Shield', 'Progressive Shield', 'Bug Catching Net', 'Cane of Byrna',
+                 'Mirror Shield', 'Progressive Shield', 'Bug Catching Net', 'Cane of Byrna', 'Ocarina (Activated)'
                  'Boss Heart Container', 'Sanctuary Heart Container', 'Piece of Heart', 'Magic Upgrade (1/2)',
                  'Magic Upgrade (1/4)']
-            or item_name.startswith(('Bottle', 'Small Key', 'Big Key')))
+            or item_name.startswith(('Bottle', 'Small Key', 'Big Key'))
+            or (self.world.restrict_boss_items[player] != 'none' and item_name.startswith(('Map', 'Compass'))))
 
     def can_reach(self, spot, resolution_hint=None, player=None):
         try:
@@ -1087,6 +1115,9 @@ class CollectionState(object):
                 return True
         return False
 
+    def can_collect_bonkdrops(self, player):
+        return self.has_Boots(player) or (self.has_sword(player) and self.has('Quake', player))
+
     def can_farm_rupees(self, player):
         tree_pulls = ['Lost Woods East Area',
                     'Snitch Lady (East)',
@@ -1100,19 +1131,24 @@ class CollectionState(object):
 
         rupee_farms = ['Archery Game', '50 Rupee Cave', '20 Rupee Cave']
 
+        bush_crabs = ['Lost Woods East Area', 'Mountain Entry Area']
+        pre_aga_bush_crabs = ['Lumberjack Area', 'South Pass Area']
+        rock_crabs = ['Desert Pass Area']
+
         def can_reach_non_bunny(regionname):
             region = self.world.get_region(regionname, player)
             return region.can_reach(self) and ((self.world.mode[player] != 'inverted' and region.is_light_world) or (self.world.mode[player] == 'inverted' and region.is_dark_world) or self.has('Pearl', player))
 
-        for region in rupee_farms:
+        for region in rupee_farms if self.world.pottery[player] in ['none', 'keys', 'dungeon'] else ['Archery Game']:
             if can_reach_non_bunny(region):
                 return True
 
-        if any(i in [0xda, 0xdb] for i in self.world.prizes[player]['pull']):
+        # tree pulls
+        if self.can_kill_most_things(player) and any(i in [0xda, 0xdb] for i in self.world.prizes[player]['pull']):
             for region in tree_pulls:
                 if can_reach_non_bunny(region):
                     return True
-            if not self.has('Beat Agahnim 1', player):
+            if not self.has_beaten_aga(player):
                 for region in pre_aga_tree_pulls:
                     if can_reach_non_bunny(region):
                         return True
@@ -1120,6 +1156,22 @@ class CollectionState(object):
                 for region in post_aga_tree_pulls:
                     if can_reach_non_bunny(region):
                         return True
+
+        # bush crabs (final item isn't considered)
+        if self.world.enemy_shuffle[player] == 'none':
+            if self.world.prizes[player]['crab'][0] in [0xda, 0xdb]:
+                for region in bush_crabs:
+                    if can_reach_non_bunny(region):
+                        return True
+                if not self.has_beaten_aga(player):
+                    for region in pre_aga_bush_crabs:
+                        if can_reach_non_bunny(region):
+                            return True
+            if self.can_lift_rocks(player) and self.world.prizes[player]['crab'][0] in [0xda, 0xdb]:
+                for region in rock_crabs:
+                    if can_reach_non_bunny(region):
+                        return True
+
         return False
     
     def can_farm_bombs(self, player):
@@ -1169,7 +1221,7 @@ class CollectionState(object):
             return region.can_reach(self) and ((self.world.mode[player] != 'inverted' and region.is_light_world) or (self.world.mode[player] == 'inverted' and region.is_dark_world) or self.has('Pearl', player))
 
         # bomb pickups
-        for region in bush_bombs + bomb_caves:
+        for region in bush_bombs + (bomb_caves if self.world.pottery[player] in ['none', 'keys', 'dungeon'] else []):
             if can_reach_non_bunny(region):
                 return True
 
@@ -1178,17 +1230,17 @@ class CollectionState(object):
                 if can_reach_non_bunny(region):
                     return True
 
-        if self.has_Boots(player):
+        if not self.world.shuffle_bonk_drops[player] and self.can_collect_bonkdrops(player):
             for region in bonk_bombs:
                 if can_reach_non_bunny(region):
                     return True
 
         # tree pulls
-        if any(i in [0xdc, 0xdd, 0xde] for i in self.world.prizes[player]['pull']):
+        if self.can_kill_most_things(player) and any(i in [0xdc, 0xdd, 0xde] for i in self.world.prizes[player]['pull']):
             for region in tree_pulls:
                 if can_reach_non_bunny(region):
                     return True
-            if not self.has('Beat Agahnim 1', player):
+            if not self.has_beaten_aga(player):
                 for region in pre_aga_tree_pulls:
                     if can_reach_non_bunny(region):
                         return True
@@ -1198,12 +1250,12 @@ class CollectionState(object):
                         return True
 
         # bush crabs (final item isn't considered)
-        if self.world.enemy_shuffle[player] != 'none':
+        if self.world.enemy_shuffle[player] == 'none':
             if self.world.prizes[player]['crab'][0] in [0xdc, 0xdd, 0xde]:
                 for region in bush_crabs:
                     if can_reach_non_bunny(region):
                         return True
-                if not self.has('Beat Agahnim 1', player):
+                if not self.has_beaten_aga(player):
                     for region in pre_aga_bush_crabs:
                         if can_reach_non_bunny(region):
                             return True
@@ -1291,7 +1343,7 @@ class CollectionState(object):
     def can_use_bombs(self, player):
         if self.world.swords[player] == 'bombs':
             return self.has_special_weapon_level(player, 1)
-        return (not self.world.bombbag[player] or self.has('Bomb Upgrade (+10)', player)) and ((hasattr(self.world, "override_bomb_check") and self.world.override_bomb_check) or self.can_farm_bombs(player))
+        return (not self.world.bombbag[player] or self.has('Bomb Upgrade (+10)', player) or self.has('Bomb Upgrade (+5)', player, 2)) and (self.world.override_bomb_check or self.can_farm_bombs(player))
 
     def can_kill_with_bombs(self, player):
         if self.world.swords[player] in ['cane', 'somaria', 'byrna']:
@@ -1325,16 +1377,19 @@ class CollectionState(object):
             return self.has('Bow', player) and (self.can_buy_unlimited('Single Arrow', player) or self.has('Single Arrow', player))
         return self.has('Bow', player)
 
-    def can_get_good_bee(self, player):
-        cave = self.world.get_region('Good Bee Cave', player)
-        return (
-            self.can_use_bombs(player) and
-            self.has_bottle(player) and
-            self.has('Bug Catching Net', player) and
-            (self.has_Boots(player) or (self.can_use_medallions(player) and self.has('Quake', player))) and
-            cave.can_reach(self) and
-            self.is_not_bunny(cave, player)
-        )
+    # def can_get_good_bee(self, player):
+    #     cave = self.world.get_region('Good Bee Cave', player)
+    #     return (
+    #         self.can_use_bombs(player) and
+    #         self.has_bottle(player) and
+    #         self.has('Bug Catching Net', player) and
+    #         (self.has_Boots(player) or (self.has_sword(player) and self.has('Quake', player))) and
+    #         cave.can_reach(self) and
+    #         self.is_not_bunny(cave, player)
+    #     )
+
+    def has_beaten_aga(self, player):
+        return self.has('Beat Agahnim 1', player) and (self.world.mode[player] != 'standard' or self.has('Zelda Delivered', player))
 
     def has_sword(self, player, level=1):
         if level == 4:
@@ -1447,10 +1502,12 @@ class CollectionState(object):
         return self.has('Fire Rod', player) or self.has('Lamp', player)
 
     def can_flute(self, player):
+        if self.world.mode[player] == 'standard' and not self.has('Zelda Delivered', player):
+            return False
         if any(map(lambda i: i.name in ['Ocarina', 'Ocarina (Activated)'], self.world.precollected_items)):
             return True
         lw = self.world.get_region('Kakariko Area', player)
-        return self.has('Ocarina Activated', player) or (self.has('Ocarina', player) and lw.can_reach(self) and self.is_not_bunny(lw, player))
+        return self.has('Ocarina (Activated)', player) or (self.has('Ocarina', player) and lw.can_reach(self) and self.is_not_bunny(lw, player))
 
     def can_melt_things(self, player):
         return self.has('Fire Rod', player) or (self.has('Bombos', player) and self.can_use_medallions(player))
@@ -1757,7 +1814,7 @@ class Region(object):
     def can_reach(self, state):
         from Utils import stack_size3a
         from DungeonGenerator import GenerationException
-        if stack_size3a() > 500:
+        if stack_size3a() > self.world.players * 500:
             raise GenerationException(f'Infinite loop detected for "{self.name}" located at \'Region.can_reach\'')
         
         if state.stale[self.player]:
@@ -2042,6 +2099,10 @@ class Dungeon(object):
 
     def __unicode__(self):
         return self.world.get_name_string_for_object(self) if self.world else f'{self.name} (Player {self.player})'
+
+
+class FillError(RuntimeError):
+    pass
 
 
 @unique
@@ -2418,7 +2479,6 @@ class Door(object):
 class WorldType(IntEnum):
     Light = 0
     Dark = 1
-    Special = 2
 
 
 @unique
@@ -2434,6 +2494,8 @@ class OWEdge(object):
         self.type = DoorType.Open
         self.direction = direction
         self.terrain = terrain
+        self.specialEntrance = False
+        self.specialExit = False
         self.deadEnd = False
 
         # rom properties
@@ -2447,6 +2509,7 @@ class OWEdge(object):
         self.zeroHzCam = False
         self.zeroVtCam = False
         self.edge_id = edge_id
+        self.specialID = 0x0
 
         self.midpoint = 0x0
         self.linkOpp = 0x0
@@ -2458,12 +2521,10 @@ class OWEdge(object):
         self.unknownX = 0x0
         self.unknownY = 0x0
 
-        if self.owIndex < 0x40:
+        if self.owIndex < 0x40 or self.owIndex >= 0x80:
             self.worldType = WorldType.Light
-        elif self.owIndex < 0x80:
-            self.worldType = WorldType.Dark
         else:
-            self.worldType = WorldType.Special
+            self.worldType = WorldType.Dark
 
         # logical properties
         # self.connected = False  # combine with Dest?
@@ -2481,7 +2542,7 @@ class OWEdge(object):
         return base_address[self.direction] + (self.edge_id * 16)
 
     def getTarget(self):
-        return self.dest.edge_id
+        return self.dest.specialID if self.dest.specialExit else self.dest.edge_id
 
     def dead_end(self):
         self.deadEnd = True
@@ -2489,6 +2550,16 @@ class OWEdge(object):
     def coordInfo(self, midpoint, vram_loc):
         self.midpoint = midpoint
         self.vramLoc = vram_loc
+        return self
+
+    def special_entrance(self, special_id):
+        self.specialEntrance = True
+        self.specialID = special_id
+        return self
+
+    def special_exit(self, special_id):
+        self.specialExit = True
+        self.specialID = special_id
         return self
 
     def __eq__(self, other):
@@ -2525,6 +2596,8 @@ class Sector(object):
         self.destination_entrance = False
         self.equations = None
         self.item_logic = set()
+        self.chest_location_set = set()
+
 
     def region_set(self):
         if self.r_name_set is None:
@@ -2633,6 +2706,12 @@ class Portal(object):
         self.dependent = None
         self.deadEnd = False
         self.light_world = False
+        self.chosen = False
+
+    def find_portal_entrance(self):
+        p_region = self.door.entrance.connected_region
+        return next((x for x in p_region.entrances
+                     if x.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld]), None)
 
     def change_boss_exit(self, exit_idx):
         self.default = False
@@ -2767,14 +2846,24 @@ class Location(object):
         self.recursion_count = 0
         self.staleness_count = 0
         self.locked = False
+        self.real = not crystal
         self.always_allow = lambda item, state: False
         self.access_rule = lambda state: True
         self.item_rule = lambda item: True
         self.player = player
         self.skip = False
+        self.type = LocationType.Normal if not crystal else LocationType.Prize
+        self.pot = None
 
     def can_fill(self, state, item, check_access=True):
+        if not self.valid_multiworld(state, item):
+            return False
         return self.always_allow(state, item) or (self.parent_region.can_fill(item) and self.item_rule(item) and (not check_access or self.can_reach(state)))
+
+    def valid_multiworld(self, state, item):
+        if self.type == LocationType.Pot and self.player != item.player:
+            return state.world.pot_contents[self.player].multiworld_count < 256
+        return True
 
     def can_reach(self, state):
         return self.parent_region.can_reach(state) and self.access_rule(state)
@@ -2809,6 +2898,16 @@ class Location(object):
 
     def __hash__(self):
         return hash((self.name, self.player))
+
+
+class LocationType(FastEnum):
+    Normal = 0
+    Prize = 1
+    Logical = 2
+    Shop = 3
+    Pot = 4
+    Drop = 5
+    Bonk = 6
 
 
 class Item(object):
@@ -2861,6 +2960,12 @@ class Item(object):
         if item_dungeon == 'Escape':
             item_dungeon = 'Hyrule Castle'
         return item_dungeon
+
+    def is_inside_dungeon_item(self, world):
+        return ((self.smallkey and not world.keyshuffle[self.player])
+                or (self.bigkey and not world.bigkeyshuffle[self.player])
+                or (self.compass and not world.compassshuffle[self.player])
+                or (self.map and not world.mapshuffle[self.player]))
 
     def __str__(self):
         return str(self.__unicode__())
@@ -3018,11 +3123,14 @@ class Spoiler(object):
                          'ow_mixed': self.world.owMixed,
                          'ow_whirlpool': self.world.owWhirlpoolShuffle,
                          'ow_fluteshuffle': self.world.owFluteShuffle,
+                         'bonk_drops': self.world.shuffle_bonk_drops,
                          'shuffle': self.world.shuffle,
                          'shuffleganon': self.world.shuffle_ganon,
                          'shufflelinks': self.world.shufflelinks,
+                         'overworld_map': self.world.overworld_map,
                          'door_shuffle': self.world.doorShuffle,
                          'intensity': self.world.intensity,
+                         'dungeon_counters': self.world.dungeon_counters,
                          'item_pool': self.world.difficulty,
                          'item_functionality': self.world.difficulty_adjustments,
                          'gt_crystals': self.world.crystals_needed_for_gt,
@@ -3030,6 +3138,7 @@ class Spoiler(object):
                          'ganon_vulnerability_item': self.world.ganon_item,
                          'open_pyramid': self.world.open_pyramid,
                          'accessibility': self.world.accessibility,
+                         'restricted_boss_items': self.world.restrict_boss_items,
                          'hints': self.world.hints,
                          'mapshuffle': self.world.mapshuffle,
                          'compassshuffle': self.world.compassshuffle,
@@ -3039,16 +3148,19 @@ class Spoiler(object):
                          'enemy_shuffle': self.world.enemy_shuffle,
                          'enemy_health': self.world.enemy_health,
                          'enemy_damage': self.world.enemy_damage,
-                         'potshuffle': self.world.potshuffle,
                          'players': self.world.players,
                          'teams': self.world.teams,
                          'experimental': self.world.experimental,
-                         'keydropshuffle': self.world.keydropshuffle,
+                         'dropshuffle': self.world.dropshuffle,
+                         'pottery': self.world.pottery,
+                         'potshuffle': self.world.potshuffle,
                          'shopsanity': self.world.shopsanity,
+                         'pseudoboots': self.world.pseudoboots,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
                          'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
                          }
+
         for p in range(1, self.world.players + 1):
             from ItemList import set_default_triforce
             if self.world.custom and p in self.world.customitemarray:
@@ -3076,7 +3188,7 @@ class Spoiler(object):
             for player in range(1, self.world.players + 1):
                 self.bottles[f'Waterfall Bottle ({self.world.get_player_names(player)})'] = self.world.bottle_refills[player][0]
                 self.bottles[f'Pyramid Bottle ({self.world.get_player_names(player)})'] = self.world.bottle_refills[player][1]
-        
+
         self.locations = OrderedDict()
         listed_locations = set()
 
@@ -3093,11 +3205,11 @@ class Spoiler(object):
         listed_locations.update(cave_locations)
 
         for dungeon in self.world.dungeons:
-            dungeon_locations = [loc for loc in self.world.get_locations() if loc not in listed_locations and loc.parent_region and loc.parent_region.dungeon == dungeon and not loc.forced_item]
+            dungeon_locations = [loc for loc in self.world.get_locations() if loc not in listed_locations and loc.parent_region and loc.parent_region.dungeon == dungeon and not loc.forced_item and not loc.skip]
             self.locations[str(dungeon)] = OrderedDict([(location.gen_name(), str(location.item) if location.item is not None else 'Nothing') for location in dungeon_locations])
             listed_locations.update(dungeon_locations)
 
-        other_locations = [loc for loc in self.world.get_locations() if loc not in listed_locations]
+        other_locations = [loc for loc in self.world.get_locations() if loc not in listed_locations and not loc.skip]
         if other_locations:
             self.locations['Other Locations'] = OrderedDict([(location.gen_name(), str(location.item) if location.item is not None else 'Nothing') for location in other_locations])
             listed_locations.update(other_locations)
@@ -3172,11 +3284,26 @@ class Spoiler(object):
 
         return json.dumps(out)
 
-    def meta_to_file(self, filename):
+    def mystery_meta_to_file(self, filename):
         self.parse_meta()
         with open(filename, 'w') as outfile:
             line_width = 35
-            outfile.write('ALttP Entrance Randomizer  -  Seed: %s\n\n' % (self.world.seed))
+            outfile.write('ALttP Overworld Randomizer  -  Seed: %s\n\n' % (self.world.seed))
+            for k,v in self.metadata["versions"].items():
+                outfile.write((k + ' Version:').ljust(line_width) + '%s\n' % v)
+            for player in range(1, self.world.players + 1):
+                if self.world.players > 1:
+                    outfile.write('\nPlayer %d: %s\n' % (player, self.world.get_player_names(player)))
+                outfile.write('Logic:'.ljust(line_width) + '%s\n' % self.metadata['logic'][player])
+
+    def meta_to_file(self, filename):
+        def yn(flag):
+            return 'Yes' if flag else 'No'
+
+        self.parse_meta()
+        with open(filename, 'w') as outfile:
+            line_width = 35
+            outfile.write('ALttP Overworld Randomizer  -  Seed: %s\n\n' % (self.world.seed))
             for k,v in self.metadata["versions"].items():
                 outfile.write((k + ' Version:').ljust(line_width) + '%s\n' % v)
             outfile.write('Filling Algorithm:'.ljust(line_width) + '%s\n' % self.world.algorithm)
@@ -3188,7 +3315,7 @@ class Spoiler(object):
                 outfile.write('Settings Code:'.ljust(line_width) + '%s\n' % self.metadata["code"][player])
                 outfile.write('Logic:'.ljust(line_width) + '%s\n' % self.metadata['logic'][player])
                 outfile.write('Mode:'.ljust(line_width) + '%s\n' % self.metadata['mode'][player])
-                outfile.write('Retro:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['retro'][player] else 'No'))
+                outfile.write('Retro:'.ljust(line_width) + '%s\n' % yn(self.metadata['retro'][player]))
                 outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
                 outfile.write('Goal:'.ljust(line_width) + '%s\n' % self.metadata['goal'][player])
                 if self.metadata['goal'][player] in ['triforcehunt', 'trinity']:
@@ -3198,56 +3325,80 @@ class Spoiler(object):
                 outfile.write('Crystals Required for Ganon:'.ljust(line_width) + '%s\n' % str(self.world.crystals_ganon_orig[player]))
                 outfile.write('Ganon Vulnerability Item:'.ljust(line_width) + '%s\n' % str(self.metadata['ganon_vulnerability_item'][player]))
                 outfile.write('Accessibility:'.ljust(line_width) + '%s\n' % self.metadata['accessibility'][player])
+                outfile.write('Restricted Boss Items:'.ljust(line_width) + '%s\n' % self.metadata['restricted_boss_items'][player])
                 outfile.write('Difficulty:'.ljust(line_width) + '%s\n' % self.metadata['item_pool'][player])
                 outfile.write('Item Functionality:'.ljust(line_width) + '%s\n' % self.metadata['item_functionality'][player])
-                outfile.write('Shopsanity:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shopsanity'][player] else 'No'))
-                outfile.write('Bombbag:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['bombbag'][player] else 'No'))
+                outfile.write('Shopsanity:'.ljust(line_width) + '%s\n' % yn(self.metadata['shopsanity'][player]))
+                outfile.write('Bombbag:'.ljust(line_width) + '%s\n' % yn(self.metadata['bombbag'][player]))
+                outfile.write('Pseudoboots:'.ljust(line_width) + '%s\n' % yn(self.metadata['pseudoboots'][player]))
                 outfile.write('Overworld Layout Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_shuffle'][player])
-                if self.metadata['ow_shuffle'][player] != 'vanilla':
-                    outfile.write('Keep Similar OW Edges Together:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_keepsimilar'][player] else 'No'))
                 outfile.write('Crossed OW:'.ljust(line_width) + '%s\n' % self.metadata['ow_crossed'][player])
-                outfile.write('Swapped OW (Mixed):'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_mixed'][player] else 'No'))
-                outfile.write('Whirlpool Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['ow_whirlpool'][player] else 'No'))
+                if self.metadata['ow_shuffle'][player] != 'vanilla' or self.metadata['ow_crossed'][player] != 'none':
+                    outfile.write('Keep Similar OW Edges Together:'.ljust(line_width) + '%s\n' % yn(self.metadata['ow_keepsimilar'][player]))
+                outfile.write('Swapped OW (Mixed):'.ljust(line_width) + '%s\n' % yn(self.metadata['ow_mixed'][player]))
+                outfile.write('Whirlpool Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['ow_whirlpool'][player]))
                 outfile.write('Flute Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_fluteshuffle'][player])
+                outfile.write('Bonk Drops:'.ljust(line_width) + '%s\n' % yn(self.metadata['bonk_drops'][player]))
                 outfile.write('Entrance Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['shuffle'][player])
                 if self.metadata['shuffle'][player] != 'vanilla':
-                    outfile.write('Shuffle GT/Ganon:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shuffleganon'][player] else 'No'))
-                    outfile.write('Shuffle Links:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['shufflelinks'][player] else 'No'))
-                if self.metadata['goal'][player] != 'trinity':
-                    outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
+                    outfile.write('Shuffle GT/Ganon:'.ljust(line_width) + '%s\n' % yn(self.metadata['shuffleganon'][player]))
+                    outfile.write('Shuffle Links:'.ljust(line_width) + '%s\n' % yn(self.metadata['shufflelinks'][player]))
+                if self.metadata['shuffle'][player] != 'vanilla' or self.metadata['ow_mixed'][player]:
+                    outfile.write('Overworld Map:'.ljust(line_width) + '%s\n' % self.metadata['overworld_map'][player])
+                outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % self.metadata['open_pyramid'][player])
                 outfile.write('Door Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['door_shuffle'][player])
                 if self.metadata['door_shuffle'][player] != 'vanilla':
                     outfile.write('Intensity:'.ljust(line_width) + '%s\n' % self.metadata['intensity'][player])
-                    outfile.write('Experimental:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['experimental'][player] else 'No'))
-                outfile.write('Pot Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['potshuffle'][player] else 'No'))
-                outfile.write('Key Drop Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['keydropshuffle'][player] else 'No'))
-                outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['mapshuffle'][player] else 'No'))
-                outfile.write('Compass Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['compassshuffle'][player] else 'No'))
-                outfile.write('Small Key Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['keyshuffle'][player] else 'No'))
-                outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['bigkeyshuffle'][player] else 'No'))
+                    outfile.write('Experimental:'.ljust(line_width) + '%s\n' % yn(self.metadata['experimental'][player]))
+                outfile.write('Dungeon Counters:'.ljust(line_width) + '%s\n' % self.metadata['dungeon_counters'][player])
+                outfile.write('Enemy Drop Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['dropshuffle'][player]))
+                outfile.write('Pottery Mode:'.ljust(line_width) + '%s\n' % self.metadata['pottery'][player])
+                outfile.write('Pot Shuffle (Legacy):'.ljust(line_width) + '%s\n' % yn(self.metadata['potshuffle'][player]))
+                outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['mapshuffle'][player]))
+                outfile.write('Compass Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['compassshuffle'][player]))
+                outfile.write('Small Key Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['keyshuffle'][player]))
+                outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['bigkeyshuffle'][player]))
                 outfile.write('Boss Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['boss_shuffle'][player])
                 outfile.write('Enemy Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['enemy_shuffle'][player])
                 outfile.write('Enemy Health:'.ljust(line_width) + '%s\n' % self.metadata['enemy_health'][player])
                 outfile.write('Enemy Damage:'.ljust(line_width) + '%s\n' % self.metadata['enemy_damage'][player])
-                outfile.write('Hints:'.ljust(line_width) + '%s\n' % ('Yes' if self.metadata['hints'][player] else 'No'))
+                outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
             
             if self.startinventory:
                 outfile.write('Starting Inventory:'.ljust(line_width))
                 outfile.write('\n'.ljust(line_width+1).join(self.startinventory) + '\n')
 
+    def hashes_to_file(self, filename):
+        with open(filename, 'r') as infile:
+            contents = infile.readlines()
+
+        def insert(lines, i, value):
+            lines.insert(i, value)
+            i += 1
+            return i
+
+        idx = 2
+        if self.world.players > 1:
+            idx = insert(contents, idx, 'Hashes:')
+        for player in range(1, self.world.players + 1):
+            if self.world.players > 1:
+                idx = insert(contents, idx, f'\nPlayer {player}: {self.world.get_player_names(player)}\n')
+            if len(self.hashes) > 0:
+                for team in range(self.world.teams):
+                    player_name = self.world.player_names[player][team]
+                    label = f"Hash - {player_name} (Team {team+1}): " if self.world.teams > 1 else 'Hash: '
+                    idx = insert(contents, idx, f'{label}{self.hashes[player, team]}\n')
+        if self.world.players > 1:
+            insert(contents, idx, '\n')  # return value ignored here, if you want to add more lines
+
+        with open(filename, "w") as f:
+            contents = "".join(contents)
+            f.write(contents)
+
     def to_file(self, filename):
         self.parse_data()
         with open(filename, 'a') as outfile:
             line_width = 35
-            if self.world.players > 1:
-                outfile.write('\nHashes:')
-            for player in range(1, self.world.players + 1):
-                if self.world.players > 1:
-                    outfile.write('\nPlayer %d: %s\n' % (player, self.world.get_player_names(player)))
-                if len(self.hashes) > 0:
-                    for team in range(self.world.teams):
-                        outfile.write('%s%s\n' % (f"Hash - {self.world.player_names[player][team]} (Team {team+1}): " if self.world.teams > 1 else 'Hash: ', self.hashes[player, team]))
-            
             outfile.write('\n\nRequirements:\n\n')
             for dungeon, medallion in self.medallions.items():
                 outfile.write(f'{dungeon}:'.ljust(line_width) + '%s Medallion\n' % medallion)
@@ -3262,7 +3413,7 @@ class Spoiler(object):
             for fairy, bottle in self.bottles.items():
                 outfile.write(f'{fairy}: {bottle}\n')
 
-            if self.overworlds:
+            if self.overworlds or self.maps:
                 outfile.write('\n\nOverworld:\n\n')
 
                 # flute shuffle
@@ -3286,7 +3437,19 @@ class Spoiler(object):
                         if self.world.players > 1:
                             outfile.write(str('(Player ' + str(player) + ')\n')) # player name
                         outfile.write(self.maps[('swaps', player)]['text'] + '\n\n')
-
+                
+                # crossed groups
+                for player in range(1, self.world.players + 1):
+                    if ('groups', player) in self.maps:
+                        outfile.write('OW Crossed Groups:\n')
+                        break
+                for player in range(1, self.world.players + 1):
+                    if ('groups', player) in self.maps:
+                        if self.world.players > 1:
+                            outfile.write(str('(Player ' + str(player) + ')\n')) # player name
+                        outfile.write(self.maps[('groups', player)]['text'] + '\n\n')
+            
+            if self.overworlds:
                 # overworld transitions
                 outfile.write('\n'.join(['%s%s %s %s' % (f'{self.world.get_player_names(entry["player"])}: ' if self.world.players > 1 else '', self.world.fish.translate("meta","overworlds",entry['entrance']), '<=>' if entry['direction'] == 'both' else '<=' if entry['direction'] == 'exit' else '=>', self.world.fish.translate("meta","overworlds",entry['exit'])) for entry in self.overworlds.values()]))
             
@@ -3332,7 +3495,7 @@ class Spoiler(object):
                     outfile.write(f'\n\nBosses ({self.world.get_player_names(player)}):\n\n')
                     outfile.write('\n'.join([f'{x}: {y}' for x, y in bossmap.items() if y not in ['Agahnim', 'Agahnim 2', 'Ganon']]))
 
-    def playthru_to_file(self, filename):
+    def playthrough_to_file(self, filename):
         with open(filename, 'a') as outfile:
             # locations: Change up location names; in the instance of a location with multiple sections, it'll try to translate the room name
             # items: Item names
@@ -3430,15 +3593,40 @@ class PotFlags(FastEnum):
     Normal = 0x0
     NoSwitch = 0x1  # A switch should never go here
     SwitchLogicChange = 0x2  # A switch can go here, but requires a logic change
+    Block = 0x4  # This is actually a block
+    LowerRegion = 0x8  # This is a pot in the lower region
 
 
 class Pot(object):
-    def __init__(self, x, y, item, room, flags = PotFlags.Normal):
+    def __init__(self, x, y, item, room, flags=PotFlags.Normal, obj=None):
         self.x = x
         self.y = y
         self.item = item
         self.room = room
         self.flags = flags
+        self.indicator = None  # 0x80 for standing item, 0xC0 multiworld item
+        self.standing_item_code = None  # standing item code if nay
+        self.obj_ref = obj
+        self.location = None  # location back ref
+
+    def copy(self):
+        obj_ref = RoomObject(self.obj_ref.address, self.obj_ref.data) if self.obj_ref else None
+        return Pot(self.x, self.y, self.item, self.room, self.flags, obj_ref)
+
+    def pot_data(self):
+        high_byte = self.y
+        if self.flags & PotFlags.LowerRegion:
+            high_byte |= 0x20
+        if self.indicator:
+            high_byte |= self.indicator
+        item = self.item if not self.indicator else self.standing_item_code
+        return [self.x, high_byte, item]
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.room == other.room
+
+    def __hash__(self):
+        return hash((self.x, self.y, self.room))
 
 
 # byte 0: DDOO OEEE (DR, OR, ER)
@@ -3456,23 +3644,43 @@ goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "cryst
 diff_mode = {"normal": 0, "hard": 1, "expert": 2}
 func_mode = {"normal": 0, "hard": 1, "expert": 2}
 
-# byte 3: SKMM PIII (shop, keydrop, mixed, palettes, intensity)
+# byte 3: S?MM PIII (shop, unused, mixed, palettes, intensity)
+# keydrop now has it's own byte
 mixed_travel_mode = {"prevent": 0, "allow": 1, "force": 2}
 # intensity is 3 bits (reserves 4-7 levels)
 
-# byte 4: CCCC CTTX (crystals gt, ctr2, experimental)
+# new byte 4: ?DDD PPPP (unused, drop, pottery)
+# dropshuffle reserves 2 bits, pottery needs 2 but reserves 2 for future modes)
+pottery_mode = {'none': 0, 'keys': 2, 'lottery': 3, 'dungeon': 4, 'cave': 5, 'cavekeys': 6, 'reduced': 7,
+                'clustered': 8, 'nonempty': 9}
+
+# byte 5: CCCC CTTX (crystals gt, ctr2, experimental)
 counter_mode = {"default": 0, "off": 1, "on": 2, "pickup": 3}
 
-# byte 5: CCCC CPAA (crystals ganon, pyramid, access
+# byte 6: CCCC CPAA (crystals ganon, pyramid, access
 access_mode = {"items": 0, "locations": 1, "none": 2}
 
-# byte 6: BSMC BBEE (big, small, maps, compass, bosses, enemies)
-boss_mode = {"none": 0, "simple": 1, "full": 2, "random": 3, "chaos": 3}
-enemy_mode = {"none": 0, "shuffled": 1, "random": 2, "chaos": 2, "legacy": 3}
+# byte 7: BSMC ??EE (big, small, maps, compass, bosses, enemies)
+enemy_mode = {"none": 0, "shuffled": 1, "chaos": 2, "random": 2, "legacy": 3}
 
-# byte 7: HHHD DPBS (enemy_health, enemy_dmg, potshuffle, bomb logic, shuffle links)
+# byte 8: HHHD DPBS (enemy_health, enemy_dmg, potshuffle, bomb logic, shuffle links)
+# potshuffle decprecated, now unused
 e_health = {"default": 0, "easy": 1, "normal": 2, "hard": 3, "expert": 4}
 e_dmg = {"default": 0, "shuffled": 1, "random": 2}
+
+# byte 9: RRAA ABBB (restrict boss mode, algorithm, boss shuffle)
+rb_mode = {"none": 0, "mapcompass": 1, "dungeon": 2}
+# algorithm:
+algo_mode = {"balanced": 0, "equitable": 1, "vanilla_fill": 2, "dungeon_only": 3, "district": 4, 'major_only': 5}
+boss_mode = {"none": 0, "simple": 1, "full": 2, "chaos": 3, 'random': 3, 'unique': 4}
+
+# additions
+# psuedoboots does not effect code
+# sfx_shuffle and other adjust items does not effect settings code
+
+# Bump this when making changes that are not backwards compatible (nearly all of them)
+settings_version = 0
+
 
 class Settings(object):
 
@@ -3486,27 +3694,38 @@ class Settings(object):
             (goal_mode[w.goal[p]] << 5) | (diff_mode[w.difficulty[p]] << 3)
             | (func_mode[w.difficulty_adjustments[p]] << 1) | (1 if w.hints[p] else 0),
 
-            (0x80 if w.shopsanity[p] else 0) | (0x40 if w.keydropshuffle[p] else 0)
-            | (mixed_travel_mode[w.mixed_travel[p]] << 4) | (0x8 if w.standardize_palettes[p] == "original" else 0)
+            (0x80 if w.shopsanity[p] else 0) | (mixed_travel_mode[w.mixed_travel[p]] << 4)
+            | (0x8 if w.standardize_palettes[p] == "original" else 0)
             | (0 if w.intensity[p] == "random" else w.intensity[p]),
+
+            (0x10 if w.dropshuffle[p] else 0) | (pottery_mode[w.pottery[p]]),
 
             ((8 if w.crystals_gt_orig[p] == "random" else int(w.crystals_gt_orig[p])) << 3)
             | (counter_mode[w.dungeon_counters[p]] << 1) | (1 if w.experimental[p] else 0),
 
             ((8 if w.crystals_ganon_orig[p] == "random" else int(w.crystals_ganon_orig[p])) << 3)
-            | (0x4 if w.open_pyramid[p] else 0) | access_mode[w.accessibility[p]],
+            | (0x4 if w.is_pyramid_open(p) else 0) | access_mode[w.accessibility[p]],
 
             (0x80 if w.bigkeyshuffle[p] else 0) | (0x40 if w.keyshuffle[p] else 0)
             | (0x20 if w.mapshuffle[p] else 0) | (0x10 if w.compassshuffle[p] else 0)
-            | (boss_mode[w.boss_shuffle[p]] << 2) | (enemy_mode[w.enemy_shuffle[p]]),
+            | (enemy_mode[w.enemy_shuffle[p]]),
 
             (e_health[w.enemy_health[p]] << 5) | (e_dmg[w.enemy_damage[p]] << 3) | (0x4 if w.potshuffle[p] else 0)
-            | (0x2 if w.bombbag[p] else 0) | (1 if w.shufflelinks[p] else 0)])
+            | (0x2 if w.bombbag[p] else 0) | (1 if w.shufflelinks[p] else 0),
+
+            (rb_mode[w.restrict_boss_items[p]] << 6) | (algo_mode[w.algorithm] << 3) | (boss_mode[w.boss_shuffle[p]]),
+
+            settings_version])
         return base64.b64encode(code, "+-".encode()).decode()
 
     @staticmethod
     def adjust_args_from_code(code, player, args):
         settings, p = base64.b64decode(code.encode(), "+-".encode()), player
+
+        if len(settings) < 11:
+            raise Exception('Provided code is incompatible with this version')
+        if settings[10] != settings_version:
+            raise Exception('Provided code is incompatible with this version')
 
         def r(d):
             return {y: x for x, y in d.items()}
@@ -3520,34 +3739,45 @@ class Settings(object):
         args.difficulty[p] = r(diff_mode)[(settings[2] & 0x18) >> 3]
         args.item_functionality[p] = r(func_mode)[(settings[2] & 0x6) >> 1]
         args.goal[p] = r(goal_mode)[(settings[2] & 0xE0) >> 5]
-        args.accessibility[p] = r(access_mode)[settings[5] & 0x3]
+        args.accessibility[p] = r(access_mode)[settings[6] & 0x3]
         args.retro[p] = True if settings[1] & 0x01 else False
         args.hints[p] = True if settings[2] & 0x01 else False
-        args.retro[p] = True if settings[1] & 0x01 else False
         args.shopsanity[p] = True if settings[3] & 0x80 else False
-        args.keydropshuffle[p] = True if settings[3] & 0x40 else False
+        # args.keydropshuffle[p] = True if settings[3] & 0x40 else False
         args.mixed_travel[p] = r(mixed_travel_mode)[(settings[3] & 0x30) >> 4]
         args.standardize_palettes[p] = "original" if settings[3] & 0x8 else "standardize"
         intensity = settings[3] & 0x7
         args.intensity[p] = "random" if intensity == 0 else intensity
-        args.dungeon_counters[p] = r(counter_mode)[(settings[4] & 0x6) >> 1]
-        cgt = (settings[4] & 0xf8) >> 3
+
+        # args.shuffleswitches[p] = True if settings[4] & 0x80 else False
+        args.dropshuffle[p] = True if settings[4] & 0x10 else False
+        args.pottery[p] = r(pottery_mode)[settings[4] & 0x0F]
+
+        args.dungeon_counters[p] = r(counter_mode)[(settings[5] & 0x6) >> 1]
+        cgt = (settings[5] & 0xf8) >> 3
         args.crystals_gt[p] = "random" if cgt == 8 else cgt
-        args.experimental[p] = True if settings[4] & 0x1 else False
-        cgan = (settings[5] & 0xf8) >> 3
+        args.experimental[p] = True if settings[5] & 0x1 else False
+
+        cgan = (settings[6] & 0xf8) >> 3
         args.crystals_ganon[p] = "random" if cgan == 8 else cgan
-        args.openpyramid[p] = True if settings[5] & 0x4 else False
-        args.bigkeyshuffle[p] = True if settings[6] & 0x80 else False
-        args.keyshuffle[p] = True if settings[6] & 0x40 else False
-        args.mapshuffle[p] = True if settings[6] & 0x20 else False
-        args.compassshuffle[p] = True if settings[6] & 0x10 else False
-        args.shufflebosses[p] = r(boss_mode)[(settings[6] & 0xc) >> 2]
-        args.shuffleenemies[p] = r(enemy_mode)[settings[6] & 0x3]
-        args.enemy_health[p] = r(e_health)[(settings[7] & 0xE0) >> 5]
-        args.enemy_damage[p] = r(e_dmg)[(settings[7] & 0x18) >> 3]
-        args.shufflepots[p] = True if settings[7] & 0x4 else False
-        args.bombbag[p] = True if settings[7] & 0x2 else False
-        args.shufflelinks[p] = True if settings[7] & 0x1 else False
+        args.openpyramid[p] = True if settings[6] & 0x4 else False
+
+        args.bigkeyshuffle[p] = True if settings[7] & 0x80 else False
+        args.keyshuffle[p] = True if settings[7] & 0x40 else False
+        args.mapshuffle[p] = True if settings[7] & 0x20 else False
+        args.compassshuffle[p] = True if settings[7] & 0x10 else False
+        # args.shufflebosses[p] = r(boss_mode)[(settings[7] & 0xc) >> 2]
+        args.shuffleenemies[p] = r(enemy_mode)[settings[7] & 0x3]
+
+        args.enemy_health[p] = r(e_health)[(settings[8] & 0xE0) >> 5]
+        args.enemy_damage[p] = r(e_dmg)[(settings[8] & 0x18) >> 3]
+        args.shufflepots[p] = True if settings[8] & 0x4 else False
+        args.bombbag[p] = True if settings[8] & 0x2 else False
+        args.shufflelinks[p] = True if settings[8] & 0x1 else False
+        if len(settings) > 9:
+            args.restrict_boss_items[p] = r(rb_mode)[(settings[9] & 0xC0) >> 6]
+            args.algorithm = r(algo_mode)[(settings[9] & 0x38) >> 3]
+            args.shufflebosses[p] = r(boss_mode)[(settings[9] & 0x07)]
 
 
 class KeyRuleType(FastEnum):

@@ -73,7 +73,8 @@ SETTINGSTOPROCESS = {
       "progressives": "progressive",
       "accessibility": "accessibility",
       "sortingalgo": "algorithm",
-      "beemizer": "beemizer"
+      "beemizer": "beemizer",
+      "restrict_boss_items": "restrict_boss_items"
     },
     "overworld": {
       "overworldshuffle": "ow_shuffle",
@@ -81,13 +82,15 @@ SETTINGSTOPROCESS = {
       "keepsimilar": "ow_keepsimilar",
       "mixed": "ow_mixed",
       "whirlpool": "ow_whirlpool",
+      "bonk_drops": "bonk_drops",
       "overworldflute": "ow_fluteshuffle"
     },
     "entrance": {
       "openpyramid": "openpyramid",
       "shuffleganon": "shuffleganon",
       "shufflelinks": "shufflelinks",
-      "entranceshuffle": "shuffle"
+      "entranceshuffle": "shuffle",
+      "overworld_map": "overworld_map",
     },
     "enemizer": {
       "enemyshuffle": "shuffleenemies",
@@ -100,9 +103,12 @@ SETTINGSTOPROCESS = {
       "compassshuffle": "compassshuffle",
       "smallkeyshuffle": "keyshuffle",
       "bigkeyshuffle": "bigkeyshuffle",
-      "keydropshuffle": "keydropshuffle",
       "dungeondoorshuffle": "door_shuffle",
       "dungeonintensity": "intensity",
+      "keydropshuffle": "keydropshuffle",
+      "dropshuffle": "dropshuffle",
+      "pottery": "pottery",
+      "colorizepots": "colorizepots",
       "potshuffle": "shufflepots",
       "experimental": "experimental",
       "dungeon_counters": "dungeon_counters",
@@ -118,9 +124,12 @@ SETTINGSTOPROCESS = {
       "owpalettes": "ow_palettes",
       "uwpalettes": "uw_palettes",
       "reduce_flashing": "reduce_flashing",
-      "shuffle_sfx": "shuffle_sfx"
+      "shuffle_sfx": "shuffle_sfx",
+      'msu_resume': 'msu_resume',
+      'collection_rate': 'collection_rate',
     },
     "generation": {
+      "bps": "bps",
       "createspoiler": "create_spoiler",
       "createrom": "create_rom",
       "calcplaythrough": "calc_playthrough",

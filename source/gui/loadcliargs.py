@@ -52,7 +52,7 @@ def loadcliargs(gui, args, settings=None):
                                 gui.pages[mainpage].pages[subpage].widgets[widget].label.configure(text=label)
                         gui.pages[mainpage].pages[subpage].widgets[widget].storageVar.set(args[arg])
                         # If we're on the Game Options page and it's not about Hints
-                        if subpage == "gameoptions" and not widget == "hints":
+                        if subpage == "gameoptions" and widget not in ["hints", "collection_rate"]:
                             # Check if we've got settings
                             # Check if we've got the widget in Adjust settings
                             hasSettings = settings is not None

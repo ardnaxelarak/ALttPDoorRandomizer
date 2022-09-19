@@ -27,7 +27,7 @@ def entrando_page(parent):
             for key in dictWidgets:
                 self.widgets[key] = dictWidgets[key]
                 packAttrs = {"anchor":E}
-                if self.widgets[key].type == "checkbox":
+                if self.widgets[key].type == "checkbox" or key == "openpyramid":
                     packAttrs["anchor"] = W
                 self.widgets[key].pack(packAttrs)
 

@@ -48,7 +48,7 @@ Alternatively, run ```Gui.py``` for a simple graphical user interface.
 
 # Settings
 
-Only extra settings are found here. All door and entrance randomizer settings are supported. See their [readme](https://github.com/Aerinon/ALttPDoorRandomizer/blob/master/README.md)
+Only extra settings added by this Overworld Shuffle fork are found here. All door and entrance randomizer settings are supported. See their [readme](https://github.com/Aerinon/ALttPDoorRandomizer/blob/master/README.md)
 
 ## Overworld Layout Shuffle (--ow_shuffle)
 
@@ -67,8 +67,6 @@ OW Transitions are shuffled within each world separately.
 ## Crossed Options (--ow_crossed)
 
 This allows OW connections to be shuffled cross-world.
-
-'None (Allowed)' allows entrance connectors and whirlpools to result in cross-world behavior, but edge transitions will not. This isn't a recommended option.
 
 Polar and Grouped both are guaranteed to result in two separated planes of tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a LW tile that was previously unreachable
 
@@ -136,11 +134,42 @@ New flute spots are chosen at random, with restrictions that limit the promixity
 
 New flute spots are chosen at random with minimum bias.
 
+## Bonk Drop Shuffle (--bonk_drops)
+
+This adds 41 new item locations to the game. These bonk locations are limited to the ones that drop a static item in the vanilla game.
+
+- Bonk Locations consist of some trees, rocks, and statues
+  - 33 Trees
+    - 8 of the tree locations require Agahnim to be defeated to access the item
+  - 6 Rocks
+    - 1 of the rocks drops 2 items
+  - 1 Statue
+- Bonk locations can be collected by bonking into them with the Pegasus Boots or using the Quake Medallion
+- One of the bonk locations are guaranteed to have a full magic decanter
+- Some of the drops can be farmed repeatedly, but only increments the collection rate once
+- All of the bonk trees have been given an alternate color (and all non-bonk trees are reverted to normal tree color)
+  - Some screens are coded to change the "alternate tree color", some of them are strange (just how the vanilla game does it)
+  - Rocks and statues are unable to be made to have a different color
+- Since Fairies and Apples are new items that can appear in plain sight, they don't have a proper graphic for them yet. For now, they show up as Power Stars
+
+Future Note: This does NOT include the Good Bee (Cold Bee) Cave Statue...yet. In the future, this could be an additional item location.
+
+#### Items Added To Pool:
+- 15 Fairies
+- 8 Apples
+- 6 Bee Traps
+- 3 Red Rupees
+- 3 Blue Rupees
+- 2 Single Bomb
+- 2 Small Hearts
+- 1 Large Magic Decanter
+- 1 8x Bomb Pack
+
 ## New Goal Options (--goal)
 
 ### Trinity
 
-This goal gives you the choice between 3 goals, only one of which the player needs to complete: Defeat Ganon (no Aga2), Pulling Pedestal, or turn in TF pieces to Murahdulah. By default, you need to find 8 of 10 total TF pieces but this can be changed with a Custom Item Pool. It is recommended to set GT Entry to 7 crystals and Ganon to 5 crystals or Random crystals, although the player can flexibly change these settings as they seem fit.
+This goal gives you the choice between 3 goals, only one of which the player needs to complete: Defeat Ganon (no Aga2), Pulling Pedestal, or turn in TF pieces to Murahdahla. By default, you need to find 8 of 10 total TF pieces but this can be changed with a Custom Item Pool. It is recommended to set GT Entry to 7 crystals and Ganon to 5 crystals or Random crystals, although the player can flexibly change these settings as they seem fit.
 
 ## New Entrance Shuffle Options (--shuffle)
 
@@ -237,3 +266,9 @@ For randomizing the flute spots around the overworld
 ```
 
 For specifying what item ganon will be vulnerable to while stunned in his final phase. (default: default)
+
+```
+--bonk_drops
+```
+
+This extends the item pool to bonk locations and makes them additional item locations

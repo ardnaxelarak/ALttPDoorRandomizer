@@ -88,6 +88,10 @@ def parse_cli(argv, no_defaults=False):
     if ret.keysanity:
         ret.mapshuffle, ret.compassshuffle, ret.keyshuffle, ret.bigkeyshuffle = [True] * 4
 
+    if ret.keydropshuffle:
+        ret.dropshuffle = True
+        ret.pottery = 'keys' if ret.pottery == 'none' else ret.pottery
+
     if multiargs.multi:
         defaults = copy.deepcopy(ret)
         for player in range(1, multiargs.multi + 1):
@@ -97,14 +101,15 @@ def parse_cli(argv, no_defaults=False):
                          'ow_shuffle', 'ow_crossed', 'ow_keepsimilar', 'ow_mixed', 'ow_whirlpool', 'ow_fluteshuffle',
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'ganon_item', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
-                         'bombbag', 'shuffleganon',
+                         'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items',
                          'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'pseudoboots',
                          'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
-                         'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor', 'heartbeep',
-                         'remote_items', 'shopsanity', 'keydropshuffle', 'mixed_travel', 'standardize_palettes', 'code',
-                         'reduce_flashing', 'shuffle_sfx']:
+                         'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
+                         'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
+                         'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
+                         'msu_resume', 'collection_rate', 'colorizepots', 'bonk_drops']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -142,9 +147,12 @@ def parse_settings():
         "progressive": "on",
         "accessibility": "items",
         "algorithm": "balanced",
+        'mystery': False,
+        'suppress_meta': False,
+        "restrict_boss_items": "none",
 
         # Shuffle Ganon defaults to TRUE
-        "openpyramid": False,
+        "openpyramid": "auto",
         "shuffleganon": True,
         "ow_shuffle": "vanilla",
         "ow_crossed": "none",
@@ -152,11 +160,12 @@ def parse_settings():
         "ow_mixed": False,
         "ow_whirlpool": False,
         "ow_fluteshuffle": "vanilla",
+        "bonk_drops": False,
         "shuffle": "vanilla",
         "shufflelinks": False,
+        "overworld_map": "default",
         "pseudoboots": False,
 
-        "shufflepots": False,
         "shuffleenemies": "none",
         "shufflebosses": "none",
         "enemy_damage": "default",
@@ -164,7 +173,11 @@ def parse_settings():
         "enemizercli": os.path.join(".", "EnemizerCLI", "EnemizerCLI.Core"),
 
         "shopsanity": False,
-        "keydropshuffle": False,
+        'keydropshuffle': False,
+        'dropshuffle': False,
+        'pottery': 'none',
+        'colorizepots': False,
+        'shufflepots': False,
         "mapshuffle": False,
         "compassshuffle": False,
         "keyshuffle": False,
@@ -201,6 +214,8 @@ def parse_settings():
         "uw_palettes": "default",
         "reduce_flashing": False,
         "shuffle_sfx": False,
+        'msu_resume': False,
+        'collection_rate': False,
 
         # Spoiler     defaults to TRUE
         # Playthrough defaults to TRUE
@@ -208,9 +223,11 @@ def parse_settings():
         "create_spoiler": True,
         "calc_playthrough": True,
         "create_rom": True,
+        "bps": False,
         "usestartinventory": False,
         "custom": False,
         "rom": os.path.join(".", "Zelda no Densetsu - Kamigami no Triforce (Japan).sfc"),
+        "patch": os.path.join(".", "Patch File.bps"),
 
         "seed": "",
         "count": 1,

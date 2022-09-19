@@ -6,6 +6,7 @@ from enum import unique, Flag
 from typing import DefaultDict, Dict, List
 
 from BaseClasses import RegionType, Region, Door, DoorType, Direction, Sector, CrystalBarrier, DungeonInfo, dungeon_keys
+from BaseClasses import PotFlags, LocationType
 from Doors import reset_portals
 from Dungeons import dungeon_regions, region_starts, standard_starts, split_region_starts
 from Dungeons import dungeon_bigs, dungeon_hints
@@ -14,6 +15,7 @@ from RoomData import DoorKind, PairedDoor, reset_rooms
 from DungeonGenerator import ExplorationState, convert_regions, generate_dungeon, pre_validate, determine_required_paths, drop_entrances
 from DungeonGenerator import create_dungeon_builders, split_dungeon_builder, simple_dungeon_builder, default_dungeon_entrances
 from DungeonGenerator import dungeon_portals, dungeon_drops, GenerationException
+from DungeonGenerator import valid_region_to_explore as valid_region_to_explore_lim
 from KeyDoorShuffle import analyze_dungeon, build_key_layout, validate_key_layout, determine_prize_lock
 from Utils import ncr, kth_combination
 
@@ -44,10 +46,10 @@ def link_doors(world, player):
             reset_rooms(world, player)
             world.get_door("Skull Pinball WS", player).no_exit()
             world.swamp_patch_required[player] = orig_swamp_patch
+            link_doors_prep(world, player)
 
 
-def link_doors_main(world, player):
-
+def link_doors_prep(world, player):
     # Drop-down connections & push blocks
     for exitName, regionName in logical_connections:
         connect_simple_door(world, exitName, regionName, player)
@@ -100,6 +102,7 @@ def link_doors_main(world, player):
             analyze_portals(world, player)
         for portal in world.dungeon_portals[player]:
             connect_portal(portal, world, player)
+
     if not world.doorShuffle[player] == 'vanilla':
         fix_big_key_doors_with_ugly_smalls(world, player)
     else:
@@ -120,11 +123,14 @@ def link_doors_main(world, player):
         for ent, ext in default_one_way_connections:
             connect_one_way(world, ent, ext, player)
         vanilla_key_logic(world, player)
-    elif world.doorShuffle[player] == 'basic':
+
+
+def link_doors_main(world, player):
+    if world.doorShuffle[player] == 'basic':
         within_dungeon(world, player)
     elif world.doorShuffle[player] == 'crossed':
         cross_dungeon(world, player)
-    else:
+    elif world.doorShuffle[player] != 'vanilla':
         logging.getLogger('').error('Invalid door shuffle setting: %s' % world.doorShuffle[player])
         raise Exception('Invalid door shuffle setting: %s' % world.doorShuffle[player])
 
@@ -209,15 +215,20 @@ def vanilla_key_logic(world, player):
         key_layout = build_key_layout(builder, start_regions, doors, world, player)
         valid = validate_key_layout(key_layout, world, player)
         if not valid:
-            logging.getLogger('').warning('Vanilla key layout not valid %s', builder.name)
+            logging.getLogger('').info('Vanilla key layout not valid %s', builder.name)
         builder.key_door_proposal = doors
         if player not in world.key_logic.keys():
             world.key_logic[player] = {}
         analyze_dungeon(key_layout, world, player)
         world.key_logic[player][builder.name] = key_layout.key_logic
+        world.key_layout[player][builder.name] = key_layout
         log_key_logic(builder.name, key_layout.key_logic)
     # if world.shuffle[player] == 'vanilla' and world.owShuffle[player] == 'vanilla' and world.owCrossed[player] == 'none' and not world.owMixed[player] and world.accessibility[player] == 'items' and not world.retro[player] and not world.keydropshuffle[player]:
     #     validate_vanilla_key_logic(world, player)
+
+
+def validate_vanilla_reservation(dungeon, world, player):
+    return validate_key_layout(world.key_layout[player][dungeon.name], world, player)
 
 
 # some useful functions
@@ -370,7 +381,7 @@ def choose_portals(world, player):
     if world.doorShuffle[player] in ['basic', 'crossed']:
         cross_flag = world.doorShuffle[player] == 'crossed'
         # key drops allow the big key in the right place in Desert Tiles 2
-        bk_shuffle = world.bigkeyshuffle[player] or world.keydropshuffle[player]
+        bk_shuffle = world.bigkeyshuffle[player] or world.pottery[player] not in ['none', 'cave']
         std_flag = world.mode[player] == 'standard'
         # roast incognito doors
         world.get_room(0x60, player).delete(5)
@@ -404,7 +415,7 @@ def choose_portals(world, player):
                     info.sole_entrance = inaccessible_portals[0]
                     info.required_passage.clear()
                 else:
-                    raise Exception('please inspect this case')
+                    raise Exception(f'No reachable entrances for {dungeon}')
             if len(reachable_portals) == 1:
                 info.sole_entrance = reachable_portals[0]
             info_map[dungeon] = info
@@ -511,7 +522,7 @@ def analyze_portals(world, player):
                 info.sole_entrance = inaccessible_portals[0]
                 info.required_passage.clear()
             else:
-                raise Exception('please inspect this case')
+                raise Exception(f'No reachable entrances for {dungeon}')
         if len(reachable_portals) == 1:
             info.sole_entrance = reachable_portals[0]
         if world.intensity[player] < 2 and world.doorShuffle[player] == 'basic' and dungeon == 'Desert Palace':
@@ -903,7 +914,7 @@ def enable_new_entrances(region, connections, potentials, enabled, world, player
 
 
 def inverted_aga_check(entrances_map, connections, potentials, enabled, world, player):
-    if world.mode[player] == 'inverted':
+    if world.is_atgt_swapped(player):
         if 'Agahnims Tower' in entrances_map.keys() or aga_tower_enabled(enabled):
             for region in list(potentials.keys()):
                 if region.name == 'Hyrule Castle Ledge':
@@ -978,18 +989,28 @@ def cross_dungeon(world, player):
     paths = determine_required_paths(world, player)
     check_required_paths(paths, world, player)
 
+    hc_compass = ItemFactory('Compass (Escape)', player)
+    at_compass = ItemFactory('Compass (Agahnims Tower)', player)
+    at_map = ItemFactory('Map (Agahnims Tower)', player)
+    if world.restrict_boss_items[player] != 'none':
+        hc_compass.advancement = at_compass.advancement = at_map.advancement = True
     hc = world.get_dungeon('Hyrule Castle', player)
-    hc.dungeon_items.append(ItemFactory('Compass (Escape)', player))
+    hc.dungeon_items.append(hc_compass)
     at = world.get_dungeon('Agahnims Tower', player)
-    at.dungeon_items.append(ItemFactory('Compass (Agahnims Tower)', player))
-    at.dungeon_items.append(ItemFactory('Map (Agahnims Tower)', player))
+    at.dungeon_items.append(at_compass)
+    at.dungeon_items.append(at_map)
 
     assign_cross_keys(dungeon_builders, world, player)
     all_dungeon_items_cnt = len(list(y for x in world.dungeons if x.player == player for y in x.all_items))
-    if world.keydropshuffle[player]:
-        target_items = 35 if world.retro[player] else 96
+    target_items = 34
+    if world.retro[player]:
+        target_items += 1 if world.dropshuffle[player] else 0  # the hc big key
     else:
-        target_items = 34 if world.retro[player] else 63
+        target_items += 29  # small keys in chests
+        if world.dropshuffle[player]:
+            target_items += 14  # 13 dropped smalls + 1 big
+        if world.pottery[player] not in ['none', 'cave']:
+            target_items += 19  # 19 pot keys
     d_items = target_items - all_dungeon_items_cnt
     world.pool_adjustment[player] = d_items
     smooth_door_pairs(world, player)
@@ -1047,7 +1068,11 @@ def assign_cross_keys(dungeon_builders, world, player):
     logging.getLogger('').info(world.fish.translate("cli", "cli", "shuffling.keydoors"))
     start = time.process_time()
     if world.retro[player]:
-        remaining = 61 if world.keydropshuffle[player] else 29
+        remaining = 29
+        if world.dropshuffle[player]:
+            remaining += 13
+        if world.pottery[player] not in ['none', 'cave']:
+            remaining += 19
     else:
         remaining = len(list(x for dgn in world.dungeons if dgn.player == player for x in dgn.small_keys))
     total_keys = remaining
@@ -1066,11 +1091,10 @@ def assign_cross_keys(dungeon_builders, world, player):
         total_candidates += builder.key_doors_num
         start_regions_map[name] = start_regions
 
-
     # Step 2: Initial Key Number Assignment & Calculate Flexibility
     for name, builder in dungeon_builders.items():
         calculated = int(round(builder.key_doors_num*total_keys/total_candidates))
-        max_keys = builder.location_cnt - calc_used_dungeon_items(builder)
+        max_keys = max(0, builder.location_cnt - calc_used_dungeon_items(builder))
         cand_len = max(0, len(builder.candidates) - builder.key_drop_cnt)
         limit = min(max_keys, cand_len)
         suggested = min(calculated, limit)
@@ -1243,7 +1267,13 @@ def refine_hints(dungeon_builders):
         for region in builder.master_sector.regions:
             for location in region.locations:
                 if not location.event and '- Boss' not in location.name and '- Prize' not in location.name and location.name != 'Sanctuary':
-                    location.hint_text = dungeon_hints[name]
+                    if location.type == LocationType.Pot and location.pot:
+                        hint_text = ('under a block' if location.pot.flags & PotFlags.Block else 'in a pot')
+                        location.hint_text = f'{hint_text} {dungeon_hints[name]}'
+                    elif location.type == LocationType.Drop:
+                        location.hint_text = f'dropped {dungeon_hints[name]}'
+                    else:
+                        location.hint_text = dungeon_hints[name]
 
 
 def refine_boss_exits(world, player):
@@ -1279,6 +1309,7 @@ def refine_boss_exits(world, player):
             if 0 < len(filtered) < len(reachable_portals):
                 reachable_portals = filtered
             chosen_one = random.choice(reachable_portals) if len(reachable_portals) > 1 else reachable_portals[0]
+            chosen_one.chosen = True
             if chosen_one != current_boss:
                 chosen_one.change_boss_exit(current_boss.boss_exit_idx)
                 current_boss.change_boss_exit(-1)
@@ -1369,6 +1400,8 @@ def combine_layouts(recombinant_builders, dungeon_builders, entrances_map):
         dungeon_builders[recombine.name] = recombine
 
 
+# todo: this allows cross-dungeon exploring via HC Ledge or Inaccessible Regions
+# todo: @deprecated
 def valid_region_to_explore(region, world, player):
     return region and (region.type == RegionType.Dungeon
                        or region.name in world.inaccessible_regions[player]
@@ -1560,7 +1593,7 @@ okay_normals = [DoorKind.Normal, DoorKind.SmallKey, DoorKind.Bombable, DoorKind.
 
 
 def find_key_door_candidates(region, checked, world, player):
-    dungeon = region.dungeon
+    dungeon_name = region.dungeon.name
     candidates = []
     checked_doors = list(checked)
     queue = deque([(region, None, None)])
@@ -1570,14 +1603,16 @@ def find_key_door_candidates(region, checked, world, player):
             d = ext.door
             if d and d.controller:
                 d = d.controller
-            if d and not d.blocked and not d.entranceFlag and d.dest is not last_door and d.dest is not last_region and d not in checked_doors:
+            if d and not d.blocked and d.dest is not last_door and d.dest is not last_region and d not in checked_doors:
                 valid = False
-                if 0 <= d.doorListPos < 4 and d.type in [DoorType.Interior, DoorType.Normal, DoorType.SpiralStairs]:
+                if (0 <= d.doorListPos < 4 and d.type in [DoorType.Interior, DoorType.Normal, DoorType.SpiralStairs]
+                   and not d.entranceFlag):
                     room = world.get_room(d.roomIndex, player)
                     position, kind = room.doorList[d.doorListPos]
-
                     if d.type == DoorType.Interior:
                         valid = kind in [DoorKind.Normal, DoorKind.SmallKey, DoorKind.Bombable, DoorKind.Dashable]
+                        if valid and d.dest not in candidates:  # interior doors are not separable yet
+                            candidates.append(d.dest)
                     elif d.type == DoorType.SpiralStairs:
                         valid = kind in [DoorKind.StairKey, DoorKind.StairKey2, DoorKind.StairKeyLow]
                     elif d.type == DoorType.Normal:
@@ -1596,7 +1631,7 @@ def find_key_door_candidates(region, checked, world, player):
                 if valid and d not in candidates:
                     candidates.append(d)
                 connected = ext.connected_region
-                if connected and (connected.type != RegionType.Dungeon or connected.dungeon == dungeon):
+                if valid_region_to_explore_lim(connected, dungeon_name, world, player):
                     queue.append((ext.connected_region, d, current))
                 if d is not None:
                     checked_doors.append(d)
@@ -1714,7 +1749,7 @@ def smooth_door_pairs(world, player):
                         if type_b == DoorKind.SmallKey:
                             remove_pair(door, world, player)
                 else:
-                    if valid_pair:
+                    if valid_pair and not std_forbidden(door, world, player):
                         bd_candidates[door.entrance.parent_region.dungeon].append(door)
                     elif type_a in [DoorKind.Bombable, DoorKind.Dashable] or type_b in [DoorKind.Bombable, DoorKind.Dashable]:
                         if type_a in [DoorKind.Bombable, DoorKind.Dashable]:
@@ -1723,7 +1758,8 @@ def smooth_door_pairs(world, player):
                         else:
                             room_b.change(partner.doorListPos, DoorKind.Normal)
                             remove_pair(partner, world, player)
-            elif valid_pair and type_a != DoorKind.SmallKey and type_b != DoorKind.SmallKey:
+            elif (valid_pair and type_a != DoorKind.SmallKey and type_b != DoorKind.SmallKey
+                  and not std_forbidden(door, world, player)):
                 bd_candidates[door.entrance.parent_region.dungeon].append(door)
     shuffle_bombable_dashable(bd_candidates, world, player)
     world.paired_doors[player] = [x for x in world.paired_doors[player] if x.pair or x.original]
@@ -1762,12 +1798,37 @@ def stateful_door(door, kind):
     return False
 
 
+def std_forbidden(door, world, player):
+    return (world.mode[player] == 'standard' and door.entrance.parent_region.dungeon.name == 'Hyrule Castle' and
+            'Hyrule Castle Throne Room N' in [door.name, door.dest.name])
+
+
+dashable_forbidden = {
+    'Swamp Trench 1 Key Ledge NW', 'Swamp Left Elbow WN', 'Swamp Right Elbow SE', 'Mire Hub WN', 'Mire Hub WS',
+    'Mire Hub Top NW', 'Mire Hub NE', 'Ice Dead End WS'
+}
+
+ohko_forbidden = {
+    'GT Invisible Catwalk NE', 'GT Falling Bridge WN', 'GT Falling Bridge WS', 'GT Hidden Star ES', 'GT Hookshot EN',
+    'GT Torch Cross WN', 'TR Torches WN', 'Mire Falling Bridge WS', 'Mire Falling Bridge W', 'Ice Hookshot Balcony SW',
+    'Ice Catwalk WN', 'Ice Catwalk NW', 'Ice Bomb Jump NW', 'GT Cannonball Bridge SE'
+}
+
+
+def filter_dashable_candidates(candidates, world):
+    forbidden_set = dashable_forbidden
+    if world.timer in ['ohko', 'timed-ohko']:
+        forbidden_set = ohko_forbidden.union(dashable_forbidden)
+    return [x for x in candidates if x.name not in forbidden_set and x.dest.name not in forbidden_set]
+
+
 def shuffle_bombable_dashable(bd_candidates, world, player):
     if world.doorShuffle[player] == 'basic':
         for dungeon, candidates in bd_candidates.items():
             diff = bomb_dash_counts[dungeon.name][1]
             if diff > 0:
-                for chosen in random.sample(candidates, min(diff, len(candidates))):
+                dash_candidates = filter_dashable_candidates(candidates, world)
+                for chosen in random.sample(dash_candidates, min(diff, len(candidates))):
                     change_pair_type(chosen, DoorKind.Dashable, world, player)
                     candidates.remove(chosen)
             diff = bomb_dash_counts[dungeon.name][0]
@@ -1779,7 +1840,8 @@ def shuffle_bombable_dashable(bd_candidates, world, player):
                 remove_pair_type_if_present(excluded, world, player)
     elif world.doorShuffle[player] == 'crossed':
         all_candidates = sum(bd_candidates.values(), [])
-        for chosen in random.sample(all_candidates, min(8, len(all_candidates))):
+        dash_candidates = filter_dashable_candidates(all_candidates, world)
+        for chosen in random.sample(dash_candidates, min(8, len(all_candidates))):
             change_pair_type(chosen, DoorKind.Dashable, world, player)
             all_candidates.remove(chosen)
         for chosen in random.sample(all_candidates, min(12, len(all_candidates))):
@@ -1823,7 +1885,7 @@ def find_inaccessible_regions(world, player):
     while len(queue) > 0:
         next_region = queue.popleft()
         visited_regions.add(next_region)
-        if next_region.name == 'Dark Sanctuary Hint':  # special spawn point in cave
+        if world.mode[player] == 'inverted' and next_region.name == 'Dark Sanctuary Hint':  # special spawn point in cave
             for ent in next_region.entrances:
                 parent = ent.parent_region
                 if parent and parent.type is not RegionType.Dungeon and parent not in queue and parent not in visited_regions:
@@ -1839,16 +1901,18 @@ def find_inaccessible_regions(world, player):
         if any(x for x in ledge.exits if x.connected_region and x.connected_region.name == 'Agahnims Tower Portal'):
             world.inaccessible_regions[player].append('Hyrule Castle Ledge')
     logger = logging.getLogger('')
-    logger.debug('Inaccessible Regions:')
-    for r in world.inaccessible_regions[player]:
-        logger.debug('%s', r)
+    #logger.debug('Inaccessible Regions:')
+    #for r in world.inaccessible_regions[player]:
+    #    logger.debug('%s', r)
 
 
 def find_accessible_entrances(world, player, builder):
     entrances = [region.name for region in (portal.door.entrance.parent_region for portal in world.dungeon_portals[player]) if region.dungeon.name == builder.name]
     entrances.extend(drop_entrances[builder.name])
+    hc_std = False
 
     if world.mode[player] == 'standard' and builder.name == 'Hyrule Castle':
+        hc_std = True
         start_regions = ['Hyrule Castle Courtyard']
     else:
         start_regions = ['Links House' if not world.is_bombshop_start(player) else 'Big Bomb Shop', 'Sanctuary' if world.mode[player] != 'inverted' else 'Dark Sanctuary Hint']
@@ -1873,6 +1937,8 @@ def find_accessible_entrances(world, player, builder):
             if connect not in queue and connect not in visited_regions:
                 queue.append(connect)
         for ext in next_region.exits:
+            if hc_std and ext.name == 'Hyrule Castle Main Gate (North)':  # just skip it
+                continue
             connect = ext.connected_region
             if connect is None or ext.door and ext.door.blocked:
                 continue
@@ -2098,6 +2164,7 @@ logical_connections = [
     ('Hera Startile Wide Crystal Exit', 'Hera Startile Wide'),
     ('Hera Big Chest Hook Path', 'Hera Big Chest Landing'),
     ('Hera Big Chest Landing Exit', 'Hera 4F'),
+    ('Hera 5F Orange Path', 'Hera 5F Pot Block'),
 
     ('PoD Pit Room Block Path N', 'PoD Pit Room Blocked'),
     ('PoD Pit Room Block Path S', 'PoD Pit Room'),
@@ -2161,6 +2228,7 @@ logical_connections = [
     ('Swamp Trench 1 Departure Approach', 'Swamp Trench 1 Approach'),
     ('Swamp Trench 1 Departure Key', 'Swamp Trench 1 Key Ledge'),
     ('Swamp Hub Hook Path', 'Swamp Hub North Ledge'),
+    ('Swamp Hub Side Hook Path', 'Swamp Hub Side Ledges'),
     ('Swamp Hub North Ledge Drop Down', 'Swamp Hub'),
     ('Swamp Crystal Switch Outer to Inner Barrier - Blue', 'Swamp Crystal Switch Inner'),
     ('Swamp Crystal Switch Outer to Ranged Crystal', 'Swamp Crystal Switch Outer - Ranged Crystal'),
@@ -2192,13 +2260,17 @@ logical_connections = [
     ('Skull Pot Circle Star Path', 'Skull Map Room'),
     ('Skull Big Chest Hookpath', 'Skull 1 Lobby'),
     ('Skull Back Drop Star Path', 'Skull Small Hall'),
+    ('Skull 2 West Lobby Pits', 'Skull 2 West Lobby Ledge'),
+    ('Skull 2 West Lobby Ledge Pits', 'Skull 2 West Lobby'),
     ('Thieves Rail Ledge Drop Down', 'Thieves BK Corner'),
     ('Thieves Hellway Orange Barrier', 'Thieves Hellway S Crystal'),
     ('Thieves Hellway Crystal Orange Barrier', 'Thieves Hellway'),
     ('Thieves Hellway Blue Barrier', 'Thieves Hellway N Crystal'),
     ('Thieves Hellway Crystal Blue Barrier', 'Thieves Hellway'),
     ('Thieves Attic Orange Barrier', 'Thieves Attic Hint'),
+    ('Thieves Attic Blue Barrier', 'Thieves Attic Switch'),
     ('Thieves Attic Hint Orange Barrier', 'Thieves Attic'),
+    ('Thieves Attic Switch Blue Barrier', 'Thieves Attic'),
     ('Thieves Basement Block Path', 'Thieves Blocked Entry'),
     ('Thieves Blocked Entry Path', 'Thieves Basement Block'),
     ('Thieves Conveyor Bridge Block Path', 'Thieves Conveyor Block'),
@@ -2257,6 +2329,8 @@ logical_connections = [
 
     ('TR Main Lobby Gap', 'TR Lobby Ledge'),
     ('TR Lobby Ledge Gap', 'TR Main Lobby'),
+    ('TR Hub Path', 'TR Hub Ledges'),
+    ('TR Hub Ledges Path', 'TR Hub'),
     ('TR Pipe Ledge Drop Down', 'TR Pipe Pit'),
     ('TR Big Chest Gap', 'TR Big Chest Entrance'),
     ('TR Big Chest Entrance Gap', 'TR Big Chest'),
@@ -2285,6 +2359,8 @@ logical_connections = [
     ('TR Crystaroller Chest to Middle Barrier - Blue', 'TR Crystaroller Middle'),
     ('TR Crystaroller Middle Ranged Crystal Exit', 'TR Crystaroller Middle'),
     ('TR Crystaroller Bottom Ranged Crystal Exit', 'TR Crystaroller Bottom'),
+    ('TR Dark Ride Path', 'TR Dark Ride Ledges'),
+    ('TR Dark Ride Ledges Path', 'TR Dark Ride'),
     ('TR Crystal Maze Start to Interior Barrier - Blue', 'TR Crystal Maze Interior'),
     ('TR Crystal Maze Start to Crystal', 'TR Crystal Maze Start - Crystal'),
     ('TR Crystal Maze Start Crystal Exit', 'TR Crystal Maze Start'),
@@ -2295,16 +2371,18 @@ logical_connections = [
     ('TR Crystal Maze End to Interior Barrier - Blue', 'TR Crystal Maze Interior'),
     ('TR Crystal Maze End to Ranged Crystal', 'TR Crystal Maze End - Ranged Crystal'),
     ('TR Crystal Maze End Ranged Crystal Exit', 'TR Crystal Maze End'),
+    ('TR Final Abyss Balcony Path', 'TR Final Abyss Ledge'),
+    ('TR Final Abyss Ledge Path', 'TR Final Abyss Balcony'),
 
     ('GT Blocked Stairs Block Path', 'GT Big Chest'),
     ('GT Speed Torch South Path', 'GT Speed Torch'),
     ('GT Speed Torch North Path', 'GT Speed Torch Upper'),
-    ('GT Hookshot East-North Path', 'GT Hookshot North Platform'),
-    ('GT Hookshot East-South Path', 'GT Hookshot South Platform'),
-    ('GT Hookshot North-East Path', 'GT Hookshot East Platform'),
-    ('GT Hookshot North-South Path', 'GT Hookshot South Platform'),
-    ('GT Hookshot South-East Path', 'GT Hookshot East Platform'),
-    ('GT Hookshot South-North Path', 'GT Hookshot North Platform'),
+    ('GT Hookshot East-Mid Path', 'GT Hookshot Mid Platform'),
+    ('GT Hookshot Mid-East Path', 'GT Hookshot East Platform'),
+    ('GT Hookshot North-Mid Path', 'GT Hookshot Mid Platform'),
+    ('GT Hookshot Mid-North Path', 'GT Hookshot North Platform'),
+    ('GT Hookshot South-Mid Path', 'GT Hookshot Mid Platform'),
+    ('GT Hookshot Mid-South Path', 'GT Hookshot South Platform'),
     ('GT Hookshot Platform Blue Barrier', 'GT Hookshot South Entry'),
     ('GT Hookshot Platform Barrier Bypass', 'GT Hookshot South Entry'),
     ('GT Hookshot Entry Blue Barrier', 'GT Hookshot South Platform'),
@@ -2335,8 +2413,8 @@ logical_connections = [
     ('GT Crystal Conveyor to Corner Barrier - Blue', 'GT Crystal Conveyor Corner'),
     ('GT Crystal Conveyor to Ranged Crystal', 'GT Crystal Conveyor - Ranged Crystal'),
     ('GT Crystal Conveyor Corner to Left Bypass', 'GT Crystal Conveyor Left'),
-    ('GT Crystal Conveyor Corner to Barrier - Blue', 'GT Crystal Conveyor Left'),
-    ('GT Crystal Conveyor Corner to Barrier - Orange', 'GT Crystal Conveyor'),
+    ('GT Crystal Conveyor Corner to Barrier - Blue', 'GT Crystal Conveyor'),
+    ('GT Crystal Conveyor Corner to Barrier - Orange', 'GT Crystal Conveyor Left'),
     ('GT Crystal Conveyor Corner to Ranged Crystal', 'GT Crystal Conveyor Corner - Ranged Crystal'),
     ('GT Crystal Conveyor Left to Corner Barrier - Orange', 'GT Crystal Conveyor Corner'),
     ('GT Crystal Conveyor Ranged Crystal Exit', 'GT Crystal Conveyor'),
@@ -3002,7 +3080,8 @@ palette_map = {
     'Tower of Hera': (0x6, None),
     'Thieves Town': (0x17, None),  # the attic uses 0x23
     'Turtle Rock': (0x18, 0x19, 'TR Boss SW'),
-    'Ganons Tower': (0x28, 0x1b, 'GT Agahnim 2 SW'),  # other palettes: 0x1a (other) 0x24 (Gauntlet - Lanmo) 0x25 (conveyor-torch-wizzrode moldorm pit f5?)
+    'Ganons Tower': (0x28, 0x1b, 'GT Agahnim 2 SW'),
+    # other palettes: 0x1a (other) 0x24 (Gauntlet - Lanmo) 0x25 (conveyor-torch-wizzrobe moldorm pit f5?)
 }
 
 # implications:

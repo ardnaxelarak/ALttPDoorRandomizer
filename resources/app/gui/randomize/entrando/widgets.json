@@ -1,8 +1,29 @@
 {
   "widgets": {
-    "openpyramid":      { "type": "checkbox" },
+    "openpyramid": { 
+      "type": "selectbox",
+      "options": [
+        "auto",
+        "yes",
+        "no"
+      ],
+      "config": {
+        "width": 10
+      }
+    },
     "shuffleganon":     { "type": "checkbox" },
     "shufflelinks":     { "type": "checkbox" },
+    "overworld_map": {
+      "type": "selectbox",
+      "options": [
+        "default",
+        "compass",
+        "map"
+      ],
+      "config": {
+        "width": 45
+      }
+    },
     "entranceshuffle":  {
       "type": "selectbox",
       "options": [

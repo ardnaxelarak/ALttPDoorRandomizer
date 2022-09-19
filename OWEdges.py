@@ -38,7 +38,7 @@ NP = IsParallel.No
 def create_owedges(world, player):
     edges = [
                              # name,                        owID,dir,type,edge_id,(owSlot)        vram
-        create_owedge(player, 'Lost Woods NW',               0x00, No, Ld, 0x00)      .coordInfo(0x00a0, 0x0284),
+        create_owedge(player, 'Lost Woods NW',               0x00, No, Ld, 0x00)      .coordInfo(0x00a0, 0x0284).special_entrance(0x80),
         create_owedge(player, 'Lost Woods SW',               0x00, So, Ld, 0x01, 0x08).coordInfo(0x0058, 0x2000),
         create_owedge(player, 'Lost Woods SC',               0x00, So, Ld, 0x02, 0x08).coordInfo(0x0178, 0x2020),
         create_owedge(player, 'Lost Woods SE',               0x00, So, Ld, 0x03, 0x09).coordInfo(0x0388, 0x2060),
@@ -53,7 +53,7 @@ def create_owedges(world, player):
         create_owedge(player, 'Death Mountain TR Pegs WN',   0x07, We, Ld, 0x02)      .coordInfo(0x0078, 0x00e0),
         create_owedge(player, 'Mountain Entry NW',           0x0a, No, Ld, 0x01)      .coordInfo(0x04cc, 0x180a),
         create_owedge(player, 'Mountain Entry SE',           0x0a, So, Ld, 0x04)      .coordInfo(0x0518, 0x1012),
-        create_owedge(player, 'Zora Waterfall NE',           0x0f, No, Ld, 0x02)      .coordInfo(0x0f80, 0x009a),
+        create_owedge(player, 'Zora Waterfall NE',           0x0f, No, Ld, 0x02)      .coordInfo(0x0f80, 0x009a).special_entrance(0x82),
         create_owedge(player, 'Zora Waterfall SE',           0x0f, So, Ld, 0x05)      .coordInfo(0x0f80, 0x1020),
         create_owedge(player, 'Lost Woods Pass NW',          0x10, No, Ld, 0x03)      .coordInfo(0x0058, 0x1800),
         create_owedge(player, 'Lost Woods Pass NE',          0x10, No, Ld, 0x04)      .coordInfo(0x0178, 0x181e),
@@ -132,7 +132,7 @@ def create_owedges(world, player):
         create_owedge(player, 'Links House ES',              0x2c, Ea, Ld, 0x17)      .coordInfo(0x0b80, 0x08c0),
         create_owedge(player, 'Stone Bridge NC',             0x2d, No, Ld, 0x14)      .coordInfo(0x0af0, 0x180e),
         create_owedge(player, 'Stone Bridge SC',             0x2d, So, Ld, 0x19)      .coordInfo(0x0ae0, 0x100c),
-        create_owedge(player, 'Stone Bridge WC',             0x2d, We, Wr, 0x17)      .coordInfo(0x0b1c, 0x061c),
+        create_owedge(player, 'Stone Bridge WC',             0x2d, We, Wr, 0x17)      .coordInfo(0x0b1c, 0x061c).special_entrance(0x81),
         create_owedge(player, 'Stone Bridge WS',             0x2d, We, Ld, 0x18)      .coordInfo(0x0b80, 0x08e0),
         create_owedge(player, 'Stone Bridge EN',             0x2d, Ea, Ld, 0x18)      .coordInfo(0x0a90, 0x01c0),
         create_owedge(player, 'Stone Bridge EC',             0x2d, Ea, Wr, 0x19)      .coordInfo(0x0b3c, 0x0640),
@@ -317,9 +317,9 @@ def create_owedges(world, player):
         create_owedge(player, 'Bomber Corner NE',            0x7f, No, Ld, 0x41)      .coordInfo(0x0f50, 0x181c),
         create_owedge(player, 'Bomber Corner WC',            0x7f, We, Wr, 0x49)      .coordInfo(0x0f30, 0x05e0),
         create_owedge(player, 'Bomber Corner WS',            0x7f, We, Ld, 0x4a)      .coordInfo(0x0f94, 0x0860),
-        create_owedge(player, 'Master Sword Meadow SC',      0x80, So, Ld, 0x40)      .coordInfo(0x0080, 0x0000),
-        create_owedge(player, 'Hobo EC',                     0x80, Ea, Wr, 0x4a)      .coordInfo(0x008c, 0x0020),
-        create_owedge(player, 'Zoras Domain SW',             0x81, So, Ld, 0x41, 0x89).coordInfo(0x02a4, 0x1782)
+        create_owedge(player, 'Master Sword Meadow SC',      0x80, So, Ld, 0x40)      .coordInfo(0x0080, 0x0000).special_exit(0x80),
+        create_owedge(player, 'Hobo EC',                     0x80, Ea, Wr, 0x4a)      .coordInfo(0x008c, 0x0020).special_exit(0x81),
+        create_owedge(player, 'Zoras Domain SW',             0x81, So, Ld, 0x41, 0x89).coordInfo(0x02a4, 0x1782).special_exit(0x82)
     ]
         
     world.owedges += edges
@@ -439,16 +439,16 @@ OWEdgeGroups = {
             ['Octoballoon NE']
         ]
     ),
-    # (Op, LW, Vt, Ld, NP, 1): (
-    #     [
-    #         ['Master Sword Meadow SC'],
-    #         ['Zoras Domain SW']
-    #     ],
-    #     [
-    #         ['Lost Woods NW'],
-    #         ['Zora Waterfall NE']
-    #     ]
-    # ),
+    (Op, LW, Vt, Ld, NP, 1): (
+        [
+            ['Master Sword Meadow SC'],
+            ['Zoras Domain SW']
+        ],
+        [
+            ['Lost Woods NW'],
+            ['Zora Waterfall NE']
+        ]
+    ),
     (Op, LW, Hz, Ld, PL, 2): (
         [
             ['Kakariko Fortune EN', 'Kakariko Fortune ES'],
@@ -505,14 +505,14 @@ OWEdgeGroups = {
             ['Statues WC']
         ]
     ),
-    # (Op, LW, Hz, Wr, NP, 1): (
-    #     [
-    #         ['Hobo EC']
-    #     ],
-    #     [
-    #         ['Stone Bridge WC']
-    #     ]
-    # ),
+    (Op, LW, Hz, Wr, NP, 1): (
+        [
+            ['Hobo EC']
+        ],
+        [
+            ['Stone Bridge WC']
+        ]
+    ),
     (Op, LW, Vt, Wr, PL, 1): (
         [
             ['Tree Line SC'],
@@ -627,6 +627,10 @@ OWEdgeGroups = {
             ['Hype Cave WN', 'Hype Cave WS']
         ]
     ),
+    (Op, DW, Vt, Ld, NP, 1): (
+        [ ],
+        [ ]
+    ),
     (Op, DW, Hz, Ld, NP, 2): (
         [
             ['Dig Game EC', 'Dig Game ES']
@@ -675,6 +679,10 @@ OWEdgeGroups = {
             ['Hype Cave WC']
         ]
     ),
+    (Op, DW, Hz, Wr, NP, 1): (
+        [ ],
+        [ ]
+    ),
     (Op, DW, Vt, Wr, PL, 1): (
         [
             ['Dark Tree Line SC'],
@@ -719,7 +727,7 @@ OWTileRegions = bidict({
 
     'Zora Waterfall Area': 0x0f,
     'Zora Waterfall Water': 0x0f,
-    'Waterfall of Wishing Cave': 0x0f,
+    'Zora Waterfall Entryway': 0x0f,
 
     'Lost Woods Pass West Area': 0x10,
     'Lost Woods Pass East Top Area': 0x10,
@@ -975,289 +983,6 @@ OWTileRegions = bidict({
 
     'Zoras Domain': 0x81
 })
-
-OWTileGroups = {
-    ("Woods", "Regular", "None"): (
-        [
-            0x00, 0x2d, 0x80
-        ],
-        [
-            0x40, 0x6d
-        ]
-    ),
-    ("Lumberjack", "Regular", "None"): (
-        [
-            0x02
-        ],
-        [
-            0x42
-        ]
-    ),
-    ("Mountain Entry", "Entrance", "None"): (
-        [
-            0x03
-        ],
-        [
-            0x43
-        ]
-    ),
-    ("East Mountain", "Regular", "None"): (
-        [
-            0x05
-        ],
-        [
-            0x45
-        ]
-    ),
-    ("East Mountain", "Entrance", "None"): (
-        [
-            0x07
-        ],
-        [
-            0x47
-        ]
-    ),
-    ("Lake", "Regular", "Zora"): (
-        [
-            0x0f, 0x81
-        ],
-        [
-            0x4f
-        ]
-    ),
-    ("Lake", "Regular", "Lake"): (
-        [
-            0x35
-        ],
-        [
-            0x75
-        ]
-    ),
-    ("Mountain Entry", "Regular", "None"): (
-        [
-            0x0a
-        ],
-        [
-            0x4a
-        ]
-    ),
-    ("Woods Pass", "Regular", "None"): (
-        [
-            0x10
-        ],
-        [
-            0x50
-        ]
-    ),
-    ("Fortune", "Regular", "None"): (
-        [
-            0x11
-        ],
-        [
-            0x51
-        ]
-    ),
-    ("Whirlpools", "Regular", "Pond"): (
-        [
-            0x12
-        ],
-        [
-            0x52
-        ]
-    ),
-    ("Whirlpools", "Regular", "Witch"): (
-        [
-            0x15
-        ],
-        [
-            0x55
-        ]
-    ),
-    ("Whirlpools", "Regular", "CWhirlpool"): (
-        [
-            0x33
-        ],
-        [
-            0x73
-        ]
-    ),
-    ("Whirlpools", "Regular", "Southeast"): (
-        [
-            0x3f
-        ],
-        [
-            0x7f
-        ]
-    ),
-    ("Castle", "Entrance", "None"): (
-        [
-            0x13, 0x14
-        ],
-        [
-            0x53, 0x54
-        ]
-    ),
-    ("Castle", "Regular", "None"): (
-        [
-            0x1a, 0x1b
-        ],
-        [
-            0x5a, 0x5b
-        ]
-    ),
-    ("Witch", "Regular", "None"): (
-        [
-            0x16
-        ],
-        [
-            0x56
-        ]
-    ),
-    ("Water Approach", "Regular", "None"): (
-        [
-            0x17
-        ],
-        [
-            0x57
-        ]
-    ),
-    ("Village", "Regular", "None"): (
-        [
-            0x18
-        ],
-        [
-            0x58
-        ]
-    ),
-    ("Wooden Bridge", "Regular", "None"): (
-        [
-            0x1d
-        ],
-        [
-            0x5d
-        ]
-    ),
-    ("Eastern", "Regular", "None"): (
-        [
-            0x1e
-        ],
-        [
-            0x5e
-        ]
-    ),
-    ("Blacksmith", "Regular", "None"): (
-        [
-            0x22
-        ],
-        [
-            0x62
-        ]
-    ),
-    ("Dunes", "Regular", "None"): (
-        [
-            0x25
-        ],
-        [
-            0x65
-        ]
-    ),
-    ("Game", "Regular", "None"): (
-        [
-            0x28, 0x29
-        ],
-        [
-            0x68, 0x69
-        ]
-    ),
-    ("Grove", "Regular", "None"): (
-        [
-            0x2a
-        ],
-        [
-            0x6a
-        ]
-    ),
-    ("Central Bonk Rocks", "Regular", "None"): (
-        [
-            0x2b
-        ],
-        [
-            0x6b
-        ]
-    ),
-    ("Links", "Regular", "None"): (
-        [
-            0x2c
-        ],
-        [
-            0x6c
-        ]
-    ),
-    ("Tree Line", "Regular", "None"): (
-        [
-            0x2e
-        ],
-        [
-            0x6e
-        ]
-    ),
-    ("Nook", "Regular", "None"): (
-        [
-            0x2f
-        ],
-        [
-            0x6f
-        ]
-    ),
-    ("Desert", "Regular", "None"): (
-        [
-            0x30, 0x3a
-        ],
-        [
-            0x70, 0x7a
-        ]
-    ),
-    ("Grove Approach", "Regular", "None"): (
-        [
-            0x32
-        ],
-        [
-            0x72
-        ]
-    ),
-    ("Hype", "Regular", "None"): (
-        [
-            0x34
-        ],
-        [
-            0x74
-        ]
-    ),
-    ("Shopping Mall", "Regular", "None"): (
-        [
-            0x37
-        ],
-        [
-            0x77
-        ]
-    ),
-    ("Swamp", "Regular", "None"): (
-        [
-            0x3b
-        ],
-        [
-            0x7b
-        ]
-    ),
-    ("South Pass", "Regular", "None"): (
-        [
-            0x3c
-        ],
-        [
-            0x7c
-        ]
-    )
-}
 
 parallel_links = bidict({'Lost Woods SW': 'Skull Woods SW',
                         'Lost Woods SC': 'Skull Woods SC',
@@ -1528,7 +1253,7 @@ OWExitTypes = {
                 'Mountain Entry Entrance Rock (West)',
                 'Mountain Entry Entrance Rock (East)',
                 'Zora Waterfall Water Entry',
-                'Waterfall of Wishing Cave Entry',
+                'Zora Waterfall Water Approach',
                 'Zora Waterfall Landing',
                 'Lost Woods Pass Hammer (North)',
                 'Lost Woods Pass Hammer (South)',
@@ -1585,7 +1310,8 @@ OWExitTypes = {
                 'Lake Hylia West Pier',
                 'Lake Hylia Northeast Water Drop',
                 'Lake Hylia East Pier',
-                'Lake Hylia Water D Entry',
+                'Lake Hylia Water D Approach',
+                'Lake Hylia Water D Leave',
                 'Desert Pass Ladder (South)',
                 'Desert Pass Rocks (North)',
                 'Desert Pass Rocks (South)',
@@ -1854,6 +1580,7 @@ OWExitTypes = {
                 'South Shore East Mirror Spot',
                 'Lake Hylia Island Mirror Spot',
                 'Lake Hylia Water Mirror Spot',
+                'Lake Hylia Water D Mirror Spot',
                 'Lake Hylia Central Island Mirror Spot',
                 'Ice Cave Mirror Spot',
                 'Desert Pass Ledge Mirror Spot',

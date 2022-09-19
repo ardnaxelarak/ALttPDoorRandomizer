@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import os
 import re
-import operator as op
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from collections import defaultdict
-from functools import reduce
+from math import factorial
 from itertools import count
 
 
@@ -133,12 +132,9 @@ def kth_combination(k, l, r):
 
 
 def ncr(n, r):
-    if r == 0:
+    if r == 0 or r >= n:
         return 1
-    r = min(r, n-r)
-    numerator = reduce(op.mul, range(n, n-r, -1), 1)
-    denominator = reduce(op.mul, range(1, r+1), 1)
-    return numerator / denominator
+    return factorial(n) // factorial(r) // factorial(n-r)
 
 
 entrance_offsets = {
@@ -589,10 +585,11 @@ def extract_data_from_jp_rom(rom):
     with open(rom, 'rb') as stream:
         rom_data = bytearray(stream.read())
 
-    rooms = [0x1c, 0x1d, 0x4e]
+    rooms = range(0, 0x128)
     # rooms = [0x7b, 0x7c, 0x7d, 0x8b, 0x8c, 0x8d, 0x9b, 0x9c, 0x9d]
     # rooms = [0x1a, 0x2a, 0xd1]
     for room in rooms:
+        # print(f'Room {room:02x}')
         b2idx = room*2
         b3idx = room*3
         headerptr = 0x271e2 + b2idx
@@ -609,6 +606,7 @@ def extract_data_from_jp_rom(rom):
         stop, idx = False,  0
         ffcnt = 0
         mode = 0
+        secret_cnt = 0
         # first two bytes
         b1 = rom_data[objectloc+idx]
         b2 = rom_data[objectloc+idx+1]
@@ -630,9 +628,20 @@ def extract_data_from_jp_rom(rom):
                 idx += 2
             elif not mode and ffcnt < 3:
                 objectdata.append(b3)
+                if b3 == 0xFA and ((b2 & 0x3) << 2) | (b1 & 0x3) in [0xf, 0xc]:
+                    # potcalc
+                    vram = ((b1 & 0xFC) >> 1) | ((b2 & 0xFC) << 5)
+                    low = vram & 0xFF
+                    high = (vram & 0xFF00) >> 8
+                    if ffcnt == 1:
+                        high |= 0x20
+                    print(f'db {", ".join([f"${low:02x}", f"${high:02x}"])}')
+                    secret_cnt += 1
                 idx += 3
             else:
                 idx += 2
+        if secret_cnt:
+            print(f'Room {room:02x} {secret_cnt}')
         spriteptr = 0x4d62e + b2idx
         spriteloc = rom_data[spriteptr] + rom_data[spriteptr+1]*0x100 + 0x40000
         secretptr = 0xdb67 + b2idx
@@ -656,23 +665,40 @@ def extract_data_from_jp_rom(rom):
             else:
                 secretdata.append(b3)
             idx += 3
-        print(f'Room {room:02x}')
-        print(f'HeaderPtr {headerptr:06x}')
-        print(f'HeaderLoc {headerloc:06x}')
-        print(f'db {",".join([f"${x:02x}" for x in header])}')
-        print(f'Obj Length: {len(objectdata)}')
-        print(f'ObjectPtr {objectptr:06x}')
-        print(f'ObjectLoc {objectloc:06x}')
-        for i in range(0, len(objectdata)//16 + 1):
-            slice = objectdata[i*16:i*16+16]
-            print(f'db {",".join([f"${x:02x}" for x in slice])}')
-        print(f'SpritePtr {spriteptr:06x}')
-        print(f'SpriteLoc {spriteloc:06x}')
-        print_data_block(spritedata)
-        print(f'SecretPtr {secretptr:06x}')
-        print(f'SecretLoc {secretloc:06x}')
-        print_data_block(secretdata)
-        print()
+        # print(f'Room {room:02x}')
+        # print(f'HeaderPtr {headerptr:06x}')
+        # print(f'HeaderLoc {headerloc:06x}')
+        # print(f'db {",".join([f"${x:02x}" for x in header])}')
+        # print(f'Obj Length: {len(objectdata)}')
+        # print(f'ObjectPtr {objectptr:06x}')
+        # print(f'ObjectLoc {objectloc:06x}')
+        # for i in range(0, len(objectdata)//16 + 1):
+        #     slice = objectdata[i*16:i*16+16]
+        #     print(f'db {",".join([f"${x:02x}" for x in slice])}')
+        # print(f'SpritePtr {spriteptr:06x}')
+        # print(f'SpriteLoc {spriteloc:06x}')
+        # print_data_block(spritedata)
+        # print(f'SecretPtr {secretptr:06x}')
+        # print(f'SecretLoc {secretloc:06x}')
+        # print_data_block(secretdata)
+#        print()
+
+def count_set_bits(val):
+    if val == 0:
+        return 0
+    else:
+        return (val & 1) + count_set_bits(val >> 1)
+
+def check_pots():
+    from PotShuffle import vanilla_pots
+    for supertile, pot_list in vanilla_pots.items():
+        for i,pot in enumerate(pot_list):
+            if pot.obj_ref:
+                r = pot.obj_ref
+                secret_vram = pot.x | (pot.y << 8)
+                tile_vram = ((r.data[1] & 0xFC) << 5) | ((r.data[0] & 0xFC) >> 1)
+                if secret_vram != tile_vram:
+                    print(f'{pot.room}#{i+1} secret: {hex(secret_vram)} tile: {hex(tile_vram)}')
 
 
 def stack_size3a(size=2):
@@ -717,3 +743,4 @@ if __name__ == '__main__':
     # room_palette_data(old_rom=sys.argv[1])
     # extract_data_from_us_rom(sys.argv[1])
     # extract_data_from_jp_rom(sys.argv[1])
+    # check_pots()

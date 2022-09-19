@@ -118,7 +118,7 @@ RetrieveBunnyState:
 + RTL
 
 RainPrevention:
-	LDA $00 : XBA : AND #$00FF ; what we wrote over
+	LDA $00 : XBA : AND #$00FF : STA.b $0A ; what we wrote over
 	PHA
 		LDA $7EF3C5 : AND #$00FF : CMP #$0002 : !BGE .done ; only in rain states (0 or 1)
 		LDA.l $7EF3C6 : AND #$0004 : BNE .done ; zelda's been rescued
@@ -131,9 +131,11 @@ RainPrevention:
 			LDX #$FFFE
 			- INX #2 : LDA.l RemoveRainDoorsRoom, X : CMP #$FFFF : BEQ .done
 			CMP $A0 : BNE -
-				LDA.l RainDoorMatch, X : CMP $00 : BNE -
-					PLA : LDA #$0008 : RTL
-	.done PLA : RTL
+				SEP #$20 : LDA.l RainDoorMatch, X : CMP $00 : BNE .continue
+					REP #$20 : PLA : SEC : RTL
+				.continue
+				REP #$20 : BRA -
+	.done PLA : CLC : RTL
 
 ; A should be how much dmg to do to Aga when leaving this function
 StandardAgaDmg:

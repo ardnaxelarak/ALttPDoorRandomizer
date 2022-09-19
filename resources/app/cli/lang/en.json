@@ -8,6 +8,7 @@
     "player": "Player",
     "shuffling.overworld": "Shuffling overworld",
     "shuffling.world": "Shuffling entrances",
+    "shuffling.prep": "Dungeon and Item prep",
     "shuffling.dungeons": "Shuffling dungeons",
     "shuffling.pots": "Shuffling pots",
     "basic.traversal": "--Basic Traversal",
@@ -38,6 +39,7 @@
     "cannot.reach.required": "Not all required items reachable. Something went terribly wrong here.",
     "patching.rom": "Patching ROM",
     "patching.spoiler": "Creating Spoiler",
+    "create.meta": "Creating Meta Info",
     "calc.playthrough": "Calculating Playthrough",
     "made.rom": "Patched ROM:         %s",
     "made.playthrough": "Printed Playthrough: %s",
@@ -59,6 +61,7 @@
   "help": {
     "lang": [ "App Language, if available, defaults to English" ],
     "create_spoiler": [ "Output a Spoiler File" ],
+    "bps": [ "Output BPS patches instead of ROMs"],
     "logic": [
       "Select Enforcement of Item Requirements. (default: %(default)s)",
       "No Glitches:    No Glitch knowledge required.",
@@ -161,22 +164,26 @@
       "balanced:       vt26 derivative that aims to strike a balance between",
       "                the overworld heavy vt25 and the dungeon heavy vt26",
       "                algorithm.",
-      "vt26:           Shuffle items and place them in a random location",
-      "                that it is not impossible to be in. This includes",
-      "                dungeon keys and items.",
-      "vt25:           Shuffle items and place them in a random location",
-      "                that it is not impossible to be in.",
-      "vt21:           Unbiased in its selection, but has tendency to put",
-      "                Ice Rod in Turtle Rock.",
-      "vt22:           Drops off stale locations after 1/3 of progress",
-      "                items were placed to try to circumvent vt21\\'s",
-      "                shortcomings.",
-      "Freshness:      Keep track of stale locations (ones that cannot be",
-      "                reached yet) and decrease likeliness of selecting",
-      "                them the more often they were found unreachable.",
-      "Flood:          Push out items starting from Link\\'s House and",
-      "                slightly biased to placing progression items with",
-      "                less restrictions."
+      "restricted placements: these consider all major items to be special and attempts",
+      "to place items from fixed to semi-random locations. For purposes of these shuffles, all",
+      "Y items, A items, swords (unless vanilla swords), mails, shields, heart containers and",
+      "1/2 magic are considered to be part of a major items pool. Big Keys are added to the pool",
+      "if shuffled. Same for small keys, compasses, maps, keydrops (if small keys are also shuffled),",
+      "1 of each capacity upgrade for shopsanity, the quiver item for retro+shopsanity, and",
+      "triforce pieces for Triforce Hunt. Future modes will add to these as appropriate.",
+      "vanilla_fill    As above, but attempts to place items in their vanilla",
+      "                location first. Major items that cannot be placed that way",
+      "                will attempt to be placed in other failed locations first.",
+      "                Also attempts to place all items in vanilla locations",
+      "major_only      As above, but uses the major items' location preferentially",
+      "                major item location are defined as the group of location where",
+      "                the items are found in the vanilla game.",
+      "dungeon_only    As above, but major items are preferentially placed",
+      "                in dungeons locations first",
+      "district        As above, but groups of locations are chosen randomly",
+      "                from a pool of fixed locations designed to be interesting",
+      "                and give major clues about the location of other",
+      "                advancement items. These fixed groups will be documented."
     ],
     "shuffle": [
       "Select Entrance Shuffling Algorithm. (default: %(default)s)",
@@ -215,7 +222,6 @@
     "ow_crossed": [
       "This allows cross-world connections to occur on the overworld.",
       "None:           No transitions are cross-world connections.",
-      "Allowed:        Only entrances/whirlpools can end up cross-world.",
       "Polar:          Only used when Mixed is enabled. This retains original",
       "                connections even when overworld tiles are swapped.",
       "Limited:        Exactly nine transitions are randomly chosen as",
@@ -231,6 +237,9 @@
     ],
     "ow_whirlpool": [
       "Whirlpools will be shuffled and paired together."
+    ],
+    "bonk_drops": [
+      "Bonk drops from trees, rocks, and statues are shuffled with the item pool."
     ],
     "ow_fluteshuffle": [
       "This randomizes the flute spot destinations.",
@@ -300,7 +309,21 @@
     "keyshuffle": [ "Small Keys are no longer restricted to their dungeons, but can be anywhere. (default: %(default)s)" ],
     "bigkeyshuffle": [ "Big Keys are no longer restricted to their dungeons, but can be anywhere. (default: %(default)s)" ],
     "shopsanity": ["Shop contents are shuffle in the main item pool and other items can take their place. (default: %(default)s)"],
-    "keydropshuffle": [ "Key Drops (Pots and Enemies) are shuffled and other items can take their place (default: %(default)s)" ],
+    "dropshuffle": [ "Keys dropped by enemies are shuffled and other items can take their place. (default: %(default)s)"],
+    "pottery": [ "Controls how items under pots are shuffled and if other items can take their place:",
+      "None:      No pots are changed",
+      "Keys:      Key pots are included in the location pool and other items can take their place",
+      "Cave:      Only pots in houses and caves are included in the location pool",
+      "CaveKeys:  Both pots in houses and caves and keys pots are included in the location pool",
+      "Reduced:   Same as KeyCaves + 25%% of Pots in dungeons (dynamic mode)",
+      "Clustered: Same as KeyCaves + 50%% of Pots in dungeons, chosen by logical group (dynamic mode)",
+      "NonEmpty:  All pots that are not originally empty are included in the location pool",
+      "Dungeon:   Only pots in dungeons are included in the location pool",
+      "Lottery:   All pots are part of the location pool"
+    ],
+    "colorizepots": ["All pots chosen to be in location pool by the pottery setting are different.",
+                     "Forced on in dynamic modes. Forced off in lottery"],
+    "shufflepots": [ "Pots and switches are shuffled on the supertile (legacy potshuffle) (default: %(default)s)"],
     "mixed_travel": [
       "How to handle potential traversal between dungeon in Crossed door shuffle",
       "Prevent:   Rails are placed to prevent bombs jump and hovering from changing dungeon except with glitched logic settings",
@@ -329,6 +352,13 @@
       "Locations:      You will be able to reach every location in the game.",
       "None:           You will be able to reach enough locations to beat the game."
     ],
+    "restrict_boss_items": [
+      "Select which dungeon are not allowed on bosses (default: %(default)s)",
+      "None:           All items allowed",
+      "Mapcompass:     Map and Compass are required before you defeat the boss.",
+      "Dungeon:        Same as above and keys too cannot be on the boss. Small key shuffle",
+      "                and big key shuffle override this behavior"
+    ],
     "hints": [ "Make telepathic tiles and storytellers give helpful hints. (default: %(default)s)" ],
     "no_shuffleganon": [
       "Don't include the Ganon's Tower and Pyramid Hole in the",
@@ -336,6 +366,9 @@
     ],
     "shufflelinks": [
       "Include Link's House in the entrance shuffle pool. (default: %(default)s)"
+    ],
+    "overworld_map": [
+      "Control if and how the overworld map indicators show the locations of dungeons (default: %(default)s)"
     ],
     "heartbeep": [
       "Select the rate at which the heart beep sound is played at",
@@ -351,6 +384,8 @@
     ],
     "reduce_flashing": [ "Reduce some in-game flashing (default: %(default)s)" ],
     "shuffle_sfx": [ "Shuffle sounds effects (default: %(default)s)" ],
+    "msu_resume": [ "Enable MSU Resume (default: %(default)s)" ],
+    "collection_rate": [ "Display collection rate (default: %(default)s)" ],
     "create_rom": [ "Create an output rom file. (default: %(default)s)" ],
     "gui": [ "Launch the GUI. (default: %(default)s)" ],
     "jsonout": [

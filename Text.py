@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from collections import OrderedDict
 import logging
+import re
 
 text_addresses = {'Pedestal': (0x180300, 256),
                   'Triforce': (0x180400, 256),
@@ -94,44 +95,44 @@ Triforce_texts = [
     'This was meant to be a trapezoid',
     # these ones are from web randomizer
     "\n       G G",
-    "All your base\nare belong\nto us.",
-    "You have ended\nthe domination\nof Dr. Wily",
+    "   All your base\n    are belong\n      to us.",
+    "  You have ended\n  the domination\n    of Dr. Wily",
     "    Thanks for\n      playing!!!",
     "\n     You Win!",
     "    Thank you!\n      Your quest\n       is over.",
     "    A winner\n        is you!",
     "\n     WINNER!!",
-    "\n    I'm  sorry\n\n    but your\n  princess is in\n  another castle",
+    "\n    I'm  sorry\n\nbut our princess is\n in another castle",
     "\n     Success!",
-    "      Whelp…\n        that  just\n         happened",
+    "    Whelp…\n      that  just\n       happened",
     "     Oh  hey…\n        it's you",
     "\n    Wheeeeee!!",
     "     Time for\n      another one?",
-    "and\n\n           scene",
+    "  And\n\n         scene",
     "\n     GOT EM!!",
-    "\nTHE VALUUUE!!!",
-    "Cool seed,\n\nright?",
+    "\n  THE VALUUUE!!!",
+    "    Cool seed,\n\n      right?",
     "\n    We did it!",
     "    Spam those\n      emotes in\n      wilds chat",
     "\n       O  M  G",
-    "   Hello.  Will\n     you be my\n      friend?",
-    "     Beetorp\n          was\n         here!",
-    "The Wind Fish\nwill wake\nsoon.    Hoot!",
-    "Meow Meow Meow\nMeow Meow Meow\n  Oh My God!",
-    "Ahhhhhhhhh\nYa ya yaaaah\nYa ya yaaah",
-    ".done\n\n.comment lol",
-    "You get to\ndrink from\nthe firehose",
-    "Do you prefer\n bacon, pork,\n   or ham?",
-    "You get one\nwish.  Choose\nwisely, hero!",
-    "Can you please\nbreak us three\nup?  Thanks.",
+    " Hello.  Will you\n you be my friend?",
+    "     Beetorp\n       was\n         here!",
+    "   The Wind Fish\n  will wake soon.\n             Hoot!",
+    "  Meow Meow Meow\n  Meow Meow Meow\n    Oh My God!",
+    "    Ahhhhhhhhh\n   Ya ya yaaaah\n    Ya ya yaaah",
+    "  .done\n\n  .comment lol",
+    "    You get to\n    drink from\n   the firehose",
+    "   Do you prefer\n   bacon, pork,\n      or ham?",
+    "    You get one\n   wish.  Choose\n   wisely, hero!",
+    "  Can you please\n  break us three\n   up?  Thanks.",
     "    Pick us up\n    before we\n    get dizzy!",
-    "Thank you,\nMikey. You’re\n2 minutes late",
-    "This was a\n7000 series\ntrain.",
+    "    Thank you,\n  Mikey. You’re\n  2 minutes late",
+    "    This was a\n    7000 series\n      train.",
     "     I'd buy\n     that for\n     a rupee!",
     "   Did you like\n     that bow\n    placement?",
-    "I promise the\nnext seed will\nbe better.",
-    "\n     Honk.",
-    "Breakfast\nis served!",
+    "   I promise the\n  next seed will\n    be better.",
+    "\n       Honk.",
+    "     Breakfast\n    is served!",
 ]
 BombShop2_texts = ['Bombs!\nBombs!\nBiggest!\nBestest!\nGreatest!\nBoomest!']
 Sahasrahla2_texts = ['You already got my item, idiot.', 'Why are you still talking to me?', 'This text won\'t change.', 'Have you met my brother, Hasarahshla?']
@@ -625,11 +626,16 @@ class MultiByteCoreTextMapper(object):
         "{IBOX}": [0x6B, 0x02, 0x77, 0x07, 0x7A, 0x03],
         "{C:GREEN}": [0x77, 0x07],
         "{C:YELLOW}": [0x77, 0x02],
+        "{C:WHITE}": [0x77, 0x06],
+        "{C:INV_WHITE}": [0x77, 0x16],
+        "{C:INV_YELLOW}": [0x77, 0x12],
+        "{C:INV_GREEN}": [0x77, 0x17],
+        "{C:RED}": [0x77, 0x01],
+        "{C:INV_RED}": [0x77, 0x11],
     }
 
     @classmethod
     def convert(cls, text, pause=True, wrap=19):
-        #text = text.upper()
         lines = text.split('\n')
         outbuf = bytearray()
         lineindex = 0
@@ -639,7 +645,9 @@ class MultiByteCoreTextMapper(object):
         while lines:
             linespace = wrap
             line = lines.pop(0)
-            if line.startswith('{'):
+
+            match = re.search('^\{[A-Z0-9_:]+\}$', line)
+            if match:
                 if line == '{PAGEBREAK}':
                     if lineindex % 3 != 0:
                         # insert a wait for keypress, unless we just did so
@@ -656,9 +664,27 @@ class MultiByteCoreTextMapper(object):
             pending_space = False
             while words:
                 word = words.pop(0)
-                # sanity check: if the word we have is more than 19 characters, we take as much as we can still fit and push the rest back for later
+
+                match = re.search('^(\{[A-Z0-9_:]+\}).*', word)
+                if match:
+                    start_command = match.group(1)
+                    outbuf.extend(cls.special_commands[start_command])
+                    word = word.replace(start_command, '')
+
+                match = re.search('(\{[A-Z0-9_:]+\})\.?$', word)
+                if match:
+                    end_command = match.group(1)
+                    word = word.replace(end_command, '')
+                    period = word.endswith('.')
+                else:
+                    end_command, period = None, False
+
+                # sanity check: if the word we have is more than 19 characters,
+                # we take as much as we can still fit and push the rest back for later
                 if cls.wordlen(word) > wrap:
                     (word_first, word_rest) = cls.splitword(word, linespace)
+                    if end_command:
+                        word_rest = (word_rest[:-1] + end_command + '.') if period else (word_rest + end_command)
                     words.insert(0, word_rest)
                     lines.insert(0, ' '.join(words))
 
@@ -671,9 +697,16 @@ class MultiByteCoreTextMapper(object):
                     if cls.wordlen(word) < linespace:
                         pending_space = True
                     linespace -= cls.wordlen(word) + 1 if pending_space else 0
-                    outbuf.extend(RawMBTextMapper.convert(word))
+                    word_to_map = word[:-1] if period else word
+                    outbuf.extend(RawMBTextMapper.convert(word_to_map))
+                    if end_command:
+                        outbuf.extend(cls.special_commands[end_command])
+                        if period:
+                            outbuf.extend(RawMBTextMapper.convert('.'))
                 else:
                     # ran out of space, push word and lines back and continue with next line
+                    if end_command:
+                        word = (word[:-1] + end_command + '.') if period else (word + end_command)
                     words.insert(0, word)
                     lines.insert(0, ' '.join(words))
                     break
@@ -778,7 +811,7 @@ class CharTextMapper(object):
     @classmethod
     def map_char(cls, char):
         if cls.number_offset is not None:
-            if  0x30 <= ord(char) <= 0x39:
+            if 0x30 <= ord(char) <= 0x39:
                 return ord(char) + cls.number_offset
         if 0x41 <= ord(char) <= 0x5A:
             return ord(char) + 0x20 + cls.alpha_offset
@@ -789,7 +822,6 @@ class CharTextMapper(object):
     @classmethod
     def convert(cls, text):
         buf = bytearray()
-        #for char in text.lower():
         for char in text:
             buf.append(cls.map_char(char))
         return buf
@@ -1257,7 +1289,6 @@ class RawMBTextMapper(CharTextMapper):
     @classmethod
     def convert(cls, text):
         buf = bytearray()
-        #for char in text.lower():
         for char in text:
             res = cls.map_char(char)
             if isinstance(res, int):
@@ -1743,7 +1774,7 @@ class TextTable(object):
         text['telepathic_tile_misery_mire'] = CompressedTextMapper.convert("{NOBORDER}\nLighting 4 torches will open your way forward!")
         text['hylian_text_2'] = CompressedTextMapper.convert("%%^= %==%\n ^ =%^=\n==%= ^^%^")
         text['desert_entry_translated'] = CompressedTextMapper.convert("Kneel before this stone, and magic will move around you.")
-        text['telepathic_tile_under_ganon'] = CompressedTextMapper.convert("Secondary tournament winners\n{HARP}\n  ~~~2021~~~\nmatt7898\n\n  ~~~2020~~~\nrelkin")
+        text['telepathic_tile_under_ganon'] = CompressedTextMapper.convert("Doors Async League winners\n{HARP}\n  ~~~2022~~~\nAndy\n\n  ~~~2021~~~\nprdwong")
         text['telepathic_tile_palace_of_darkness'] = CompressedTextMapper.convert("{NOBORDER}\nThis is a funny looking Enemizer")
         # C0
         text['telepathic_tile_desert_bonk_torch_room'] = CompressedTextMapper.convert("{NOBORDER}\nThings can be knocked down, if you fancy yourself a dashing dude.")
@@ -1753,7 +1784,7 @@ class TextTable(object):
         text['telepathic_tile_ice_entrance'] = CompressedTextMapper.convert("{NOBORDER}\nYou can use Fire Rod or Bombos to pass.")
         text['telepathic_tile_ice_stalfos_knights_room'] = CompressedTextMapper.convert("{NOBORDER}\nKnock 'em down and then bomb them dead.")
         text['telepathic_tile_tower_of_hera_entrance'] = CompressedTextMapper.convert("{NOBORDER}\nThis is a bad place, with a guy who will make you fall…\n\n\na lot.")
-        text['houlihan_room'] = CompressedTextMapper.convert("Randomizer tournament winners\n{HARP}\n  ~~~2021~~~\ndaaanty\n\n  ~~~2019~~~\nJet082")
+        text['houlihan_room'] = CompressedTextMapper.convert("Randomizer tournament winners\n{HARP}\n  ~~~2021~~~\nDaaanty\n\n  ~~~2019~~~\nJet082\n\n  ~~~2018~~~\nAndy\n\n  ~~~2017~~~\nA: ajneb174\nS: ajneb174")
         text['caught_a_bee'] = CompressedTextMapper.convert("Caught a Bee\n  ≥ Keep\n    Release\n{CHOICE}")
         text['caught_a_fairy'] = CompressedTextMapper.convert("Caught Fairy!\n  ≥ Keep\n    Release\n{CHOICE}")
         text['no_empty_bottles'] = CompressedTextMapper.convert("Whoa, bucko!\nNo empty bottles.")
@@ -1981,7 +2012,7 @@ class TextTable(object):
         text['ganon_fall_in_alt'] = CompressedTextMapper.convert("You think you are ready to face me?\n\nI will not die unless you complete your goals. Dingus!")
         text['ganon_phase_3_alt'] = CompressedTextMapper.convert("Got wax in your ears? I cannot die!")
         # 190
-        text['sign_east_death_mountain_bridge'] = CompressedTextMapper.convert("How did you get up here?")
+        text['sign_east_death_mountain_bridge'] = CompressedTextMapper.convert("Glitched\ntournament\nwinners\n{HARP}\n~~~HMG 2021~~~\nKrithel\n\n~~~OWG 2019~~~\nGlan\n\n~~~OWG 2018~~~\nChristosOwen\nthe numpty")
         text['fish_money'] = CompressedTextMapper.convert("It's a secret to everyone.")
         text['sign_ganons_tower'] = CompressedTextMapper.convert("You need all 7 crystals to enter.")
         text['sign_ganon'] = CompressedTextMapper.convert("You need all 7 crystals to beat Ganon.")
@@ -1991,4 +2022,4 @@ class TextTable(object):
         text['ganon_phase_3_silvers'] = CompressedTextMapper.convert("Oh no! Silver! My one true weakness!")
         text['murahdahla'] = CompressedTextMapper.convert("Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n{PAUSE3}\n… … …\nWait! you can see me? I knew I should have\nhidden in  a hollow tree.")
         text['end_pad_data'] = bytearray([0xfb])
-        text['terminator'] =  bytearray([0xFF, 0xFF])
+        text['terminator'] = bytearray([0xFF, 0xFF])

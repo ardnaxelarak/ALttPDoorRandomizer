@@ -1,8 +1,8 @@
 import logging
 import RaceRandom as random
 
-from BaseClasses import Boss
-from Fill import FillError
+from BaseClasses import Boss, FillError
+
 
 def BossFactory(boss, player):
     if boss is None:
@@ -71,7 +71,6 @@ def MothulaDefeatRule(state, player):
         # to non-vanilla locations, so are harder to test, so sticking with what VT has for now:
         (state.has('Cane of Somaria', player) and state.can_extend_magic(player, 16)) or
         (state.has('Cane of Byrna', player) and state.can_extend_magic(player, 16)) or
-        state.can_get_good_bee(player) or
         state.has_special_weapon_level(player, 1)))
 
 def BlindDefeatRule(state, player):
@@ -183,18 +182,19 @@ def place_bosses(world, player):
     all_bosses = sorted(boss_table.keys()) #s orted to be deterministic on older pythons
     placeable_bosses = [boss for boss in all_bosses if boss not in ['Agahnim', 'Agahnim2', 'Ganon']]
 
-    if world.boss_shuffle[player] in ["simple", "full"]:
-        # temporary hack for swordless kholdstare:
+    # temporary hack for swordless kholdstare:
+    if world.boss_shuffle[player] in ["simple", "full", "unique"]:
         if world.swords[player] == 'swordless':
             world.get_dungeon('Ice Palace', player).boss = BossFactory('Kholdstare', player)
             logging.getLogger('').debug('Placing boss Kholdstare at Ice Palace')
             boss_locations.remove(['Ice Palace', None])
             placeable_bosses.remove('Kholdstare')
 
+    if world.boss_shuffle[player] in ["simple", "full"]:
         if world.boss_shuffle[player] == "simple":  # vanilla bosses shuffled
             bosses = placeable_bosses + ['Armos Knights', 'Lanmolas', 'Moldorm']
         else:  # all bosses present, the three duplicates chosen at random
-            bosses = all_bosses + random.sample(placeable_bosses, 3)
+            bosses = placeable_bosses + random.sample(placeable_bosses, 3)
 
         logging.getLogger('').debug('Bosses chosen %s', bosses)
 
@@ -206,12 +206,7 @@ def place_bosses(world, player):
                 raise FillError('Could not place boss for location %s' % loc_text)
             bosses.remove(boss)
 
-            # GT Bosses can move dungeon - find the real dungeon to place them in
-            if level:
-                loc = [x.name for x in world.dungeons if x.player == player and level in x.bosses.keys()][0]
-                loc_text = loc + ' (' + level + ')'
-            logging.getLogger('').debug('Placing boss %s at %s', boss, loc_text)
-            world.get_dungeon(loc, player).bosses[level] = BossFactory(boss, player)
+            place_boss(boss, level, loc, loc_text, world, player)
     elif world.boss_shuffle[player] == "random": #all bosses chosen at random
         for [loc, level] in boss_locations:
             loc_text = loc + (' ('+level+')' if level else '')
@@ -220,9 +215,31 @@ def place_bosses(world, player):
             except IndexError:
                 raise FillError('Could not place boss for location %s' % loc_text)
 
-            # GT Bosses can move dungeon - find the real dungeon to place them in
-            if level:
-                loc = [x.name for x in world.dungeons if x.player == player and level in x.bosses.keys()][0]
-                loc_text = loc + ' (' + level + ')'
-            logging.getLogger('').debug('Placing boss %s at %s', boss, loc_text)
-            world.get_dungeon(loc, player).bosses[level] = BossFactory(boss, player)
+            place_boss(boss, level, loc, loc_text, world, player)
+    elif world.boss_shuffle[player] == 'unique':
+        bosses = list(placeable_bosses)
+        gt_bosses = []
+
+        for [loc, level] in boss_locations:
+            loc_text = loc + (' ('+level+')' if level else '')
+            try:
+                if level:
+                    boss = random.choice([b for b in placeable_bosses if can_place_boss(world, player, b, loc, level)
+                                          and b not in gt_bosses])
+                    gt_bosses.append(boss)
+                else:
+                    boss = random.choice([b for b in bosses if can_place_boss(world, player, b, loc, level)])
+                    bosses.remove(boss)
+            except IndexError:
+                raise FillError('Could not place boss for location %s' % loc_text)
+
+            place_boss(boss, level, loc, loc_text, world, player)
+
+
+def place_boss(boss, level, loc, loc_text, world, player):
+    # GT Bosses can move dungeon - find the real dungeon to place them in
+    if level:
+        loc = [x.name for x in world.dungeons if x.player == player and level in x.bosses.keys()][0]
+        loc_text = loc + ' (' + level + ')'
+    logging.getLogger('').debug('Placing boss %s at %s', boss, loc_text)
+    world.get_dungeon(loc, player).bosses[level] = BossFactory(boss, player)

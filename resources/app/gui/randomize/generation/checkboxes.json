@@ -1,7 +1,8 @@
 {
   "checkboxes": {
-    "createspoiler":      { "type": "checkbox" },
     "createrom":          { "type": "checkbox" },
+    "bps":                { "type": "checkbox" },
+    "createspoiler":      { "type": "checkbox" },
     "calcplaythrough":    { "type": "checkbox" },
     "usestartinventory":  { "type": "checkbox" },
     "usecustompool":      { "type": "checkbox" }

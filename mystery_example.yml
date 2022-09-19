@@ -22,6 +22,9 @@
     vanilla: 0
     balanced: 1
     random: 1
+  bonk_drops:
+    on: 1
+    off: 1
   door_shuffle:
     vanilla: 0
     basic: 2
@@ -30,9 +33,19 @@
     1: 2
     2: 2
     3: 4
-  keydropshuffle:
+  dropshuffle:
     on: 1
     off: 1
+  pottery:
+    none: 8
+    keys: 1
+    cave: 1
+    dungeon: 1
+    lottery: 1
+    cavekeys: 1
+    reduced: 1
+    clustered: 1
+    nonempty: 1
   shopsanity:
     on: 1
     off: 1
@@ -53,12 +66,20 @@
     lean: 2
     crossed: 3
     insanity: 1
+  open_pyramid:
+    auto: 1
+    yes: 0
+    no: 0
   shufflelinks:
     on: 1
     off: 1
   shuffleganon:
     on: 1
     off: 1
+  overworld_map: # control how the overworld map operates when entrance shuffle is on
+    default: 1
+    compass: 10
+    map: 5
   world_state:
     standard: 1
     open: 1
@@ -73,12 +94,22 @@
     dungeons: 1
     pedestal: 2
     triforce-hunt: 2
-    trinity: 1
+    trinity: 2
   triforce_goal_min: 10
   triforce_goal_max: 30
   triforce_pool_min: 20
   triforce_pool_max: 40
   triforce_min_difference: 10
+  algorithm:
+    balanced: 12
+    vanilla_fill: 1
+    major_only: 1
+    dungeon_only: 1
+    district: 1
+  restrict_boss_items:
+    none: 1
+    mapcompass: 1
+    dungeon: 1
   dungeon_items:
     standard: 10
     mc: 3
@@ -123,6 +154,7 @@
     none: 3
     simple: 1
     full: 1
+    unique: 1
     random: 1
   enemy_shuffle:
     none: 3
@@ -161,13 +193,9 @@
     on: 1
     off: 0
   startinventory:
-    "Pegasus Boots":
-      on: 0
-      off: 1
+    Pegasus Boots: on
   rom:
-    quickswap:
-      on: 1
-      off: 0
+    quickswap: on
     heartcolor:
       red: 1
       blue: 1
@@ -179,6 +207,13 @@
       half: 0
       quarter: 1
       off: 0
+    menuspeed:
+      normal: 1
+      double: 0
+      triple: 0
+      quadruple: 0
+      instant: 0
+      half: 0
     shuffle_sfx:
       on: 1
       off: 1

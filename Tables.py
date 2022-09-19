@@ -125,17 +125,23 @@ divisor_lookup = {
 #     0xf8: 0xbac, 0xf9: 0xbba, 0xfa: 0xbc1, 0xfb: 0xbcc, 0xfc: 0xbd7, 0xfd: 0xbd7, 0xfe: 0xbba, 0xff: 0xbe3
 # }
 
-prize_lookup = {
-    0xd8: 'Small Magic Refill',
-    0xd9: 'Rupee (1)',
-    0xda: 'Rupees (5)',
-    0xdb: 'Rupees (20)',
-    0xdc: 'Bomb (1)',
-    0xdd: 'Bombs (4)',
-    0xde: 'Bombs (8)',
-    0xdf: 'Heart',
-    0xe0: 'Fairy',
-    0xe1: 'Arrows (5)',
-    0xe2: 'Arrows (10)',
-    0xe3: 'Full Magic Refill'
+# item name: (spriteID, pool count, replacement item)
+bonk_prize_lookup = {
+    'Chicken':      (0x0b,  0, None),
+    'Bee Trap':     (0x79,  6, None),
+    'Apples':       (0xac,  8, None),
+    'Small Heart':  (0xd8,  2, None),
+    'Rupee (1)':    (0xd9,  0, None),
+    'Rupees (5)':   (0xda,  3, None), # TODO: add in murahdahla tree rupee
+    'Rupees (20)':  (0xdb,  3, None),
+    'Single Bomb':  (0xdc,  2, None),
+    'Bombs (3)':    (None,  0, 'Bombs (4)'),
+    'Bombs (4)':    (0xdd,  0, 'Bombs (3)'),
+    'Bombs (8)':    (0xde,  1, 'Bombs (10)'),
+    'Bombs (10)':   (None,  0, 'Bombs (8)'),
+    'Small Magic':  (0xdf,  0, None),
+    'Big Magic':    (0xe0,  1, None),
+    'Arrows (5)':   (0xe1,  0, None),
+    'Arrows (10)':  (0xe2,  0, None),
+    'Fairy':        (0xe3, 15, None)
 }

@@ -1,5 +1,5 @@
 from tkinter import ttk, filedialog, messagebox, StringVar, Button, Entry, Frame, Label, E, W, LEFT, RIGHT, X, BOTTOM
-from AdjusterMain import adjust
+from AdjusterMain import adjust, patch
 from argparse import Namespace
 from source.classes.SpriteSelector import SpriteSelector
 import source.gui.widgets as widgets
@@ -79,7 +79,9 @@ def adjust_page(top, parent, settings):
     romEntry2 = Entry(adjustRomFrame, textvariable=self.romVar2)
 
     def RomSelect2():
-        rom = filedialog.askopenfilename(filetypes=[("Rom Files", (".sfc", ".smc")), ("All Files", "*")])
+        initdir = os.path.join(os.getcwd(), settings['outputpath']) if 'outputpath' in settings else os.getcwd()
+        rom = filedialog.askopenfilename(filetypes=[("Rom Files", (".sfc", ".smc")), ("All Files", "*")],
+                                         initialdir=initdir)
         if rom:
             settings["rom"] = rom
             self.romVar2.set(rom)
@@ -103,7 +105,8 @@ def adjust_page(top, parent, settings):
           "quickswap": "quickswap",
           "nobgm": "disablemusic",
           "reduce_flashing": "reduce_flashing",
-          "shuffle_sfx": "shuffle_sfx"
+          'msu_resume': 'msu_resume',
+          "shuffle_sfx": "shuffle_sfx",
         }
         guiargs = Namespace()
         for option in options:
@@ -122,6 +125,58 @@ def adjust_page(top, parent, settings):
             messagebox.showinfo(title="Success", message="Rom patched successfully")
 
     adjustButton = Button(self.frames["bottomAdjustFrame"], text='Adjust Rom', command=adjustRom)
-    adjustButton.pack(side=BOTTOM, padx=(5, 0))
+    adjustButton.pack(padx=(5, 0))
+
+    patchFileFrame = Frame(self.frames["bottomAdjustFrame"])
+    patchFileLabel = Label(patchFileFrame, text='BPS Patch: ')
+    self.patchVar = StringVar(value=settings["patch"])
+    patchEntry = Entry(patchFileFrame, textvariable=self.patchVar)
+
+    def PatchSelect():
+        initdir = os.path.join(os.getcwd(), settings['outputpath']) if 'outputpath' in settings else os.getcwd()
+        file = filedialog.askopenfilename(filetypes=[("BPS Files", ".bps"), ("All Files", "*")], initialdir=initdir)
+        if file:
+            settings["patch"] = file
+            self.patchVar.set(file)
+    patchSelectButton = Button(patchFileFrame, text='Select Patch', command=PatchSelect)
+
+    patchFileLabel.pack(side=LEFT)
+    patchEntry.pack(side=LEFT, fill=X, expand=True)
+    patchSelectButton.pack(side=LEFT)
+    patchFileFrame.pack(fill=X)
+
+    def patchRom():
+        if output_path.cached_path is None:
+            output_path.cached_path = top.settings["outputpath"]
+        options = {
+            "heartbeep": "heartbeep",
+            "heartcolor": "heartcolor",
+            "menuspeed": "fastmenu",
+            "owpalettes": "ow_palettes",
+            "uwpalettes": "uw_palettes",
+            "quickswap": "quickswap",
+            "nobgm": "disablemusic",
+            "reduce_flashing": "reduce_flashing",
+            'msu_resume': 'msu_resume',
+            "shuffle_sfx": "shuffle_sfx",
+        }
+        guiargs = Namespace()
+        for option in options:
+            arg = options[option]
+            setattr(guiargs, arg, self.widgets[option].storageVar.get())
+        guiargs.patch = self.patchVar.get()
+        guiargs.baserom = top.pages["randomizer"].pages["generation"].widgets["rom"].storageVar.get()
+        guiargs.sprite = self.sprite
+        guiargs.outputpath = os.path.dirname(guiargs.patch)
+        try:
+            patch(args=guiargs)
+        except Exception as e:
+            logging.exception(e)
+            messagebox.showerror(title="Error while creating seed", message=str(e))
+        else:
+            messagebox.showinfo(title="Success", message="Rom patched successfully")
+
+    patchButton = Button(self.frames["bottomAdjustFrame"], text='Patch Rom', command=patchRom)
+    patchButton.pack(side=BOTTOM, padx=(5, 0))
 
     return self,settings

@@ -1,5 +1,5 @@
 import random
-from Utils import int16_as_bytes
+from Utils import int16_as_bytes, snes_to_pc
 
 
 class SFX(object):
@@ -126,7 +126,7 @@ def shuffle_sfx_data():
     random.shuffle(candidates)
 
     # place chained sfx first
-    random.shuffle(chained_sfx) # todo: sort largest to smallest
+    random.shuffle(chained_sfx)
     chained_sfx = sorted(chained_sfx, key=lambda x: len(x.chain), reverse=True)
     for chained in chained_sfx:
         chosen_slot = next(x for x in candidates if len(accompaniment_map[x[0]]) - len(chained.chain) >= 0)
@@ -153,16 +153,13 @@ def shuffle_sfx_data():
 
 
 sfx_table = {
-    2: 0x1a8c29,
-    3: 0x1A8D25
+    2: 0x1A8BD0,
+    3: 0x1A8CCC
 }
 
-# 0x1a8c29
-# d8059
-
 sfx_accompaniment_table = {
-    2: 0x1A8CA7,
-    3: 0x1A8DA3
+    2: 0x1A8C4E,
+    3: 0x1A8D4A
 }
 
 
@@ -171,9 +168,9 @@ def randomize_sfx(rom):
 
     for shuffled_sfx in sfx_map.values():
         for sfx in shuffled_sfx.values():
-            base_address = sfx_table[sfx.target_set]
+            base_address = snes_to_pc(sfx_table[sfx.target_set])
             rom.write_bytes(base_address + (sfx.target_id * 2) - 2, int16_as_bytes(sfx.addr))
-            ac_base = sfx_accompaniment_table[sfx.target_set]
+            ac_base = snes_to_pc(sfx_accompaniment_table[sfx.target_set])
             last = sfx.target_id
             if sfx.target_chain:
                 for chained in sfx.target_chain:

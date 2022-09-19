@@ -309,6 +309,7 @@ def create_doors(world, player):
         create_door(player, 'Hera 5F Star Hole', Hole),
         create_door(player, 'Hera 5F Pothole Chain', Hole),
         create_door(player, 'Hera 5F Normal Holes', Hole),
+        create_door(player, 'Hera 5F Orange Path', Lgcl),
         create_door(player, 'Hera Fairies\' Warp', Warp),
         create_door(player, 'Hera Boss Down Stairs', Sprl).dir(Dn, 0x07, 0, HTH).ss(S, 0x61, 0xb0).kill(),
         create_door(player, 'Hera Boss Outer Hole', Hole),
@@ -434,7 +435,7 @@ def create_doors(world, player):
         create_door(player, 'PoD Dark Basement W Up Stairs', Sprl).dir(Up, 0x6a, 0, HTH).ss(S, 0x1b, 0x3c, True),
         create_door(player, 'PoD Dark Basement E Up Stairs', Sprl).dir(Up, 0x6a, 1, HTH).ss(S, 0x1b, 0x9c, True),
         create_door(player, 'PoD Dark Alley NE', Nrml).dir(No, 0x6a, Right, High).big_key().pos(0),
-        create_door(player, 'PoD Mimics 2 SW', Nrml).dir(So, 0x1b, Left, High).pos(1).kill().portal(Z, 0x00),
+        create_door(player, 'PoD Mimics 2 SW', Nrml).dir(So, 0x1b, Left, High).pos(1).portal(Z, 0x00),
         create_door(player, 'PoD Mimics 2 NW', Intr).dir(No, 0x1b, Left, High).pos(0),
         create_door(player, 'PoD Bow Statue SW', Intr).dir(So, 0x1b, Left, High).pos(0),
         create_door(player, 'PoD Bow Statue Left to Right Barrier - Orange', Lgcl),
@@ -500,6 +501,7 @@ def create_doors(world, player):
         create_door(player, 'Swamp Hub WS', Nrml).dir(We, 0x36, Bot, High).pos(3),
         create_door(player, 'Swamp Hub WN', Nrml).dir(We, 0x36, Top, High).small_key().pos(2),
         create_door(player, 'Swamp Hub Hook Path', Lgcl),
+        create_door(player, 'Swamp Hub Side Hook Path', Lgcl),
         create_door(player, 'Swamp Hub Dead Ledge EN', Nrml).dir(Ea, 0x36, Top, High).pos(0),
         create_door(player, 'Swamp Hub North Ledge N', Nrml).dir(No, 0x36, Mid, High).small_key().pos(1),
         create_door(player, 'Swamp Hub North Ledge Drop Down', Lgcl),
@@ -612,6 +614,8 @@ def create_doors(world, player):
         create_door(player, 'Skull 2 West Lobby S', Nrml).dir(So, 0x56, Left, High).pos(1).portal(Z, 0x00),
         create_door(player, 'Skull 2 West Lobby ES', Intr).dir(Ea, 0x56, Bot, High).pos(2),
         create_door(player, 'Skull 2 West Lobby NW', Intr).dir(No, 0x56, Left, High).small_key().pos(0),
+        create_door(player, 'Skull 2 West Lobby Pits', Lgcl),
+        create_door(player, 'Skull 2 West Lobby Ledge Pits', Lgcl),
         create_door(player, 'Skull X Room SW', Intr).dir(So, 0x56, Left, High).small_key().pos(0),
         create_door(player, 'Skull Back Drop Star Path', Lgcl),
         create_door(player, 'Skull 3 Lobby SW', Nrml).dir(So, 0x59, Left, High).pos(1).portal(Z, 0x02),
@@ -684,7 +688,9 @@ def create_doors(world, player):
         create_door(player, 'Thieves Attic Down Stairs', Sprl).dir(Dn, 0x64, 0, HTH).ss(Z, 0x11, 0x80, True, True),
         create_door(player, 'Thieves Attic ES', Intr).dir(Ea, 0x64, Bot, High).pos(0),
         create_door(player, 'Thieves Attic Orange Barrier', Lgcl),
+        create_door(player, 'Thieves Attic Blue Barrier', Lgcl),
         create_door(player, 'Thieves Attic Hint Orange Barrier', Lgcl),
+        create_door(player, 'Thieves Attic Switch Blue Barrier', Lgcl),
         create_door(player, 'Thieves Cricket Hall Left WS', Intr).dir(We, 0x64, Bot, High).pos(0),
         create_door(player, 'Thieves Cricket Hall Left Edge', Open).dir(Ea, 0x64, None, High).edge(0, X, 0x30),
         create_door(player, 'Thieves Cricket Hall Right Edge', Open).dir(We, 0x65, None, High).edge(0, Z, 0x30),
@@ -955,6 +961,8 @@ def create_doors(world, player):
         create_door(player, 'TR Hub EN', Nrml).dir(Ea, 0xc6, Top, High).pos(2),
         create_door(player, 'TR Hub NW', Nrml).dir(No, 0xc6, Left, High).small_key().pos(0),
         create_door(player, 'TR Hub NE', Nrml).dir(No, 0xc6, Right, High).pos(1),
+        create_door(player, 'TR Hub Path', Lgcl),
+        create_door(player, 'TR Hub Ledges Path', Lgcl),
         create_door(player, 'TR Torches Ledge WS', Nrml).dir(We, 0xc7, Bot, High).pos(2),
         create_door(player, 'TR Torches WN', Nrml).dir(We, 0xc7, Top, High).pos(1),
         create_door(player, 'TR Torches NW', Nrml).dir(No, 0xc7, Left, High).trap(0x4).pos(0),
@@ -1030,6 +1038,8 @@ def create_doors(world, player):
         create_door(player, 'TR Crystaroller Down Stairs', Sprl).dir(Dn, 0x04, 0, HTH).ss(A, 0x12, 0x80, True, True).small_key().pos(0),
         create_door(player, 'TR Dark Ride Up Stairs', Sprl).dir(Up, 0xb5, 0, HTH).ss(A, 0x1b, 0x6c),
         create_door(player, 'TR Dark Ride SW', Nrml).dir(So, 0xb5, Left, High).trap(0x4).pos(0).portal(Z, 0x22),
+        create_door(player, 'TR Dark Ride Path', Lgcl),
+        create_door(player, 'TR Dark Ride Ledges Path', Lgcl),
         create_door(player, 'TR Dash Bridge NW', Nrml).dir(No, 0xc5, Left, High).pos(1),
         create_door(player, 'TR Dash Bridge SW', Nrml).dir(So, 0xc5, Left, High).pos(2).portal(Z, 0x02),
         create_door(player, 'TR Dash Bridge WS', Nrml).dir(We, 0xc5, Bot, High).small_key().pos(0),
@@ -1048,6 +1058,8 @@ def create_doors(world, player):
         create_door(player, 'TR Crystal Maze End Ranged Crystal Exit', Lgcl),
         create_door(player, 'TR Crystal Maze North Stairs', StrS).dir(No, 0xc4, Mid, High),
         create_door(player, 'TR Final Abyss South Stairs', StrS).dir(So, 0xb4, Mid, High),
+        create_door(player, 'TR Final Abyss Balcony Path', Lgcl),
+        create_door(player, 'TR Final Abyss Ledge Path', Lgcl),
         create_door(player, 'TR Final Abyss NW', Nrml).dir(No, 0xb4, Left, High).big_key().pos(0),
         create_door(player, 'TR Boss SW', Nrml).dir(So, 0xa4, Left, High).no_exit().trap(0x4).pos(0),  # .portal(Z, 0x00), -enemizer doesn't work
 
@@ -1098,12 +1110,12 @@ def create_doors(world, player):
         create_door(player, 'GT Conveyor Cross EN', Nrml).dir(Ea, 0x8b, Top, High).pos(2),
         create_door(player, 'GT Conveyor Cross WN', Intr).dir(We, 0x8b, Top, High).pos(0),
         create_door(player, 'GT Hookshot EN', Intr).dir(Ea, 0x8b, Top, High).pos(0),
-        create_door(player, 'GT Hookshot East-North Path', Lgcl),
-        create_door(player, 'GT Hookshot East-South Path', Lgcl),
-        create_door(player, 'GT Hookshot North-East Path', Lgcl),
-        create_door(player, 'GT Hookshot North-South Path', Lgcl),
-        create_door(player, 'GT Hookshot South-East Path', Lgcl),
-        create_door(player, 'GT Hookshot South-North Path', Lgcl),
+        create_door(player, 'GT Hookshot East-Mid Path', Lgcl),
+        create_door(player, 'GT Hookshot Mid-East Path', Lgcl),
+        create_door(player, 'GT Hookshot North-Mid Path', Lgcl),
+        create_door(player, 'GT Hookshot Mid-North Path', Lgcl),
+        create_door(player, 'GT Hookshot South-Mid Path', Lgcl),
+        create_door(player, 'GT Hookshot Mid-South Path', Lgcl),
         create_door(player, 'GT Hookshot Platform Blue Barrier', Lgcl),
         create_door(player, 'GT Hookshot Entry Blue Barrier', Lgcl),
         create_door(player, 'GT Hookshot Platform Barrier Bypass', Lgcl),
@@ -1291,6 +1303,7 @@ def create_doors(world, player):
     world.get_door('Hera Beetles Holes Front', player).c_switch()
     world.get_door('Hera Beetles Holes Landing', player).c_switch()
     world.get_door('Hera Startile Wide Crystal Exit', player).c_switch()
+    world.get_door('Hera 5F Orange Path', player).barrier(CrystalBarrier.Orange)
 
     world.get_door('PoD Arena North to Landing Barrier - Orange', player).barrier(CrystalBarrier.Orange)
     world.get_door('PoD Arena Main to Landing Barrier - Blue', player).barrier(CrystalBarrier.Blue)
@@ -1345,7 +1358,9 @@ def create_doors(world, player):
     world.get_door('Thieves Hellway Orange Barrier', player).barrier(CrystalBarrier.Orange)
     world.get_door('Thieves Hellway Crystal Orange Barrier', player).barrier(CrystalBarrier.Orange)
     world.get_door('Thieves Attic Orange Barrier', player).barrier(CrystalBarrier.Orange)
+    world.get_door('Thieves Attic Blue Barrier', player).barrier(CrystalBarrier.Blue)
     world.get_door('Thieves Attic Hint Orange Barrier', player).barrier(CrystalBarrier.Orange)
+    world.get_door('Thieves Attic Switch Blue Barrier', player).barrier(CrystalBarrier.Blue)
 
     world.get_door('Ice Bomb Drop SE', player).c_switch()
     world.get_door('Ice Conveyor Crystal Exit', player).c_switch()
@@ -1421,8 +1436,7 @@ def create_doors(world, player):
     world.get_door('GT Crystal Conveyor Ranged Crystal Exit', player).c_switch()
     world.get_door('GT Crystal Conveyor Corner Ranged Crystal Exit', player).c_switch()
     world.get_door('GT Crystal Conveyor Corner to Left Bypass', player).barrier(CrystalBarrier.Blue)
-    world.get_door('GT Hookshot South-North Path', player).c_switch()
-    world.get_door('GT Hookshot South-East Path', player).c_switch()
+    world.get_door('GT Hookshot South-Mid Path', player).c_switch()
     world.get_door('GT Hookshot ES', player).c_switch()
     world.get_door('GT Hookshot Platform Barrier Bypass', player).barrier(CrystalBarrier.Orange)
     world.get_door('GT Hookshot Platform Blue Barrier', player).barrier(CrystalBarrier.Blue)
@@ -1452,6 +1466,11 @@ def create_doors(world, player):
     world.get_door('GT Spike Crystal Left to Right Barrier - Orange', player).barrier(CrystalBarrier.Orange)
     world.get_door('GT Spike Crystal Right to Left Barrier - Orange', player).barrier(CrystalBarrier.Orange)
     world.get_door('GT Spike Crystal Left to Right Bypass', player).barrier(CrystalBarrier.Blue)
+
+    # kill certain doors
+    if world.intensity[player] == 1:  # due to ladder & warp being fixed
+        world.get_door('PoD Mimics 2 SW', player).kill()
+
 
     # nifty dynamic logical doors:
     south_controller = world.get_door('Ice Cross Bottom SE', player)

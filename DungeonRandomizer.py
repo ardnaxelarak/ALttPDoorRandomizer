@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import argparse
-import copy
+if __name__ == '__main__':
+    from source.meta.check_requirements import check_requirements
+    check_requirements(console=True)
+
 import os
 import logging
 import RaceRandom as random
-import textwrap
-import shlex
 import sys
 
 from source.classes.BabelFish import BabelFish

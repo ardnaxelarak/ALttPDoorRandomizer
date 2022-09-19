@@ -1,3 +1,7 @@
+if __name__ == '__main__':
+    from source.meta.check_requirements import check_requirements
+    check_requirements()
+
 import json
 import os
 import sys
@@ -106,7 +110,7 @@ def guiMain(args=None):
     self.pages["startinventory"] = ttk.Frame(self.notebook)
     self.pages["custom"] = ttk.Frame(self.notebook)
     self.notebook.add(self.pages["randomizer"], text='Randomize')
-    self.notebook.add(self.pages["adjust"], text='Adjust')
+    self.notebook.add(self.pages["adjust"], text='Adjust/Patch')
     self.notebook.add(self.pages["startinventory"], text='Starting Inventory')
     self.notebook.add(self.pages["custom"], text='Custom Item Pool')
     self.notebook.pack()

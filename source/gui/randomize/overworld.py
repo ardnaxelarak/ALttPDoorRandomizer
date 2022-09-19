@@ -15,12 +15,16 @@ def overworld_page(parent):
 
     # Load Overworld Shuffle option widgets as defined by JSON file
     # Defns include frame name, widget type, widget options, widget placement attributes
-    # These get split left & right
+    self.frames["topOverworldFrame"] = Frame(self)
     self.frames["leftOverworldFrame"] = Frame(self)
     self.frames["rightOverworldFrame"] = Frame(self)
 
+    self.frames["topOverworldFrame"].pack(side=TOP, anchor=NW)
     self.frames["leftOverworldFrame"].pack(side=LEFT, anchor=NW, fill=Y)
     self.frames["rightOverworldFrame"].pack(anchor=NW, fill=Y)
+
+    shuffleLabel = Label(self.frames["topOverworldFrame"], text="Shuffle: ")
+    shuffleLabel.pack(side=LEFT)
     
     with open(os.path.join("resources","app","gui","randomize","overworld","widgets.json")) as overworldWidgets:
         myDict = json.load(overworldWidgets)
@@ -33,7 +37,7 @@ def overworld_page(parent):
                     packAttrs = {"side":LEFT, "pady":(18,0)}
                 elif key == "overworldflute":
                     packAttrs["pady"] = (20,0)
-                elif key in ["whirlpool", "mixed"]:
+                elif key in ["mixed", "whirlpool"]:
                     packAttrs = {"anchor":W, "padx":(79,0)}
                 
                 self.widgets[key].pack(packAttrs)

@@ -22,7 +22,6 @@ if os.path.isdir("build") and not sys.platform.find("mac") and not sys.platform.
 subprocess.run(" ".join([f"pyinstaller {SPEC_FILE} ",
                                       upx_string,
                                       "-y ",
-                                      "--onefile ",
                                       f"--distpath {DEST_DIRECTORY} ",
                                       ]),
                 shell=True)

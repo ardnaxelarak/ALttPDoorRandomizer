@@ -1,8 +1,5 @@
-import RaceRandom as random
-
 from BaseClasses import Dungeon
 from Bosses import BossFactory
-from Fill import fill_restrictive
 from Items import ItemFactory
 
 
@@ -35,119 +32,6 @@ def create_dungeons(world, player):
     GT.bosses['top'] = BossFactory('Moldorm', player)
 
     world.dungeons += [ES, EP, DP, ToH, AT, PoD, TT, SW, SP, IP, MM, TR, GT]
-
-def fill_dungeons(world):
-    freebes = ['Ganons Tower - Map Chest', 'Palace of Darkness - Harmless Hellway', 'Palace of Darkness - Big Key Chest', 'Turtle Rock - Big Key Chest']
-
-    all_state_base = world.get_all_state()
-
-    for player in range(1, world.players + 1):
-        pinball_room = world.get_location('Skull Woods - Pinball Room', player)
-        if world.retro[player]:
-            world.push_item(pinball_room, ItemFactory('Small Key (Universal)', player), False)
-        else:
-            world.push_item(pinball_room, ItemFactory('Small Key (Skull Woods)', player), False)
-        pinball_room.event = True
-        pinball_room.locked = True
-
-    dungeons = [(list(dungeon.regions), dungeon.big_key, list(dungeon.small_keys), list(dungeon.dungeon_items)) for dungeon in world.dungeons]
-
-    loopcnt = 0
-    while dungeons:
-        loopcnt += 1
-        dungeon_regions, big_key, small_keys, dungeon_items = dungeons.pop(0)
-        # this is what we need to fill
-        dungeon_locations = [location for location in world.get_unfilled_locations() if location.parent_region.name in dungeon_regions]
-        random.shuffle(dungeon_locations)
-
-        all_state = all_state_base.copy()
-
-        # first place big key
-        if big_key is not None:
-            bk_location = None
-            for location in dungeon_locations:
-                if location.item_rule(big_key):
-                    bk_location = location
-                    break
-
-            if bk_location is None:
-                raise RuntimeError('No suitable location for %s' % big_key)
-
-            world.push_item(bk_location, big_key, False)
-            bk_location.event = True
-            bk_location.locked = True
-            dungeon_locations.remove(bk_location)
-            big_key = None
-
-        # next place small keys
-        while small_keys:
-            small_key = small_keys.pop()
-            all_state.sweep_for_events()
-            sk_location = None
-            for location in dungeon_locations:
-                if location.name in freebes or (location.can_reach(all_state) and location.item_rule(small_key)):
-                    sk_location = location
-                    break
-
-            if sk_location is None:
-                # need to retry this later
-                small_keys.append(small_key)
-                dungeons.append((dungeon_regions, big_key, small_keys, dungeon_items))
-                # infinite regression protection
-                if loopcnt < (30 * world.players):
-                    break
-                else:
-                    raise RuntimeError('No suitable location for %s' % small_key)
-
-            world.push_item(sk_location, small_key, False)
-            sk_location.event = True
-            sk_location.locked = True
-            dungeon_locations.remove(sk_location)
-
-        if small_keys:
-            # key placement not finished, loop again
-            continue
-
-        # next place dungeon items
-        for dungeon_item in dungeon_items:
-            di_location = dungeon_locations.pop()
-            world.push_item(di_location, dungeon_item, False)
-
-
-def get_dungeon_item_pool(world):
-    return [item for dungeon in world.dungeons for item in dungeon.all_items]
-
-def fill_dungeons_restrictive(world, shuffled_locations):
-    all_state_base = world.get_all_state()
-
-    # for player in range(1, world.players + 1):
-    #     pinball_room = world.get_location('Skull Woods - Pinball Room', player)
-    #     if world.retro[player]:
-    #         world.push_item(pinball_room, ItemFactory('Small Key (Universal)', player), False)
-    #     else:
-    #         world.push_item(pinball_room, ItemFactory('Small Key (Skull Woods)', player), False)
-    #     pinball_room.event = True
-    #     pinball_room.locked = True
-    #     shuffled_locations.remove(pinball_room)
-
-    # with shuffled dungeon items they are distributed as part of the normal item pool
-    for item in world.get_items():
-        if (item.smallkey and world.keyshuffle[item.player]) or (item.bigkey and world.bigkeyshuffle[item.player]):
-            item.advancement = True
-        elif (item.map and world.mapshuffle[item.player]) or (item.compass and world.compassshuffle[item.player]):
-            item.priority = True
-
-    dungeon_items = [item for item in get_dungeon_item_pool(world) if ((item.smallkey and not world.keyshuffle[item.player])
-                                                                       or (item.bigkey and not world.bigkeyshuffle[item.player])
-                                                                       or (item.map and not world.mapshuffle[item.player])
-                                                                       or (item.compass and not world.compassshuffle[item.player]))]
-
-    # sort in the order Big Key, Small Key, Other before placing dungeon items
-    sort_order = {"BigKey": 3, "SmallKey": 2}
-    dungeon_items.sort(key=lambda item: sort_order.get(item.type, 1))
-
-    fill_restrictive(world, all_state_base, shuffled_locations, dungeon_items,
-                     keys_in_itempool={player: not world.keyshuffle[player] for player in range(1, world.players+1)}, single_player_placement=True)
 
 
 dungeon_music_addresses = {'Eastern Palace - Prize': [0x1559A],
@@ -200,7 +84,7 @@ hera_regions = [
     'Hera Back - Ranged Crystal', 'Hera Basement Cage', 'Hera Basement Cage - Crystal', 'Hera Tile Room',
     'Hera Tridorm', 'Hera Tridorm - Crystal', 'Hera Torches', 'Hera Beetles', 'Hera Startile Corner',
     'Hera Startile Wide', 'Hera Startile Wide - Crystal', 'Hera 4F', 'Hera Big Chest Landing', 'Hera 5F',
-    'Hera Fairies', 'Hera Boss', 'Hera Portal'
+    'Hera 5F Pot Block', 'Hera Fairies', 'Hera Boss', 'Hera Portal'
 ]
 
 tower_regions = [
@@ -226,24 +110,24 @@ pod_regions = [
 swamp_regions = [
     'Swamp Lobby', 'Swamp Entrance', 'Swamp Pot Row', 'Swamp Map Ledge', 'Swamp Trench 1 Approach',
     'Swamp Trench 1 Nexus', 'Swamp Trench 1 Alcove', 'Swamp Trench 1 Key Ledge', 'Swamp Trench 1 Departure',
-    'Swamp Hammer Switch', 'Swamp Hub', 'Swamp Hub Dead Ledge', 'Swamp Hub North Ledge', 'Swamp Donut Top',
-    'Swamp Donut Bottom', 'Swamp Compass Donut', 'Swamp Crystal Switch Outer', 'Swamp Crystal Switch Outer - Ranged Crystal',
-    'Swamp Crystal Switch Inner', 'Swamp Crystal Switch Inner - Crystal', 'Swamp Shortcut', 'Swamp Trench 2 Pots',
-    'Swamp Trench 2 Blocks', 'Swamp Trench 2 Alcove', 'Swamp Trench 2 Departure', 'Swamp Big Key Ledge',
-    'Swamp West Shallows', 'Swamp West Block Path', 'Swamp West Ledge', 'Swamp Barrier Ledge', 'Swamp Barrier',
-    'Swamp Attic', 'Swamp Push Statue', 'Swamp Shooters', 'Swamp Left Elbow', 'Swamp Right Elbow', 'Swamp Drain Left',
-    'Swamp Drain Right', 'Swamp Flooded Room', 'Swamp Flooded Spot', 'Swamp Basement Shallows', 'Swamp Waterfall Room',
-    'Swamp Refill', 'Swamp Behind Waterfall', 'Swamp C', 'Swamp Waterway', 'Swamp I', 'Swamp T', 'Swamp Boss',
-    'Swamp Portal'
+    'Swamp Hammer Switch', 'Swamp Hub', 'Swamp Hub Side Ledges', 'Swamp Hub Dead Ledge', 'Swamp Hub North Ledge',
+    'Swamp Donut Top', 'Swamp Donut Bottom', 'Swamp Compass Donut', 'Swamp Crystal Switch Outer',
+    'Swamp Crystal Switch Outer - Ranged Crystal', 'Swamp Crystal Switch Inner', 'Swamp Crystal Switch Inner - Crystal',
+    'Swamp Shortcut', 'Swamp Trench 2 Pots', 'Swamp Trench 2 Blocks', 'Swamp Trench 2 Alcove',
+    'Swamp Trench 2 Departure', 'Swamp Big Key Ledge', 'Swamp West Shallows', 'Swamp West Block Path',
+    'Swamp West Ledge', 'Swamp Barrier Ledge', 'Swamp Barrier', 'Swamp Attic', 'Swamp Push Statue', 'Swamp Shooters',
+    'Swamp Left Elbow', 'Swamp Right Elbow', 'Swamp Drain Left', 'Swamp Drain Right', 'Swamp Flooded Room',
+    'Swamp Flooded Spot', 'Swamp Basement Shallows', 'Swamp Waterfall Room', 'Swamp Refill', 'Swamp Behind Waterfall',
+    'Swamp C', 'Swamp Waterway', 'Swamp I', 'Swamp T', 'Swamp Boss', 'Swamp Portal'
 ]
 
 skull_regions = [
     'Skull 1 Lobby', 'Skull Map Room', 'Skull Pot Circle', 'Skull Pull Switch', 'Skull Big Chest', 'Skull Pinball',
     'Skull Pot Prison', 'Skull Compass Room', 'Skull Left Drop', 'Skull 2 East Lobby', 'Skull Big Key',
-    'Skull Lone Pot', 'Skull Small Hall', 'Skull Back Drop', 'Skull 2 West Lobby', 'Skull X Room', 'Skull 3 Lobby',
-    'Skull East Bridge', 'Skull West Bridge Nook', 'Skull Star Pits', 'Skull Torch Room', 'Skull Vines',
-    'Skull Spike Corner', 'Skull Final Drop', 'Skull Boss', 'Skull 1 Portal', 'Skull 2 East Portal',
-    'Skull 2 West Portal', 'Skull 3 Portal'
+    'Skull Lone Pot', 'Skull Small Hall', 'Skull Back Drop', 'Skull 2 West Lobby', 'Skull 2 West Lobby Ledge',
+    'Skull X Room', 'Skull 3 Lobby', 'Skull East Bridge', 'Skull West Bridge Nook', 'Skull Star Pits',
+    'Skull Torch Room', 'Skull Vines', 'Skull Spike Corner', 'Skull Final Drop', 'Skull Boss',
+    'Skull 1 Portal', 'Skull 2 East Portal', 'Skull 2 West Portal', 'Skull 3 Portal'
 ]
 
 thieves_regions = [
@@ -251,10 +135,10 @@ thieves_regions = [
     'Thieves Big Chest Nook', 'Thieves Hallway', 'Thieves Boss', 'Thieves Pot Alcove Mid', 'Thieves Pot Alcove Bottom',
     'Thieves Pot Alcove Top', 'Thieves Conveyor Maze', 'Thieves Spike Track', 'Thieves Hellway',
     'Thieves Hellway N Crystal', 'Thieves Hellway S Crystal', 'Thieves Triple Bypass', 'Thieves Spike Switch',
-    'Thieves Attic', 'Thieves Attic Hint', 'Thieves Cricket Hall Left', 'Thieves Cricket Hall Right',
-    'Thieves Attic Window', 'Thieves Basement Block', 'Thieves Blocked Entry', 'Thieves Lonely Zazak',
-    "Thieves Blind's Cell", "Thieves Blind's Cell Interior", 'Thieves Conveyor Bridge', 'Thieves Conveyor Block',
-    'Thieves Big Chest Room', 'Thieves Trap', 'Thieves Town Portal'
+    'Thieves Attic', 'Thieves Attic Hint', 'Thieves Attic Switch', 'Thieves Cricket Hall Left',
+    'Thieves Cricket Hall Right', 'Thieves Attic Window', 'Thieves Basement Block', 'Thieves Blocked Entry',
+    'Thieves Lonely Zazak', "Thieves Blind's Cell", "Thieves Blind's Cell Interior", 'Thieves Conveyor Bridge',
+    'Thieves Conveyor Block', 'Thieves Big Chest Room', 'Thieves Trap', 'Thieves Town Portal'
 ]
 
 ice_regions = [
@@ -284,29 +168,31 @@ mire_regions = [
 ]
 
 tr_regions = [
-    'TR Main Lobby', 'TR Lobby Ledge', 'TR Compass Room', 'TR Hub', 'TR Torches Ledge', 'TR Torches', 'TR Roller Room',
-    'TR Tile Room', 'TR Refill', 'TR Pokey 1', 'TR Chain Chomps Top', 'TR Chain Chomps Top - Crystal',
-    'TR Chain Chomps Bottom', 'TR Chain Chomps Bottom - Ranged Crystal', 'TR Pipe Pit', 'TR Pipe Ledge', 'TR Lava Dual Pipes',
-    'TR Lava Island', 'TR Lava Escape', 'TR Pokey 2 Top', 'TR Pokey 2 Top - Crystal', 'TR Pokey 2 Bottom', 'TR Pokey 2 Bottom - Ranged Crystal',
-    'TR Twin Pokeys', 'TR Hallway', 'TR Dodgers', 'TR Big View','TR Big Chest', 'TR Big Chest Entrance',
-    'TR Lazy Eyes', 'TR Dash Room', 'TR Tongue Pull', 'TR Rupees', 'TR Crystaroller Bottom',
-    'TR Crystaroller Middle', 'TR Crystaroller Top', 'TR Crystaroller Top - Crystal', 'TR Crystaroller Chest',
-    'TR Crystaroller Middle - Ranged Crystal', 'TR Crystaroller Bottom - Ranged Crystal', 'TR Dark Ride', 'TR Dash Bridge', 'TR Eye Bridge',
+    'TR Main Lobby', 'TR Lobby Ledge', 'TR Compass Room', 'TR Hub', 'TR Hub Ledges', 'TR Torches Ledge', 'TR Torches',
+    'TR Roller Room', 'TR Tile Room', 'TR Refill', 'TR Pokey 1', 'TR Chain Chomps Top', 'TR Chain Chomps Top - Crystal',
+    'TR Chain Chomps Bottom', 'TR Chain Chomps Bottom - Ranged Crystal', 'TR Pipe Pit', 'TR Pipe Ledge',
+    'TR Lava Dual Pipes', 'TR Lava Island', 'TR Lava Escape', 'TR Pokey 2 Top', 'TR Pokey 2 Top - Crystal',
+    'TR Pokey 2 Bottom', 'TR Pokey 2 Bottom - Ranged Crystal', 'TR Twin Pokeys', 'TR Hallway', 'TR Dodgers',
+    'TR Big View', 'TR Big Chest', 'TR Big Chest Entrance', 'TR Lazy Eyes', 'TR Dash Room', 'TR Tongue Pull',
+    'TR Rupees', 'TR Crystaroller Bottom', 'TR Crystaroller Middle', 'TR Crystaroller Top',
+    'TR Crystaroller Top - Crystal', 'TR Crystaroller Chest', 'TR Crystaroller Middle - Ranged Crystal',
+    'TR Crystaroller Bottom - Ranged Crystal', 'TR Dark Ride', 'TR Dark Ride Ledges', 'TR Dash Bridge', 'TR Eye Bridge',
     'TR Crystal Maze Start', 'TR Crystal Maze Start - Crystal', 'TR Crystal Maze Interior', 'TR Crystal Maze End',
-    'TR Crystal Maze End - Ranged Crystal', 'TR Final Abyss', 'TR Boss', 'Turtle Rock Main Portal',
-    'Turtle Rock Lazy Eyes Portal', 'Turtle Rock Chest Portal', 'Turtle Rock Eye Bridge Portal'
+    'TR Crystal Maze End - Ranged Crystal', 'TR Final Abyss Balcony', 'TR Final Abyss Ledge', 'TR Boss',
+    'Turtle Rock Main Portal', 'Turtle Rock Lazy Eyes Portal', 'Turtle Rock Chest Portal',
+    'Turtle Rock Eye Bridge Portal'
 ]
 
 gt_regions = [
     'GT Lobby', 'GT Bob\'s Torch', 'GT Hope Room', 'GT Big Chest', 'GT Blocked Stairs', 'GT Bob\'s Room',
     'GT Tile Room', 'GT Speed Torch', 'GT Speed Torch Upper', 'GT Pots n Blocks', 'GT Crystal Conveyor',
     'GT Crystal Conveyor Corner', 'GT Crystal Conveyor Left', 'GT Crystal Conveyor - Ranged Crystal',
-    'GT Crystal Conveyor Corner - Ranged Crystal',
-    'GT Compass Room', 'GT Invisible Bridges', 'GT Invisible Catwalk', 'GT Conveyor Cross', 'GT Hookshot East Platform',
-    'GT Hookshot North Platform', 'GT Hookshot South Platform', 'GT Hookshot South Entry', 'GT Hookshot South Entry - Ranged Crystal', 'GT Map Room',
+    'GT Crystal Conveyor Corner - Ranged Crystal', 'GT Compass Room', 'GT Invisible Bridges', 'GT Invisible Catwalk',
+    'GT Conveyor Cross', 'GT Hookshot East Platform', 'GT Hookshot Mid Platform', 'GT Hookshot North Platform',
+    'GT Hookshot South Platform', 'GT Hookshot South Entry', 'GT Hookshot South Entry - Ranged Crystal', 'GT Map Room',
     'GT Double Switch Entry', 'GT Double Switch Pot Corners - Ranged Switches', 'GT Double Switch Pot Corners',
-    'GT Double Switch Left', 'GT Double Switch Left - Crystal',
-    'GT Double Switch Entry - Ranged Switches', 'GT Double Switch Exit', 'GT Spike Crystal Left',
+    'GT Double Switch Left', 'GT Double Switch Left - Crystal', 'GT Double Switch Entry - Ranged Switches',
+    'GT Double Switch Exit', 'GT Spike Crystal Left',
     'GT Spike Crystal Right', 'GT Warp Maze - Left Section', 'GT Warp Maze - Mid Section',
     'GT Warp Maze - Right Section', 'GT Warp Maze - Pit Section', 'GT Warp Maze - Pit Exit Warp Spot',
     'GT Warp Maze Exit Section', 'GT Firesnake Room', 'GT Firesnake Room Ledge', 'GT Warp Maze - Rail Choice',
@@ -378,8 +264,8 @@ flexible_starts = {
 
 class DungeonInfo:
 
-    def __init__(self, free, keys, bk, map, compass, bk_drop, drops, prize=None):
-                 # todo reduce static maps  ideas: prize, bk_name, sm_name, cmp_name, map_name):
+    def __init__(self, free, keys, bk, map, compass, bk_drop, drops, prize, midx):
+         # todo reduce static maps  ideas: prize, bk_name, sm_name, cmp_name, map_name):
         self.free_items = free
         self.key_num = keys
         self.bk_present = bk
@@ -389,21 +275,23 @@ class DungeonInfo:
         self.key_drops = drops
         self.prize = prize
 
+        self.map_index = midx
+
 
 dungeon_table = {
-    'Hyrule Castle': DungeonInfo(6, 1, False, True, False, True, 3, None),
-    'Eastern Palace': DungeonInfo(3, 0, True, True, True, False, 2, 'Eastern Palace - Prize'),
-    'Desert Palace': DungeonInfo(2, 1, True, True, True, False, 3, 'Desert Palace - Prize'),
-    'Tower of Hera': DungeonInfo(2, 1, True, True, True, False, 0, 'Tower of Hera - Prize'),
-    'Agahnims Tower': DungeonInfo(0, 2, False, False, False, False, 2, None),
-    'Palace of Darkness': DungeonInfo(5, 6, True, True, True, False, 0, 'Palace of Darkness - Prize'),
-    'Swamp Palace': DungeonInfo(6, 1, True, True, True, False, 5, 'Swamp Palace - Prize'),
-    'Skull Woods': DungeonInfo(2, 3, True, True, True, False, 2, 'Skull Woods - Prize'),
-    'Thieves Town': DungeonInfo(4, 1, True, True, True, False, 2, "Thieves' Town - Prize"),
-    'Ice Palace': DungeonInfo(3, 2, True, True, True, False, 4, 'Ice Palace - Prize'),
-    'Misery Mire': DungeonInfo(2, 3, True, True, True, False, 3, 'Misery Mire - Prize'),
-    'Turtle Rock': DungeonInfo(5, 4, True, True, True, False, 2, 'Turtle Rock - Prize'),
-    'Ganons Tower': DungeonInfo(20, 4, True, True, True, False, 4, None),
+    'Hyrule Castle': DungeonInfo(6, 1, False, True, False, True, 3, None, 0xc),
+    'Eastern Palace': DungeonInfo(3, 0, True, True, True, False, 2, 'Eastern Palace - Prize', 0x0),
+    'Desert Palace': DungeonInfo(2, 1, True, True, True, False, 3, 'Desert Palace - Prize', 0x2),
+    'Tower of Hera': DungeonInfo(2, 1, True, True, True, False, 0, 'Tower of Hera - Prize', 0x1),
+    'Agahnims Tower': DungeonInfo(0, 2, False, False, False, False, 2, None, 0xb),
+    'Palace of Darkness': DungeonInfo(5, 6, True, True, True, False, 0, 'Palace of Darkness - Prize', 0x3),
+    'Swamp Palace': DungeonInfo(6, 1, True, True, True, False, 5, 'Swamp Palace - Prize', 0x9),
+    'Skull Woods': DungeonInfo(2, 3, True, True, True, False, 2, 'Skull Woods - Prize', 0x4),
+    'Thieves Town': DungeonInfo(4, 1, True, True, True, False, 2, "Thieves' Town - Prize", 0x6),
+    'Ice Palace': DungeonInfo(3, 2, True, True, True, False, 4, 'Ice Palace - Prize', 0x8),
+    'Misery Mire': DungeonInfo(2, 3, True, True, True, False, 3, 'Misery Mire - Prize', 0x7),
+    'Turtle Rock': DungeonInfo(5, 4, True, True, True, False, 2, 'Turtle Rock - Prize', 0x5),
+    'Ganons Tower': DungeonInfo(20, 4, True, True, True, False, 4, None, 0xa),
 }
 
 
@@ -438,7 +326,6 @@ dungeon_bigs = {
     'Turtle Rock': 'Big Key (Turtle Rock)',
     'Ganons Tower': 'Big Key (Ganons Tower)'
 }
-
 
 dungeon_hints = {
     'Hyrule Castle': 'in Hyrule Castle',

@@ -4,6 +4,7 @@
     "adjust.quickswap": "L/R Quickswapping",
     "adjust.reduce_flashing": "Reduce Flashing",
     "adjust.shuffle_sfx": "Shuffle Sound Effects",
+    "adjust.msu_resume": "MSU Resume",
 
     "adjust.heartcolor": "Heart Color",
     "adjust.heartcolor.red": "Red",
@@ -53,7 +54,20 @@
     "randomizer.dungeon.compassshuffle": "Compasses",
     "randomizer.dungeon.smallkeyshuffle": "Small Keys",
     "randomizer.dungeon.bigkeyshuffle": "Big Keys",
-    "randomizer.dungeon.keydropshuffle": "Key Drops (pots and enemies)",
+    "randomizer.dungeon.keydropshuffle": "Key Drop Shuffle (Legacy)",
+    "randomizer.dungeon.dropshuffle": "Shuffle Enemy Key Drops",
+    "randomizer.dungeon.potshuffle": "Pot Shuffle (Legacy)",
+    "randomizer.dungeon.pottery": "Pottery",
+    "randomizer.dungeon.pottery.none": "None",
+    "randomizer.dungeon.pottery.keys": "Key Pots",
+    "randomizer.dungeon.pottery.cave": "Cave Pots",
+    "randomizer.dungeon.pottery.cavekeys": "Cave+Key Pots",
+    "randomizer.dungeon.pottery.reduced": "Reduced Dungeon Pots (Dynamic)",
+    "randomizer.dungeon.pottery.clustered": "Clustered Dungeon Pots (Dynamic)",
+    "randomizer.dungeon.pottery.nonempty": "Excludes Empty Pots",
+    "randomizer.dungeon.pottery.dungeon": "Dungeon Pots",
+    "randomizer.dungeon.pottery.lottery": "Lottery (All Pots and Large Blocks)",
+    "randomizer.dungeon.colorizepots": "Colorize Randomized Pots",
 
     "randomizer.dungeon.dungeondoorshuffle": "Dungeon Door Shuffle",
     "randomizer.dungeon.dungeondoorshuffle.vanilla": "Vanilla",
@@ -66,7 +80,6 @@
     "randomizer.dungeon.dungeonintensity.3": "3: Dungeon Lobbies",
     "randomizer.dungeon.dungeonintensity.random": "Random",
 
-    "randomizer.dungeon.potshuffle": "Pot Shuffle",
     "randomizer.dungeon.experimental": "Enable Experimental Features",
 
     "randomizer.dungeon.dungeon_counters": "Dungeon Chest Counters",
@@ -93,6 +106,7 @@
     "randomizer.enemizer.bossshuffle": "Boss Shuffle",
     "randomizer.enemizer.bossshuffle.none": "None",
     "randomizer.enemizer.bossshuffle.simple": "Simple",
+    "randomizer.enemizer.bossshuffle.unique": "Unique",
     "randomizer.enemizer.bossshuffle.full": "Full",
     "randomizer.enemizer.bossshuffle.random": "Random",
 
@@ -119,7 +133,6 @@
 
     "randomizer.overworld.crossed": "Crossed",
     "randomizer.overworld.crossed.none": "None",
-    "randomizer.overworld.crossed.allowed": "None (Allowed)",
     "randomizer.overworld.crossed.polar": "Polar",
     "randomizer.overworld.crossed.grouped": "Grouped",
     "randomizer.overworld.crossed.limited": "Limited",
@@ -131,14 +144,23 @@
 
     "randomizer.overworld.whirlpool": "Whirlpool Shuffle",
 
+    "randomizer.overworld.bonk_drops": "Bonk Drops",
+
     "randomizer.overworld.overworldflute": "Flute Shuffle",
     "randomizer.overworld.overworldflute.vanilla": "Vanilla",
     "randomizer.overworld.overworldflute.balanced": "Balanced",
     "randomizer.overworld.overworldflute.random": "Random",
 
     "randomizer.entrance.openpyramid": "Pre-open Pyramid Hole",
+    "randomizer.entrance.openpyramid.auto": "Auto",
+    "randomizer.entrance.openpyramid.yes": "Yes",
+    "randomizer.entrance.openpyramid.no": "No",
     "randomizer.entrance.shuffleganon": "Include Ganon's Tower and Pyramid Hole in shuffle pool",
     "randomizer.entrance.shufflelinks": "Include Link's House in the shuffle pool",
+    "randomizer.entrance.overworld_map": "Overworld Map",
+    "randomizer.entrance.overworld_map.default": "Default (no location display)",
+    "randomizer.entrance.overworld_map.compass": "Compass indicates location",
+    "randomizer.entrance.overworld_map.map": "Map indicates location",
 
     "randomizer.entrance.entranceshuffle": "Entrance Shuffle",
     "randomizer.entrance.entranceshuffle.vanilla": "Vanilla",
@@ -162,6 +184,8 @@
     "randomizer.gameoptions.quickswap": "L/R Quickswapping",
     "randomizer.gameoptions.reduce_flashing": "Reduce Flashing",
     "randomizer.gameoptions.shuffle_sfx": "Shuffle Sound Effects",
+    "randomizer.gameoptions.msu_resume": "MSU Resume",
+    "randomizer.gameoptions.collection_rate": "Display Collection Rate",
 
     "randomizer.gameoptions.heartcolor": "Heart Color",
     "randomizer.gameoptions.heartcolor.red": "Red",
@@ -199,6 +223,7 @@
     "randomizer.gameoptions.sprite.unchanged": "(unchanged)",
 
 
+    "randomizer.generation.bps": "Create BPS Patches",
     "randomizer.generation.createspoiler": "Create Spoiler Log",
     "randomizer.generation.createrom": "Create Patched ROM",
     "randomizer.generation.calcplaythrough": "Calculate Playthrough",
@@ -327,14 +352,16 @@
     "randomizer.item.accessibility.none": "Beatable",
 
     "randomizer.item.sortingalgo": "Item Sorting",
-    "randomizer.item.sortingalgo.freshness": "Freshness",
-    "randomizer.item.sortingalgo.flood": "Flood",
-    "randomizer.item.sortingalgo.vt21": "VT8.21",
-    "randomizer.item.sortingalgo.vt22": "VT8.22",
-    "randomizer.item.sortingalgo.vt25": "VT8.25",
-    "randomizer.item.sortingalgo.vt26": "VT8.26",
     "randomizer.item.sortingalgo.balanced": "Balanced",
+    "randomizer.item.sortingalgo.vanilla_fill": "Vanilla Fill",
+    "randomizer.item.sortingalgo.major_only": "Major Location Restriction",
+    "randomizer.item.sortingalgo.dungeon_only": "Dungeon Restriction",
+    "randomizer.item.sortingalgo.district": "District Restriction",
 
+    "randomizer.item.restrict_boss_items": "Forbidden Boss Items",
+    "randomizer.item.restrict_boss_items.none": "None",
+    "randomizer.item.restrict_boss_items.mapcompass": "Map & Compass",
+    "randomizer.item.restrict_boss_items.dungeon": "Map & Compass & Keys",
 
     "bottom.content.worlds": "Worlds",
     "bottom.content.names": "Player names",

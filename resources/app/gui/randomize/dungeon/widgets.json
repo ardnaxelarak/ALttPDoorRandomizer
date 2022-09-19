@@ -22,6 +22,27 @@
         "width": 45
       }
     },
+    "keydropshuffle": { "type": "checkbox" },
+    "pottery": {
+      "type": "selectbox",
+      "default": "none",
+      "options": [
+        "none",
+        "keys",
+        "cave",
+        "cavekeys",
+        "reduced",
+        "clustered",
+        "nonempty",
+        "dungeon",
+        "lottery"
+      ],
+      "config": {
+        "width": 35
+      }
+    },
+    "colorizepots": { "type": "checkbox" },
+    "dropshuffle": { "type": "checkbox" },
     "potshuffle": { "type": "checkbox" },
     "experimental": { "type": "checkbox" },
     "dungeon_counters": {

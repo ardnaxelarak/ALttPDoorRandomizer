@@ -6,12 +6,15 @@ import json
 import logging
 import re
 import shlex
+import ssl
 import urllib.request
 import websockets
 import zlib
 
+from BaseClasses import PotItem, PotFlags
 import Items
 import Regions
+import PotShuffle
 from MultiClient import ReceivedItem, get_item_name_from_id, get_location_name_from_address
 
 class Client:
@@ -39,6 +42,9 @@ class Context:
         self.countdown_timer = 0
         self.clients = []
         self.received_items = {}
+
+        self.lookup_name_to_id = {}
+        self.lookup_id_to_name = {}
 
 async def send_msgs(websocket, msgs):
     if not websocket or not websocket.open or websocket.closed:
@@ -154,8 +160,7 @@ def send_new_items(ctx : Context):
             client.send_index = len(items)
 
 def forfeit_player(ctx : Context, team, slot):
-    all_locations = {values[0] for values in Regions.location_table.values() if type(values[0]) is int}
-    all_locations.update({values[1] for values in Regions.key_drop_data.values()})
+    all_locations = set(ctx.lookup_id_to_name.keys())
     notify_all(ctx, "%s (Team #%d) has forfeited" % (ctx.player_names[(team, slot)], team + 1))
     register_location_checks(ctx, team, slot, all_locations)
 
@@ -176,7 +181,8 @@ def register_location_checks(ctx : Context, team, slot, locations):
                     recvd_items.append(new_item)
                     if slot != target_player:
                         broadcast_team(ctx, team, [['ItemSent', (slot, location, target_player, target_item)]])
-                    logging.info('(Team #%d) %s sent %s to %s (%s)' % (team+1, ctx.player_names[(team, slot)], get_item_name_from_id(target_item), ctx.player_names[(team, target_player)], get_location_name_from_address(location)))
+                        loc_name = get_location_name_from_address(ctx, location)
+                    logging.info('(Team #%d) %s sent %s to %s (%s)' % (team+1, ctx.player_names[(team, slot)], get_item_name_from_id(target_item), ctx.player_names[(team, target_player)], loc_name))
                     found_items = True
     send_new_items(ctx)
 
@@ -249,11 +255,11 @@ async def process_client_cmd(ctx : Context, client : Client, cmd, args):
             return
         locs = []
         for location in args:
-            if type(location) is not int or 0 >= location > len(Regions.lookup_id_to_name.keys()):
+            if type(location) is not int or 0 >= location > len(ctx.lookup_id_to_name.keys()):
                 await send_msgs(client.socket, [['InvalidArguments', 'LocationScouts']])
                 return
-            loc_name = list(Regions.lookup_id_to_name.keys())[location - 1]
-            target_item, target_player = ctx.locations[(Regions.lookup_name_to_id[loc_name], client.slot)]
+            loc_name = list(ctx.lookup_id_to_name.keys())[location - 1]
+            target_item, target_player = ctx.locations[(ctx.lookup_name_to_id[loc_name], client.slot)]
 
             replacements = {'SmallKey': 0xA2, 'BigKey': 0x9D, 'Compass': 0x8D, 'Map': 0x7D}
             item_type = [i[2] for i in Items.item_table.values() if type(i[3]) is int and i[3] == target_item]
@@ -339,6 +345,30 @@ async def console(ctx : Context):
         if command[0][0] != '/':
             notify_all(ctx, '[Server]: ' + input)
 
+
+def init_lookups(ctx):
+    ctx.lookup_id_to_name = {x: y for x, y in Regions.lookup_id_to_name.items()}
+    ctx.lookup_name_to_id = {x: y for x, y in Regions.lookup_name_to_id.items()}
+    for location, datum in PotShuffle.key_drop_data.items():
+        type = datum[0]
+        if type == 'Drop':
+            location_id = datum[1][0]
+            ctx.lookup_name_to_id[location] = location_id
+            ctx.lookup_id_to_name[location_id] = location
+    for super_tile, pot_list in PotShuffle.vanilla_pots.items():
+        for pot_index, pot in enumerate(pot_list):
+            if pot.item != PotItem.Hole:
+                if pot.item == PotItem.Key:
+                    loc_name = next(loc for loc, datum in PotShuffle.key_drop_data.items()
+                                    if datum[1] == super_tile)
+                else:
+                    descriptor = 'Large Block' if pot.flags & PotFlags.Block else f'Pot #{pot_index+1}'
+                    loc_name = f'{pot.room} {descriptor}'
+                location_id = Regions.pot_address(pot_index, super_tile)
+                ctx.lookup_name_to_id[loc_name] = location_id
+                ctx.lookup_id_to_name[location_id] = loc_name
+
+
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default=None)
@@ -353,7 +383,7 @@ async def main():
     logging.basicConfig(format='[%(asctime)s] %(message)s', level=getattr(logging, args.loglevel.upper(), logging.INFO))
 
     ctx = Context(args.host, args.port, args.password)
-
+    init_lookups(ctx)
     ctx.data_filename = args.multidata
 
     try:
@@ -376,7 +406,7 @@ async def main():
         logging.error('Failed to read multiworld data (%s)' % e)
         return
 
-    ip = urllib.request.urlopen('https://v4.ident.me').read().decode('utf8') if not ctx.host else ctx.host
+    ip = urllib.request.urlopen('https://v4.ident.me', context=ssl._create_unverified_context()).read().decode('utf8') if not ctx.host else ctx.host
     logging.info('Hosting game at %s:%d (%s)' % (ip, ctx.port, 'No password' if not ctx.password else 'Password: %s' % ctx.password))
 
     ctx.disable_save = args.disable_save

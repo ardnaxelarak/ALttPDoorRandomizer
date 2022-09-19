@@ -1,5 +1,7 @@
 import argparse
 import logging
+from pathlib import Path
+import os
 import RaceRandom as random
 import urllib.request
 import urllib.parse
@@ -29,6 +31,9 @@ def main():
     parser.add_argument('--teams', default=1, type=lambda value: max(int(value), 1))
     parser.add_argument('--create_spoiler', action='store_true')
     parser.add_argument('--no_race', action='store_true')
+    parser.add_argument('--suppress_rom', action='store_true')
+    parser.add_argument('--suppress_meta', action='store_true')
+    parser.add_argument('--bps', action='store_true')
     parser.add_argument('--rom')
     parser.add_argument('--jsonout', action='store_true')
     parser.add_argument('--enemizercli')
@@ -68,11 +73,15 @@ def main():
     erargs.seed = seed
     erargs.names = args.names
     erargs.create_spoiler = args.create_spoiler
+    erargs.suppress_rom = args.suppress_rom
+    erargs.suppress_meta = args.suppress_meta
+    erargs.bps = args.bps
     erargs.race = not args.no_race
     erargs.outputname = seedname
     if args.outputpath:
         erargs.outputpath = args.outputpath
     erargs.loglevel = args.loglevel
+    erargs.mystery = True
 
     if args.rom:
         erargs.rom = args.rom
@@ -80,6 +89,8 @@ def main():
         erargs.jsonout = args.jsonout
     if args.enemizercli:
         erargs.enemizercli = args.enemizercli
+
+    mw_settings = {'algorithm': False}
 
     settings_cache = {k: (roll_settings(v) if args.samesettings else None) for k, v in weights_cache.items()}
 
@@ -89,20 +100,23 @@ def main():
             settings = settings_cache[path] if settings_cache[path] else roll_settings(weights_cache[path])
             for k, v in vars(settings).items():
                 if v is not None:
-                    getattr(erargs, k)[player] = v
+                    if k == 'algorithm':  # multiworld wide parameters
+                        if not mw_settings[k]:  # only use the first roll
+                            setattr(erargs, k, v)
+                            mw_settings[k] = True
+                    else:
+                        getattr(erargs, k)[player] = v
         else:
             raise RuntimeError(f'No weights specified for player {player}')
 
     DRMain(erargs, seed, BabelFish())
 
 def get_weights(path):
-    try:
-        if urllib.parse.urlparse(path).scheme:
-            return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
-        with open(path, 'r', encoding='utf-8') as f:
+    if os.path.exists(Path(path)):
+        with open(path, "r", encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.SafeLoader)
-    except Exception as e:
-        raise Exception(f'Failed to read weights file: {e}')
+    elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
+        return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
 
 def roll_settings(weights):
     def get_choice(option, root=None):
@@ -133,12 +147,16 @@ def roll_settings(weights):
 
     ret = argparse.Namespace()
 
+    ret.algorithm = get_choice('algorithm')
+
+    glitch_map = {'none': 'noglitches', 'no_logic': 'nologic', 'owglitches': 'owglitches',
+                  'owg': 'owglitches', 'minorglitches': 'minorglitches'}
     glitches_required = get_choice('glitches_required')
     if glitches_required is not None:
-        if glitches_required not in ['none', 'owg', 'no_logic']:
-            print("Only NMG, OWG, and No Logic supported")
+        if glitches_required not in glitch_map.keys():
+            print(f'Logic did not match one of: {", ".join(glitch_map.keys())}')
             glitches_required = 'none'
-        ret.logic = {'none': 'noglitches', 'owg': 'owglitches', 'no_logic': 'nologic'}[glitches_required]
+        ret.logic = glitch_map[glitches_required]
 
     item_placement = get_choice('item_placement')
     # not supported in ER
@@ -150,30 +168,39 @@ def roll_settings(weights):
     ret.bigkeyshuffle = get_choice('bigkey_shuffle') == 'on' if 'bigkey_shuffle' in weights else dungeon_items in ['full']
 
     ret.accessibility = get_choice('accessibility')
+    ret.restrict_boss_items = get_choice('restrict_boss_items')
 
     overworld_shuffle = get_choice('overworld_shuffle')
     ret.ow_shuffle = overworld_shuffle if overworld_shuffle != 'none' else 'vanilla'
+    valid_options = {'none', 'polar', 'grouped', 'limited', 'chaos'}
     ret.ow_crossed = get_choice('overworld_crossed')
+    ret.ow_crossed = ret.ow_crossed if ret.ow_crossed in valid_options else 'none'
     ret.ow_keepsimilar = get_choice('overworld_keepsimilar') == 'on'
     ret.ow_mixed = get_choice('overworld_swap') == 'on'
     ret.ow_whirlpool = get_choice('whirlpool_shuffle') == 'on'
     overworld_flute = get_choice('flute_shuffle')
     ret.ow_fluteshuffle = overworld_flute if overworld_flute != 'none' else 'vanilla'
+    ret.bonk_drops = get_choice('bonk_drops') == 'on'
     entrance_shuffle = get_choice('entrance_shuffle')
     ret.shuffle = entrance_shuffle if entrance_shuffle != 'none' else 'vanilla'
+    overworld_map = get_choice('overworld_map')
+    ret.overworld_map = overworld_map if overworld_map != 'default' else 'default'
     door_shuffle = get_choice('door_shuffle')
     ret.door_shuffle = door_shuffle if door_shuffle != 'none' else 'vanilla'
     ret.intensity = get_choice('intensity')
     ret.experimental = get_choice('experimental') == 'on'
+    ret.collection_rate = get_choice('collection_rate') == 'on'
 
     ret.dungeon_counters = get_choice('dungeon_counters') if 'dungeon_counters' in weights else 'default'
     if ret.dungeon_counters == 'default':
         ret.dungeon_counters = 'pickup' if ret.door_shuffle != 'vanilla' or ret.compassshuffle == 'on' else 'off'
 
-    ret.shufflelinks = get_choice('shufflelinks') == 'on'
     ret.pseudoboots = get_choice('pseudoboots') == 'on'
     ret.shopsanity = get_choice('shopsanity') == 'on'
-    ret.keydropshuffle = get_choice('keydropshuffle') == 'on'
+    ret.dropshuffle = get_choice('dropshuffle') == 'on'
+    ret.pottery = get_choice('pottery') if 'pottery' in weights else 'none'
+    ret.colorizepots = get_choice('colorizepots') == 'on'
+    ret.shufflepots = get_choice('pot_shuffle') == 'on'
     ret.mixed_travel = get_choice('mixed_travel') if 'mixed_travel' in weights else 'prevent'
     ret.standardize_palettes = get_choice('standardize_palettes') if 'standardize_palettes' in weights else 'standardize'
 
@@ -186,23 +213,26 @@ def roll_settings(weights):
                     'triforce-hunt': 'triforcehunt',
                     'trinity': 'trinity'
                     }[goal]
-    ret.openpyramid = goal in ['fast_ganon', 'trinity'] if ret.shuffle in ['vanilla', 'dungeonsfull', 'dungeonssimple'] else False
+
+    ret.openpyramid = get_choice('open_pyramid') if 'open_pyramid' in weights else 'auto'
 
     ret.shuffleganon = get_choice('shuffleganon') == 'on'
+    ret.shufflelinks = get_choice('shufflelinks') == 'on'
 
     ret.crystals_gt = get_choice('tower_open')
-
     ret.crystals_ganon = get_choice('ganon_open')
 
     ganon_item = get_choice('ganon_item')
     ret.ganon_item = ganon_item if ganon_item != 'none' else 'default'
 
-    goal_min = get_choice_default('triforce_goal_min', default=20)
-    goal_max = get_choice_default('triforce_goal_max', default=20)
-    pool_min = get_choice_default('triforce_pool_min', default=30)
-    pool_max = get_choice_default('triforce_pool_max', default=30)
+    from ItemList import set_default_triforce
+    default_tf_goal, default_tf_pool = set_default_triforce(ret.goal, 0, 0)
+    goal_min = get_choice_default('triforce_goal_min', default=default_tf_goal)
+    goal_max = get_choice_default('triforce_goal_max', default=default_tf_goal)
+    pool_min = get_choice_default('triforce_pool_min', default=default_tf_pool)
+    pool_max = get_choice_default('triforce_pool_max', default=default_tf_pool)
     ret.triforce_goal = random.randint(int(goal_min), int(goal_max))
-    min_diff = get_choice_default('triforce_min_difference', default=10)
+    min_diff = get_choice_default('triforce_min_difference', default=(default_tf_pool-default_tf_goal))
     ret.triforce_pool = random.randint(max(int(pool_min), ret.triforce_goal + int(min_diff)), int(pool_max))
 
     ret.mode = get_choice('world_state')
@@ -252,8 +282,6 @@ def roll_settings(weights):
 
     ret.enemy_health = get_choice('enemy_health')
 
-    ret.shufflepots = get_choice('pot_shuffle') == 'on'
-
     ret.beemizer = get_choice('beemizer') if 'beemizer' in weights else '0'
 
     inventoryweights = weights.get('startinventory', {})
@@ -262,6 +290,8 @@ def roll_settings(weights):
         if get_choice(item, inventoryweights) == 'on':
             startitems.append(item)
     ret.startinventory = ','.join(startitems)
+    if len(startitems) > 0:
+        ret.usestartinventory = True
 
     if 'rom' in weights:
         romweights = weights['rom']
@@ -269,6 +299,7 @@ def roll_settings(weights):
         ret.disablemusic = get_choice('disablemusic', romweights) == 'on'
         ret.quickswap = get_choice('quickswap', romweights) == 'on'
         ret.reduce_flashing = get_choice('reduce_flashing', romweights) == 'on'
+        ret.msu_resume = get_choice('msu_resume', romweights) == 'on'
         ret.fastmenu = get_choice('menuspeed', romweights)
         ret.heartcolor = get_choice('heartcolor', romweights)
         ret.heartbeep = get_choice('heartbeep', romweights)

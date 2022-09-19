@@ -1,18 +1,21 @@
 import RaceRandom as random, logging, copy
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from DungeonGenerator import GenerationException
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot, Entrance
 from Regions import mark_dark_world_regions, mark_light_world_regions
-from OWEdges import OWTileRegions, OWTileGroups, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
+from OWEdges import OWTileRegions, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
+from Utils import bidict
 
-__version__ = '0.2.6.1-u'
+version_number = '0.2.10.1'
+# branch indicator is intentionally different across branches
+version_branch = ''
+
+__version__ = '%s%s' % (version_number, version_branch)
 
 def link_overworld(world, player):
     # setup mandatory connections
     for exitname, regionname in mandatory_connections:
         connect_simple(world, exitname, regionname, player)
-    for exitname, destname in temporary_mandatory_connections:
-        connect_two_way(world, exitname, destname, player)
 
     def performSwap(groups, swaps):
         def getParallel(edgename):
@@ -101,8 +104,8 @@ def link_overworld(world, player):
                 else:
                     raise NotImplementedError('Invalid OW Edge swap scenario')
         return new_groups
-    
-    tile_groups = reorganize_tile_groups(world, player)
+
+    tile_groups = define_tile_groups(world, player, False)
     trimmed_groups = copy.deepcopy(OWEdgeGroups)
     swapped_edges = list()
 
@@ -133,19 +136,20 @@ def link_overworld(world, player):
                 trimmed_groups[(std, region, axis, terrain, IsParallel.No, 1)][1].append(['Frog WC'])
             trimmed_groups[group] = (forward_edges, back_edges)
 
+    connected_edges = []
+    if world.owShuffle[player] != 'vanilla':
+        trimmed_groups = remove_reserved(world, trimmed_groups, connected_edges, player)
+        trimmed_groups = reorganize_groups(world, trimmed_groups, player)
+
     # tile shuffle
     logging.getLogger('').debug('Swapping overworld tiles')
     if world.owMixed[player]:
-        swapped_edges = shuffle_tiles(world, tile_groups, world.owswaps[player], player)
-        
-        # move swapped regions/edges to other world
-        trimmed_groups = performSwap(trimmed_groups, swapped_edges)
-        assert len(swapped_edges) == 0, 'Not all edges were swapped successfully: ' + ', '.join(swapped_edges )
+        swapped_edges = shuffle_tiles(world, tile_groups, world.owswaps[player], False, player)
         
         update_world_regions(world, player)
 
         # update spoiler
-        s = list(map(lambda x: ' ' if x not in world.owswaps[player][0] else 'S', [i for i in range(0x40)]))
+        s = list(map(lambda x: ' ' if x not in world.owswaps[player][0] else 'S', [i for i in range(0x40, 0x82)]))
         text_output = tile_swap_spoiler_table.replace('s', '%s') % (                         s[0x02],                                s[0x07],
                                                                                  s[0x00],                s[0x03],        s[0x05],
             s[0x00],        s[0x02],s[0x03],        s[0x05],        s[0x07],                 s[0x0a],                                s[0x0f],
@@ -157,9 +161,9 @@ def link_overworld(world, player):
             s[0x30],        s[0x32],s[0x33],s[0x34],s[0x35],        s[0x37],                 s[0x22],                s[0x25],
                             s[0x3a],s[0x3b],s[0x3c],                s[0x3f],
                                                                              s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],
-                                                                                             s[0x32],s[0x33],s[0x34],                s[0x37],
+                                                                    s[0x40],                 s[0x32],s[0x33],s[0x34],                s[0x37],
                                                                                  s[0x30],                                s[0x35],
-                                                                                             s[0x3a],s[0x3b],s[0x3c],                s[0x3f])
+                                                                    s[0x41],                 s[0x3a],s[0x3b],s[0x3c],                s[0x3f])
         world.spoiler.set_map('swaps', text_output, world.owswaps[player][0], player)
     
     # apply tile logical connections
@@ -175,42 +179,77 @@ def link_overworld(world, player):
     
     # crossed shuffle
     logging.getLogger('').debug('Crossing overworld edges')
-    if world.owCrossed[player] in ['grouped', 'limited', 'chaos']:
+    crossed_edges = list()
+
+    # more Maze Race/Suburb/Frog/Dig Game fixes
+    parallel_links_new = bidict(parallel_links) # shallow copy is enough (deep copy is broken)
+    if world.owKeepSimilar[player]:
+        del parallel_links_new['Maze Race ES']
+        del parallel_links_new['Kakariko Suburb WS']
+
+    #TODO: Revisit with changes to Limited/Allowed
+    if world.owCrossed[player] not in ['none', 'grouped', 'polar', 'chaos']:
+        for edge in swapped_edges:
+            if edge not in parallel_links_new and edge not in parallel_links_new.inverse:
+                crossed_edges.append(edge)
+    
+    if world.owCrossed[player] in ['grouped', 'limited'] or (world.owShuffle[player] == 'vanilla' and world.owCrossed[player] == 'chaos'):
         if world.owCrossed[player] == 'grouped':
-            ow_crossed_tiles = [[],[],[]]
-            crossed_edges = shuffle_tiles(world, tile_groups, ow_crossed_tiles, player)
-        elif world.owCrossed[player] in ['limited', 'chaos']:
-            crossed_edges = list()
+            # the idea is to XOR the new swaps with the ones from Mixed so that non-parallel edges still work
+            # Polar corresponds to Grouped with no swaps in ow_crossed_tiles_mask
+            ow_crossed_tiles_mask = [[],[],[]]
+            crossed_edges = shuffle_tiles(world, define_tile_groups(world, player, True), ow_crossed_tiles_mask, True, player)
+            ow_crossed_tiles = [i for i in range(0x82) if (i in world.owswaps[player][0]) != (i in ow_crossed_tiles_mask[0])]
+
+            # update spoiler
+            s = list(map(lambda x: 'O' if x not in ow_crossed_tiles else 'X', [i for i in range(0x40, 0x82)]))
+            text_output = tile_swap_spoiler_table.replace('s', '%s') % (                         s[0x02],                                s[0x07],
+                                                                                     s[0x00],                s[0x03],        s[0x05],
+                s[0x00],        s[0x02],s[0x03],        s[0x05],        s[0x07],                 s[0x0a],                                s[0x0f],
+                                s[0x0a],                                s[0x0f],
+                s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17], s[0x10],s[0x11],s[0x12],s[0x13],s[0x14],s[0x15],s[0x16],s[0x17],
+                s[0x18],        s[0x1a],s[0x1b],        s[0x1d],s[0x1e],
+                                s[0x22],                s[0x25],                                 s[0x1a],                s[0x1d],
+                s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],     s[0x18],                s[0x1b],                s[0x1e],
+                s[0x30],        s[0x32],s[0x33],s[0x34],s[0x35],        s[0x37],                 s[0x22],                s[0x25],
+                                s[0x3a],s[0x3b],s[0x3c],                s[0x3f],
+                                                                                 s[0x28],s[0x29],s[0x2a],s[0x2b],s[0x2c],s[0x2d],s[0x2e],s[0x2f],
+                                                                        s[0x40],                 s[0x32],s[0x33],s[0x34],                s[0x37],
+                                                                                    s[0x30],                                s[0x35],
+                                                                        s[0x41],                 s[0x3a],s[0x3b],s[0x3c],                s[0x3f])
+            world.spoiler.set_map('groups', text_output, ow_crossed_tiles, player)
+        else:
             crossed_candidates = list()
             for group in trimmed_groups.keys():
                 (mode, wrld, dir, terrain, parallel, count) = group
-                if parallel == IsParallel.Yes and wrld == WorldType.Light and (mode == OpenStd.Open or world.mode[player] != 'standard'):
+                if wrld == WorldType.Light and mode != OpenStd.Standard:
                     for (forward_set, back_set) in zip(trimmed_groups[group][0], trimmed_groups[group][1]):
-                        if world.owKeepSimilar[player]:
-                            if world.owCrossed[player] == 'chaos' and random.randint(0, 1):
-                                for edge in forward_set:
-                                    crossed_edges.append(edge)
-                            elif world.owCrossed[player] == 'limited':
-                                crossed_candidates.append(forward_set)
-                        else:
-                            for edge in forward_set:
+                        if forward_set[0] in parallel_links_new or forward_set[0] in parallel_links_new.inverse:
+                            if world.owKeepSimilar[player]:
                                 if world.owCrossed[player] == 'chaos' and random.randint(0, 1):
-                                    crossed_edges.append(edge)
+                                    for edge in forward_set:
+                                        crossed_edges.append(edge)
                                 elif world.owCrossed[player] == 'limited':
-                                    crossed_candidates.append([edge])
+                                    crossed_candidates.append(forward_set)
+                            else:
+                                for edge in forward_set:
+                                    if world.owCrossed[player] == 'chaos' and random.randint(0, 1):
+                                        crossed_edges.append(edge)
+                                    elif world.owCrossed[player] == 'limited':
+                                        crossed_candidates.append([edge])
             if world.owCrossed[player] == 'limited':
                 random.shuffle(crossed_candidates)
                 for edge_set in crossed_candidates[:9]:
                     for edge in edge_set:
                         crossed_edges.append(edge)
             for edge in copy.deepcopy(crossed_edges):
-                if edge in parallel_links:
-                    crossed_edges.append(parallel_links[edge])
-                elif edge in parallel_links.inverse:
-                    crossed_edges.append(parallel_links.inverse[edge][0])
-        
-        trimmed_groups = performSwap(trimmed_groups, crossed_edges)
-        assert len(crossed_edges) == 0, 'Not all edges were crossed successfully: ' + ', '.join(crossed_edges)
+                if edge in parallel_links_new:
+                    crossed_edges.append(parallel_links_new[edge])
+                elif edge in parallel_links_new.inverse:
+                    crossed_edges.append(parallel_links_new.inverse[edge][0])
+
+    # after tile swap and crossed, determine edges that need to swap
+    edges_to_swap = [e for e in swapped_edges+crossed_edges if (e not in swapped_edges) or (e not in crossed_edges)]
 
     # whirlpool shuffle
     logging.getLogger('').debug('Shuffling whirlpools')
@@ -233,14 +272,14 @@ def link_overworld(world, player):
             else:
                 if ((world.owCrossed[player] == 'none' or (world.owCrossed[player] == 'polar' and not world.owMixed[player])) and (world.get_region(from_region, player).type == RegionType.LightWorld)) \
                         or world.owCrossed[player] not in ['none', 'polar', 'grouped'] \
-                        or (world.owCrossed[player] == 'grouped' and ((from_owid < 0x40) == (from_owid not in ow_crossed_tiles[0]))):
+                        or (world.owCrossed[player] == 'grouped' and ((world.get_region(from_region, player).type == RegionType.LightWorld) == (from_owid not in ow_crossed_tiles))):
                     whirlpool_candidates[0].append(tuple((from_owid, from_whirlpool, from_region)))
                 else:
                     whirlpool_candidates[1].append(tuple((from_owid, from_whirlpool, from_region)))
                 
                 if ((world.owCrossed[player] == 'none' or (world.owCrossed[player] == 'polar' and not world.owMixed[player])) and (world.get_region(to_region, player).type == RegionType.LightWorld)) \
                         or world.owCrossed[player] not in ['none', 'polar', 'grouped'] \
-                        or (world.owCrossed[player] == 'grouped' and ((to_owid < 0x40) == (to_owid not in ow_crossed_tiles[0]))):
+                        or (world.owCrossed[player] == 'grouped' and ((world.get_region(to_region, player).type == RegionType.LightWorld) == (to_owid not in ow_crossed_tiles))):
                     whirlpool_candidates[0].append(tuple((to_owid, to_whirlpool, to_region)))
                 else:
                     whirlpool_candidates[1].append(tuple((to_owid, to_whirlpool, to_region)))
@@ -250,6 +289,8 @@ def link_overworld(world, player):
         for whirlpools in whirlpool_candidates:
             random.shuffle(whirlpools)
             while len(whirlpools):
+                if len(whirlpools) % 2 == 1:
+                    x=0
                 from_owid, from_whirlpool, from_region = whirlpools.pop()
                 to_owid, to_whirlpool, to_region = whirlpools.pop()
                 connect_simple(world, from_whirlpool, to_region, player)
@@ -260,9 +301,12 @@ def link_overworld(world, player):
 
     # layout shuffle
     logging.getLogger('').debug('Shuffling overworld layout')
-    connected_edges = []
 
     if world.owShuffle[player] == 'vanilla':
+        # apply outstanding swaps
+        trimmed_groups = performSwap(trimmed_groups, edges_to_swap)
+        assert len(edges_to_swap) == 0, 'Not all edges were swapped successfully: ' + ', '.join(edges_to_swap)
+        
         # vanilla transitions
         groups = list(trimmed_groups.values())
         for (forward_edge_sets, back_edge_sets) in groups:
@@ -285,10 +329,9 @@ def link_overworld(world, player):
         connect_custom(world, connected_edges, player)
         
         # layout shuffle
-        trimmed_groups = remove_reserved(world, trimmed_groups, connected_edges, player)
-        groups = reorganize_groups(world, trimmed_groups, player)
+        groups = adjust_edge_groups(world, trimmed_groups, edges_to_swap, player)
         
-        tries = 10
+        tries = 100
         valid_layout = False
         connected_edge_cache = connected_edges.copy()
         while not valid_layout and tries > 0:
@@ -359,7 +402,7 @@ def link_overworld(world, player):
         new_spots = list()
         ignored_regions = set()
 
-        def addSpot(owid):
+        def addSpot(owid, ignore_proximity):
             if world.owFluteShuffle[player] == 'balanced':
                 def getIgnored(regionname, base_owid, owid):
                     region = world.get_region(regionname, player)
@@ -379,15 +422,22 @@ def link_overworld(world, player):
                 
                 new_ignored = {new_region}
                 getIgnored(new_region, OWTileRegions[new_region], OWTileRegions[new_region])
-                if random.randint(0, 31) != 0 and new_ignored.intersection(ignored_regions):
+                if not ignore_proximity and random.randint(0, 31) != 0 and new_ignored.intersection(ignored_regions):
                     return False
                 ignored_regions.update(new_ignored)
-            flute_pool.remove(owid)
-            new_spots.append(owid)
+            if owid in flute_pool:
+                flute_pool.remove(owid)
+                if ignore_proximity:
+                    logging.getLogger('').warning(f'Warning: Adding flute spot within proximity: {hex(owid)}')
+                logging.getLogger('').debug(f'Placing flute at: {hex(owid)}')
+                new_spots.append(owid)
+            else:
+                # TODO: Inspect later, seems to happen only with 'random' flute shuffle
+                logging.getLogger('').warning(f'Warning: Attempted to place flute spot not in pool: {hex(owid)}')
             return True
         
         # determine sectors (isolated groups of regions) to place flute spots
-        flute_regions = {(f[0][0] if f[1] not in world.owswaps[player][0] else f[0][1]) : o for o, f in flute_data.items()}
+        flute_regions = {(f[0][0] if (f[1] not in world.owswaps[player][0]) != (world.mode[player] == 'inverted') else f[0][1]) : o for o, f in flute_data.items()}
         flute_sectors = [(len([r for l in s for r in l]), [r for l in s for r in l if r in flute_regions]) for s in world.owsectors[player]]
         flute_sectors = [s for s in flute_sectors if len(s[1]) > 0]
         region_total = sum([c for c,_ in flute_sectors])
@@ -399,17 +449,22 @@ def link_overworld(world, player):
             sector_total -= 1
             spots_to_place = min(flute_spots - sector_total, max(1, round((sector[0] * (flute_spots - sector_total) / region_total) + 0.5)))
             target_spots = len(new_spots) + spots_to_place
+            logging.getLogger('').debug(f'Sector of {sector[0]} regions gets {spots_to_place} spot(s)')
             
             if 'Desert Palace Teleporter Ledge' in sector[1] or 'Misery Mire Teleporter Ledge' in sector[1]:
-                addSpot(0x38) # guarantee desert/mire access
+                addSpot(0x38, False) # guarantee desert/mire access
 
             random.shuffle(sector[1])
             f = 0
+            t = 0
             while len(new_spots) < target_spots:
                 if f >= len(sector[1]):
                     f = 0
+                    t += 1
+                    if t > 5:
+                        raise GenerationException('Infinite loop detected in flute shuffle')
                 if sector[1][f] not in new_spots:
-                    addSpot(flute_regions[sector[1][f]])
+                    addSpot(flute_regions[sector[1][f]], t > 0)
                 f += 1
 
             region_total -= sector[0]
@@ -421,8 +476,9 @@ def link_overworld(world, player):
         connect_flutes(new_spots)
 
         # update spoiler
+        new_spots = list(map(lambda o: flute_data[o][1], new_spots))
         s = list(map(lambda x: ' ' if x not in new_spots else 'F', [i for i in range(0x40)]))
-        text_output = tile_swap_spoiler_table.replace('s', '%s') % (                         s[0x02],                                s[0x07],
+        text_output = flute_spoiler_table.replace('s', '%s') % (                             s[0x02],                                s[0x07],
                                                                                  s[0x00],                s[0x03],        s[0x05],
             s[0x00],        s[0x02],s[0x03],        s[0x05],        s[0x07],                 s[0x0a],                                s[0x0f],
                             s[0x0a],                                s[0x0f],
@@ -498,33 +554,106 @@ def connect_two_way(world, edgename1, edgename2, player, connected_edges=None):
                     if not (parallel_forward_edge in connected_edges) and not (parallel_back_edge in connected_edges):
                         connect_two_way(world, parallel_forward_edge, parallel_back_edge, player, connected_edges)
                 except KeyError:
-                    # TODO: Figure out why non-parallel edges are getting into parallel groups
                     raise KeyError('No parallel edge for edge %s' % edgename2)
 
-def shuffle_tiles(world, groups, result_list, player):
+def shuffle_tiles(world, groups, result_list, do_grouped, player):
     swapped_edges = list()
-    valid_whirlpool_parity = False
+    group_parity = {}
+    for group_data in groups:
+        group = group_data[0]
+        parity = [0, 0, 0, 0, 0, 0]
+        # 0: vertical
+        if 0x00 in group:
+            parity[0] += 1
+        if 0x0f in group:
+            parity[0] += 1
+        if 0x80 in group:
+            parity[0] -= 1
+        if 0x81 in group:
+            parity[0] -= 1
+        # 1: horizontal land single
+        if 0x1a in group:
+            parity[1] -= 1
+        if 0x1b in group:
+            parity[1] += 1
+        if 0x28 in group:
+            parity[1] -= 1
+        if 0x29 in group:
+            parity[1] += 1
+        # 2: horizontal land double
+        if 0x28 in group:
+            parity[2] += 1
+        if 0x29 in group:
+            parity[2] -= 1
+        if 0x30 in group:
+            parity[2] -= 1
+        if 0x3a in group:
+            parity[2] += 1
+        # 3: horizontal water
+        if 0x2d in group:
+            parity[3] += 1
+        if 0x80 in group:
+            parity[3] -= 1
+        # 4: whirlpool
+        if 0x0f in group:
+            parity[4] += 1
+        if 0x12 in group:
+            parity[4] += 1
+        if 0x33 in group:
+            parity[4] += 1
+        if 0x35 in group:
+            parity[4] += 1
+        # 5: dropdown exit
+        for id in [0x00, 0x02, 0x13, 0x15, 0x18, 0x22]:
+            if id in group:
+                parity[5] += 1
+        if 0x1b in group and world.mode[player] != 'standard':
+            parity[5] += 1
+        if 0x1b in group and world.shuffle_ganon:
+            parity[5] -= 1
+        group_parity[group[0]] = parity
 
-    while not valid_whirlpool_parity:
+    attempts = 1000
+    while True:
+        if attempts == 0: # expected to only occur with custom swaps
+            raise GenerationException('Could not find valid tile swaps')
+
         # tile shuffle happens here
         removed = list()
-        for group in groups.keys():
-            # if group[0] in ['Links', 'Central Bonk Rocks', 'Castle']: # TODO: Standard + Inverted
+        for group in groups:
+            #if 0x1b in group[0] or 0x13 in group[0] or (0x1a in group[0] and world.owCrossed[player] == 'none'): # TODO: Standard + Inverted
             if random.randint(0, 1):
                 removed.append(group)
-        
+
         # save shuffled tiles to list
         new_results = [[],[],[]]
-        for group in groups.keys():
+        for group in groups:
             if group not in removed:
-                (owids, lw_regions, dw_regions) = groups[group]
+                (owids, lw_regions, dw_regions) = group
                 (exist_owids, exist_lw_regions, exist_dw_regions) = new_results
                 exist_owids.extend(owids)
                 exist_lw_regions.extend(lw_regions)
                 exist_dw_regions.extend(dw_regions)
 
-        # check whirlpool parity
-        valid_whirlpool_parity = world.owCrossed[player] not in ['none', 'grouped'] or len([o for o in new_results[0] if o in [0x0f, 0x12, 0x15, 0x33, 0x35, 0x3f, 0x55, 0x7f]]) % 2 == 0
+        parity = [sum(group_parity[group[0][0]][i] for group in groups if group not in removed) for i in range(6)]
+        if not world.owKeepSimilar[player]:
+            parity[1] += 2*parity[2]
+            parity[2] = 0
+        # if crossed terrain:
+        #     parity[1] += parity[3]
+        #     parity[3] = 0
+        parity[4] %= 2 # actual parity
+        if (world.owCrossed[player] == 'none' or do_grouped) and parity[:5] != [0, 0, 0, 0, 0]:
+            attempts -= 1
+            continue
+        # ensure sanc can be placed in LW in certain modes
+        if not do_grouped and world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'lean', 'crossed', 'insanity'] and world.mode[player] != 'inverted' and (world.doorShuffle[player] != 'crossed' or world.intensity[player] < 3 or world.mode[player] == 'standard'):
+            free_dw_drops = parity[5] + (1 if world.shuffle_ganon else 0)
+            free_drops = 6 + (1 if world.mode[player] != 'standard' else 0) + (1 if world.shuffle_ganon else 0)
+            if free_dw_drops == free_drops:
+                attempts -= 1
+                continue
+        break
 
     (exist_owids, exist_lw_regions, exist_dw_regions) = result_list
     exist_owids.extend(new_results[0])
@@ -532,18 +661,13 @@ def shuffle_tiles(world, groups, result_list, player):
     exist_dw_regions.extend(new_results[2])
 
     # replace LW edges with DW
-    ignore_list = list() #TODO: Remove ignore_list when special OW areas are included in pool
-    for edgeset in temporary_mandatory_connections:
-        for edge in edgeset:
-            ignore_list.append(edge)
-    
-    if world.owCrossed[player] != 'polar':
+    if world.owCrossed[player] not in ['polar', 'grouped', 'chaos'] or do_grouped:
         # in polar, the actual edge connections remain vanilla
         def getSwappedEdges(world, lst, player):
             for regionname in lst:
                 region = world.get_region(regionname, player)
                 for exit in region.exits:
-                    if exit.spot_type == 'OWEdge' and exit.name not in ignore_list:
+                    if exit.spot_type == 'OWEdge':
                         swapped_edges.append(exit.name)
 
         getSwappedEdges(world, result_list[1], player)
@@ -551,65 +675,75 @@ def shuffle_tiles(world, groups, result_list, player):
 
     return swapped_edges
 
-def reorganize_tile_groups(world, player):
-    groups = {}
-    for (name, groupType, whirlpoolGroup) in OWTileGroups.keys():
-        if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks'] \
-                or (world.mode[player] == 'standard' and world.shuffle[player] in ['lean', 'crossed', 'insanity'] and name == 'Castle' and groupType == 'Entrance'):
-            if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple', 'restricted']:
-                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
-                    groups[(name, whirlpoolGroup)] = ([], [], [])
-                else:
-                    groups[(name,)] = ([], [], [])
-            else:
-                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
-                    groups[(name, groupType, whirlpoolGroup)] = ([], [], [])
-                else:
-                    groups[(name, groupType)] = ([], [], [])
+def define_tile_groups(world, player, do_grouped):
+    groups = [[i, i + 0x40] for i in range(0x40)]
 
-    for (name, groupType, whirlpoolGroup) in OWTileGroups.keys():
-        if world.mode[player] != 'standard' or name not in ['Castle', 'Links', 'Central Bonk Rocks'] \
-                or (world.mode[player] == 'standard' and world.shuffle[player] in ['lean', 'crossed', 'insanity'] and name == 'Castle' and groupType == 'Entrance'):
-            (lw_owids, dw_owids) = OWTileGroups[(name, groupType, whirlpoolGroup)]
-            if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple', 'restricted']:
-                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
-                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, whirlpoolGroup)]
-                    exist_owids.extend(lw_owids)
-                    exist_owids.extend(dw_owids)
-                    for owid in lw_owids:
-                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
-                    for owid in dw_owids:
-                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
-                    groups[(name, whirlpoolGroup)] = (exist_owids, exist_lw_regions, exist_dw_regions)
-                else:
-                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name,)]
-                    exist_owids.extend(lw_owids)
-                    exist_owids.extend(dw_owids)
-                    for owid in lw_owids:
-                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
-                    for owid in dw_owids:
-                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
-                    groups[(name,)] = (exist_owids, exist_lw_regions, exist_dw_regions)
-            else:
-                if world.owWhirlpoolShuffle[player] or world.owCrossed[player] != 'none':
-                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, groupType, whirlpoolGroup)]
-                    exist_owids.extend(lw_owids)
-                    exist_owids.extend(dw_owids)
-                    for owid in lw_owids:
-                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
-                    for owid in dw_owids:
-                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
-                    groups[(name, groupType, whirlpoolGroup)] = (exist_owids, exist_lw_regions, exist_dw_regions)
-                else:
-                    (exist_owids, exist_lw_regions, exist_dw_regions) = groups[(name, groupType)]
-                    exist_owids.extend(lw_owids)
-                    exist_owids.extend(dw_owids)
-                    for owid in lw_owids:
-                        exist_lw_regions.extend(OWTileRegions.inverse[owid])
-                    for owid in dw_owids:
-                        exist_dw_regions.extend(OWTileRegions.inverse[owid])
-                    groups[(name, groupType)] = (exist_owids, exist_lw_regions, exist_dw_regions)
-    return groups
+    def get_group(id):
+        for group in groups:
+            if id in group:
+                return group
+
+    def merge_groups(tile_links):
+        for link in tile_links:
+            merged_group = []
+            for id in link:
+                if id not in merged_group:
+                    group = get_group(id)
+                    groups.remove(group)
+                    merged_group += group
+            groups.append(merged_group)
+
+    def can_shuffle_group(group):
+        # escape sequence should stay normal in standard
+        if world.mode[player] == 'standard' and (0x1b in group or 0x2b in group or 0x2c in group):
+            return False
+        
+        # sanctuary/chapel should not be swapped if S+Q guaranteed to output on that screen
+        if 0x13 in group and ((world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] \
+                    and (world.mode[player] in ['standard', 'inverted'] or world.doorShuffle[player] != 'crossed' or world.intensity[player] < 3)) \
+                or (world.shuffle[player] in ['lite', 'lean'] and world.mode[player] == 'inverted')):
+            return False
+        
+        return True
+
+    for i in [0x00, 0x03, 0x05, 0x18, 0x1b, 0x1e, 0x30, 0x35]:
+        groups.remove(get_group(i + 1))
+        groups.remove(get_group(i + 8))
+        groups.remove(get_group(i + 9))
+    groups.append([0x80])
+    groups.append([0x81])
+
+    if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple']:
+        merge_groups([[0x03, 0x0a], [0x28, 0x29]])
+
+    if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'simple', 'restricted', 'full', 'lite']:
+        merge_groups([[0x13, 0x14]])
+
+    if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'simple', 'restricted']:
+        merge_groups([[0x05, 0x07]])
+
+    if world.shuffle[player] == 'vanilla' or (world.mode[player] == 'standard' and world.shuffle[player] in ['dungeonssimple', 'dungeonsfull']):
+        merge_groups([[0x13, 0x14, 0x1b]])
+
+    if world.owShuffle[player] == 'vanilla' and (world.owCrossed[player] == 'none' or do_grouped):
+        merge_groups([[0x00, 0x2d, 0x80], [0x0f, 0x81], [0x1a, 0x1b], [0x28, 0x29], [0x30, 0x3a]])
+
+    if world.owShuffle[player] == 'parallel' and world.owKeepSimilar[player] and (world.owCrossed[player] == 'none' or do_grouped):
+        merge_groups([[0x28, 0x29]])
+
+    if not world.owWhirlpoolShuffle[player] and (world.owCrossed[player] == 'none' or do_grouped):
+        merge_groups([[0x0f, 0x35], [0x12, 0x15, 0x33, 0x3f]])
+
+    tile_groups = []
+    for group in groups:
+        if can_shuffle_group(group):
+            lw_regions = []
+            dw_regions = []
+            for id in group:
+                (lw_regions if id < 0x40 or id >= 0x80 else dw_regions).extend(OWTileRegions.inverse[id])
+            tile_groups.append((group, lw_regions, dw_regions))
+
+    return tile_groups
 
 def remove_reserved(world, groupedlist, connected_edges, player):
     new_grouping = {}
@@ -617,22 +751,12 @@ def remove_reserved(world, groupedlist, connected_edges, player):
         new_grouping[group] = ([], [])
 
     for group in groupedlist.keys():
-        (_, region, _, _, _, _) = group
         (forward_edges, back_edges) = groupedlist[group]
 
         # remove edges already connected (thru plando and other forced connections)
         for edge in connected_edges:
             forward_edges = list(list(filter((edge).__ne__, i)) for i in forward_edges)
             back_edges = list(list(filter((edge).__ne__, i)) for i in back_edges)
-
-        # remove parallel edges from pool, since they get added during shuffle
-        if world.owShuffle[player] == 'parallel' and region == WorldType.Dark:
-            for edge in parallel_links:
-                forward_edges = list(list(filter((parallel_links[edge]).__ne__, i)) for i in forward_edges)
-                back_edges = list(list(filter((parallel_links[edge]).__ne__, i)) for i in back_edges)
-            for edge in parallel_links.inverse:
-                forward_edges = list(list(filter((parallel_links.inverse[edge][0]).__ne__, i)) for i in forward_edges)
-                back_edges = list(list(filter((parallel_links.inverse[edge][0]).__ne__, i)) for i in back_edges)
 
         forward_edges = list(filter(([]).__ne__, forward_edges))
         back_edges = list(filter(([]).__ne__, back_edges))
@@ -646,158 +770,56 @@ def remove_reserved(world, groupedlist, connected_edges, player):
     return new_grouping
 
 def reorganize_groups(world, groups, player):
+    def get_group_key(group):
+        #(std, region, axis, terrain, parallel, count) = group
+        new_group = list(group)
+        if world.mode[player] != "standard":
+            new_group[0] = None
+        if world.owShuffle[player] != 'parallel':
+            new_group[4] = None
+        if not world.owKeepSimilar[player]:
+            new_group[5] = None
+        return tuple(new_group)
+
     # predefined shuffle groups get reorganized here
     # this restructures the candidate pool based on the chosen settings
-    if world.owShuffle[player] == 'full':
-        if world.owKeepSimilar[player]:
-            if world.mode[player] == 'standard':
-                # tuple goes to (A,B,C,D,_,F)
-                for grouping in (groups,):
-                    new_grouping = {}
+    for grouping in (groups,):
+        new_grouping = {}
 
-                    for group in grouping.keys():
-                        (std, region, axis, terrain, _, count) = group
-                        new_grouping[(std, region, axis, terrain, count)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (std, region, axis, terrain, _, count) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(std, region, axis, terrain, count)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(std, region, axis, terrain, count)] = (exist_forward_edges, exist_back_edges)
+        for group in grouping.keys():
+            new_grouping[get_group_key(group)] = ([], [])
+        
+        for group in grouping.keys():
+            new_group = get_group_key(group)
+            (forward_edges, back_edges) = grouping[group]
+            if not world.owKeepSimilar[player]:
+                forward_edges = [[i] for l in forward_edges for i in l]
+                back_edges = [[i] for l in back_edges for i in l]
+            (exist_forward_edges, exist_back_edges) = new_grouping[new_group]
+            exist_forward_edges.extend(forward_edges)
+            exist_back_edges.extend(back_edges)
+            new_grouping[new_group] = (exist_forward_edges, exist_back_edges)
 
-                    return list(new_grouping.values())
-            else:
-                # tuple goes to (_,B,C,D,_,F)
-                for grouping in (groups,):
-                    new_grouping = {}
+        return new_grouping
 
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, _, count) = group
-                        new_grouping[(region, axis, terrain, count)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, _, count) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(region, axis, terrain, count)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(region, axis, terrain, count)] = (exist_forward_edges, exist_back_edges)
-
-                    return list(new_grouping.values())
+def adjust_edge_groups(world, trimmed_groups, edges_to_swap, player):
+    groups = defaultdict(lambda: ([],[]))
+    for (key, group) in trimmed_groups.items():
+        (mode, wrld, dir, terrain, parallel, count) = key
+        if mode == OpenStd.Standard:
+            groups[key] = group
         else:
-            if world.mode[player] == 'standard':
-                # tuple goes to (A,B,C,D,_,_)
-                for grouping in (groups,):
-                    new_grouping = {}
-
-                    for group in grouping.keys():
-                        (std, region, axis, terrain, _, _) = group
-                        new_grouping[(std, region, axis, terrain)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (std, region, axis, terrain, _, _) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        forward_edges = [[i] for l in forward_edges for i in l]
-                        back_edges = [[i] for l in back_edges for i in l]
-                        
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(std, region, axis, terrain)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(std, region, axis, terrain)] = (exist_forward_edges, exist_back_edges)
-
-                    return list(new_grouping.values())
+            if world.owCrossed[player] == 'chaos':
+                groups[(mode, None, dir, terrain, parallel, count)][0].extend(group[0])
+                groups[(mode, None, dir, terrain, parallel, count)][1].extend(group[1])
             else:
-                # tuple goes to (_,B,C,D,_,_)
-                for grouping in (groups,):
-                    new_grouping = {}
-
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, _, _) = group
-                        new_grouping[(region, axis, terrain)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, _, _) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        forward_edges = [[i] for l in forward_edges for i in l]
-                        back_edges = [[i] for l in back_edges for i in l]
-                        
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(region, axis, terrain)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(region, axis, terrain)] = (exist_forward_edges, exist_back_edges)
-
-                    return list(new_grouping.values())
-    elif world.owShuffle[player] == 'parallel':
-        if world.owKeepSimilar[player]:
-            if world.mode[player] == 'standard':
-                # tuple stays (A,B,C,D,E,F)
-                for grouping in (groups,):
-                    return list(grouping.values())
-            else:
-                # tuple goes to (_,B,C,D,E,F)
-                for grouping in (groups,):
-                    new_grouping = {}
-
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, parallel, count) = group
-                        new_grouping[(region, axis, terrain, parallel, count)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, parallel, count) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(region, axis, terrain, parallel, count)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(region, axis, terrain, parallel, count)] = (exist_forward_edges, exist_back_edges)
-
-                    return list(new_grouping.values())
-        else:
-            if world.mode[player] == 'standard':
-                # tuple goes to (A,B,C,D,E,_)
-                for grouping in (groups,):
-                    new_grouping = {}
-
-                    for group in grouping.keys():
-                        (std, region, axis, terrain, parallel, _) = group
-                        new_grouping[(std, region, axis, terrain, parallel)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (std, region, axis, terrain, parallel, _) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        forward_edges = [[i] for l in forward_edges for i in l]
-                        back_edges = [[i] for l in back_edges for i in l]
-                        
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(std, region, axis, terrain, parallel)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(std, region, axis, terrain, parallel)] = (exist_forward_edges, exist_back_edges)
-
-                    return list(new_grouping.values())
-            else:
-                # tuple goes to (_,B,C,D,E,_)
-                for grouping in (groups,):
-                    new_grouping = {}
-
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, parallel, _) = group
-                        new_grouping[(region, axis, terrain, parallel)] = ([], [])
-                    
-                    for group in grouping.keys():
-                        (_, region, axis, terrain, parallel, _) = group
-                        (forward_edges, back_edges) = grouping[group]
-                        forward_edges = [[i] for l in forward_edges for i in l]
-                        back_edges = [[i] for l in back_edges for i in l]
-                        
-                        (exist_forward_edges, exist_back_edges) = new_grouping[(region, axis, terrain, parallel)]
-                        exist_forward_edges.extend(forward_edges)
-                        exist_back_edges.extend(back_edges)
-                        new_grouping[(region, axis, terrain, parallel)] = (exist_forward_edges, exist_back_edges)
-
-                    return list(new_grouping.values())
-    else:
-        raise NotImplementedError('Shuffling not supported yet')
+                for i in range(2):
+                    for edge_set in group[i]:
+                        new_world = int(wrld)
+                        if edge_set[0] in edges_to_swap:
+                            new_world += 1
+                        groups[(mode, WorldType(new_world % 2), dir, terrain, parallel, count)][i].append(edge_set)
+    return list(groups.values())
 
 def create_flute_exits(world, player):
     for region in (r for r in world.regions if r.player == player and r.terrain == Terrain.Land and r.name not in ['Zoras Domain', 'Master Sword Meadow', 'Hobo Bridge']):
@@ -876,14 +898,13 @@ def can_reach_smith(world, player):
     return found
 
 def build_sectors(world, player):
-    from Main import copy_world
+    from Main import copy_world_limited
     from OWEdges import OWTileRegions
     
     # perform accessibility check on duplicate world
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world(world)
-    world.key_logic = {}
+    base_world = copy_world_limited(world)
     
     # build lists of contiguous regions accessible with full inventory (excl portals/mirror/flute/entrances)
     regions = list(OWTileRegions.copy().keys())
@@ -927,11 +948,23 @@ def build_sectors(world, player):
                 sectors2.append(explored_regions)
         sectors[s] = sectors2
 
+    #TODO: Keep largest LW sector for Links House consideration, keep sector containing WDM for Old Man consideration
+    # sector_entrances = list()
+    # for sector in sectors:
+    #     entrances = list()
+    #     for s2 in sector:
+    #         for region_name in s2:
+    #             region = world.get_region(region_name, player)
+    #             for exit in region.exits:
+    #                 if exit.spot_type == 'Entrance' and exit.name in entrance_pool:
+    #                     entrances.append(exit.name)
+    #     sector_entrances.append(entrances)
+    
     return sectors
 
 def build_accessible_region_list(world, start_region, player, build_copy_world=False, cross_world=False, region_rules=True, ignore_ledges = False):
-    from Main import copy_world
     from BaseClasses import CollectionState
+    from Main import copy_world_limited
     from Items import ItemFactory
     from Utils import stack_size3a
     
@@ -958,9 +991,8 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
     if build_copy_world:
         for p in range(1, world.players + 1):
             world.key_logic[p] = {}
-        base_world = copy_world(world)
+        base_world = copy_world_limited(world)
         base_world.override_bomb_check = True
-        world.key_logic = {}
     else:
         base_world = world
     
@@ -974,7 +1006,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
     return explored_regions
 
 def validate_layout(world, player):
-    if world.accessibility[player] == 'beatable':
+    if world.accessibility[player] == 'none':
         return True
     
     entrance_connectors = {
@@ -1015,7 +1047,7 @@ def validate_layout(world, player):
             entrance_connectors['Bumper Cave Entrance'] = ['West Dark Death Mountain (Bottom)']
         entrance_connectors['Mountain Entry Entrance'] = ['Mountain Entry Ledge']
     
-    from Main import copy_world
+    from Main import copy_world_limited
     from Utils import stack_size3a
     from EntranceShuffle import default_dungeon_connections, default_connector_connections, default_item_connections, default_shop_connections, default_drop_connections, default_dropexit_connections
     
@@ -1048,8 +1080,7 @@ def validate_layout(world, player):
     
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world(world)
-    world.key_logic = {}
+    base_world = copy_world_limited(world)
     explored_regions = list()
 
     if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] or not world.shufflelinks[player]:
@@ -1080,12 +1111,10 @@ def validate_layout(world, player):
     while unreachable_count != len(unreachable_regions):
         # find unreachable regions
         unreachable_regions = {}
-        flat_sectors = [[r for l in s for r in l] for s in world.owsectors[player]]
-        for sector in flat_sectors:
-            for region_name in sector:
-                if region_name not in explored_regions and region_name not in isolated_regions:
-                    region = base_world.get_region(region_name, player)
-                    unreachable_regions[region_name] = region
+        for region_name in list(OWTileRegions.copy().keys()):
+            if region_name not in explored_regions and region_name not in isolated_regions:
+                region = base_world.get_region(region_name, player)
+                unreachable_regions[region_name] = region
         
         # loop thru unreachable regions to check if some can be excluded
         unreachable_count = len(unreachable_regions)
@@ -1127,13 +1156,6 @@ test_connections = [
                     #('Links House NE', 'Lost Woods Pass SW')
                     ]
 
-temporary_mandatory_connections = [
-                         # Special OW Areas
-                         ('Lost Woods NW', 'Master Sword Meadow SC'),
-                         ('Zora Waterfall NE', 'Zoras Domain SW'),
-                         ('Stone Bridge WC', 'Hobo EC'),
-                        ]
-
 # these are connections that cannot be shuffled and always exist. They link together separate parts of the world we need to divide into regions
 mandatory_connections = [# Intra-tile OW Connections
                          ('Lost Woods Bush (West)', 'Lost Woods East Area'), #pearl
@@ -1161,7 +1183,7 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Zora Waterfall Landing', 'Zora Waterfall Area'),
                          ('Zora Waterfall Water Drop', 'Zora Waterfall Water'), #flippers
                          ('Zora Waterfall Water Entry', 'Zora Waterfall Water'), #flippers
-                         ('Waterfall of Wishing Cave Entry', 'Waterfall of Wishing Cave'), #flippers
+                         ('Zora Waterfall Water Approach', 'Zora Waterfall Entryway'), #flippers
                          ('Lost Woods Pass Hammer (North)', 'Lost Woods Pass Portal Area'), #hammer
                          ('Lost Woods Pass Hammer (South)', 'Lost Woods Pass East Top Area'), #hammer
                          ('Lost Woods Pass Rock (North)', 'Lost Woods Pass East Bottom Area'), #mitts
@@ -1230,7 +1252,8 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Lake Hylia Central Island Pier', 'Lake Hylia Central Island'),
                          ('Lake Hylia West Pier', 'Lake Hylia Area'),
                          ('Lake Hylia East Pier', 'Lake Hylia Northeast Bank'),
-                         ('Lake Hylia Water D Entry', 'Lake Hylia Water'), #flippers
+                         ('Lake Hylia Water D Approach', 'Lake Hylia Water D'),
+                         ('Lake Hylia Water D Leave', 'Lake Hylia Water'), #flippers
                          ('Desert Pass Ledge Drop', 'Desert Pass Area'),
                          ('Desert Pass Rocks (North)', 'Desert Pass Southeast'), #glove
                          ('Desert Pass Rocks (South)', 'Desert Pass Area'), #glove
@@ -1689,6 +1712,7 @@ ow_connections = {
             ('Lake Hylia Island Mirror Spot', 'Lake Hylia Island'),
             ('Lake Hylia Central Island Mirror Spot', 'Lake Hylia Central Island'),
             ('Lake Hylia Water Mirror Spot', 'Lake Hylia Water'),
+            ('Lake Hylia Water D Mirror Spot', 'Lake Hylia Water D'),
             ('Lake Hylia Teleporter', 'Ice Palace Area')
         ], [
             ('Lake Hylia Island Pier', 'Lake Hylia Island'),
@@ -1737,14 +1761,14 @@ parallelsimilar_connections = [('Maze Race ES', 'Kakariko Suburb WS'),
                             ]
 
 # non shuffled overworld
-default_connections = [#('Lost Woods NW', 'Master Sword Meadow SC'),
+default_connections = [('Lost Woods NW', 'Master Sword Meadow SC'),
                         ('Lost Woods SW', 'Lost Woods Pass NW'),
                         ('Lost Woods SC', 'Lost Woods Pass NE'),
                         ('Lost Woods SE', 'Kakariko Fortune NE'),
                         ('Lost Woods EN', 'Lumberjack WN'),
                         ('Lumberjack SW', 'Mountain Entry NW'),
                         ('Mountain Entry SE', 'Kakariko Pond NE'),
-                        #('Zora Waterfall NE', 'Zoras Domain SW'),
+                        ('Zora Waterfall NE', 'Zoras Domain SW'),
                         ('Lost Woods Pass SW', 'Kakariko NW'),
                         ('Lost Woods Pass SE', 'Kakariko NC'),
                         ('Kakariko Fortune SC', 'Kakariko NE'),
@@ -1793,7 +1817,7 @@ default_connections = [#('Lost Woods NW', 'Master Sword Meadow SC'),
                         ('Stone Bridge SC', 'Lake Hylia NW'),
                         ('Stone Bridge EN', 'Tree Line WN'),
                         ('Stone Bridge EC', 'Tree Line WC'),
-                        #('Stone Bridge WC', 'Hobo EC'),
+                        ('Stone Bridge WC', 'Hobo EC'),
                         ('Tree Line SC', 'Lake Hylia NC'),
                         ('Tree Line SE', 'Lake Hylia NE'),
                         ('Desert EC', 'Desert Pass WC'),
@@ -1944,6 +1968,26 @@ flute_data = {
 }
 
 tile_swap_spoiler_table = \
+"""                       0 1 2 3 4 5 6 7
+                      +---+-+---+---+-+
+      01234567   A(00)|   |s|   |   |s|
+     +--------+       | s +-+ s | s +-+
+A(00)|s ss s s|  B(08)|   |s|   |   |s|
+B(08)|  s    s|       +-+-+-+-+-+-+-+-+
+C(10)|ssssssss|  C(10)|s|s|s|s|s|s|s|s|
+D(18)|s ss ss |       +-+-+-+-+-+-+-+-+
+E(20)|  s  s  |  D(18)|   |s|   |s|   |
+F(28)|ssssssss|       | s +-+ s +-+ s |
+G(30)|s ssss s|  E(20)|   |s|   |s|   |
+H(38)|  sss  s|       +-+-+-+-+-+-+-+-+
+     +--------+  F(28)|s|s|s|s|s|s|s|s|
+            +-+       +-+-+-+-+-+-+-+-+
+  Ped/Hobo: |s|  G(30)|   |s|s|s|   |s|
+            +-+       | s +-+-+-+ s +-+
+      Zora: |s|  H(38)|   |s|s|s|   |s|
+            +-+       +---+-+-+-+---+-+"""
+
+flute_spoiler_table = \
 """                       0 1 2 3 4 5 6 7
                       +---+-+---+---+-+
       01234567   A(00)|   |s|   |   |s|

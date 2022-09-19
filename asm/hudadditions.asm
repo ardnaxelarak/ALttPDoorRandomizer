@@ -7,23 +7,37 @@ DrHudOverride:
 
 HudAdditions:
 {
-    lda.l DRFlags : and #$0008 : beq ++
-;		LDA.w #$28A4 : STA !GOAL_DRAW_ADDRESS
-		lda $7EF423
-        jsr HudHexToDec4DigitCopy
-		LDX.b $05 : TXA : ORA.w #$2400 : STA !GOAL_DRAW_ADDRESS+2 ; draw 100's digit
-		LDX.b $06 : TXA : ORA.w #$2400 : STA !GOAL_DRAW_ADDRESS+4 ; draw 10's digit
-		LDX.b $07 : TXA : ORA.w #$2400 : STA !GOAL_DRAW_ADDRESS+6 ; draw 1's digit
+    LDA.l DRFlags : AND #$0008 : BNE + : JMP .end_item_count : +
+		LDA.l $7EF423 : PHA : CMP #1000 : !BLT +
+			JSL HexToDec4Digit_fast
+			LDX.b $04 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS ; draw 1000's digit
+			BRA .skip
+        + JSL HexToDec_fast
+        .skip
+        LDA #$207F : STA !GOAL_DRAW_ADDRESS+2 : STA !GOAL_DRAW_ADDRESS+4
+		PLA : PHA : CMP.w #100 : !BLT +
+			LDX.b $05 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+2 ; draw 100's digit
+		+ PLA : CMP.w #10 : !BLT +
+		 	LDX.b $06 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+4 ; draw 10's digit
+		+ LDX.b $07 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+6 ; draw 1's digit
 		LDA.w #$2830 : STA !GOAL_DRAW_ADDRESS+8 ; draw slash
 		LDA.l DRFlags : AND #$0100 : BNE +
-        	lda $7EF33E
-			jsr HudHexToDec4DigitCopy
-			LDX.b $05 : TXA : ORA.w #$2400 : STA !GOAL_DRAW_ADDRESS+10 ; draw 100's digit
-			LDX.b $06 : TXA : ORA.w #$2400 : STA !GOAL_DRAW_ADDRESS+12 ; draw 10's digit
-			LDX.b $07 : TXA : ORA.w #$2400 : STA !GOAL_DRAW_ADDRESS+14 ; draw 1's digit
-			BRA ++
-		+ LDA.w #$2405 : STA !GOAL_DRAW_ADDRESS+10 : STA !GOAL_DRAW_ADDRESS+12 : STA !GOAL_DRAW_ADDRESS+14
-    ++
+        	LDA.l $7EF33E : CMP #1000 : !BLT .three_digit_goal
+				JSL HexToDec4Digit_fast
+				LDX.b $04 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+10 ; draw 1000's digit
+				LDX.b $05 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+12 ; draw 100's digit
+				LDX.b $06 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+14 ; draw 10's digit
+				LDX.b $07 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+16 ; draw 1's digit
+				BRA .end_item_count
+			.three_digit_goal
+			JSL HexToDec_fast
+			LDX.b $05 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+10 ; draw 100's digit
+			LDX.b $06 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+12 ; draw 10's digit
+			LDX.b $07 : TXA : ORA.w #$2490 : STA !GOAL_DRAW_ADDRESS+14 ; draw 1's digit
+			BRA .end_item_count
+		+ LDA.w #$2405 : STA !GOAL_DRAW_ADDRESS+10 : STA !GOAL_DRAW_ADDRESS+12
+		                 STA !GOAL_DRAW_ADDRESS+14 : STA !GOAL_DRAW_ADDRESS+16
+    .end_item_count
 
 	LDX $1B : BNE + : RTS : + ; Skip if outdoors
 	ldx $040c : cpx #$ff : bne + : rts : + ; Skip if not in dungeon
@@ -141,7 +155,7 @@ DrHudDungeonItemsAdditions:
         	iny #2
         	lda.w #$24f5 : sta $1644, y ; blank out map spot
         	lda $7ef368 : and.l $0098c0, x : beq + ; must have map
-				lda #$2826 : sta $1644, y ; check mark
+        		JSR MapIndicatorShort : STA $1644, Y
 			+ iny #2
             cpx #$001a : bne +
 				tya : !add #$003c : tay
@@ -164,6 +178,34 @@ DrHudDungeonItemsAdditions:
     plp : ply : plx : rtl
 }
 
+MapIndicatorLong:
+	PHX
+		LDA.l OldHudToNewHudTable, X : TAX
+		JSR MapIndicator
+	PLX
+RTL
+
+MapIndicatorShort:
+	PHX
+		TXA : LSR : TAX
+		JSR MapIndicator
+	PLX
+RTS
+
+OldHudToNewHudTable:
+	dw 1, 2, 3, 10, 4, 6, 5, 8, 11, 9, 7, 12, 13
+
+IndicatorCharacters:
+	;  check      1      2      3      4      5      6      7      G      B      R
+	dw $2426, $2817, $2818, $2819, $281A, $281B, $281C, $281D, $2590, $258B, $259B
+
+MapIndicator:
+	LDA.l CrystalPendantFlags_3, X : AND #$00FF
+	PHX
+		ASL : TAX : LDA.l IndicatorCharacters, X
+	PLX
+RTS
+
 BkStatus:
     lda $7ef366 : and.l $0098c0, x : bne +++ ; has the bk already
          lda.l BigKeyStatus, x : bne ++
@@ -181,7 +223,7 @@ ConvertToDisplay:
 ConvertToDisplay2:
     and.w #$00ff : beq ++
         cmp #$000a : !blt +
-            !add #$2553 : rts
+            !add #$2553 : rts ; todo: use 2580 with 258A as "A" for non transparent digits
         + !add #$2816 : rts
     ++ lda #$2827 : rts ; 0/O for 0 or placeholder digit ;2483
 

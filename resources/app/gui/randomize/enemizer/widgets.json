@@ -15,6 +15,7 @@
         "none",
         "simple",
         "full",
+        "unique",
         "random"
       ]
     }

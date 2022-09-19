@@ -1,0 +1,26 @@
+meta:
+#  seed: 872603231
+  seed: 222336029
+settings:
+  1:
+    door_shuffle: crossed
+#    door_shuffle: vanilla
+    mode: standard
+    shufflebosses: unique
+doors:
+  1:
+    doors:
+      Hyrule Dungeon Cellblock Up Stairs: Thieves Basement Block Up Stairs
+bosses:
+  1:
+    Thieves Town: Moldorm
+#start_inventory:
+#  1:
+#    - Titans Mitts
+#    - Ocarina
+#    - Moon Pearl
+#    - Tempered Sword
+#    - Boss Heart Container
+#    - Boss Heart Container
+#    - Boss Heart Container
+#    - Boss Heart Container
