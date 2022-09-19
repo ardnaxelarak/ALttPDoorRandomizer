@@ -685,9 +685,10 @@ def copy_world_limited(world):
         ret.push_precollected(ItemFactory(item.name, item.player))
 
     for edge in world.owedges:
-        copiededge = ret.check_for_owedge(edge.name, edge.player)
-        if copiededge is not None:
-            copiededge.dest = ret.check_for_owedge(edge.dest.name, edge.dest.player)
+        if edge.dest is not None:
+            copiededge = ret.check_for_owedge(edge.name, edge.player)
+            if copiededge is not None:
+                copiededge.dest = ret.check_for_owedge(edge.dest.name, edge.dest.player)
 
     for door in world.doors:
         entrance = ret.check_for_entrance(door.name, door.player)
