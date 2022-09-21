@@ -1366,11 +1366,12 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x0301FD, 0xD9)
         rom.write_byte(0x030224, 0x04)  # adjust width of offset for replaced pot bomb
         rom.write_byte(0x030229, 0x04)
-        rom.write_byte(0x04CC4A, 0xD9)  # bonk rocks that drop bombs
-        rom.write_byte(0x04D028, 0xD9)
-        rom.write_byte(0x04D397, 0xD9)
-        rom.write_byte(0x04D3A3, 0xDB)
-        rom.write_byte(0x04D56A, 0xDA)
+        if not world.shuffle_bonk_drops[player]:
+            rom.write_byte(0x04CC4A, 0xD9)  # bonk rocks that drop bombs
+            rom.write_byte(0x04D028, 0xD9)
+            rom.write_byte(0x04D397, 0xD9)
+            rom.write_byte(0x04D3A3, 0xDB)
+            rom.write_byte(0x04D56A, 0xDA)
         rom.write_byte(0x00EDA7, 0x35)  # DW chest game (bomb -> blue rupee)
 
         # thiefs and pikits shouldn't steal bombs

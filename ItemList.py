@@ -187,6 +187,14 @@ def get_custom_array_key(item):
   return key
 
 
+def maybe_replace_item(world, player, item):
+    if world.retro[player] and item in ['Single Arrow', 'Arrows (5)', 'Arrows (10)', 'Arrow Upgrade (+5)', 'Arrow Upgrade (+10)']:
+        return 'Rupees (5)'
+    if world.swords[player] == 'bombs' and item in ['Single Bomb', 'Bombs (3)', 'Bombs (10)', 'Bomb Upgrade (+5)', 'Bomb Upgrade (+10)']:
+        return 'Small Heart'
+    return item
+
+
 def generate_itempool(world, player):
     if (world.difficulty[player] not in ['normal', 'hard', 'expert'] or world.goal[player] not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'trinity', 'crystals']
             or world.mode[player] not in ['open', 'standard', 'inverted'] or world.timer not in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown'] or world.progressive not in ['on', 'off', 'random']):
@@ -842,8 +850,7 @@ def add_pot_contents(world, player):
         for pot in pot_list:
             if pot.item not in [PotItem.Hole, PotItem.Key, PotItem.Switch]:
                 if valid_pot_location(pot, world.pot_pool[player], world, player):
-                    item = ('Rupees (5)' if world.retro[player] and pot_items[pot.item] == 'Arrows (5)'
-                            else pot_items[pot.item])
+                    item = maybe_replace_item(world, player, pot_items[pot.item])
                     world.itempool.append(ItemFactory(item, player))
 
 
@@ -853,6 +860,7 @@ def add_bonkdrop_contents(world, player):
         if item_name not in item_table:
             item_name = alt_item
         while (count > 0):
+            item_name = maybe_replace_item(world, player, item_name)
             item = ItemFactory(item_name, player)
             world.itempool.append(item)
             count -= 1
