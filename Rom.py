@@ -38,7 +38,7 @@ from source.dungeon.RoomList import Room0127
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '220df7b206fcba399fc84be4e6bc2aee'
+RANDOMIZERBASEHASH = 'ac99aacc60ad8896c8885841753e44ac'
 
 
 class JsonRom(object):
@@ -1080,7 +1080,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             rom.write_byte(cr_pc+0x1e, 0xc2)  # slash
             rom.write_byte(cr_pc+0x1f, thousands_bot)
             # modify stat config
-            stat_address = 0x23B969
+            stat_address = 0x23B971
             owr_difference = 0x26 # can't remember why there is a difference between DR fork
             stat_pc = snes_to_pc(stat_address - owr_difference)
             rom.write_byte(stat_pc, 0xa9)  # change to pos 21 (from b1)
