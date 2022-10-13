@@ -7,6 +7,7 @@ import logging
 import shlex
 import urllib.parse
 import websockets
+from websockets.extensions.permessage_deflate import ClientPerMessageDeflateFactory
 
 from BaseClasses import PotItem, PotFlags
 import Items
@@ -380,8 +381,9 @@ async def snes_connect(ctx : Context, address):
 
     logging.info("Connecting to QUsb2snes at %s ..." % address)
 
+    ext = [ClientPerMessageDeflateFactory()]
     try:
-        ctx.snes_socket = await websockets.connect(address, ping_timeout=None, ping_interval=None)
+        ctx.snes_socket = await websockets.connect(address, ping_timeout=None, ping_interval=None, extensions=ext)
         ctx.snes_state = SNES_CONNECTED
 
         DeviceList_Request = {
