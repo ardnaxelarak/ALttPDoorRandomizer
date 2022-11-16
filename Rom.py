@@ -1226,7 +1226,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     #Set overflow items for progressive equipment
     rom.write_bytes(0x180090,
-                    [difficulty.progressive_sword_limit if world.swords[player] != 'swordless' else 0, overflow_replacement,
+                    [difficulty.progressive_sword_limit if world.swords[player] not in ['swordless', 'swordless_hammer', 'bees'] else 0, overflow_replacement,
                      difficulty.progressive_shield_limit, overflow_replacement,
                      difficulty.progressive_armor_limit, overflow_replacement,
                      difficulty.progressive_bottle_limit, overflow_replacement])
@@ -1234,7 +1234,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     #Work around for json patch ordering issues - write bow limit separately so that it is replaced in the patch
     rom.write_bytes(0x180098, [difficulty.progressive_bow_limit, overflow_replacement])
 
-    if difficulty.progressive_bow_limit < 2 and world.swords[player] in ['swordless', 'pseudo', 'assured_pseudo']:
+    if difficulty.progressive_bow_limit < 2 and world.swords[player] in ['swordless', 'swordless_hammer', 'bees', 'pseudo', 'assured_pseudo']:
         rom.write_bytes(0x180098, [2, overflow_replacement])
 
     # set up game internal RNG seed
@@ -1346,15 +1346,35 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x180029, 0x01) # Smithy quick item give
 
     # set swordless mode settings
-    if world.swords[player] == 'swordless':
+    if world.swords[player] in ['swordless', 'swordless_hammer']:
         rom.write_byte(0x18003F, 0x01)  # hammer can harm ganon
         rom.initial_sram.set_swordless_curtains()  # open curtains
         rom.write_byte(0x180041, 0x01)  # swordless medallions (on pads)
         rom.write_byte(0x180043, 0xFF)  # starting sword for link
         rom.write_byte(0x180044, 0x01)  # hammer activates tablets
+        if world.swords[player] == 'swordless_hammer':
+            rom.write_byte(0x18002F, 0x07)  # hammer on B
     elif world.swords[player] in ['pseudo', 'assured_pseudo']:
         rom.write_byte(0x18002F, 0x02)  # pseudo-swords
         rom.write_byte(0x18003F, 0x01)  # hammer can harm ganon
+    elif world.swords[player] == 'bees':
+        rom.write_byte(0x18002F, 0x06)  # bee mode
+        rom.initial_sram.set_swordless_curtains()  # open curtains
+        rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
+
+        # Arrghus puff fixes
+        rom.write_byte(0x0F399E, 0x00)
+        rom.write_byte(0x06B3E6, 0x0D)
+
+        # Kholdstare shell fix
+        rom.write_byte(0x06B123, 0x00)
+
+        # Sidenexx fix
+        rom.write_byte(0x18CE61, [0x00, 0x00])
+        rom.write_byte(0x18CE69, [0x00, 0x00])
+
+        rom.write_byte(0x036D7F, 0xFF) # remove hammer usage
+        rom.write_byte(0x043DB4, 0xFF) # remove powder usage
     elif world.swords[player] == 'bombs':
         rom.write_byte(0x18002F, 0x01)  # special bombs
         rom.initial_sram.set_swordless_curtains()  # open curtains

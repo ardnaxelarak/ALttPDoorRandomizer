@@ -970,7 +970,7 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Bomber Corner Water Drop', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_entrance('Bomber Corner Waterfall Water Drop', player), lambda state: state.has('Flippers', player))
 
-    if world.swords[player] == 'swordless':
+    if world.swords[player] in ['swordless', 'swordless_hammer', 'bees']:
         swordless_rules(world, player)
     if world.swords[player] == 'bombs':
         bomb_mode_rules(world, player)

@@ -3530,7 +3530,7 @@ er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "lite": 4, "le
 # byte 1: LLLW WSSS (logic, mode, sword)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
 world_mode = {"open": 0, "standard": 1, "inverted": 2}
-sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 5, "byrna": 6, "somaria": 6, "cane": 6}
+sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "swordless_hammer": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 5, "byrna": 6, "somaria": 6, "cane": 6, "bees": 7}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4, "trinity": 5}
