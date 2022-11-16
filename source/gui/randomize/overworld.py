@@ -33,8 +33,10 @@ def overworld_page(parent):
             for key in dictWidgets:
                 self.widgets[key] = dictWidgets[key]
                 packAttrs = {"anchor":E}
-                if key == "keepsimilar":
-                    packAttrs = {"side":LEFT, "pady":(18,0)}
+                if key == "terrain":
+                    packAttrs = {"anchor":W, "pady":(3,0)}
+                elif key == "keepsimilar":
+                    packAttrs = {"anchor":W, "pady":(6,0)}
                 elif key == "overworldflute":
                     packAttrs["pady"] = (20,0)
                 elif key in ["mixed", "whirlpool"]:

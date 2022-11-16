@@ -14,7 +14,7 @@ from Items import ItemFactory
 from KeyDoorShuffle import validate_key_placement
 from OverworldGlitchRules import create_owg_connections
 from PotShuffle import shuffle_pots, shuffle_pot_switches
-from Regions import create_regions, create_shops, mark_light_world_regions, mark_dark_world_regions, create_dungeon_regions, adjust_locations
+from Regions import create_regions, create_shops, mark_light_dark_world_regions, create_dungeon_regions, adjust_locations
 from OWEdges import create_owedges
 from OverworldShuffle import link_overworld, update_world_regions, create_flute_exits
 from EntranceShuffle import link_entrances
@@ -26,7 +26,7 @@ from Rules import set_rules
 from Dungeons import create_dungeons
 from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dungeons_restrictive, ensure_good_pots
 from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops
-from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops
+from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, create_farm_locations
 from Utils import output_path, parse_player_names
 
 from source.item.FillUtil import create_item_pool_config, massage_item_pool, district_item_pool_config
@@ -115,6 +115,7 @@ def main(args, seed=None, fish=None):
     world.crystals_gt_orig = args.crystals_gt.copy()
     world.ganon_item = {player: get_random_ganon_item(args.swords) if args.ganon_item[player] == 'random' else args.ganon_item[player] for player in range(1, world.players + 1)}
     world.ganon_item_orig = args.ganon_item.copy()
+    world.owTerrain = args.ow_terrain.copy()
     world.owKeepSimilar = args.ow_keepsimilar.copy()
     world.owWhirlpoolShuffle = args.ow_whirlpool.copy()
     world.owFluteShuffle = args.ow_fluteshuffle.copy()
@@ -189,8 +190,6 @@ def main(args, seed=None, fish=None):
 
     for player in range(1, world.players + 1):
         create_regions(world, player)
-        if world.logic[player] in ('owglitches', 'nologic'):
-            create_owg_connections(world, player)
         create_dungeon_regions(world, player)
         create_owedges(world, player)
         create_shops(world, player)
@@ -215,6 +214,7 @@ def main(args, seed=None, fish=None):
         link_overworld(world, player)
         create_shops(world, player)
         update_world_regions(world, player)
+        mark_light_dark_world_regions(world, player)
         create_flute_exits(world, player)
 
     logger.info(world.fish.translate("cli","cli","shuffling.world"))
@@ -232,11 +232,12 @@ def main(args, seed=None, fish=None):
 
     for player in range(1, world.players + 1):
         link_doors(world, player)
-        if world.mode[player] != 'inverted':
-            mark_light_world_regions(world, player)
-        else:
-            mark_dark_world_regions(world, player)
+        mark_light_dark_world_regions(world, player)
     logger.info(world.fish.translate("cli", "cli", "generating.itempool"))
+
+    for player in range(1, world.players + 1):
+        set_prize_drops(world, player)
+        create_farm_locations(world, player)
 
     for player in range(1, world.players + 1):
         generate_itempool(world, player)
@@ -254,9 +255,6 @@ def main(args, seed=None, fish=None):
                 sell_keys(world, player)
         else:
             lock_shop_locations(world, player)
-
-    for player in range(1, world.players + 1):
-        set_prize_drops(world, player)
 
     massage_item_pool(world)
     logger.info(world.fish.translate("cli", "cli", "placing.dungeon.prizes"))
@@ -462,11 +460,14 @@ def copy_world(world):
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()
     ret.ganon_item = world.ganon_item.copy()
     ret.ganon_item_orig = world.ganon_item_orig.copy()
+    ret.owTerrain = world.owTerrain.copy()
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()
     ret.owFluteShuffle = world.owFluteShuffle.copy()
     ret.shuffle_bonk_drops = world.shuffle_bonk_drops.copy()
     ret.open_pyramid = world.open_pyramid.copy()
+    ret.shufflelinks = world.shufflelinks.copy()
+    ret.shuffle_ganon = world.shuffle_ganon.copy()
     ret.boss_shuffle = world.boss_shuffle.copy()
     ret.enemy_shuffle = world.enemy_shuffle.copy()
     ret.enemy_health = world.enemy_health.copy()
@@ -484,17 +485,19 @@ def copy_world(world):
     ret.owflutespots = world.owflutespots.copy()
     ret.prizes = world.prizes.copy()
     ret.restrict_boss_items = world.restrict_boss_items.copy()
+    ret.inaccessible_regions = world.inaccessible_regions.copy()
 
     for player in range(1, world.players + 1):
         create_regions(ret, player)
         update_world_regions(ret, player)
+        if world.logic[player] in ('owglitches', 'nologic'):
+            create_owg_connections(ret, player)
         create_flute_exits(ret, player)
         create_dungeon_regions(ret, player)
+        create_owedges(ret, player)
         create_shops(ret, player)
         create_rooms(ret, player)
         create_dungeons(ret, player)
-        if world.logic[player] in ('owglitches', 'nologic'):
-            create_owg_connections(ret, player)
 
     # there are region references here they must be migrated to preserve integrity
     # ret.exp_cache = world.exp_cache.copy()
@@ -530,6 +533,10 @@ def copy_world(world):
             location.parent_region = copied_region
         for entrance in region.entrances:
             ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
+        for exit in region.exits:
+            if exit.connected_region:
+                dest_region = ret.get_region(exit.connected_region.name, region.player)
+                ret.get_entrance(exit.name, exit.player).connect(dest_region)
 
     # fill locations
     for location in world.get_locations():
@@ -543,6 +550,8 @@ def copy_world(world):
             new_location.event = True
         if location.locked:
             new_location.locked = True
+        if location.skip:
+            new_location.skip = True
         # these need to be modified properly by set_rules
         new_location.access_rule = lambda state: True
         new_location.item_rule = lambda state: True
@@ -560,15 +569,21 @@ def copy_world(world):
     ret.state.prog_items = world.state.prog_items.copy()
     ret.state.stale = {player: True for player in range(1, world.players + 1)}
 
-    ret.owedges = world.owedges
+    for edge in world.owedges:
+        if edge.dest:
+            copiededge = ret.check_for_owedge(edge.name, edge.player)
+            copiededge.dest = ret.check_for_owedge(edge.dest.name, edge.dest.player)
+    
+    # everything below this line is changing the original object, seems to be complicated to replicate similar objects organically
     ret.doors = world.doors
     for door in ret.doors:
-        entrance = ret.check_for_entrance(door.name, door.player)
-        if entrance is not None:
-            entrance.door = door
+        copied_entrance = ret.check_for_entrance(door.entrance.name, door.player)
+        door.entrance = copied_entrance
+        if copied_entrance:
+            copied_entrance.door = door
+    
     ret.paired_doors = world.paired_doors
     ret.rooms = world.rooms
-    ret.inaccessible_regions = world.inaccessible_regions
     ret.dungeon_layouts = world.dungeon_layouts
     ret.key_logic = world.key_logic
     ret.dungeon_portals = world.dungeon_portals
@@ -580,12 +595,13 @@ def copy_world(world):
     from OverworldShuffle import categorize_world_regions
     for player in range(1, world.players + 1):
         categorize_world_regions(ret, player)
+        create_farm_locations(ret, player)
         set_rules(ret, player)
 
     return ret
 
 
-def copy_world_limited(world):
+def copy_world_premature(world, player):
     # ToDo: Not good yet
     ret = World(world.players, world.owShuffle, world.owCrossed, world.owMixed, world.shuffle, world.doorShuffle, world.logic, world.mode, world.swords,
                 world.difficulty, world.difficulty_adjustments, world.timer, world.progressive, world.goal, world.algorithm,
@@ -622,11 +638,14 @@ def copy_world_limited(world):
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()
+    ret.owTerrain = world.owTerrain.copy()
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()
     ret.owFluteShuffle = world.owFluteShuffle.copy()
     ret.shuffle_bonk_drops = world.shuffle_bonk_drops.copy()
     ret.open_pyramid = world.open_pyramid.copy()
+    ret.shufflelinks = world.shufflelinks.copy()
+    ret.shuffle_ganon = world.shuffle_ganon.copy()
     ret.boss_shuffle = world.boss_shuffle.copy()
     ret.enemy_shuffle = world.enemy_shuffle.copy()
     ret.enemy_health = world.enemy_health.copy()
@@ -644,66 +663,71 @@ def copy_world_limited(world):
     ret.owflutespots = world.owflutespots.copy()
     ret.prizes = world.prizes.copy()
     ret.restrict_boss_items = world.restrict_boss_items.copy()
+    ret.key_logic = world.key_logic.copy()
 
     ret.is_copied_world = True
 
-    for player in range(1, world.players + 1):
-        create_regions(ret, player)
-        update_world_regions(ret, player)
-        if world.logic[player] in ('owglitches', 'nologic'):
-            create_owg_connections(ret, player)
-        create_flute_exits(ret, player)
-        create_dungeon_regions(ret, player)
-        create_owedges(ret, player)
-        create_shops(ret, player)
-        create_doors(ret, player)
-        create_rooms(ret, player)
-        create_dungeons(ret, player)
+    create_regions(ret, player)
+    update_world_regions(ret, player)
+    if world.logic[player] in ('owglitches', 'nologic'):
+        create_owg_connections(ret, player)
+    create_flute_exits(ret, player)
+    create_dungeon_regions(ret, player)
+    create_owedges(ret, player)
+    create_shops(ret, player)
+    create_doors(ret, player)
+    create_rooms(ret, player)
+    create_dungeons(ret, player)
 
-    for player in range(1, world.players + 1):
-        if world.mode[player] == 'standard':
-            parent = ret.get_region('Menu', player)
-            target = ret.get_region('Hyrule Castle Secret Entrance', player)
-            connection = Entrance(player, 'Uncle S&Q', parent)
-            parent.exits.append(connection)
-            connection.connect(target)
+    if world.mode[player] == 'standard':
+        parent = ret.get_region('Menu', player)
+        target = ret.get_region('Hyrule Castle Secret Entrance', player)
+        connection = Entrance(player, 'Uncle S&Q', parent)
+        parent.exits.append(connection)
+        connection.connect(target)
 
     # connect copied world
-    copied_locations = {(loc.name, loc.player): loc for loc in ret.get_locations()}  # caches all locations
+    copied_locations = {(loc.name, loc.player): loc for loc in ret.get_locations() if loc.player == player}  # caches all locations
     for region in world.regions:
-        copied_region = ret.get_region(region.name, region.player)
-        copied_region.is_light_world = region.is_light_world
-        copied_region.is_dark_world = region.is_dark_world
-        copied_region.dungeon = region.dungeon
-        copied_region.locations = [copied_locations[(location.name, location.player)] for location in region.locations if (location.name, location.player) in copied_locations]
-        for location in copied_region.locations:
-            location.parent_region = copied_region
-        for entrance in region.entrances:
-            ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
-
-    for item in world.precollected_items:
-        ret.push_precollected(ItemFactory(item.name, item.player))
-
-    for edge in world.owedges:
-        if edge.dest is not None:
-            copiededge = ret.check_for_owedge(edge.name, edge.player)
-            if copiededge is not None:
-                copiededge.dest = ret.check_for_owedge(edge.dest.name, edge.dest.player)
-
-    for door in world.doors:
-        entrance = ret.check_for_entrance(door.name, door.player)
-        if entrance is not None:
-            destdoor = ret.check_for_door(entrance.door.name, entrance.door.player)
-            entrance.door = destdoor
-            if destdoor is not None:
-                destdoor.entrance = entrance
-
-    ret.key_logic = world.key_logic.copy()
+        if region.player == player:
+            copied_region = ret.get_region(region.name, region.player)
+            if region.dungeon:
+                copied_region.dungeon = ret.get_dungeon(region.dungeon.name, region.player)
+            copied_region.locations = [copied_locations[(location.name, location.player)] for location in region.locations if (location.name, location.player) in copied_locations]
+            for location in copied_region.locations:
+                location.parent_region = copied_region
+            for entrance in region.entrances:
+                copied_region.entrances.append(ret.get_entrance(entrance.name, entrance.player))
+            for exit in region.exits:
+                if exit.connected_region:
+                    dest_region = ret.get_region(exit.connected_region.name, region.player)
+                    ret.get_entrance(exit.name, exit.player).connect(dest_region)
 
     from OverworldShuffle import categorize_world_regions
-    for player in range(1, world.players + 1):
-        categorize_world_regions(ret, player)
-        set_rules(ret, player)
+    categorize_world_regions(ret, player)
+
+    for item in world.precollected_items:
+        if item.player == player:
+            ret.push_precollected(ItemFactory(item.name, item.player))
+
+    for edge in world.owedges:
+        if edge.player == player and edge.dest:
+            copiededge = ret.check_for_owedge(edge.name, edge.player)
+            copiededge.dest = ret.check_for_owedge(edge.dest.name, edge.dest.player)
+
+    for door in world.doors:
+        if door.player == player:
+            copied_door = ret.check_for_door(door.name, door.player)
+            copied_entrance = ret.check_for_entrance(door.entrance.name, door.player)
+            if copied_entrance:
+                copied_entrance.door = copied_door
+            if copied_door:
+                copied_door.entrance = copied_entrance
+    for player, portals in world.dungeon_portals.items():
+        for portal in portals:
+            connect_portal(portal, ret, player)
+
+    set_rules(ret, player)
 
     return ret
 
@@ -739,6 +763,8 @@ def create_playthrough(world):
     # get locations containing progress items
     prog_locations = [location for location in world.get_filled_locations() if location.item.advancement]
     optional_locations = ['Trench 1 Switch', 'Trench 2 Switch', 'Ice Block Drop', 'Skull Star Tile']
+    optional_locations.extend(['Hyrule Castle Courtyard Tree Pull', 'Mountain Entry Area Tree Pull']) # adding pre-aga tree pulls
+    optional_locations.extend(['Lumberjack Area Crab Drop', 'South Pass Area Crab Drop']) # adding pre-aga bush crabs
     state_cache = [None]
     collection_spheres = []
     state = CollectionState(world)

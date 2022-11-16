@@ -182,7 +182,7 @@ def link_entrances(world, player):
         if 0x03 in world.owswaps[player][0] == 0x05 in world.owswaps[player][0]: # if WDM and EDM are in same world
             connect_caves(world, lw_wdm_entrances + lw_edm_entrances, [], caves, player)
         else:
-            # place Old Man House in WDM if not swapped
+            # place Old Man House in WDM if not flipped
             if not world.is_tile_swapped(0x03, player):
                 connect_caves(world, lw_wdm_entrances, [], list(Old_Man_House), player)
             else:
@@ -380,7 +380,7 @@ def link_entrances(world, player):
         place_blacksmith(world, links_house, player)
 
         # determine pools
-        Cave_Base = list(Cave_Exits + Cave_Three_Exits)
+        Cave_Base = list(Cave_Exits + Cave_Three_Exits + Old_Man_House)
         lw_entrances = list()
         dw_entrances = list()
         for e in entrance_pool:
@@ -395,21 +395,19 @@ def link_entrances(world, player):
         connector_entrances = [e for e in list(zip(*default_connector_connections + default_dungeon_connections + open_default_dungeon_connections))[0] if e in (dw_entrances if not invFlag else lw_entrances)]
         connect_inaccessible_regions(world, [], connector_entrances, caves, player)
         if invFlag:
-            lw_dungeons = list(OrderedDict.fromkeys(lw_dungeons + caves))
+            lw_dungeons = [e for e in lw_dungeons if e in caves]
         else:
-            dw_dungeons = list(OrderedDict.fromkeys(dw_dungeons + caves))
+            dw_dungeons = [e for e in dw_dungeons if e in caves]
         
-        caves = list(OrderedDict.fromkeys(Cave_Base + caves)) + (lw_dungeons if not invFlag else dw_dungeons)
+        caves = [e for e in caves if e not in (dw_dungeons if not invFlag else lw_dungeons)] + (lw_dungeons if not invFlag else dw_dungeons)
         connector_entrances = [e for e in list(zip(*default_connector_connections + default_dungeon_connections + open_default_dungeon_connections))[0] if e in (lw_entrances if not invFlag else dw_entrances)]
         connect_inaccessible_regions(world, connector_entrances, [], caves, player)
         if not invFlag:
-            lw_dungeons = list(OrderedDict.fromkeys(lw_dungeons + caves))
+            lw_dungeons = [e for e in lw_dungeons if e in caves]
         else:
-            dw_dungeons = list(OrderedDict.fromkeys(dw_dungeons + caves))
+            dw_dungeons = [e for e in dw_dungeons if e in caves]
         
-        lw_dungeons = lw_dungeons + (Old_Man_House if not invFlag else [])
-        dw_dungeons = dw_dungeons + ([] if not invFlag else Old_Man_House)
-        caves = list(OrderedDict.fromkeys(Cave_Base + caves)) + DW_Mid_Dungeon_Exits
+        caves = [e for e in caves if e not in (lw_dungeons if not invFlag else dw_dungeons)] + DW_Mid_Dungeon_Exits
         
         # place old man, has limited options
         lw_entrances = [e for e in lw_entrances if e in list(zip(*default_connector_connections + default_dungeon_connections + open_default_dungeon_connections))[0] and e in entrance_pool]
@@ -1137,6 +1135,7 @@ def simple_shuffle_dungeons(world, player):
     multi_dungeons = ['Desert Palace', 'Turtle Rock']
     if world.mode[player] == 'standard' or (world.mode[player] == 'inverted' and not world.shuffle_ganon):
         hc_target = 'Hyrule Castle'
+        random.shuffle(multi_dungeons)
     else:
         multi_dungeons.append('Hyrule Castle')
         
@@ -1163,6 +1162,7 @@ def simple_shuffle_dungeons(world, player):
             random.shuffle(candidate_dungeons)
             hc_target = candidate_dungeons.pop()
             multi_dungeons.remove(hc_target)
+            random.shuffle(multi_dungeons)
         else:
             random.shuffle(multi_dungeons)
             hc_target = multi_dungeons.pop()
@@ -1440,12 +1440,12 @@ def place_old_man(world, pool, player, ignore_list=[]):
 
 
 def junk_fill_inaccessible(world, player):
-    from Main import copy_world_limited
+    from Main import copy_world_premature
     find_inaccessible_regions(world, player)
 
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world_limited(world)
+    base_world = copy_world_premature(world, player)
     base_world.override_bomb_check = True
     
     # remove regions that have a dungeon entrance
@@ -1506,7 +1506,8 @@ def connect_inaccessible_regions(world, lw_entrances, dw_entrances, caves, playe
     for region_name in inaccessible_regions.copy():
         region = world.get_region(region_name, player)
         if region.type not in [RegionType.LightWorld, RegionType.DarkWorld] or not any((not exit.connected_region and exit.spot_type == 'Entrance') for exit in region.exits) \
-                or (region_name == 'Pyramid Exit Ledge' and world.shuffle[player] != 'insanity' or world.is_tile_swapped(0x1b, player)):
+                or (region_name == 'Pyramid Exit Ledge' and (world.shuffle[player] != 'insanity' or world.is_tile_swapped(0x1b, player))) \
+                or region_name in ['Hyrule Castle Water', 'Pyramid Water']:
             inaccessible_regions.remove(region_name)
         elif region.type == (RegionType.LightWorld if not invFlag else RegionType.DarkWorld):
             must_exit_regions.append(region_name)
@@ -1525,21 +1526,15 @@ def connect_inaccessible_regions(world, lw_entrances, dw_entrances, caves, playe
         connect_inaccessible_regions(world, lw_entrances, dw_entrances, caves, player, ignore_list)
     
     # connect one connector at a time to ensure multiple connectors aren't assigned to the same inaccessible set of regions
-    if world.shuffle[player] in ['lean', 'crossed', 'insanity']:
-        combined_must_exit_regions = list(must_exit_regions + otherworld_must_exit_regions)
-        if len(combined_must_exit_regions) > 0:
-            random.shuffle(combined_must_exit_regions)
-            connect_one(combined_must_exit_regions[0], [e for e in lw_entrances if e in entrance_pool])
-    else:
-        pool = [e for e in dw_entrances if e in entrance_pool]
-        if len(otherworld_must_exit_regions) > 0 and len(pool):
-            random.shuffle(otherworld_must_exit_regions)
-            connect_one(otherworld_must_exit_regions[0], pool)
-        elif len(must_exit_regions) > 0:
-            pool = [e for e in lw_entrances if e in entrance_pool]
-            if len(pool):
-                random.shuffle(must_exit_regions)
-                connect_one(must_exit_regions[0], pool)
+    pool = [e for e in (lw_entrances if world.shuffle[player] in ['lean', 'crossed', 'insanity'] else dw_entrances) if e in entrance_pool]
+    if len(otherworld_must_exit_regions) > 0 and len(pool):
+        random.shuffle(otherworld_must_exit_regions)
+        connect_one(otherworld_must_exit_regions[0], pool)
+    elif len(must_exit_regions) > 0:
+        pool = [e for e in lw_entrances if e in entrance_pool]
+        if len(pool):
+            random.shuffle(must_exit_regions)
+            connect_one(must_exit_regions[0], pool)
 
 
 def unbias_some_entrances(Dungeon_Exits, Cave_Exits, Old_Man_House, Cave_Three_Exits):
@@ -1607,12 +1602,12 @@ def unbias_dungeons(Dungeon_Exits):
 
 
 def build_accessible_entrance_list(world, start_region, player, assumed_inventory=[], cross_world=False, region_rules=True, exit_rules=True, include_one_ways=False):
-    from Main import copy_world_limited
+    from Main import copy_world_premature
     from Items import ItemFactory
     
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world_limited(world)
+    base_world = copy_world_premature(world, player)
     base_world.override_bomb_check = True
     
     connect_simple(base_world, 'Links House S&Q', start_region, player)
@@ -1715,12 +1710,12 @@ def get_distant_entrances(world, start_entrance, player):
 
 
 def can_reach(world, entrance_name, region_name, player):
-    from Main import copy_world_limited
+    from Main import copy_world_premature
     from Items import ItemFactory
     
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world_limited(world)
+    base_world = copy_world_premature(world, player)
     base_world.override_bomb_check = True
     
     entrance = world.get_entrance(entrance_name, player)
@@ -2073,6 +2068,8 @@ mandatory_connections = [('Old Man S&Q', 'Old Man House'),
                          ('Fairy Ascension Cave Pots', 'Fairy Ascension Cave (Bottom)'),
                          ('Fairy Ascension Cave Drop', 'Fairy Ascension Cave (Drop)'),
                          ('Missing Smith', 'Missing Smith'),
+                         ('Bumper Cave Bottom to Top', 'Bumper Cave (top)'),
+                         ('Bumper Cave Top To Bottom', 'Bumper Cave (bottom)'),
                          ('Superbunny Cave Climb', 'Superbunny Cave (Top)'),
                          ('Hookshot Cave Front to Middle', 'Hookshot Cave (Middle)'),
                          ('Hookshot Cave Middle to Front', 'Hookshot Cave (Front)'),
@@ -2141,8 +2138,8 @@ default_connector_connections = [('Old Man Cave (West)', 'Old Man Cave Exit (Wes
                                  ('Elder House (West)', 'Elder House Exit (West)'),
                                  ('Two Brothers House (East)', 'Two Brothers House Exit (East)'),
                                  ('Two Brothers House (West)', 'Two Brothers House Exit (West)'),
-                                 ('Bumper Cave (Bottom)', 'Bumper Cave Exit (Bottom)'),
                                  ('Bumper Cave (Top)', 'Bumper Cave Exit (Top)'),
+                                 ('Bumper Cave (Bottom)', 'Bumper Cave Exit (Bottom)'),
                                  ('Superbunny Cave (Top)', 'Superbunny Cave Exit (Top)'),
                                  ('Superbunny Cave (Bottom)', 'Superbunny Cave Exit (Bottom)'),
                                  ('Hookshot Cave', 'Hookshot Cave Front Exit'),

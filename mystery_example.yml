@@ -3,6 +3,9 @@
     vanilla: 0
     parallel: 2
     full: 2
+  overworld_terrain:
+    on: 1
+    off: 1
   overworld_crossed:
     none: 4
     polar: 1

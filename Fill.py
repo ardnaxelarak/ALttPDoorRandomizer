@@ -511,7 +511,7 @@ def ensure_good_pots(world, write_skips=False):
             loc.item = ItemFactory('Rupees (5)', loc.item.player)
         # don't write out all pots to spoiler
         if write_skips:
-            if loc.type == LocationType.Pot and loc.item.name in valid_pot_items:
+            if loc.type in [LocationType.Pot, LocationType.Bonk] and loc.item.name in valid_pot_items:
                 loc.skip = True
 
 

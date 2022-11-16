@@ -172,6 +172,7 @@ def roll_settings(weights):
 
     overworld_shuffle = get_choice('overworld_shuffle')
     ret.ow_shuffle = overworld_shuffle if overworld_shuffle != 'none' else 'vanilla'
+    ret.ow_terrain = get_choice('overworld_terrain') == 'on'
     valid_options = {'none', 'polar', 'grouped', 'limited', 'chaos'}
     ret.ow_crossed = get_choice('overworld_crossed')
     ret.ow_crossed = ret.ow_crossed if ret.ow_crossed in valid_options else 'none'

@@ -2,11 +2,12 @@ import RaceRandom as random, logging, copy
 from collections import OrderedDict, defaultdict
 from DungeonGenerator import GenerationException
 from BaseClasses import OWEdge, WorldType, RegionType, Direction, Terrain, PolSlot, Entrance
-from Regions import mark_dark_world_regions, mark_light_world_regions
-from OWEdges import OWTileRegions, OWEdgeGroups, OWExitTypes, OpenStd, parallel_links, IsParallel
+from Regions import mark_light_dark_world_regions
+from OWEdges import OWTileRegions, OWEdgeGroups, OWEdgeGroupsTerrain, OWExitTypes, OpenStd, parallel_links, IsParallel
+from OverworldGlitchRules import create_owg_connections
 from Utils import bidict
 
-version_number = '0.2.10.1'
+version_number = '0.2.11.2'
 # branch indicator is intentionally different across branches
 version_branch = ''
 
@@ -72,7 +73,7 @@ def link_overworld(world, player):
                         raise Exception('Cannot move a parallel edge without the other')
                     new_mode = OpenStd.Open
                     if tuple((OpenStd.Open, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)) not in new_groups.keys():
-                        # when Links House tile is swapped, the DW edges need to get put into existing Standard group
+                        # when Links House tile is flipped, the DW edges need to get put into existing Standard group
                         new_mode = OpenStd.Standard
                     new_groups[(new_mode, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)][0].append(forward_set)
                     new_groups[(new_mode, WorldType((int(wrld) + 1) % 2), dir, terrain, parallel, count)][1].append(back_set)
@@ -102,11 +103,11 @@ def link_overworld(world, player):
                     else:
                         raise NotImplementedError('Cannot move one side of a non-parallel connection')
                 else:
-                    raise NotImplementedError('Invalid OW Edge swap scenario')
+                    raise NotImplementedError('Invalid OW Edge flip scenario')
         return new_groups
 
     tile_groups = define_tile_groups(world, player, False)
-    trimmed_groups = copy.deepcopy(OWEdgeGroups)
+    trimmed_groups = copy.deepcopy(OWEdgeGroupsTerrain if world.owTerrain[player] else OWEdgeGroups)
     swapped_edges = list()
 
     # restructure Maze Race/Suburb/Frog/Dig Game manually due to NP/P relationship
@@ -142,7 +143,7 @@ def link_overworld(world, player):
         trimmed_groups = reorganize_groups(world, trimmed_groups, player)
 
     # tile shuffle
-    logging.getLogger('').debug('Swapping overworld tiles')
+    logging.getLogger('').debug('Flipping overworld tiles')
     if world.owMixed[player]:
         swapped_edges = shuffle_tiles(world, tile_groups, world.owswaps[player], False, player)
         
@@ -176,6 +177,9 @@ def link_overworld(world, player):
                 connect_simple(world, exitname, regionname, player)
 
     categorize_world_regions(world, player)
+
+    if world.logic[player] in ('owglitches', 'nologic'):
+        create_owg_connections(world, player)
     
     # crossed shuffle
     logging.getLogger('').debug('Crossing overworld edges')
@@ -195,8 +199,8 @@ def link_overworld(world, player):
     
     if world.owCrossed[player] in ['grouped', 'limited'] or (world.owShuffle[player] == 'vanilla' and world.owCrossed[player] == 'chaos'):
         if world.owCrossed[player] == 'grouped':
-            # the idea is to XOR the new swaps with the ones from Mixed so that non-parallel edges still work
-            # Polar corresponds to Grouped with no swaps in ow_crossed_tiles_mask
+            # the idea is to XOR the new flips with the ones from Mixed so that non-parallel edges still work
+            # Polar corresponds to Grouped with no flips in ow_crossed_tiles_mask
             ow_crossed_tiles_mask = [[],[],[]]
             crossed_edges = shuffle_tiles(world, define_tile_groups(world, player, True), ow_crossed_tiles_mask, True, player)
             ow_crossed_tiles = [i for i in range(0x82) if (i in world.owswaps[player][0]) != (i in ow_crossed_tiles_mask[0])]
@@ -248,7 +252,7 @@ def link_overworld(world, player):
                 elif edge in parallel_links_new.inverse:
                     crossed_edges.append(parallel_links_new.inverse[edge][0])
 
-    # after tile swap and crossed, determine edges that need to swap
+    # after tile flip and crossed, determine edges that need to flip
     edges_to_swap = [e for e in swapped_edges+crossed_edges if (e not in swapped_edges) or (e not in crossed_edges)]
 
     # whirlpool shuffle
@@ -303,9 +307,9 @@ def link_overworld(world, player):
     logging.getLogger('').debug('Shuffling overworld layout')
 
     if world.owShuffle[player] == 'vanilla':
-        # apply outstanding swaps
+        # apply outstanding flips
         trimmed_groups = performSwap(trimmed_groups, edges_to_swap)
-        assert len(edges_to_swap) == 0, 'Not all edges were swapped successfully: ' + ', '.join(edges_to_swap)
+        assert len(edges_to_swap) == 0, 'Not all edges were flipped successfully: ' + ', '.join(edges_to_swap)
         
         # vanilla transitions
         groups = list(trimmed_groups.values())
@@ -615,8 +619,8 @@ def shuffle_tiles(world, groups, result_list, do_grouped, player):
 
     attempts = 1000
     while True:
-        if attempts == 0: # expected to only occur with custom swaps
-            raise GenerationException('Could not find valid tile swaps')
+        if attempts == 0: # expected to only occur with custom flips
+            raise GenerationException('Could not find valid tile flips')
 
         # tile shuffle happens here
         removed = list()
@@ -639,9 +643,9 @@ def shuffle_tiles(world, groups, result_list, do_grouped, player):
         if not world.owKeepSimilar[player]:
             parity[1] += 2*parity[2]
             parity[2] = 0
-        # if crossed terrain:
-        #     parity[1] += parity[3]
-        #     parity[3] = 0
+        if world.owTerrain[player]:
+            parity[1] += parity[3]
+            parity[3] = 0
         parity[4] %= 2 # actual parity
         if (world.owCrossed[player] == 'none' or do_grouped) and parity[:5] != [0, 0, 0, 0, 0]:
             attempts -= 1
@@ -698,7 +702,7 @@ def define_tile_groups(world, player, do_grouped):
         if world.mode[player] == 'standard' and (0x1b in group or 0x2b in group or 0x2c in group):
             return False
         
-        # sanctuary/chapel should not be swapped if S+Q guaranteed to output on that screen
+        # sanctuary/chapel should not be flipped if S+Q guaranteed to output on that screen
         if 0x13 in group and ((world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] \
                     and (world.mode[player] in ['standard', 'inverted'] or world.doorShuffle[player] != 'crossed' or world.intensity[player] < 3)) \
                 or (world.shuffle[player] in ['lite', 'lean'] and world.mode[player] == 'inverted')):
@@ -775,6 +779,8 @@ def reorganize_groups(world, groups, player):
         new_group = list(group)
         if world.mode[player] != "standard":
             new_group[0] = None
+        if world.owTerrain[player]:
+            new_group[3] = None
         if world.owShuffle[player] != 'parallel':
             new_group[4] = None
         if not world.owKeepSimilar[player]:
@@ -837,8 +843,7 @@ def categorize_world_regions(world, player):
         for exitname in OWExitTypes[type]:
             world.get_entrance(exitname, player).spot_type = type
     
-    mark_light_world_regions(world, player)
-    mark_dark_world_regions(world, player)
+    mark_light_dark_world_regions(world, player)
 
 def update_world_regions(world, player):
     if world.owMixed[player]:
@@ -898,13 +903,13 @@ def can_reach_smith(world, player):
     return found
 
 def build_sectors(world, player):
-    from Main import copy_world_limited
+    from Main import copy_world_premature
     from OWEdges import OWTileRegions
     
     # perform accessibility check on duplicate world
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world_limited(world)
+    base_world = copy_world_premature(world, player)
     
     # build lists of contiguous regions accessible with full inventory (excl portals/mirror/flute/entrances)
     regions = list(OWTileRegions.copy().keys())
@@ -964,7 +969,7 @@ def build_sectors(world, player):
 
 def build_accessible_region_list(world, start_region, player, build_copy_world=False, cross_world=False, region_rules=True, ignore_ledges = False):
     from BaseClasses import CollectionState
-    from Main import copy_world_limited
+    from Main import copy_world_premature
     from Items import ItemFactory
     from Utils import stack_size3a
     
@@ -991,7 +996,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
     if build_copy_world:
         for p in range(1, world.players + 1):
             world.key_logic[p] = {}
-        base_world = copy_world_limited(world)
+        base_world = copy_world_premature(world, player)
         base_world.override_bomb_check = True
     else:
         base_world = world
@@ -1019,7 +1024,11 @@ def validate_layout(world, player):
         'Turtle Rock Area':                   ['Dark Death Mountain Ledge',
                                                'Dark Death Mountain Isolated Ledge'],
         'Dark Death Mountain Ledge':          ['Turtle Rock Area'],
-        'Dark Death Mountain Isolated Ledge': ['Turtle Rock Area']
+        'Dark Death Mountain Isolated Ledge': ['Turtle Rock Area'],
+        'Mountain Entry Entrance':            ['West Death Mountain (Bottom)'],
+        'Mountain Entry Ledge':               ['West Death Mountain (Bottom)'],
+        'West Death Mountain (Bottom)':       ['Mountain Entry Ledge'],
+        'Bumper Cave Entrance':               ['Bumper Cave Ledge']
     }
     sane_connectors = {
         # guaranteed dungeon access
@@ -1030,24 +1039,7 @@ def validate_layout(world, player):
         'Pyramid Area':                       ['Pyramid Exit Ledge']
     }
 
-    if not world.is_tile_swapped(0x0a, player):
-        if not world.is_tile_swapped(0x03, player):
-            entrance_connectors['Mountain Entry Entrance'] = ['West Death Mountain (Bottom)']
-            entrance_connectors['Mountain Entry Ledge'] = ['West Death Mountain (Bottom)']
-            entrance_connectors['West Death Mountain (Bottom)'] = ['Mountain Entry Ledge']
-        else:
-            entrance_connectors['Mountain Entry Entrance'] = ['West Dark Death Mountain (Bottom)']
-        entrance_connectors['Bumper Cave Entrance'] = ['Bumper Cave Ledge']
-    else:
-        if not world.is_tile_swapped(0x03, player):
-            entrance_connectors['Bumper Cave Entrance'] = ['West Death Mountain (Bottom)']
-            entrance_connectors['Bumper Cave Ledge'] = ['West Death Mountain (Bottom)']
-            entrance_connectors['West Death Mountain (Bottom)'] = ['Bumper Cave Ledge']
-        else:
-            entrance_connectors['Bumper Cave Entrance'] = ['West Dark Death Mountain (Bottom)']
-        entrance_connectors['Mountain Entry Entrance'] = ['Mountain Entry Ledge']
-    
-    from Main import copy_world_limited
+    from Main import copy_world_premature
     from Utils import stack_size3a
     from EntranceShuffle import default_dungeon_connections, default_connector_connections, default_item_connections, default_shop_connections, default_drop_connections, default_dropexit_connections
     
@@ -1080,7 +1072,7 @@ def validate_layout(world, player):
     
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world_limited(world)
+    base_world = copy_world_premature(world, player)
     explored_regions = list()
 
     if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] or not world.shufflelinks[player]:
@@ -1227,6 +1219,8 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Bat Cave Ledge Peg (East)', 'Blacksmith Area'), #hammer
                          ('Maze Race Game', 'Maze Race Prize'), #pearl
                          ('Maze Race Ledge Drop', 'Maze Race Area'),
+                         ('Stone Bridge Southbound', 'Stone Bridge South Area'),
+                         ('Stone Bridge Northbound', 'Stone Bridge North Area'),
                          ('Desert Palace Statue Move', 'Desert Palace Stairs'), #book
                          ('Desert Ledge Drop', 'Desert Area'),
                          ('Desert Ledge Outer Rocks', 'Desert Palace Entrance (North) Spot'), #glove
@@ -1237,7 +1231,6 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Bombos Tablet Drop', 'Desert Area'),
                          ('Flute Boy Bush (North)', 'Flute Boy Approach Area'), #pearl
                          ('Flute Boy Bush (South)', 'Flute Boy Bush Entry'), #pearl
-                         ('Cave 45 Ledge Drop', 'Flute Boy Approach Area'),
                          ('C Whirlpool Water Entry', 'C Whirlpool Water'), #flippers
                          ('C Whirlpool Landing', 'C Whirlpool Area'),
                          ('C Whirlpool Rock (Bottom)', 'C Whirlpool Outer Area'), #glove
@@ -1339,58 +1332,15 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Bomber Corner Waterfall Water Drop', 'Bomber Corner Water'), #flippers
                          ('Bomber Corner Pier', 'Bomber Corner Area'),
 
-                         # OWG Connections
-                         ('Sand Dunes Ledge Drop', 'Sand Dunes Area'),
-                         ('Stone Bridge East Ledge Drop', 'Stone Bridge Area'),
-                         ('Tree Line Ledge Drop', 'Tree Line Area'),
-                         ('Eastern Palace Ledge Drop', 'Eastern Palace Area'),
-                         
-                         ('Links House Cliff Ledge Drop', 'Links House Area'),
-                         ('Central Bonk Rocks Cliff Ledge Drop', 'Central Bonk Rocks Area'),
-                         ('Stone Bridge Cliff Ledge Drop', 'Stone Bridge Area'),
-                         ('Lake Hylia Area Cliff Ledge Drop', 'Lake Hylia Area'),
-                         ('C Whirlpool Cliff Ledge Drop', 'C Whirlpool Area'),
-                         ('C Whirlpool Outer Cliff Ledge Drop', 'C Whirlpool Outer Area'),
-                         ('South Teleporter Cliff Ledge Drop', 'Dark Central Cliffs'),
-                         ('Statues Cliff Ledge Drop', 'Statues Area'),
-                         ('Lake Hylia Island FAWT Ledge Drop', 'Lake Hylia Island'),
+                         # OWG In-Bounds Connections
                          ('Stone Bridge EC Cliff Water Drop', 'Stone Bridge Water'), #fake flipper
-                         ('Tree Line WC Cliff Water Drop', 'Tree Line Water'), #fake flipper
-                         
-                         ('Desert Boss Cliff Ledge Drop', 'Desert Palace Entrance (North) Spot'),
-                         ('Checkerboard Cliff Ledge Drop', 'Desert Checkerboard Ledge'),
-                         ('Suburb Cliff Ledge Drop', 'Kakariko Suburb Area'),
-                         ('Cave 45 Cliff Ledge Drop', 'Cave 45 Ledge'),
-                         ('Desert Pass Cliff Ledge Drop', 'Desert Pass Area'),
-                         ('Desert Pass Southeast Cliff Ledge Drop', 'Desert Pass Southeast'),
-                         ('Desert C Whirlpool Cliff Ledge Drop', 'C Whirlpool Outer Area'),
-                         ('Dam Cliff Ledge Drop', 'Dam Area'),
+                         ('Tree Line WC Cliff Water Drop', 'Tree Line Water'), #fake flipper,
 
-                         ('Dark Dunes Ledge Drop', 'Dark Dunes Area'),
-                         ('Hammer Bridge North Ledge Drop', 'Hammer Bridge North Area'),
-                         ('Dark Tree Line Ledge Drop', 'Dark Tree Line Area'),
-                         ('Palace of Darkness Ledge Drop', 'Palace of Darkness Area'),
-
-                         ('Mire Cliff Ledge Drop', 'Misery Mire Area'),
-                         ('Archery Game Cliff Ledge Drop', 'Archery Game Area'),
-                         ('Stumpy Approach Cliff Ledge Drop', 'Stumpy Approach Area'),
-                         ('Swamp Nook Cliff Ledge Drop', 'Swamp Nook Area'),
-                         ('Mire C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Outer Area'),
-                         ('Swamp Cliff Ledge Drop', 'Swamp Area'),
-
-                         ('Bomb Shop Cliff Ledge Drop', 'Big Bomb Shop Area'),
-                         ('Dark Bonk Rocks Cliff Ledge Drop', 'Dark Bonk Rocks Area'),
-                         ('Hammer Bridge South Cliff Ledge Drop', 'Hammer Bridge South Area'),
-                         ('Ice Lake Area Cliff Ledge Drop', 'Ice Lake Area'),
-                         ('Ice Lake Northeast Pier Hop', 'Ice Lake Northeast Bank'),
-                         ('Ice Lake Moat Bomb Jump', 'Ice Lake Moat'),
-                         ('Dark C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Area'),
-                         ('Dark C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Outer Area'),
-                         ('Hype Cliff Ledge Drop', 'Hype Cave Area'),
-                         ('Ice Palace Island FAWT Ledge Drop', 'Ice Lake Moat'),
                          ('Hammer Bridge EC Cliff Water Drop', 'Hammer Bridge Water'), #fake flipper
-                         ('Dark Tree Line WC Cliff Water Drop', 'Dark Tree Line Water') #fake flipper
-                         ]
+                         ('Dark Tree Line WC Cliff Water Drop', 'Dark Tree Line Water'), #fake flipper
+                         ('Ice Lake Northeast Pier Hop', 'Ice Lake Northeast Bank'),
+                         ('Ice Lake Moat Bomb Jump', 'Ice Lake Moat')
+                        ]
 
 default_whirlpool_connections = [
     ((0x33, 'C Whirlpool', 'C Whirlpool Water'),              (0x15, 'River Bend Whirlpool', 'River Bend Water')),
@@ -1593,9 +1543,13 @@ ow_connections = {
             ('Broken Bridge Northeast Mirror Spot', 'Broken Bridge Northeast')
         ]),
     0x1e: ([
-            ('Eastern Palace Mirror Spot', 'Eastern Palace Area')
+            ('Eastern Palace Mirror Spot', 'Eastern Palace Area'),
+            ('Eastern Palace Ledge Drop', 'Eastern Palace Area'), # OWG
+            ('Palace of Darkness Ledge Drop', 'Palace of Darkness Area') # OWG
         ], [
-            ('Palace of Darkness Mirror Spot', 'Palace of Darkness Area')
+            ('Palace of Darkness Mirror Spot', 'Palace of Darkness Area'),
+            ('Eastern Palace Ledge Drop', 'Palace of Darkness Area'), # OWG
+            ('Palace of Darkness Ledge Drop', 'Eastern Palace Area') # OWG
         ]),
     0x22: ([
             ('Blacksmith Mirror Spot', 'Blacksmith Area'),
@@ -1606,9 +1560,13 @@ ow_connections = {
             ('Hammer Pegs Entry Mirror Spot', 'Hammer Pegs Entry')
         ]),
     0x25: ([
-            ('Sand Dunes Mirror Spot', 'Sand Dunes Area')
+            ('Sand Dunes Mirror Spot', 'Sand Dunes Area'),
+            ('Sand Dunes Ledge Drop', 'Sand Dunes Area'), # OWG
+            ('Dark Dunes Ledge Drop', 'Dark Dunes Area') # OWG
         ], [
-            ('Dark Dunes Mirror Spot', 'Dark Dunes Area')
+            ('Dark Dunes Mirror Spot', 'Dark Dunes Area'),
+            ('Sand Dunes Ledge Drop', 'Dark Dunes Area'), # OWG
+            ('Dark Dunes Ledge Drop', 'Sand Dunes Area') # OWG
         ]),
     0x28: ([
             ('Maze Race Mirror Spot', 'Maze Race Ledge'),
@@ -1619,11 +1577,15 @@ ow_connections = {
         ]),
     0x29: ([
             ('Kakariko Suburb Mirror Spot', 'Kakariko Suburb Area'),
-            ('Kakariko Suburb South Mirror Spot', 'Kakariko Suburb Area')
+            ('Kakariko Suburb South Mirror Spot', 'Kakariko Suburb Area'),
+            ('Suburb Cliff Ledge Drop', 'Kakariko Suburb Area'), # OWG
+            ('Archery Game Cliff Ledge Drop', 'Archery Game Area') # OWG
         ], [
             ('Frog Mirror Spot', 'Frog Area'),
             ('Frog Prison Mirror Spot', 'Frog Prison'),
-            ('Archery Game Mirror Spot', 'Archery Game Area')
+            ('Archery Game Mirror Spot', 'Archery Game Area'),
+            ('Suburb Cliff Ledge Drop', 'Archery Game Area'), # OWG
+            ('Archery Game Cliff Ledge Drop', 'Kakariko Suburb Area') # OWG
         ]),
     0x2a: ([
             ('Flute Boy Mirror Spot', 'Flute Boy Area'),
@@ -1633,28 +1595,48 @@ ow_connections = {
             ('Stumpy Pass Mirror Spot', 'Stumpy Pass')
         ]),
     0x2b: ([
-            ('Central Bonk Rocks Mirror Spot', 'Central Bonk Rocks Area')
+            ('Central Bonk Rocks Mirror Spot', 'Central Bonk Rocks Area'),
+            ('Central Bonk Rocks Cliff Ledge Drop', 'Central Bonk Rocks Area'), # OWG
+            ('Dark Bonk Rocks Cliff Ledge Drop', 'Dark Bonk Rocks Area') # OWG
         ], [
-            ('Dark Bonk Rocks Mirror Spot', 'Dark Bonk Rocks Area')
+            ('Dark Bonk Rocks Mirror Spot', 'Dark Bonk Rocks Area'),
+            ('Central Bonk Rocks Cliff Ledge Drop', 'Dark Bonk Rocks Area'), # OWG
+            ('Dark Bonk Rocks Cliff Ledge Drop', 'Central Bonk Rocks Area') # OWG
         ]),
     0x2c: ([
-            ('Links House Mirror Spot', 'Links House Area')
+            ('Links House Mirror Spot', 'Links House Area'),
+            ('Links House Cliff Ledge Drop', 'Links House Area'), # OWG
+            ('Bomb Shop Cliff Ledge Drop', 'Big Bomb Shop Area') # OWG
         ], [
-            ('Big Bomb Shop Mirror Spot', 'Big Bomb Shop Area')
+            ('Big Bomb Shop Mirror Spot', 'Big Bomb Shop Area'),
+            ('Links House Cliff Ledge Drop', 'Big Bomb Shop Area'), # OWG
+            ('Bomb Shop Cliff Ledge Drop', 'Links House Area') # OWG
         ]),
     0x2d: ([
-            ('Stone Bridge Mirror Spot', 'Stone Bridge Area'),
-            ('Stone Bridge South Mirror Spot', 'Stone Bridge Area'),
-            ('Hobo Mirror Spot', 'Stone Bridge Water')
+            ('Stone Bridge Mirror Spot', 'Stone Bridge North Area'),
+            ('Stone Bridge South Mirror Spot', 'Stone Bridge South Area'),
+            ('Hobo Mirror Spot', 'Stone Bridge Water'),
+            ('Stone Bridge East Ledge Drop', 'Stone Bridge North Area'), # OWG
+            ('Hammer Bridge North Ledge Drop', 'Hammer Bridge North Area'), # OWG
+            ('Stone Bridge Cliff Ledge Drop', 'Stone Bridge South Area'), # OWG
+            ('Hammer Bridge South Cliff Ledge Drop', 'Hammer Bridge South Area') # OWG
         ], [
             ('Hammer Bridge North Mirror Spot', 'Hammer Bridge North Area'),
             ('Hammer Bridge South Mirror Spot', 'Hammer Bridge South Area'),
-            ('Dark Hobo Mirror Spot', 'Hammer Bridge Water')
+            ('Dark Hobo Mirror Spot', 'Hammer Bridge Water'),
+            ('Stone Bridge East Ledge Drop', 'Hammer Bridge North Area'), # OWG
+            ('Hammer Bridge North Ledge Drop', 'Stone Bridge North Area'), # OWG
+            ('Stone Bridge Cliff Ledge Drop', 'Hammer Bridge South Area'), # OWG
+            ('Hammer Bridge South Cliff Ledge Drop', 'Stone Bridge South Area') # OWG
         ]),
     0x2e: ([
-            ('Tree Line Mirror Spot', 'Tree Line Area')
+            ('Tree Line Mirror Spot', 'Tree Line Area'),
+            ('Tree Line Ledge Drop', 'Tree Line Area'), # OWG
+            ('Dark Tree Line Ledge Drop', 'Dark Tree Line Area') # OWG
         ], [
-            ('Dark Tree Line Mirror Spot', 'Dark Tree Line Area')
+            ('Dark Tree Line Mirror Spot', 'Dark Tree Line Area'),
+            ('Tree Line Ledge Drop', 'Dark Tree Line Area'), # OWG
+            ('Dark Tree Line Ledge Drop', 'Tree Line Area') # OWG
         ]),
     0x2f: ([
             ('Eastern Nook Mirror Spot', 'Eastern Nook Area'),
@@ -1670,7 +1652,10 @@ ow_connections = {
             ('DP Stairs Mirror Spot', 'Desert Palace Stairs'),
             ('DP Entrance (North) Mirror Spot', 'Desert Palace Entrance (North) Spot'),
             ('Bombos Tablet Ledge Mirror Spot', 'Bombos Tablet Ledge'),
-            ('Desert Teleporter', 'Misery Mire Teleporter Ledge')
+            ('Desert Teleporter', 'Misery Mire Teleporter Ledge'),
+            ('Desert Boss Cliff Ledge Drop', 'Desert Palace Entrance (North) Spot'), # OWG
+            ('Mire Cliff Ledge Drop', 'Misery Mire Area'), # OWG
+            ('Checkerboard Cliff Ledge Drop', 'Desert Checkerboard Ledge') # OWG
         ], [
             ('Checkerboard Ledge Approach', 'Desert Checkerboard Ledge'),
             ('Checkerboard Ledge Leave', 'Desert Area'),
@@ -1678,31 +1663,54 @@ ow_connections = {
             ('Misery Mire Ledge Mirror Spot', 'Misery Mire Area'),
             ('Misery Mire Blocked Mirror Spot', 'Misery Mire Area'),
             ('Misery Mire Main Mirror Spot', 'Misery Mire Area'),
-            ('Misery Mire Teleporter', 'Desert Palace Teleporter Ledge')
+            ('Misery Mire Teleporter', 'Desert Palace Teleporter Ledge'),
+            ('Desert Boss Cliff Ledge Drop', 'Misery Mire Area'), # OWG
+            ('Mire Cliff Ledge Drop', 'Desert Palace Entrance (North) Spot'), # OWG
+            ('Dark Checkerboard Cliff Ledge Drop', 'Desert Checkerboard Ledge') # OWG
         ]),
     0x32: ([
+            ('Cave 45 Ledge Drop', 'Flute Boy Approach Area'),
             ('Flute Boy Entry Mirror Spot', 'Flute Boy Bush Entry'),
-            ('Cave 45 Mirror Spot', 'Cave 45 Ledge')
+            ('Cave 45 Mirror Spot', 'Cave 45 Ledge'),
+            ('Cave 45 Cliff Ledge Drop', 'Cave 45 Ledge'), # OWG
+            ('Stumpy Approach Cliff Ledge Drop', 'Stumpy Approach Area') # OWG
         ], [
             ('Cave 45 Inverted Leave', 'Flute Boy Approach Area'),
             ('Cave 45 Inverted Approach', 'Cave 45 Ledge'),
             ('Stumpy Approach Mirror Spot', 'Stumpy Approach Area'),
-            ('Stumpy Bush Entry Mirror Spot', 'Stumpy Approach Bush Entry')
+            ('Stumpy Bush Entry Mirror Spot', 'Stumpy Approach Bush Entry'),
+            ('Cave 45 Cliff Ledge Drop', 'Stumpy Approach Area'), # OWG
+            ('Stumpy Approach Cliff Ledge Drop', 'Cave 45 Ledge') # OWG
         ]),
     0x33: ([
             ('C Whirlpool Mirror Spot', 'C Whirlpool Area'),
             ('C Whirlpool Outer Mirror Spot', 'C Whirlpool Outer Area'),
-            ('South Hyrule Teleporter', 'Dark C Whirlpool Area')
+            ('South Hyrule Teleporter', 'Dark C Whirlpool Area'),
+            ('C Whirlpool Cliff Ledge Drop', 'C Whirlpool Area'), # OWG
+            ('Dark C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Area'), # OWG
+            ('C Whirlpool Outer Cliff Ledge Drop', 'C Whirlpool Outer Area'), # OWG
+            ('Dark C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Outer Area'), # OWG
+            ('Desert C Whirlpool Cliff Ledge Drop', 'C Whirlpool Outer Area'), # OWG
+            ('Mire C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Outer Area') # OWG
         ], [
             ('Dark C Whirlpool Mirror Spot', 'Dark C Whirlpool Area'),
             ('Dark C Whirlpool Outer Mirror Spot', 'Dark C Whirlpool Outer Area'),
             ('South Dark World Teleporter', 'C Whirlpool Area'),
-            ('Dark South Teleporter Cliff Ledge Drop', 'Central Cliffs') #OWG only, needs glove
+            ('C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Area'), # OWG
+            ('Dark C Whirlpool Cliff Ledge Drop', 'C Whirlpool Area'), # OWG
+            ('C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Outer Area'), # OWG
+            ('Dark C Whirlpool Outer Cliff Ledge Drop', 'C Whirlpool Outer Area'), # OWG
+            ('Desert C Whirlpool Cliff Ledge Drop', 'Dark C Whirlpool Outer Area'), # OWG
+            ('Mire C Whirlpool Cliff Ledge Drop', 'C Whirlpool Outer Area') # OWG
         ]),
     0x34: ([
-            ('Statues Mirror Spot', 'Statues Area')
+            ('Statues Mirror Spot', 'Statues Area'),
+            ('Statues Cliff Ledge Drop', 'Statues Area'), # OWG
+            ('Hype Cliff Ledge Drop', 'Hype Cave Area') # OWG
         ], [
-            ('Hype Cave Mirror Spot', 'Hype Cave Area')
+            ('Hype Cave Mirror Spot', 'Hype Cave Area'),
+            ('Statues Cliff Ledge Drop', 'Hype Cave Area'), # OWG
+            ('Hype Cliff Ledge Drop', 'Statues Area') # OWG
         ]),
     0x35: ([
             ('Lake Hylia Mirror Spot', 'Lake Hylia Area'),
@@ -1713,7 +1721,12 @@ ow_connections = {
             ('Lake Hylia Central Island Mirror Spot', 'Lake Hylia Central Island'),
             ('Lake Hylia Water Mirror Spot', 'Lake Hylia Water'),
             ('Lake Hylia Water D Mirror Spot', 'Lake Hylia Water D'),
-            ('Lake Hylia Teleporter', 'Ice Palace Area')
+            ('Lake Hylia Teleporter', 'Ice Palace Area'),
+            #('Ice Palace Ledge Drop', 'Ice Lake Moat'),
+            ('Lake Hylia Area Cliff Ledge Drop', 'Lake Hylia Area'), # OWG
+            ('Ice Lake Area Cliff Ledge Drop', 'Ice Lake Area'), # OWG
+            ('Lake Hylia Island FAWT Ledge Drop', 'Lake Hylia Island'), # OWG
+            ('Ice Palace Island FAWT Ledge Drop', 'Ice Lake Moat') # OWG
         ], [
             ('Lake Hylia Island Pier', 'Lake Hylia Island'),
             ('Ice Lake Mirror Spot', 'Ice Lake Area'),
@@ -1722,7 +1735,11 @@ ow_connections = {
             ('Ice Lake Northeast Mirror Spot', 'Ice Lake Northeast Bank'),
             ('Ice Palace Mirror Spot', 'Ice Palace Area'),
             ('Ice Lake Moat Mirror Spot', 'Ice Lake Moat'),
-            ('Ice Palace Teleporter', 'Lake Hylia Water D')
+            ('Ice Palace Teleporter', 'Lake Hylia Water D'),
+            ('Lake Hylia Area Cliff Ledge Drop', 'Ice Lake Area'), # OWG
+            ('Ice Lake Area Cliff Ledge Drop', 'Lake Hylia Area'), # OWG
+            ('Lake Hylia Island FAWT Ledge Drop', 'Ice Lake Moat'), # OWG
+            ('Ice Palace Island FAWT Ledge Drop', 'Lake Hylia Island') # OWG
         ]),
     0x37: ([
             ('Ice Cave Mirror Spot', 'Ice Cave Area')
@@ -1731,18 +1748,26 @@ ow_connections = {
         ]),
     0x3a: ([
             ('Desert Pass Ledge Mirror Spot', 'Desert Pass Ledge'),
-            ('Desert Pass Mirror Spot', 'Desert Pass Area')
+            ('Desert Pass Mirror Spot', 'Desert Pass Area'),
+            ('Desert Pass Cliff Ledge Drop', 'Desert Pass Area'), # OWG
+            ('Swamp Nook Cliff Ledge Drop', 'Swamp Nook Area') # OWG
         ], [
             ('Desert Pass Ladder (North)', 'Desert Pass Area'),
             ('Desert Pass Ladder (South)', 'Desert Pass Ledge'),
             ('Swamp Nook Mirror Spot', 'Swamp Nook Area'),
             ('Swamp Nook Southeast Mirror Spot', 'Swamp Nook Area'),
-            ('Swamp Nook Pegs Mirror Spot', 'Swamp Nook Area')
+            ('Swamp Nook Pegs Mirror Spot', 'Swamp Nook Area'),
+            ('Desert Pass Cliff Ledge Drop', 'Swamp Nook Area'), # OWG
+            ('Swamp Nook Cliff Ledge Drop', 'Desert Pass Area') # OWG
         ]),
     0x3b: ([
-            ('Dam Mirror Spot', 'Dam Area')
+            ('Dam Mirror Spot', 'Dam Area'),
+            ('Dam Cliff Ledge Drop', 'Dam Area'), # OWG
+            ('Swamp Cliff Ledge Drop', 'Swamp Area') # OWG
         ], [
-            ('Swamp Mirror Spot', 'Swamp Area')
+            ('Swamp Mirror Spot', 'Swamp Area'),
+            ('Dam Cliff Ledge Drop', 'Swamp Area'), # OWG
+            ('Swamp Cliff Ledge Drop', 'Dam Area') # OWG
         ]),
     0x3c: ([
             ('South Pass Mirror Spot', 'South Pass Area')
@@ -1919,7 +1944,9 @@ isolated_regions = [
     'Dark Death Mountain Ledge',
     'Dark Death Mountain Isolated Ledge',
     'Bumper Cave Ledge',
-    'Pyramid Exit Ledge'
+    'Pyramid Exit Ledge',
+    'Hyrule Castle Water',
+    'Pyramid Water'
 ]
 
 flute_data = {
@@ -1951,7 +1978,7 @@ flute_data = {
     0x2a: (['Flute Boy Area',                 'Stumpy Area'],                       0x2a, 0x058e, 0x0aac, 0x046e, 0x0b10, 0x04e8, 0x0b1b, 0x04f3, 0x0002, 0x0002, 0x0b10, 0x04e8),
     0x2b: (['Central Bonk Rocks Area',        'Dark Bonk Rocks Area'],              0x2b, 0x0620, 0x0acc, 0x0700, 0x0b30, 0x0790, 0x0b3b, 0x0785, 0xfff2, 0x0000, 0x0b30, 0x0770),
     0x2c: (['Links House Area',               'Big Bomb Shop Area'],                0x2c, 0x0588, 0x0ab9, 0x0840, 0x0b17, 0x08b8, 0x0b26, 0x08bf, 0xfff7, 0x0000, 0x0b20, 0x08b8),
-    0x2d: (['Stone Bridge Area',              'Hammer Bridge South Area'],          0x2d, 0x0886, 0x0b1e, 0x0a2a, 0x0ba0, 0x0aa8, 0x0b8b, 0x0aaf, 0x0000, 0x0006, 0x0bc4, 0x0ad0),
+    0x2d: (['Stone Bridge South Area',        'Hammer Bridge South Area'],          0x2d, 0x0886, 0x0b1e, 0x0a2a, 0x0ba0, 0x0aa8, 0x0b8b, 0x0aaf, 0x0000, 0x0006, 0x0bc4, 0x0ad0),
     0x2e: (['Tree Line Area',                 'Dark Tree Line Area'],               0x2e, 0x0100, 0x0a1a, 0x0c00, 0x0a78, 0x0c30, 0x0a87, 0x0c7d, 0x0006, 0x0000, 0x0a78, 0x0c58),
     0x2f: (['Eastern Nook Area',              'Palace of Darkness Nook Area'],      0x2f, 0x0798, 0x0afa, 0x0eb2, 0x0b58, 0x0f30, 0x0b67, 0x0f37, 0xfff6, 0x000e, 0x0b50, 0x0f30),
     0x38: (['Desert Palace Teleporter Ledge', 'Misery Mire Teleporter Ledge'],      0x30, 0x1880, 0x0f1e, 0x0000, 0x0fa8, 0x0078, 0x0f8d, 0x008d, 0x0000, 0x0000, 0x0fb0, 0x0070),

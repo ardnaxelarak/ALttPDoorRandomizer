@@ -3,10 +3,11 @@ import logging
 from collections import deque
 
 import OverworldGlitchRules
-from BaseClasses import CollectionState, RegionType, DoorType, Entrance, CrystalBarrier, KeyRuleType, LocationType
+from BaseClasses import CollectionState, RegionType, DoorType, Entrance, CrystalBarrier, KeyRuleType, LocationType, Terrain
 from BaseClasses import PotFlags
 from Dungeons import dungeon_table
 from RoomData import DoorKind
+from OWEdges import OWExitTypes
 from OverworldGlitchRules import overworld_glitches_rules
 
 
@@ -24,6 +25,8 @@ def set_rules(world, player):
     ow_inverted_rules(world, player)
 
     ow_bunny_rules(world, player)
+
+    ow_terrain_rules(world, player)
 
     if world.mode[player] == 'standard':
         if not world.is_copied_world:
@@ -132,7 +135,8 @@ def add_rule(spot, rule, combine='and'):
         spot.access_rule = lambda state: rule(state) and old_rule(state)
 
 def add_bunny_rule(spot, player):
-    add_rule(spot, lambda state: state.is_not_bunny(spot.parent_region, player))
+    if spot.can_cause_bunny(player):
+        add_rule(spot, lambda state: state.has_Pearl(player))
 
 
 def or_rule(rule1, rule2):
@@ -826,8 +830,8 @@ def default_rules(world, player):
     # Underworld Logic
     set_rule(world.get_entrance('Old Man Cave Exit (West)', player), lambda state: False)  # drop cannot be climbed up
     set_rule(world.get_entrance('Paradox Cave Push Block Reverse', player), lambda state: state.has_Mirror(player))  # can erase block, overwritten in noglitches
-    set_rule(world.get_entrance('Bumper Cave Exit (Top)', player), lambda state: state.has('Cape', player))
-    set_rule(world.get_entrance('Bumper Cave Exit (Bottom)', player), lambda state: state.has('Cape', player) or state.has('Hookshot', player))
+    set_rule(world.get_entrance('Bumper Cave Bottom to Top', player), lambda state: state.has('Cape', player))
+    set_rule(world.get_entrance('Bumper Cave Top To Bottom', player), lambda state: state.has('Cape', player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('Superbunny Cave Exit (Bottom)', player), lambda state: False)  # Cannot get to bottom exit from top. Just exists for shuffling
 
     # Item Access
@@ -1276,13 +1280,11 @@ def ow_inverted_rules(world, player):
         set_rule(world.get_entrance('C Whirlpool Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('C Whirlpool Outer Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('South Hyrule Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player)) # bunny cannot use hammer
-        set_rule(world.get_entrance('South Teleporter Cliff Ledge Drop', player), lambda state: state.can_lift_rocks(player) and state.has_Pearl(player)) # OWG only, can bomb clip out
     else:
         set_rule(world.get_entrance('Dark C Whirlpool Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('Dark C Whirlpool Outer Mirror Spot', player), lambda state: state.has_Mirror(player))
         set_rule(world.get_entrance('South Dark World Teleporter', player), lambda state: state.has('Hammer', player) and state.can_lift_rocks(player) and state.has_Pearl(player))
-        set_rule(world.get_entrance('South Teleporter Cliff Ledge Drop', player), lambda state: state.can_lift_rocks(player) and state.has_Pearl(player))
-
+        
     if not world.is_tile_swapped(0x34, player):
         set_rule(world.get_entrance('Statues Mirror Spot', player), lambda state: state.has_Mirror(player))
     else:
@@ -1492,6 +1494,21 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('Shopping Mall SW', player), player)
     add_bunny_rule(world.get_entrance('Bomber Corner Water Drop', player), player)
     add_bunny_rule(world.get_entrance('Bomber Corner Waterfall Water Drop', player), player)
+
+
+def ow_terrain_rules(world, player):
+    for edge in world.owedges:
+        if edge.player == player and edge.dest and edge.dest.terrain == Terrain.Water:
+            ent = world.get_entrance(edge.name, player)
+            if edge.terrain == Terrain.Land:
+                set_rule(ent, lambda state: state.has('Flippers', player))
+            if ent.parent_region.is_light_world == (world.mode[player] != 'inverted') and ent.connected_region.is_dark_world == (world.mode[player] != 'inverted'):
+                add_rule(ent, lambda state: state.has_Pearl(player))
+
+    for whirlpool_name in OWExitTypes['Whirlpool']:
+        ent = world.get_entrance(whirlpool_name, player)
+        if ent.parent_region.is_light_world == (world.mode[player] != 'inverted') and ent.connected_region.is_dark_world == (world.mode[player] != 'inverted'):
+            add_rule(ent, lambda state: state.has_Pearl(player))
 
 
 def no_glitches_rules(world, player):
@@ -1836,8 +1853,8 @@ def set_bunny_rules(world, player, inverted):
 
     # regions for the exits of multi-entrace caves/drops that bunny cannot pass
     # Note spiral cave may be technically passible, but it would be too absurd to require since OHKO mode is a thing.
-    bunny_impassable_caves = ['Bumper Cave', 'Two Brothers House', 'Hookshot Cave (Middle)',
-                              'Pyramid', 'Spiral Cave (Top)', 'Fairy Ascension Cave (Drop)']
+    bunny_impassable_caves = ['Bumper Cave (top)', 'Bumper Cave (bottom)', 'Two Brothers House',
+                              'Hookshot Cave (Middle)', 'Pyramid', 'Spiral Cave (Top)', 'Fairy Ascension Cave (Drop)']
     bunny_accessible_locations = ['Link\'s Uncle', 'Sahasrahla', 'Sick Kid', 'Lost Woods Hideout', 'Lumberjack Tree',
                                   'Checkerboard Cave', 'Potion Shop', 'Spectacle Rock Cave', 'Pyramid',
                                   'Hype Cave - Generous Guy', 'Peg Cave', 'Bumper Cave Ledge',
@@ -2146,7 +2163,7 @@ def eval_small_key_door_main(state, door_name, dungeon, player):
         elif ruleType == KeyRuleType.AllowSmall:
             if (door_rule.small_location.item and door_rule.small_location.item.name == key_logic.small_key_name
                and door_rule.small_location.item.player == player):
-                return True  # always okay if allow small is on
+                door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
         elif isinstance(ruleType, tuple):
             lock, lock_item = ruleType
             # this doesn't track logical locks yet, i.e. hammer locks the item and hammer is there, but the item isn't

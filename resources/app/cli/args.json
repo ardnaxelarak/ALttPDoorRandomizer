@@ -151,11 +151,15 @@
       "full"
     ]
   },
+  "ow_terrain": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "ow_crossed": {
     "choices": [
       "none",
-      "polar",
       "grouped",
+      "polar",
       "limited",
       "chaos"
     ]

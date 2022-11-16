@@ -20,15 +20,15 @@
       "default": "vanilla",
       "options": [
         "none",
-        "polar",
         "grouped",
+        "polar",
         "limited",
         "chaos"
       ]
     },
     "mixed": {
       "type": "checkbox",
-      "default": true
+      "default": false
     },
     "whirlpool": {
       "type": "checkbox",
@@ -45,9 +45,13 @@
     }
   },
   "rightOverworldFrame": {
+    "terrain": {
+      "type": "checkbox",
+      "default": false
+    },
     "keepsimilar": {
       "type": "checkbox",
-      "default": true
+      "default": false
     }
   }
 }

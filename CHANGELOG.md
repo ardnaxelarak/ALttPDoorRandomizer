@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.11.2
+- Implemented proper Districting with Mixed OWR, affecting Hints and District modes
+- Suppressed item locations in spoiler log that are junk or logical
+
+## 0.2.11.1
+- Renamed mode: Tile Swap (Mixed) is now called Tile Flip (Mixed)
+- Fixed generation errors due to issue with new Farmable item locations
+
+## 0.2.11.0
+- New OWR mode option: Free Terrain
+  - When used with OW Layout Shuffle, land and water transitions are combined into one pool and shuffled, this means land transitions can lead to water and vice versa. There is already tracker support for this change on DunkaTracker. Thanks @Catobat for the work on all of this.
+- Glitched modes now have correct fake world behavior in all modes, including Inverted and even Mixed OWR
+- Glitched + Mixed OWR now has correct logic (previously it was completely unimplemented)
+- Lite ER is back and working!
+- There was an issue with ER resulting in regions being inaccessible, this has been fixed.
+- Changed Crossworld ER modes so that DW inaccessible areas are resolved before considering LW inaccessible areas, to give the algo a chance to make some of the LW areas accessible thru the DW
+- Added new Bomb/Rupee farm logic, which uses pseudo-items, simplifies the graph searching and they even show up in the Playthru Calc (shows a logical path to Farmable Bombs if you ever question how you are able to get early bombs when the opening area is limited)
+- Fixed issue with grabbing an item near Murahduhla and freezing the game
+- Various logic corrections, including the DR Bumper Cave fix for pottery logic
+
 ## 0.2.10.1
 - Merged DR v1.0.1.3
   - Fixed Zelda despawn in TT Prison

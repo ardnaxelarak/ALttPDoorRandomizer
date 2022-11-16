@@ -67,6 +67,7 @@ def create_regions(world, player):
         create_lw_region(player, 'Hyrule Castle Courtyard Northeast', None, ['Hyrule Castle Courtyard Bush (North)', 'Hyrule Castle Secret Entrance Stairs', 'Pyramid Uncle Mirror Spot']),
         create_lw_region(player, 'Hyrule Castle Ledge', None, ['Hyrule Castle Ledge Drop', 'Hyrule Castle Ledge Courtyard Drop', 'Inverted Pyramid Entrance', 'Hyrule Castle Entrance (West)', 'Agahnims Tower', 'Hyrule Castle Entrance (East)', 'Inverted Pyramid Hole', 'Pyramid From Ledge Mirror Spot'], 'the castle rampart'),
         create_lw_region(player, 'Hyrule Castle East Entry', None, ['Hyrule Castle Outer East Rock', 'Pyramid Entry Mirror Spot', 'Hyrule Castle ES']),
+        create_dw_region(player, 'Hyrule Castle Water', None, ['Blacksmith Water Exit'], 'Dark World', Terrain.Water),
         create_lw_region(player, 'Wooden Bridge Area', None, ['Wooden Bridge Bush (South)', 'Wooden Bridge Water Drop', 'Broken Bridge West Mirror Spot', 'Broken Bridge East Mirror Spot', 'Wooden Bridge NW', 'Wooden Bridge SW']),
         create_lw_region(player, 'Wooden Bridge Northeast', None, ['Wooden Bridge Bush (North)', 'Wooden Bridge Northeast Water Drop', 'Broken Bridge Northeast Mirror Spot', 'Wooden Bridge NE']),
         create_lw_region(player, 'Wooden Bridge Water', None, ['Wooden Bridge NC'], 'Light World', Terrain.Water),
@@ -83,10 +84,11 @@ def create_regions(world, player):
         create_lw_region(player, 'Flute Boy Pass', None, ['Stumpy Pass Mirror Spot', 'Flute Boy WS', 'Flute Boy SW']),
         create_lw_region(player, 'Central Bonk Rocks Area', None, ['Bonk Fairy (Light)', 'Dark Bonk Rocks Mirror Spot', 'Central Bonk Rocks NW', 'Central Bonk Rocks SW', 'Central Bonk Rocks EN', 'Central Bonk Rocks EC', 'Central Bonk Rocks ES']),
         create_lw_region(player, 'Links House Area', None, ['Links House', 'Big Bomb Shop Mirror Spot', 'Links House NE', 'Links House WN', 'Links House WC', 'Links House WS', 'Links House SC', 'Links House ES']),
-        create_lw_region(player, 'Stone Bridge Area', None, ['Hammer Bridge North Mirror Spot', 'Hammer Bridge South Mirror Spot', 'Stone Bridge NC', 'Stone Bridge EN', 'Stone Bridge WS', 'Stone Bridge SC']),
+        create_lw_region(player, 'Stone Bridge North Area', None, ['Stone Bridge Southbound', 'Hammer Bridge North Mirror Spot', 'Stone Bridge NC', 'Stone Bridge EN']),
+        create_lw_region(player, 'Stone Bridge South Area', None, ['Stone Bridge Northbound', 'Hammer Bridge South Mirror Spot', 'Stone Bridge WS', 'Stone Bridge SC']),
         create_lw_region(player, 'Stone Bridge Water', None, ['Dark Hobo Mirror Spot', 'Stone Bridge WC', 'Stone Bridge EC'], 'Light World', Terrain.Water),
         create_lw_region(player, 'Hobo Bridge', ['Hobo'], ['Hobo EC'], 'Light World', Terrain.Water),
-        create_lw_region(player, 'Central Cliffs', None, ['Central Bonk Rocks Cliff Ledge Drop', 'Links House Cliff Ledge Drop', 'Stone Bridge Cliff Ledge Drop', 'Lake Hylia Area Cliff Ledge Drop', 'Lake Hylia Island FAWT Ledge Drop', 'Stone Bridge EC Cliff Water Drop', 'Tree Line WC Cliff Water Drop', 'C Whirlpool Outer Cliff Ledge Drop', 'C Whirlpool Cliff Ledge Drop', 'South Teleporter Cliff Ledge Drop', 'Statues Cliff Ledge Drop']),
+        create_lw_region(player, 'Central Cliffs', None, ['Central Bonk Rocks Cliff Ledge Drop', 'Links House Cliff Ledge Drop', 'Stone Bridge Cliff Ledge Drop', 'Lake Hylia Area Cliff Ledge Drop', 'Lake Hylia Island FAWT Ledge Drop', 'Stone Bridge EC Cliff Water Drop', 'Tree Line WC Cliff Water Drop', 'C Whirlpool Outer Cliff Ledge Drop', 'C Whirlpool Cliff Ledge Drop', 'Statues Cliff Ledge Drop']),
         create_lw_region(player, 'Tree Line Area', None, ['Lake Hylia Fairy', 'Dark Tree Line Mirror Spot', 'Tree Line WN', 'Tree Line NW', 'Tree Line SE']),
         create_lw_region(player, 'Tree Line Water', None, ['Tree Line WC', 'Tree Line SC'], 'Light World', Terrain.Water),
         create_lw_region(player, 'Eastern Nook Area', None, ['Long Fairy Cave', 'Darkness Nook Mirror Spot', 'East Hyrule Teleporter', 'Eastern Nook NE']),
@@ -97,7 +99,7 @@ def create_regions(world, player):
         create_lw_region(player, 'Desert Palace Stairs', None, ['Desert Palace Entrance (South)', 'Misery Mire Main Mirror Spot'], 'a sandy vista'),
         create_lw_region(player, 'Desert Palace Mouth', None, ['Desert Mouth Drop', 'Desert Palace Entrance (East)']),
         create_lw_region(player, 'Desert Palace Teleporter Ledge', None, ['Desert Teleporter Drop', 'Desert Teleporter']),
-        create_lw_region(player, 'Desert Northeast Cliffs', None, ['Desert Boss Cliff Ledge Drop', 'Checkerboard Cliff Ledge Drop', 'Suburb Cliff Ledge Drop', 'Cave 45 Cliff Ledge Drop', 'Desert C Whirlpool Cliff Ledge Drop', 'Desert Pass Cliff Ledge Drop', 'Desert Pass Southeast Cliff Ledge Drop', 'Dam Cliff Ledge Drop']),
+        create_lw_region(player, 'Desert Northeast Cliffs', None, ['Desert Boss Cliff Ledge Drop', 'Checkerboard Cliff Ledge Drop', 'Suburb Cliff Ledge Drop', 'Cave 45 Cliff Ledge Drop', 'Desert C Whirlpool Cliff Ledge Drop', 'Desert Pass Cliff Ledge Drop', 'Dam Cliff Ledge Drop']),
         create_lw_region(player, 'Bombos Tablet Ledge', ['Bombos Tablet'], ['Bombos Tablet Drop', 'Desert EC']),
         create_lw_region(player, 'Flute Boy Approach Area', None, ['Flute Boy Bush (South)', 'Cave 45 Inverted Approach', 'Stumpy Approach Mirror Spot', 'Flute Boy Approach NW', 'Flute Boy Approach EC']),
         create_lw_region(player, 'Flute Boy Bush Entry', None, ['Flute Boy Bush (North)', 'Stumpy Bush Entry Mirror Spot', 'Flute Boy Approach NC']),
@@ -173,6 +175,7 @@ def create_regions(world, player):
         create_dw_region(player, 'Pyramid Crack', ['Pyramid Crack'], None),
         create_dw_region(player, 'Pyramid Exit Ledge', None, ['Pyramid Exit Ledge Drop', 'HC Courtyard Left Mirror Spot', 'Pyramid Entrance']),
         create_dw_region(player, 'Pyramid Pass', None, ['Post Aga Inverted Teleporter', 'HC Area South Mirror Spot', 'Pyramid SW', 'Pyramid SE']),
+        create_dw_region(player, 'Pyramid Water', None, ['Hammerpegs Water Exit', 'Big Bomb Shop Water Exit'], 'Dark World', Terrain.Water),
         create_dw_region(player, 'Broken Bridge Area', None, ['Broken Bridge Hammer Rock (South)', 'Broken Bridge Water Drop', 'Wooden Bridge Mirror Spot', 'Broken Bridge SW']),
         create_dw_region(player, 'Broken Bridge Northeast', None, ['Broken Bridge Hammer Rock (North)', 'Broken Bridge Hookshot Gap', 'Broken Bridge Northeast Water Drop', 'Wooden Bridge Northeast Mirror Spot', 'Broken Bridge NE']),
         create_dw_region(player, 'Broken Bridge West', None, ['Broken Bridge West Water Drop', 'Wooden Bridge West Mirror Spot', 'Broken Bridge NW']),
@@ -195,13 +198,13 @@ def create_regions(world, player):
         create_dw_region(player, 'Hammer Bridge South Area', None, ['Hammer Bridge Pegs (South)', 'Stone Bridge South Mirror Spot', 'Hammer Bridge WS', 'Hammer Bridge SC']),
         create_dw_region(player, 'Hammer Bridge Water', None, ['Hammer Bridge Pier', 'Hobo Mirror Spot', 'Hammer Bridge EC'], 'Dark World', Terrain.Water),
         create_dw_region(player, 'Dark Central Cliffs', None, ['Dark Bonk Rocks Cliff Ledge Drop', 'Bomb Shop Cliff Ledge Drop', 'Hammer Bridge South Cliff Ledge Drop', 'Ice Lake Area Cliff Ledge Drop', 'Ice Palace Island FAWT Ledge Drop',
-                                                                'Hammer Bridge EC Cliff Water Drop', 'Dark Tree Line WC Cliff Water Drop', 'Dark C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Cliff Ledge Drop', 'Hype Cliff Ledge Drop', 'Dark South Teleporter Cliff Ledge Drop']),
+                                                                'Hammer Bridge EC Cliff Water Drop', 'Dark Tree Line WC Cliff Water Drop', 'Dark C Whirlpool Outer Cliff Ledge Drop', 'Dark C Whirlpool Cliff Ledge Drop', 'Hype Cliff Ledge Drop']),
         create_dw_region(player, 'Dark Tree Line Area', None, ['Dark Lake Hylia Fairy', 'Tree Line Mirror Spot', 'Dark Tree Line WN', 'Dark Tree Line NW', 'Dark Tree Line SE']),
         create_dw_region(player, 'Dark Tree Line Water', None, ['Dark Tree Line WC', 'Dark Tree Line SC'], 'Dark World', Terrain.Water),
         create_dw_region(player, 'Palace of Darkness Nook Area', None, ['East Dark World Hint', 'East Dark World Teleporter', 'Eastern Nook Mirror Spot', 'Palace of Darkness Nook NE']),
         create_dw_region(player, 'Misery Mire Area', None, ['Mire Shed', 'Misery Mire', 'Dark Desert Fairy', 'Dark Desert Hint', 'Desert Mirror Spot', 'Desert Ledge Mirror Spot', 'Checkerboard Mirror Spot', 'DP Stairs Mirror Spot', 'DP Entrance (North) Mirror Spot']),
         create_dw_region(player, 'Misery Mire Teleporter Ledge', None, ['Misery Mire Teleporter Ledge Drop', 'Misery Mire Teleporter']),
-        create_dw_region(player, 'Mire Northeast Cliffs', None, ['Mire Cliff Ledge Drop', 'Archery Game Cliff Ledge Drop', 'Stumpy Approach Cliff Ledge Drop', 'Mire C Whirlpool Cliff Ledge Drop', 'Swamp Nook Cliff Ledge Drop', 'Swamp Cliff Ledge Drop', 'Bombos Tablet Ledge Mirror Spot']),
+        create_dw_region(player, 'Mire Northeast Cliffs', None, ['Mire Cliff Ledge Drop', 'Dark Checkerboard Cliff Ledge Drop', 'Archery Game Cliff Ledge Drop', 'Stumpy Approach Cliff Ledge Drop', 'Mire C Whirlpool Cliff Ledge Drop', 'Swamp Nook Cliff Ledge Drop', 'Swamp Cliff Ledge Drop', 'Bombos Tablet Ledge Mirror Spot']),
         create_dw_region(player, 'Stumpy Approach Area', None, ['Stumpy Approach Bush (South)', 'Cave 45 Mirror Spot', 'Stumpy Approach NW', 'Stumpy Approach EC']),
         create_dw_region(player, 'Stumpy Approach Bush Entry', None, ['Stumpy Approach Bush (North)', 'Flute Boy Entry Mirror Spot', 'Stumpy Approach NC']),
         create_dw_region(player, 'Dark C Whirlpool Area', None, ['Dark C Whirlpool Rock (Bottom)', 'South Dark World Teleporter', 'C Whirlpool Mirror Spot', 'Dark C Whirlpool Water Entry', 'Dark C Whirlpool EN', 'Dark C Whirlpool ES', 'Dark C Whirlpool SC']),
@@ -214,8 +217,8 @@ def create_regions(world, player):
         create_dw_region(player, 'Ice Lake Ledge (West)', None, ['Ice Lake Southwest Water Drop', 'South Shore Mirror Spot', 'Ice Lake WS']),
         create_dw_region(player, 'Ice Lake Ledge (East)', None, ['Ice Lake Southeast Water Drop', 'South Shore East Mirror Spot', 'Ice Lake ES']),
         create_dw_region(player, 'Ice Lake Water', None, ['Ice Lake Northeast Pier', 'Ice Lake Moat Bomb Jump', 'Lake Hylia Island Mirror Spot', 'Ice Lake NC', 'Ice Lake EC'], 'Dark World', Terrain.Water),
-        create_dw_region(player, 'Ice Lake Moat', None, ['Ice Lake Moat Water Entry', 'Ice Lake Northeast Pier Hop', 'Lake Hylia Water Mirror Spot', 'Lake Hylia Water D Mirror Spot']),
-        create_dw_region(player, 'Ice Palace Area', None, ['Ice Palace', 'Ice Palace Teleporter', 'Lake Hylia Central Island Mirror Spot']),
+        create_dw_region(player, 'Ice Lake Moat', None, ['Ice Palace Teleporter', 'Ice Lake Moat Water Entry', 'Ice Lake Northeast Pier Hop', 'Lake Hylia Water Mirror Spot', 'Lake Hylia Water D Mirror Spot']),
+        create_dw_region(player, 'Ice Palace Area', None, ['Ice Palace', 'Lake Hylia Central Island Mirror Spot']),
         create_dw_region(player, 'Shopping Mall Area', None, ['Dark Lake Hylia Ledge Fairy', 'Dark Lake Hylia Ledge Hint', 'Dark Lake Hylia Ledge Spike Cave', 'Ice Cave Mirror Spot', 'Shopping Mall SW', 'Shopping Mall SE']),
         create_dw_region(player, 'Swamp Nook Area', None, ['Desert Pass Ledge Mirror Spot', 'Desert Pass Mirror Spot', 'Swamp Nook EC', 'Swamp Nook ES']),
         create_dw_region(player, 'Swamp Area', None, ['Swamp Palace', 'Dam Mirror Spot', 'Swamp WC', 'Swamp WS', 'Swamp NC', 'Swamp EC']),
@@ -319,7 +322,8 @@ def create_regions(world, player):
         create_cave_region(player, 'Superbunny Cave (Top)', 'a connector', ['Superbunny Cave - Top', 'Superbunny Cave - Bottom'], ['Superbunny Cave Exit (Top)']),
         create_cave_region(player, 'Superbunny Cave (Bottom)', 'a connector', None, ['Superbunny Cave Climb', 'Superbunny Cave Exit (Bottom)']),
         create_cave_region(player, 'Cave Shop (Dark Death Mountain)', 'a common shop', ['Dark Death Mountain Shop - Left', 'Dark Death Mountain Shop - Middle', 'Dark Death Mountain Shop - Right']),
-        create_cave_region(player, 'Bumper Cave', 'a connector', None, ['Bumper Cave Exit (Bottom)', 'Bumper Cave Exit (Top)']),
+        create_cave_region(player, 'Bumper Cave (bottom)', 'a connector', None, ['Bumper Cave Exit (Bottom)', 'Bumper Cave Bottom to Top']),
+        create_cave_region(player, 'Bumper Cave (top)', 'a connector', None, ['Bumper Cave Exit (Top)', 'Bumper Cave Top To Bottom']),
         create_cave_region(player, 'Fortune Teller (Dark)', 'a fortune teller'),
         create_cave_region(player, 'Dark Sanctuary Hint', 'a storyteller', None, ['Dark Sanctuary Hint Exit']),
         create_cave_region(player, 'Dark World Potion Shop', 'a common shop', ['Dark Potion Shop - Left', 'Dark Potion Shop - Middle', 'Dark Potion Shop - Right']),
@@ -1073,66 +1077,45 @@ def _create_region(player, name, type, hint='Hyrule', locations=None, exits=None
             ret.locations.append(Location(player, location, address, crystal, hint_text, ret, None, player_address))
     return ret
 
-def mark_light_world_regions(world, player):
+def mark_light_dark_world_regions(world, player):
     # cross world caves may have some sections marked as both in_light_world, and in_dark_work.
     # That is ok. the bunny logic will check for this case and incorporate special rules.
-    queue = collections.deque(region for region in world.get_regions(player) if region.type == RegionType.LightWorld)
-    seen = set(queue)
-    while queue:
-        current = queue.popleft()
-        current.is_light_world = True
-        for exit in current.exits:
-            if exit.connected_region is None or exit.connected_region.type == RegionType.DarkWorld:  # todo: remove none check
-                # Don't venture into the dark world
-                continue
-            if exit.connected_region not in seen:
-                seen.add(exit.connected_region)
-                queue.append(exit.connected_region)
-
-    queue = collections.deque(region for region in world.get_regions(player) if region.type == RegionType.DarkWorld)
-    seen = set(queue)
-    while queue:
-        current = queue.popleft()
-        current.is_dark_world = True
-        for exit in current.exits:
-            if exit.connected_region is not None:
-                if exit.connected_region.type == RegionType.LightWorld:
-                    # Don't venture into the light world
-                    continue
-                if exit.connected_region not in seen:
-                    seen.add(exit.connected_region)
-                    queue.append(exit.connected_region)
-
-
-def mark_dark_world_regions(world, player):
-    # cross world caves may have some sections marked as both in_light_world, and in_dark_work.
-    # That is ok. the bunny logic will check for this case and incorporate special rules.
-    queue = collections.deque(region for region in world.get_regions(player) if region.type == RegionType.DarkWorld)
-    seen = set(queue)
-    while queue:
-        current = queue.popleft()
-        current.is_dark_world = True
-        for exit in current.exits:
-            if exit.connected_region is None or exit.connected_region.type == RegionType.LightWorld:  # todo: remove none check
-                # Don't venture into the light world
-                continue
-            if exit.connected_region not in seen:
-                seen.add(exit.connected_region)
-                queue.append(exit.connected_region)
-
-    queue = collections.deque(region for region in world.get_regions(player) if region.type == RegionType.LightWorld)
-    seen = set(queue)
-    while queue:
-        current = queue.popleft()
-        current.is_light_world = True
-        for exit in current.exits:
-            if exit.connected_region is not None:
-                if exit.connected_region.type == RegionType.DarkWorld:
+    def mark_light():
+        queue = collections.deque(region for region in world.get_regions(player) if region.type == RegionType.LightWorld)
+        seen = set(queue)
+        while queue:
+            current = queue.popleft()
+            current.is_light_world = True
+            for exit in current.exits:
+                if exit.connected_region is None or exit.connected_region.type == RegionType.DarkWorld:  # todo: remove none check
                     # Don't venture into the dark world
                     continue
                 if exit.connected_region not in seen:
                     seen.add(exit.connected_region)
                     queue.append(exit.connected_region)
+
+    def mark_dark():
+        queue = collections.deque(region for region in world.get_regions(player) if region.type == RegionType.DarkWorld)
+        seen = set(queue)
+        while queue:
+            current = queue.popleft()
+            current.is_dark_world = True
+            for exit in current.exits:
+                if exit.connected_region is not None:
+                    if exit.connected_region.type == RegionType.LightWorld:
+                        # Don't venture into the light world
+                        continue
+                    if exit.connected_region not in seen:
+                        seen.add(exit.connected_region)
+                        queue.append(exit.connected_region)
+
+    # Note: I don't see why the order would matter, but the original Inverted code reversed the order
+    if world.mode[player] != 'inverted':
+        mark_light()
+        mark_dark()
+    else:
+        mark_dark()
+        mark_light()
 
 
 def create_shops(world, player):

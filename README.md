@@ -30,47 +30,135 @@ All feedback and dev conversation happens in the #ow-rando channel on the [ALTTP
 
 # Installation from Source
 
-Download the source code from the repository directly and put it in a folder of your choosing.
+1) Download the source code from the repository directly and put it in a folder of your choosing.
 
-You must have Python installed (version 3.6 - 3.9 supported)
+2) You must have Python installed (version 3.7 - 3.10 supported), and ensure PATH is included during the installation.
 
-This program requires all python dependencies that are necessary to run Aerinon's Door Randomizer. Try running ```pip install missingdependency``` or ```python -m pip install missingdependency``` on the command line (replace ```missingdependency``` with the specific package that is missing) to install the dependency.
+3) This program requires all python dependencies that are necessary to run OW Randomizer. There are multiple ways to install them:
+  - Try running ```pip install missingdependency``` or ```python -m pip install missingdependency``` on the command line (replace ```missingdependency``` with the specific package that is missing) to install the dependency.
+  - The simpler method, run (double-click) ```resources/ci/common/local_install.py``` to install all the missing dependencies as well.
 
-Alternatively, run ```resources/ci/common/local_install.py``` to install all the missing dependencies as well.
+4) Once installed, you should be able to run (double-click) ```Gui.py``` and the OWR program will appear, where you can select your desired settings.
 
 See the following link if you have additional trouble: https://github.com/codemann8/ALttPDoorRandomizer/blob/OverworldShuffle/docs/BUILDING.md
 
 # Running the Program
 
-To use the CLI, run ```DungeonRandomizer.py```.
+- Run (or double-click) ```Gui.py``` for a simple graphical user interface.
+- Alternatively, you can generate thru the CLI, run ```DungeonRandomizer.py```.
 
-Alternatively, run ```Gui.py``` for a simple graphical user interface.
+# Getting Started
+## "I heard about OWR and want to give it a try, what do I do?"
+This is a common sentiment among those who are unfamiliar with OWR's offerings. One might be tempted to simply turn on a bunch of the options and give it a go. I cannot express this enough:
+
+**^ DO NOT do this! ^**
+
+OWR definitely has a lot of options, and all of them by themselves are pretty simple to grasp, but combining multiple OWR options together increases the complexity and confusion in exponential fashion. Now, of course, some OWR options like Flute Shuffle can safely be combined at any level and isn't gonna make anything more complicated. But specifically, avoid combining these 3 options, at least when going for your first seed:
+- OW Layout Shuffle
+- OW Tile Flip (Mixed)
+- Crossed OW
+
+## "Any recommendations for a first-timer?"
+For a first (and second) seed... *and I say "second" because I feel like both of these recommendations I'm about to make have VERY different vibes, have different levels of challenge, but are both, of their own right, worthy of being tried at least once.* Your first OWR experience can be combined with any mode combination that you are already familiar with and have a lot of experience in playing. If you like Crosskeys and feel very comfortable running that, feel free to turn on all those settings in addition to ONE of these two options:
+1. `OW Tile Flip (Mixed)` - Overly, a pretty easy-breezy mode, it doesn't require too much big brain, and is pretty managable even without proper logic tracking, as long as you at least have a standard map tracker. This is actually my favorite way to run OWR today
+  - DO NOT turn on Layout or Whirlpool Shuffle, leave this on `Vanilla`
+  - DO NOT turn on Crossed OWR
+  - `Flute Shuffle` or `Bonk Drops` could be enabled if desired, altho I'd recommend against it, at least for a fresh viewpoint of Mixed OWR
+2. `OW Layout Shuffle` - Set to `Parallel`. This is the original spirit and vision of OWR from the time of its own founding. It's definitely much more complicated to run than OW Tile Flip, so keep that in mind.
+  - `Starting Boots` - Either actual boots or pseudoboots, you will be spending a lot of time navigating the OW, so it's best to do it with the ability to run fast.
+  - DO NOT turn on OW Tile Flip (Mixed)
+  - DO NOT turn on Crossed OWR
+  - Enable `Whirlpool Shuffle` - Recommended to always be enabled with Layout Shuffle
+  - Enable `Keep Similar Edges Together` - This just helps keep some of your sanity for a first experience
+  - Enable `Flute Shuffle` - I recommend setting this to `Balanced`, this helps space out the flute spots across the world. Being that the world itself is shuffled, the vanilla flute spots are likely NOT as conveniently located as they normally are.
+  - `Free Terrain` - Recommend to NOT turn this on for a first run, but definitely on a second run.
+  - `Bonk Drops` - Recommend to NOT turn this on, especially if you don't have starting boots, but you could enable this in future seeds if you've become more familiar with OWR, as you'll be visiting these screens anyways, you might as well grab the items on the way :)
+
+## "What tracker should I use?"
+I personally use 2 trackers together, at least if Layout Shuffle is enabled. Currently, DunkaTracker is the ONLY tracker that is useful for tracking Layout Shuffle, can highly recommend. However, I personally don't like the main portion of the tracker and ignore the main window completely. For tracking everything else, I use `CodeTracker`, a tracker pack that is installable within `EmoTracker`, this handles ALL OWR modes EXCEPT Layout Shuffle (and generally Crossed OW, but missing that doesn't make much of a difference). I am unaware of ANY trackers outside of these 2 that handle OWR modes, so my advice would be to familiarize yourself with both trackers and pick and choose the parts you find most useful for yourself.
+
+# Terminology
+
+### OW / OWR
+OW is shorthand for Overworld, referring to anywhere that is "outside" in the game: ie. not caves or dungeons, which are considered Underworld.
+
+OWR is shorthand for Overworld Rando/Shuffle, the concept of randomizing certain elements present in the Overworld.
+
+### LW / DW (**IMPORTANT TO READ**)
+Light World and Dark World. Some of the references to LW and DW can be a bit ambiguous. Sometimes, if a LW tile is being referenced, it's usually referring to the normal LW tile that you already know of. Other times, I might be referring to a DW tile that has now become part of the LW, due to a certain way that the game can be shuffled. This can be particularly confusing when trying to understand these modes, and what they do, based on the text description of them, but it's important to keep in mind the context of which is being described.
+
+Things get extra confusing when adding Crossed OWR into the mix, due to the fluidity of navigating between LW and DW freely. It's often best to think of Crossed OWR like this: You've been used to a two-part Light and Dark World, but Crossed works more close to a Starting Plane and Other Plane, ie. You can walk around and never be able to reach the "other" plane until you have the items to enter portals, including using mirror. Both of these planes consist of Light and Dark World tiles.
+
+During gameplay and in the OW, there is an L or D in the upper left corner, indicating which *world* you are in. As complicated as all the rules can be, this L or D is the simplest way to digest it all. Whenever it says you are in DW, this means you are subject to being transformed to a bunny, cannot use the flute, and you will be able to use the mirror to gain access to the LW. When in LW, you are transformed to Link (if not already), and you're able to use the flute.
+
+### Tile
+This refers to one OW screen, containing one or more transitions (or edges) that lead to another tile. Most tiles have a "other world" version of it, linked by either a portal or mirror; some do not like Zora's Domain or Master Sword Pedestal.
+
+### Edge / Transition
+This refers to the sides/edges of the screen, where you walk into them and causes another tile to load, the camera pans over, and Link continues movement that destination tile.
+
+### Parallel (as a concept)
+Various things in this readme are referred to as parallel or non-parallel. Parallel refers to elements that exist in similar orientation in the opposite world. For instance, Kakariko Village and Village of Outcasts each have 5 transitions, all in the same geographical area and all leading in the same direction, that makes all those transitions parallel. In another instance, The Purple Chest screen (where you turn it in) has transitions on the West side of the screen, but in the DW, those transitions do not exist, therefore, these West transitions are non-parallel, and the tile itself is not parallel. Determining whether something is parallel or not dictates whether something can be shuffled or not, or whether it requires something else to be grouped with it and shuffled together.
+
+### Tile Groups
+These are groups of tiles that must be shuffled (or not shuffled) as a group. For instance, if Standard World State is enabled, Link's House, Hyrule Castle, and Sanctuary must be kept together, to ensure that the opening sequence can commence. There are a number of scenarios that can cause various tiles to be grouped, this is largely determined by the specific combination of OWR settings and is necessary to ensure correct logic.
+
+### Similar Edge
+These refer to groups of edges that are near each other. For instance, at Link's House, there are 3 different edges on the West side of the screen, separated by the cliffside terrain. All 3 of these can potentially lead to 3 different places. But conversely, these 3 edges are also considered similar edges and can be made to all lead to the same area.
+
+Similar edges on the larger OW tiles are a bit harder to intuitively determine. For instance, in Kakariko Village, there are 3 North edges, but all 3 are NOT part of the same Similar Edge group. Instead, the 2 on the West End are deemed Similar, while the one to the far East is its own edge. The most definitive way to figure out which edges are actually grouped, look at a world map image with gridlines (one is linked above in `Trackers & Guides` labeled OW Rando Cheat Sheet), if you draw imaginary lines, splitting up large tiles into 2x2 parts (continuing the small tiles' patterns), all edges within these bounds are considered Similar Edges.
+
+Similar edges are used when `Keep Similar Edges Together` is enabled and have meaning when used with `Layout Shuffle` (with and without `Free Terrain`) and `Crossed` settings.
+
+# Inverted Changes
+
+The version of Inverted included in OWR varies quite a bit compared to the Door Rando and VT (main rando) forks. This is often referred to as Inverted 2.0, as this is a plan to shift it to a newer/updated concept, intended to either enhance/improve the Inverted experience or to restore some behaviors more closer to vanilla. Some of these changes are likely going to be added to all rando forks/branches and subject to change, but this will be based on user feedback.
+
+- Links House start now spawns inside the Big Bomb Shop, where there is now a bed
+- Old Man Cave/Bumper Cave entrances are restored to their original state
+- Mountain Cave S+Q now spawns in his usual Cave
+- Removed the ladder that leads from West Dark Death Mountain up to the top near the GT entrance
+- Flute Spot 1 is moved to the very Top of Dark Death Mountain, next to the GT entrance
+- When finding Flute, it comes pre-activated (will hear SFX on collecting)
+- Spiral and Mimic Cave are now bridged together
+- TR Peg Puzzle is restored but instead reveals a ladder
+- Houlihan now exits same place as the Link's House start does
+- Ganon Hole Exit now exits out a new door on top of HC
+- Ice Palace has been re-sealed to vanilla, portal moved to outer edge of moat (makes IP mirror locked)
+- Glitched modes will now use vanilla terrain except where necessary
+
+Note: These changes do impact the logic. If you use `CodeTracker`, these Inverted 2.0 logic rules are automatically detected if using autotracker, indicated by a 2 in the corner of the World State mode icon. This can also be manually applied if you right-click the World State mode icon. 
 
 # Settings
 
-Only extra settings added by this Overworld Shuffle fork are found here. All door and entrance randomizer settings are supported. See their [readme](https://github.com/Aerinon/ALttPDoorRandomizer/blob/master/README.md)
+Only settings specifically added by this Overworld Shuffle fork are found here. All door and entrance randomizer settings are supported. See their [readme](https://github.com/Aerinon/ALttPDoorRandomizer/blob/master/README.md)
 
 ## Overworld Layout Shuffle (--ow_shuffle)
+OW Edge Transitions are shuffled to create new world layouts. A brief visual representation of this can be viewed [here](https://media.discordapp.net/attachments/783989090017738753/857299555183362078/ow-modes.gif). (This graphic also includes combinations of Crossed and Tile Flip)
 
 ### Vanilla
 
-OW is not shuffled.
+OW Transitions are not shuffled.
 
 ### Parallel
 
-OW Transitions are shuffled, but both worlds will have a matching layout.
+OW Transitions are shuffled, but both worlds will have a matching layout, similar to that of vanilla.
 
 ### Full
 
 OW Transitions are shuffled within each world separately.
 
+## Free Terrain (--ow_terrain)
+
+With OW Layout Shuffle, this allows land and water edges to be connected.
+
 ## Crossed Options (--ow_crossed)
 
-This allows OW connections to be shuffled cross-world.
+This allows OW connections to be shuffled cross-world. There are 2 main methodologies of Crossed OWR: 
 
-Polar and Grouped both are guaranteed to result in two separated planes of tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a LW tile that was previously unreachable
+- Grouped and Polar both are guaranteed to result in two separated planes of tiles, similar to that of vanilla. This means you cannot simply walk around and be able to visit all the tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a tile that was previously unreachable
 
-Limited and Chaos are not bound to follow a two-plane framework. This means that it could be possible to travel on foot to every tile without entering a normal portal.
+- Limited and Chaos are not bound to follow a two-plane framework. This means that it could be possible to travel on foot to every tile without entering a normal portal.
 
 See each option to get more details on the differences.
 
@@ -78,23 +166,23 @@ See each option to get more details on the differences.
 
 Transitions will remain same-world.
 
-### Polar
-
-Only effective if Mixed/Tile Swap is enabled. Enabling Polar preserves the original/vanilla connections even when tiles are swapped/mixed. This results in a completely vanilla overworld, except that some tiles will transform Link to a Bunny (as per Mixed swapping some tiles to the other world). This offers an interesting twist on Mixed where you have a pre-conditioned knowledge of the terrain you will encounter, but not necessarily be able to do what you need to do there. (see Tile Swap/Mixed section for more details)
-
 ### Grouped
 
-This option shuffles connections cross-world in the same manner as Tile Swap/Mixed, the connections leading in and coming out of a group of tiles are crossed. Unlike Polar, this uses a different set of tile groups as a basis of crossing connections, albeit the same rule govern which groups of tiles must cross together (see Tile Swap/Mixed for more details)
+This option shuffles connections cross-world in the same manner as Tile Flip (Mixed), the connections coming in and going out of a Tile Group (see `Terminology` section above) are crossed (ie. meaning it is impossible to take a different path to a tile and end up in the opposite world, unlike Limited and Chaos). This is considered the simplest way to play Crossed OWR.
+
+### Polar
+
+Only effective if Tile Flip (Mixed) is enabled. Polar follows the same principle as Grouped, except that it preserves the original/vanilla connections even when tiles are flipped/mixed. This results in a completely vanilla overworld, except that some tiles will transform Link to a Bunny. Even though these tiles give the appearance of your normal LW tile, due to how Tile Flip works, those LW tiles give DW properties (such as bunnying, ability to mirror, and prevents flute usage). This offers an interesting twist on Mixed where you have a pre-conditioned knowledge of the terrain you will encounter, but not necessarily be able to do what you need to do there, due to bunny state. (see `Tile Flip / Mixed` section for more details)
 
 ### Limited
 
-Every transition independently is a candidate to be chosen as a cross-world connection, however only 9 transitions become crossed (in each world). This option abides by the Keep Similar Edges Together option and will guarantee same effect on all edges in a Similar Edge group if enabled. If a Similar Edge group is chosen from the pool of candidates, it only counts as one portal, not multiple.
+Every transition is independently a candidate to be chosen as a cross-world connection, however only 9 total transitions become crossed (to/from each world). This option abides by the `Keep Similar Edges Together` option and will guarantee same effect on all edges in a Similar Edge group if enabled. If a Similar Edge group is chosen from the pool of candidates, it only counts as one portal, not multiple.
 
 Note: Only parallel connections (a connection that also exists in the opposite world) are considered for cross-world connections, which means that the same connection in the opposite world will also connect cross-world.
 
 Note: If Whirlpool Shuffle is enabled, those connections can be cross-world but do not count towards the 9 transitions that are crossed.
 
-Motive: Why 9 connections? To imitate the effect of the 9 standard portals that exist.
+Motive: Why 9 connections? To imitate the effect of the 9 existing standard portals.
 
 ### Chaos
 
@@ -102,15 +190,36 @@ Same as Limited, except that there is no limit to the number of cross-world conn
 
 ## Keep Similar Edges Together (--ow_keepsimilar)
 
-This keeps similar edge transitions together. ie. The 2 west edges of Potion Shop will be paired to another set of two similar edges
+This keeps similar edge transitions together. ie. The 2 west land edges of Potion Shop will be paired to another set of two similar edges, unless Free Terrain is also enabled, in which case these 2 edges together with the west water edge form a group of 3 similar edges. See `Terminology` section above for a more detailed explanation of Similar Edges.
 
 Note: This affects OW Layout Shuffle mostly, but also affects Limited and Chaos modes in Crossed OW.
 
-## Tile Swap / Mixed Overworld (--ow_mixed)
+## Tile Flip / Mixed Overworld (--ow_mixed)
 
-OW tiles are randomly chosen to become a part of the opposite world. When on the Overworld, there will be an L or D in the upper left corner, indicating which world you are currently in. Mirroring still works the same, you must be in the DW to mirror to the LW.
+Tile Flip (often referred to as Mixed OWR) can be thought of as a hybrid of Open and Inverted, where OW tiles are randomly chosen to be flipped to become a part of the opposite world. When this occurs, that tile will use the Inverted version of that tile. For instance, if the Cave 45 tile becomes flipped, that means while walking around in the LW, you will find the screen that's south of Stumpy instead, and Cave 45 will instead be found in the DW; but like Inverted, the Cave 45 tile is modified to not have a ledge, this ensures that it will be possible to access it.
 
-Note: Tiles are put into groups that must be shuffled together when certain settings are enabled. For instance, if ER is disabled, then any tiles that have a connector cave that leads to another tile, those tiles must swap together; (an exception to this is the Old Man Rescue cave which has been modified similar to how Inverted modifies it, Old Man Rescue is ALWAYS accessible from the Light World)
+Being that this uses concepts from Inverted, it will be important to review the OWR-exclusive changes that have been made to Inverted (often referred to as Inverted 2.0). See `Inverted Changes` for more details.
+
+During gameplay:
+  - When on the OW, there will be an L or D in the upper left corner, indicating which world you are currently in. Mirroring still works the same, you must be in the DW to mirror to the LW.
+  - When doing a map check (pressing X while on the OW), the tiles shown will reflect the flipped tiles. This means that dungeon prizes will show the prizes for the dungeons that are now part of that world, beware of Desert/Mire and Eastern/PoD. Here is an image showing the difference of appearance when tiles are flipped on the [map check](https://media.discordapp.net/attachments/783989090017738753/970646558049714196/lttp-lw-mapcheck.gif) screen.
+
+Note: Tiles are put into Tile Groups (see `Terminology`) that must be shuffled together when certain settings are enabled. For instance, if ER is disabled, then any tiles that have a connector cave that leads to a different tile, then those tiles must flip together.
+
+## Tile Flip vs Crossed Explained
+The above OWR options are very difficult to describe. The above descriptions are written in a way that is most correct even when these options are combined with more complicated modes. But, this section aims to simplify the explanation by assuming the user chooses a normal 'Open 7/7 Defeat Ganon' seed but with just one OWR setting enabled.
+
+Both of these options are very similar and often confused from each other.
+- Tile Flip is a mode where some DW tiles are moved and BECOME part of the LW (and the LW counterparts become part of the DW). What does it mean to "become" part of a world? It means that it will inherit (NOT bring over) the properties of that world it is moving to (such as being able to flute, ability to use the mirror, or being susceptible to bunnying).
+- Crossed on the other hand doesn't change the properties of tiles, instead it transports Link *physically?* across worlds upon transitioning. This also means that Link can be transformed into a bunny moving from tile to tile.
+tldr: Tile Flip moves the tiles, Crossed moves Link
+
+So, let's run an example of 2 tiles, Link's House and the screen to the right of it. Transitioning right from Link's House: In vanilla, you get the Stone Bridge screen and Link stays his normal self and is just normal LW behavior. Now, let's assume Links House screen stays vanilla, but the tile to the right is getting Flipped or Crossed.
+- In Tile Flip, you'd get the Hammer Bridge screen and Link would stay as Link and you'd be able to flute away from this screen if you had a flute.
+- In Crossed, you'd get the same Hammer Bridge Screen, but this time Link would be transformed into a bunny, just like he'd normally be when on that tile.
+- In Polar Crossed (when both Tile Flip and Crossed effects are applied together), you get the normal Stone Bridge screen, but Link is transformed to a bunny (because the Stone Bridge screen has moved to the DW AND Link is also moving across worlds).
+
+As you can see, things get pretty complicated when mixing modes together. Doing this can definitely create a very unique and interesting experience, but one that is very hard to grasp. And then beyond that there is OW Layout Shuffle, which is where transition destinations are shuffled, so Link will get transported to a different tile entirely, but the same rules apply when you eventually find the Stone/Hammer Bridge screen, you just likely won't find that screen thru a transition on Link's House screen.
 
 ## Whirlpool Shuffle (--ow_whirlpool)
 
@@ -152,6 +261,10 @@ This adds 41 new item locations to the game. These bonk locations are limited to
   - Rocks and statues are unable to be made to have a different color
 - Since Fairies and Apples are new items that can appear in plain sight, they don't have a proper graphic for them yet. For now, they show up as Power Stars
 
+Here is a map that shows all the [Bonk Locations](https://media.discordapp.net/attachments/783989090017738753/1000880877548609607/unknown.png?width=1399&height=702). FYI, the 2-4 and 2-3-4 refer to the tree numbers that have the items. The 2 by Dark Fortune Teller indicate that there are 2 bonk items there. The stars with a green square are all Bonk Locations that are unlocked after you kill Aga 1.
+
+As far as map trackers, Bonk Locations are supported on `CodeTracker` when the Bonk Drops option is enabled.
+
 Future Note: This does NOT include the Good Bee (Cold Bee) Cave Statue...yet. In the future, this could be an additional item location.
 
 #### Items Added To Pool:
@@ -169,21 +282,23 @@ Future Note: This does NOT include the Good Bee (Cold Bee) Cave Statue...yet. In
 
 ### Trinity
 
-This goal gives you the choice between 3 goals, only one of which the player needs to complete: Defeat Ganon (no Aga2), Pulling Pedestal, or turn in TF pieces to Murahdahla. By default, you need to find 8 of 10 total TF pieces but this can be changed with a Custom Item Pool. It is recommended to set GT Entry to 7 crystals and Ganon to 5 crystals or Random crystals, although the player can flexibly change these settings as they seem fit.
+This goal gives you the choice between 3 goals, only one of which the player needs to complete: Fast Ganon (no Aga2), pulling Pedestal, or turn in TF pieces to Murahdahla. By default, you need to find 8 of 10 total TF pieces but this can be changed with a Custom Item Pool. It is recommended to set GT Entry to 7 crystals and Ganon to 4 or 5 crystals or Random crystals, although the player can flexibly change these settings as they see fit.
 
 ## New Entrance Shuffle Options (--shuffle)
 
 ### Lite
 
-This mode is intended to be a beginner-friendly introduction to playing ER. It focuses on reducing low% world traversal in late-game dungeons while reducing the number of entrances needing to be checked.
+This mode is intended to be a beginner-friendly introduction to playing ER, unlike that of Simple ER. It focuses on reducing Low% world traversal in late-game dungeons while reducing the number of entrances needing to be checked.
 
 This mode groups entrances into types and shuffles them freely within those groups.
 - Dungeons and Connectors (Multi-Entrance Caves)
-- Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop, includes Shops only if Shopsanity is enabled)
+- Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop)
+  - Includes Shops only if Shopsanity is enabled
+  - Includes caves with pots only if Pottery settings have them shuffled)
 - Dropdowns and their associated exits (Skull Woods dropdowns are handled the same as in Crossed)
 - Non-item locations (junk locations) all remain vanilla
 
-Lite mode shuffles all connectors same-world, to limit bunny traversal. And to prevent Low% enemy and boss combat, some dungeons are confined to specific worlds.
+Lite ER shuffles all connectors same-world, to limit bunny traversal. And to prevent Low% enemy and boss combat, some dungeons are confined to specific worlds.
 
 The following dungeons are guaranteed to be in the Light World:
 - Hyrule Castle
@@ -198,15 +313,21 @@ The following are guaranteed to be in the Dark World:
 - Turtle Rock
 - Ganon's Tower
 
+Both Lite and Lean ER modes are supported in `CodeTracker`, showing only the entrances that are shuffled.
+
 ### Lean
 
 This mode is intended to be a more refined and more competitive format to Crossed ER. It focuses on reducing the number of entrances needing to be checked, while giving the player unique routing options based on the entrance pools defined below, as opposed to mindlessly checking all the remaining entrances. The Dungeons/Connectors can connect cross-world.
 
 This mode groups entrances into types and shuffles them freely within those groups.
 - Dungeons and Connectors (Multi-Entrance Caves)
-- Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop, includes Shops only if Shopsanity is enabled)
+- Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop)
+  - Includes Shops only if Shopsanity is enabled
+  - Includes caves with pots only if Pottery settings have them shuffled)
 - Dropdowns and their associated exits (Skull Woods dropdowns are handled the same as in Crossed)
 - Non-item locations (junk locations) all remain vanilla
+
+Both Lite and Lean ER modes are supported in `CodeTracker`, showing only the entrances that are shuffled.
 
 ## Ganon Vulnerability Item (--ganon_item)
 
@@ -238,10 +359,16 @@ Show the help message and exit.
 For specifying the overworld layout shuffle you want as above. (default: vanilla)
 
 ```
+--ow_terrain
+```
+
+With OW Layout Shuffle, this allows land and water edges to be connected.
+
+```
 --ow_crossed <mode>
 ```
 
-For specifying the type of cross-world connections  you want on the overworld
+For specifying the type of cross-world connections you want on the overworld
 
 ```
 --ow_keepsimilar
@@ -253,7 +380,7 @@ This keeps similar edge transitions paired together with other pairs of transiti
 --ow_mixed
 ```
 
-This gives each OW tile a random chance to be swapped to the opposite world
+This gives each OW tile a random chance to be flipped to the opposite world
 
 ```
 --ow_fluteshuffle <mode>

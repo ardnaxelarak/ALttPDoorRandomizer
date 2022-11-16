@@ -1,3 +1,10 @@
+; Free RAM notes
+; $06F8-$06F9: Used to store edge table addresses
+; $06FA-$06FB: Used to store target edge IDs
+; $06FC-$06FD: Used for custom walk destination after transitions
+; $0703: Used to flag forced transitions
+; $0704-$0705: Used to store terrain type at the start of a transition
+
 org $aa8000 ;150000
 db $4f, $52 ;OR
 OWMode:
@@ -38,6 +45,9 @@ Overworld_LoadSpecialOverworld_RoomId:
 org $04E8B4
 Overworld_LoadSpecialOverworld:
 
+org $07982A
+Link_ResetSwimmingState:
+
 
 ; mirror hooks
 org $02FBAB
@@ -54,6 +64,8 @@ JSL OWMirrorSpriteOnMap : BRA + : NOP #6 : +
 ; whirlpool shuffle cross world change
 org $02b3bd
 jsl OWWhirlpoolUpdate ;JSL $02EA6C
+org $02B44E
+jsl OWWhirlpoolEnd ; STZ.b $11 : STZ.b $B0
 
 ; flute menu cancel
 org $0ab7af ;LDA $F2 : ORA $F0 : AND #$C0
@@ -95,7 +107,7 @@ org $0ABA99
 WorldMap_LoadDarkWorldMap:
 LDA.b $10 : CMP.b #$14 ; attract module
 BEQ .vanilla_light
-    LDA.l OWMode+1 : AND.b #$04 : BNE .mixed
+    LDA.l OWMode+1 : AND.b #!FLAG_OW_MIXED : BNE .mixed
         LDA.b $8A : AND.b #$40
         BEQ .vanilla_light
     .mixed
@@ -172,6 +184,8 @@ OWCameraRangeIndex:
 db 2, 2, 0, 0 ; For OWCameraRange
 OWCameraRange:
 dw $011E, $0100 ; Length of the range the camera can move on small screens
+OWAutoWalk:
+db $04, $08, $01, $02
 
 DivideByTwoPreserveSign:
 {
@@ -201,11 +215,19 @@ OWMapWorldCheck16:
 OWWhirlpoolUpdate:
 {
     jsl $02ea6c ; what we wrote over
-    lda.l OWFlags : and #$01 : bne +
-    lda.l OWMode+1 : and #$02 : beq .return
-        + ldx $8a : jsr OWWorldUpdate
-    .return
+    ldx $8a : ldy #$03 : jsr OWWorldTerrainUpdate
     rtl
+}
+
+OWWhirlpoolEnd:
+{
+    STZ.b $B0 ; what we wrote over
+    LDA.w $0703 : BEQ .normal
+        LDA.b #$3C : STA.w $012E ; play error sound before forced transition
+        RTL
+    .normal
+    STZ.b $11 ; end whirlpool transition
+    RTL
 }
 
 OWMirrorSpriteOnMap:
@@ -321,7 +343,7 @@ OWOldManSpeed:
 
 LoadMapDarkOrMixed:
 {
-    CMP.b #$04 : REP #$30 : BEQ .mixed
+    CMP.b #!FLAG_OW_MIXED : REP #$30 : BEQ .mixed
         LDX.w #$03FE ; draw vanilla Dark World (what we wrote over)
         .copy_next
             LDA.w $D739,X : STA.w $1000,X ; DB is $0A
@@ -378,7 +400,7 @@ OWBonkDrops:
 {
     CMP.b #$D8 : BEQ +
         RTL
-    + LDA.l OWFlags+1 : AND.b #$02 : BNE +
+    + LDA.l OWFlags+1 : AND.b #!FLAG_OW_CROSSED : BNE +
         JSL.l Sprite_TransmuteToBomb : RTL
     +
 
@@ -507,10 +529,10 @@ org $aa9000
 OWDetectEdgeTransition:
 {
     STZ.w $06FC
-    LDA.l OWMode : ORA.l OWMode+1 : BEQ .normal
+    LDA.l OWMode : ORA.l OWMode+1 : BEQ .vanilla
         JSR OWShuffle
         LDA.w $06FA : BMI .special
-    .normal
+    .vanilla
     REP #$31 : LDX.b $02 : LDA.b $84 ; what we wrote over
     RTL
     .special
@@ -525,45 +547,48 @@ OWDetectSpecialTransition:
 {
     STZ.w $06FC
     LDA.l OWMode : BEQ .normal
-    LDA.l OWSpecialDestIndex,X : BIT.w #$0080 : BNE .special
-        STA.w $06FA
-        LDA.l OWEdgeDataOffset,X : STA.w $06F8
-        PLA : SEP #$30 : PLA ; delete 3 bytes from stack
-        JSL Link_CheckForEdgeScreenTransition : BCS .return ; Link_CheckForEdgeScreenTransition
-        LDA.l Overworld_CheckForSpecialOverworldTrigger_Direction,X : STA.b $00 : CMP.b #$08 : BNE .hobo
-            LSR : STA.b $20 : STZ.b $E8 ; move Link and camera to edge
-            LDA.b #$06 : STA.b $02
-            STZ.w $0418
-            BRA .continue
-        .hobo
-            STA.b $02 : STA.w $0418
-            ASL : STA.b $22 : STZ.b $E2 ; move Link and camera to edge
-            LDA.b #$0A : STA.b $23 : STA.b $E3
-        .continue
-        STZ.b $03
-        ; copied from DeleteCertainAncillaeStopDashing at $028A0E
-        JSL Ancilla_TerminateSelectInteractives
-        LDA.w $0372 : BEQ .not_dashing
-            STZ.b $4D : STZ.b $46
-            LDA.b #$FF : STA.b $29 : STA.b $C7
-            STZ.b $3D : STZ.b $5E : STZ.w $032B : STZ.w $0372 : STZ.b $5D
-        .not_dashing
-        PLA : REP #$31 : PLA ; delete 3 bytes from stack
-        LDX.b $02
-        LDA.b $84
-        JML OverworldHandleTransitions_SpecialTrigger+6
-    .special
+    TXA : AND.w #$0002 : LSR
+    STA.w $0704
+    LDA.l OWSpecialDestIndex,X : BIT.w #$0080 : BEQ .switch_to_edge
     AND.w #$0003 : TAY : ASL : TAX
     .normal
     JSR OWLoadSpecialArea
     .return
     RTL
+
+    .switch_to_edge
+    STA.w $06FA
+    LDA.l OWEdgeDataOffset,X : STA.w $06F8
+    PLA : SEP #$30 : PLA ; delete 3 bytes from stack
+    JSL Link_CheckForEdgeScreenTransition : BCS .return ; Link_CheckForEdgeScreenTransition
+    LDA.l Overworld_CheckForSpecialOverworldTrigger_Direction,X : STA.b $00 : CMP.b #$08 : BNE .hobo
+        LSR : STA.b $20 : STZ.b $E8 ; move Link and camera to edge
+        LDA.b #$06 : STA.b $02
+        STZ.w $0418
+        BRA .continue
+    .hobo
+        STA.b $02 : STA.w $0418
+        ASL : STA.b $22 : STZ.b $E2 ; move Link and camera to edge
+        LDA.b #$0A : STA.b $23 : STA.b $E3
+    .continue
+    STZ.b $03
+    ; copied from DeleteCertainAncillaeStopDashing at $028A0E
+    JSL Ancilla_TerminateSelectInteractives
+    LDA.w $0372 : BEQ .not_dashing
+        STZ.b $4D : STZ.b $46
+        LDA.b #$FF : STA.b $29 : STA.b $C7
+        STZ.b $3D : STZ.b $5E : STZ.w $032B : STZ.w $0372 : STZ.b $5D
+    .not_dashing
+    PLA : REP #$31 : PLA ; delete 3 bytes from stack
+    LDX.b $02
+    LDA.b $84
+    JML OverworldHandleTransitions_SpecialTrigger+6
 }
 OWEdgeTransition:
 {
-    LDA.l OWMode : ORA.l OWMode+1 : BEQ .normal
+    LDA.l OWMode : ORA.l OWMode+1 : BEQ .unshuffled
     LDY.w $06FA : CPY.b #$7F
-    BEQ .normal
+    BEQ .unshuffled
         REP #$10
         LDX.w $06F8
         PHB : PHK : PLB
@@ -571,15 +596,28 @@ OWEdgeTransition:
         PLB
         SEP #$30
         RTL
-    .normal
+
+    .unshuffled
     LDA.l Overworld_ActualScreenID,X : ORA.l CurrentWorld ; what we wrote over
-    RTL
+    TAX : LDA.l OWMode+1 : AND.b #!FLAG_OW_MIXED : BEQ .vanilla
+        LDA.l OWTileWorldAssoc,X : CMP.l CurrentWorld : BEQ .vanilla ; if dest screen mismatches the current world
+            TXA : EOR #$40 : RTL
+
+    .vanilla
+    TXA : RTL
 }
 OWSpecialExit:
 {
-    LDA.l OWMode+1 : AND.b #!FLAG_OW_CROSSED : BEQ .return
-        JSR OWWorldUpdate
-    .return
+    PHY
+    LDY.b #$00
+    LDA.w $0418 : LSR : BNE +
+        LDY.w $0704 : BRA ++
+    +
+    LDA.w $0704 : BNE ++
+        LDY.b #$02
+    ++
+    JSR OWWorldTerrainUpdate
+    PLY
     LDA.l $7EFD40,X ; what we wrote over
     RTL
 }
@@ -593,7 +631,12 @@ OWShuffle:
     ;look up transitions in current area in table OWEdgeOffsets
     ;offset is (8bytes * OW Slot ID) + (2bytes * direction)
     asl : rep #$20 : and.w #$00ff : pha : sep #$20 ;2 bytes per direction
-    lda $8a : and #$40 : !add $700 : rep #$30 : and #$00ff : asl #3
+
+    lda $8a : tax : lda.l OWTileWorldAssoc,X : eor.l CurrentWorld : beq +
+        ; fake world, will treat this OW area as opposite world
+        txa : eor.b #$40 : tax
+    + txa : and #$40 : !add $700 : rep #$30 : and #$00ff : asl #3
+
     adc 1,S : tax
     asl $700 : pla
     ;x = offset to edgeoffsets table
@@ -611,7 +654,7 @@ OWShuffle:
 
     .nextTransition
     pha
-        jsr OWSearchTransition : bcs .newDestination
+        jsr OWSearchTransition_entry : bcs .newDestination
         txa : !add #$0010 : tax
     pla : dec : bne .nextTransition : bra .noTransition
 
@@ -627,6 +670,10 @@ OWShuffle:
 }
 OWSearchTransition:
 {
+    .exitloop ; moved here because of branch distance
+    clc : rts
+
+    .entry
     ;A-16 XY-16
     lda $418 : bne + ;north
         lda.l OWNorthEdges,x : dec
@@ -634,6 +681,7 @@ OWSearchTransition:
         lda.l OWNorthEdges+2,x : cmp $22 : !blt .exitloop
             ;MATCH
             lda.l OWNorthEdges+14,x : tay ;y = record id of dest
+            lda.l OWNorthEdges+12,x ;a = current terrain
             ldx.w #OWSouthEdges ;x = address of table
             bra .matchfound
     + dec : bne + ;south
@@ -642,6 +690,7 @@ OWSearchTransition:
         lda.l OWSouthEdges+2,x : cmp $22 : !blt .exitloop
             ;MATCH
             lda.l OWSouthEdges+14,x : tay ;y = record id of dest
+            lda.l OWSouthEdges+12,x ;a = current terrain
             ldx.w #OWNorthEdges ;x = address of table
             bra .matchfound
     + dec : bne + ; west
@@ -650,6 +699,7 @@ OWSearchTransition:
         lda.l OWWestEdges+2,x : cmp $20 : !blt .exitloop
             ;MATCH
             lda.l OWWestEdges+14,x : tay ;y = record id of dest
+            lda.l OWWestEdges+12,x ;a = current terrain
             ldx.w #OWEastEdges ;x = address of table
             bra .matchfound
     + lda.l OWEastEdges,x : dec ;east
@@ -657,15 +707,13 @@ OWSearchTransition:
         lda.l OWEastEdges+2,x : cmp $20 : !blt .exitloop
             ;MATCH
             lda.l OWEastEdges+14,x : tay ;y = record id of dest
+            lda.l OWEastEdges+12,x ;a = current terrain
             ldx.w #OWWestEdges ;x = address of table
 
     .matchfound
-    stx $06f8 : sty $06fa : sec : rts
+    stx $06f8 : sty $06fa : sta $0704 : sec : rts
     plx : pla : pea $0001 : phx
     sec : rts
-
-    .exitloop
-    clc : rts
 }
 OWNewDestination:
 {
@@ -697,6 +745,16 @@ OWNewDestination:
     LDA $84 : SEC : SBC #$0010 : AND #$003E : LSR : STA $86
 
     LDA.w $000F,X : AND.w #$00FF : STA.w $06FC ; position to walk to after transition (if non-zero)
+
+    LDY.w #$0000
+    LDA.w $000C,X : AND.w #$0001 : BEQ + ; check if going to water transition
+    LDA.w $0704 : AND.w #$0001 : BNE ++ ; check if coming from water transition
+        INY : BRA ++
+    +
+    LDA.w $0704 : BEQ ++ ; check if coming from water transition
+        LDY.w #$0002
+    ++
+    STY.b $08
 
     pla : pla : sep #$10 : ldy $418
     ldx OWCoordIndex,y : lda $20,x : and #$fe00 : pha
@@ -743,27 +801,37 @@ OWNewDestination:
 
     sep #$30 : lda $04 : and #$3f : !add OWOppSlotOffset,y : asl : sta $700
     
-    ; crossed OW shuffle
-    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .return
-        ldx $05 : jsr OWWorldUpdate
+    ; crossed OW shuffle and terrain
+    ldx $05 : ldy $08 : jsr OWWorldTerrainUpdate
 
-    .return
     lda $05 : sta $8a
     rep #$30 : rts
 }
 OWLoadSpecialArea:
 {
     LDA.l Overworld_LoadSpecialOverworld_RoomId,X : STA.b $A0
-    JSL Overworld_LoadSpecialOverworld
-    LDA.l OWMode+1 : AND.b #!FLAG_OW_CROSSED : BEQ .return
-        TYX : LDA.l OWSpecialDestSlot,X : TAX
-        JSR OWWorldUpdate
+    JSL Overworld_LoadSpecialOverworld ; sets M and X flags
+    TYX
+    LDY.b #$00
+    CPX.b #$01 : BNE + ; check if going to water transition
+    LDA.w $0704 : BNE ++ ; check if coming from water transition
+        INY : BRA ++
+    +
+    LDA.w $0704 : BEQ ++ ; check if coming from water transition
+        LDY.b #$02
+    ++
+    LDA.l OWSpecialDestSlot,X : TAX
+    JSR OWWorldTerrainUpdate
     .return
     RTS
 }
-OWWorldUpdate: ; x = owid of destination screen
+OWWorldTerrainUpdate: ; x = owid of destination screen, y = 1 for land to water, 2 for water to land, 3 for whirlpools and 0 else
 {
-    lda.l OWTileWorldAssoc,x : cmp.l CurrentWorld : beq .return
+    LDA.l OWMode+1 : AND.b #!FLAG_OW_CROSSED : BEQ .not_crossed
+    LDA.l OWTileWorldAssoc,x : CMP.l CurrentWorld : BNE .crossed
+    .not_crossed
+        JMP .normal
+    .crossed
         sta.l CurrentWorld ; change world
 
         ; moving mirror portal off screen when in DW
@@ -778,22 +846,91 @@ OWWorldUpdate: ; x = owid of destination screen
         ; toggle bunny mode
         lda MoonPearlEquipment : bne .nobunny
         lda.l InvertedMode : bne .inverted
-            lda CurrentWorld : and.b #$40 : bra +
-            .inverted lda CurrentWorld : and.b #$40 : eor #$40
-        + cmp #$40 : bne .nobunny
-            ; turn into bunny
-            lda $5d : cmp #$04 : beq + ; if swimming, continue
-                lda #$17 : sta $5d
-            + lda #$01 : sta $02e0 : sta $56
-            bra .return
+            lda CurrentWorld : bra +
+            .inverted lda CurrentWorld : eor #$40
+        + and #$40 : beq .nobunny
+
+            LDA.w $0703 : BEQ + ; check if forced transition
+                CPY.b #$03 : BEQ .end_forced_whirlpool
+                LDA.b #$17 : STA.b $5D
+                LDA.b #$01 : STA.w $02E0 : STA.b $56
+                LDA.w $0703 : BRA .end_forced_edge
+            +
+            CPY.b #$01 : BEQ .auto ; check if going from land to water
+            CPY.b #$02 : BEQ .to_bunny_reset_swim ; bunny state if swimming to land
+            LDA.b $5D : CMP.b #$04 : BNE .to_bunny ; check if swimming
+            .auto
+                PHX
+                LDA.b #$01
+                LDX.b $5D : CPX.b #$04 : BNE +
+                    INC
+                +
+                STA.w $0703
+                CPY.b #$03 : BEQ .whirlpool
+                    LDA.b #$01 : STA.w $0345
+                    LDX.w $0418
+                    LDA.l OWAutoWalk,X : STA.b $49
+                    STZ.b $5D
+                    PLX
+                    BRA .to_pseudo_bunny
+                .whirlpool
+                    PLX : RTS
+            .to_bunny_reset_swim
+            LDA.b $5D : CMP.b #$04 : BNE .to_bunny ; check if swimming
+                JSL Link_ResetSwimmingState
+                STZ.w $0345
+            .to_bunny
+            LDA.b #$17 : STA.b $5D
+            .to_pseudo_bunny
+            LDA.b #$01 : STA.w $02E0 : STA.b $56
+            RTS
 
         .nobunny
         lda $5d : cmp #$17 : bne + ; retain current state unless bunny
             stz $5d
         + stz $02e0 : stz $56
 
+    .normal
+    LDA.w $0703 : BEQ .not_forced ; check if forced transition
+        CPY.b #$03 : BEQ .end_forced_whirlpool
+            .end_forced_edge
+            STZ.b $49 : STZ.w $0345
+        .end_forced_whirlpool
+        STZ.w $0703
+        CMP.b #$02 : BNE +
+            DEC : STA.w $0345 : STZ.w $0340
+            LDA.b #$04 : BRA .set_state
+        +
+        CMP.b #$03 : BNE ++
+            LDA.b #$17
+            .set_state
+            STA.b $5D
+        ++
+        RTS
+    .not_forced
+    CPY.b #$02 : BNE + ; check if going from water to land
+        LDA.b $5D : CMP.b #$04 : BNE .return ; check if swimming
+            JSL Link_ResetSwimmingState
+            STZ.w $0345
+            STZ.b $5D
+    +
+    CPY.b #$01 : BNE .return ; check if going from land to water
+    LDA.b $5D : CMP.b #$04 : BEQ .return ; check if swimming
+        LDA.b #$01 : STA.w $0345
+        LDA.l FlippersEquipment : BEQ .no_flippers ; check if flippers obtained
+        LDA.b $5D : CMP.b #$17 : BEQ .no_flippers ; check if bunny
+            LDA.b #$04 : STA.b $5D : STZ.w $0340 : RTS
+        .no_flippers
+            PHX
+            INC : STA.w $0703
+            LDX.w $0418
+            LDA.l OWAutoWalk,X : STA.b $49
+            PLX
+            LDA.b $5D : CMP.b #$17 : BNE .return ; check if bunny
+                LDA.b #$03 : STA.w $0703
+                STZ.b $5D
     .return
-    rts
+    RTS
 }
 OWAdjustExitPosition:
 {
@@ -807,6 +944,9 @@ OWAdjustExitPosition:
         LDA.b #$3B : STA.w $061E
         INC.b $23 : INC.w $061D : INC.w $061F
     .normal
+    LDA.w $0703 : BEQ +
+        LDA.b #$3C : STA.w $012E ; play error sound before forced transition
+    +
     INC.b $11 : STZ.b $B0 ; what we wrote over
     RTL
 }
@@ -978,7 +1118,7 @@ db $80, $80, $81
 
 org $aaa800 ;PC 152800
 OWNorthEdges:
-;   Min    Max   Width   Mid OW Slot/OWID VRAM *FREE* Dest Index
+;   Min    Max   Width   Mid OW Slot/OWID VRAM Terrain Dest Index
 dw $00a0, $00a0, $0000, $00a0, $0000, $0000, $0000, $B040 ;Lost Woods (exit only)
 dw $0458, $0540, $00e8, $04cc, $0a0a, $0000, $0000, $0000
 dw $0f38, $0f60, $0028, $0f4c, $0f0f, $0000, $0000, $2041 ;Waterfall (exit only)
@@ -993,7 +1133,7 @@ dw $02e8, $0348, $0060, $0318, $1819, $0000, $0000, $0008
 dw $0478, $04d0, $0058, $04a4, $1a1a, $0000, $0000, $0009
 dw $0510, $0538, $0028, $0524, $1a1a, $0000, $0000, $000a
 dw $0a48, $0af0, $00a8, $0a9c, $1d1d, $0000, $0000, $000b
-dw $0b28, $0b38, $0010, $0b30, $1d1d, $0000, $0000, $000c
+dw $0b28, $0b38, $0010, $0b30, $1d1d, $0000, $0001, $000c
 dw $0b70, $0ba0, $0030, $0b88, $1d1d, $0000, $0000, $000d
 dw $0a40, $0b10, $00d0, $0aa8, $2525, $0000, $0000, $000e
 dw $0350, $0390, $0040, $0370, $2929, $0000, $0000, $000f
@@ -1007,11 +1147,11 @@ dw $04d8, $04f8, $0020, $04e8, $3232, $0000, $0000, $0016
 dw $0688, $06b0, $0028, $069c, $3333, $0000, $0000, $0017
 dw $08d0, $08f0, $0020, $08e0, $3434, $0000, $0000, $0018
 dw $0a80, $0b40, $00c0, $0ae0, $3535, $0000, $0000, $0019
-dw $0d38, $0d58, $0020, $0d48, $3536, $0000, $0000, $001a
+dw $0d38, $0d58, $0020, $0d48, $3536, $0000, $0001, $001a
 dw $0d90, $0da0, $0010, $0d98, $3536, $0000, $0000, $001b
 dw $06a0, $07b0, $0110, $0728, $3b3b, $0000, $0000, $001c
 dw $0830, $09b0, $0180, $08f0, $3c3c, $0000, $0000, $001d
-dw $0e78, $0e88, $0010, $0e80, $3f3f, $0000, $0000, $001e
+dw $0e78, $0e88, $0010, $0e80, $3f3f, $0000, $0001, $001e
 dw $0ee0, $0fc0, $00e0, $0f50, $3f3f, $0000, $0000, $001f
 dw $0458, $0540, $00e8, $04cc, $4a4a, $0000, $0000, $0020
 dw $0058, $0058, $0000, $0058, $5050, $0000, $0000, $0021
@@ -1025,7 +1165,7 @@ dw $02e8, $0348, $0060, $0318, $5859, $0000, $0000, $0028
 dw $0478, $04d0, $0058, $04a4, $5a5a, $0000, $0000, $0029
 dw $0510, $0538, $0028, $0524, $5a5a, $0000, $0000, $002a
 dw $0a48, $0af0, $00a8, $0a9c, $5d5d, $0000, $0000, $002b
-dw $0b28, $0b38, $0010, $0b30, $5d5d, $0000, $0000, $002c
+dw $0b28, $0b38, $0010, $0b30, $5d5d, $0000, $0001, $002c
 dw $0b70, $0ba0, $0030, $0b88, $5d5d, $0000, $0000, $002d
 dw $0a40, $0b10, $00d0, $0aa8, $6565, $0000, $0000, $002e
 dw $0350, $0390, $0040, $0370, $6969, $0000, $0000, $002f
@@ -1039,11 +1179,11 @@ dw $04d8, $04f8, $0020, $04e8, $7272, $0000, $0000, $0036
 dw $0688, $06b0, $0028, $069c, $7373, $0000, $0000, $0037
 dw $08d0, $08f0, $0020, $08e0, $7474, $0000, $0000, $0038
 dw $0a80, $0b40, $00c0, $0ae0, $7575, $0000, $0000, $0039
-dw $0d38, $0d58, $0020, $0d48, $7576, $0000, $0000, $003a
+dw $0d38, $0d58, $0020, $0d48, $7576, $0000, $0001, $003a
 dw $0d90, $0da0, $0010, $0d98, $7576, $0000, $0000, $003b
 dw $06a0, $07b0, $0110, $0728, $7b7b, $0000, $0000, $003c
 dw $0830, $09b0, $0180, $08f0, $7c7c, $0000, $0000, $003d
-dw $0e78, $0e88, $0010, $0e80, $7f7f, $0000, $0000, $003e
+dw $0e78, $0e88, $0010, $0e80, $7f7f, $0000, $0001, $003e
 dw $0ee0, $0fc0, $00e0, $0f50, $7f7f, $0000, $0000, $003f
 OWSouthEdges:
 dw $0458, $0540, $00e8, $04cc, $0202, $0000, $0000, $0001
@@ -1058,7 +1198,7 @@ dw $02e8, $0348, $0060, $0318, $1111, $0000, $0000, $000a
 dw $0478, $04d0, $0058, $04a4, $1212, $0000, $0000, $000b
 dw $0510, $0538, $0028, $0524, $1212, $0000, $0000, $000c
 dw $0a48, $0af0, $00a8, $0a9c, $1515, $0000, $0000, $000d
-dw $0b28, $0b38, $0010, $0b30, $1515, $0000, $0000, $000e
+dw $0b28, $0b38, $0010, $0b30, $1515, $0000, $0001, $000e
 dw $0b70, $0ba0, $0030, $0b88, $1515, $0000, $0000, $000f
 dw $0a40, $0b10, $00d0, $0aa8, $1d1d, $0000, $0000, $0010
 dw $0350, $0390, $0040, $0370, $1821, $0000, $0000, $0011
@@ -1072,11 +1212,11 @@ dw $04d8, $04f8, $0020, $04e8, $2a2a, $0000, $0000, $0018
 dw $0688, $06b0, $0028, $069c, $2b2b, $0000, $0000, $0019
 dw $08d0, $08f0, $0020, $08e0, $2c2c, $0000, $0000, $001a
 dw $0a80, $0b40, $00c0, $0ae0, $2d2d, $0000, $0000, $001b
-dw $0d38, $0d58, $0020, $0d48, $2e2e, $0000, $0000, $001c
+dw $0d38, $0d58, $0020, $0d48, $2e2e, $0000, $0001, $001c
 dw $0d90, $0da0, $0010, $0d98, $2e2e, $0000, $0000, $001d
 dw $06a0, $07b0, $0110, $0728, $3333, $0000, $0000, $001e
 dw $0830, $09b0, $0180, $08f0, $3434, $0000, $0000, $001f
-dw $0e78, $0e88, $0010, $0e80, $3737, $0000, $0000, $0020
+dw $0e78, $0e88, $0010, $0e80, $3737, $0000, $0001, $0020
 dw $0ee0, $0fc0, $00e0, $0f50, $3737, $0000, $0000, $0021
 dw $0458, $0540, $00e8, $04cc, $4242, $0000, $0000, $0022
 dw $0058, $0058, $0000, $0058, $4048, $0000, $0000, $0023
@@ -1090,7 +1230,7 @@ dw $02e8, $0348, $0060, $0318, $5151, $0000, $0000, $002a
 dw $0478, $04d0, $0058, $04a4, $5252, $0000, $0000, $002b
 dw $0510, $0538, $0028, $0524, $5252, $0000, $0000, $002c
 dw $0a48, $0af0, $00a8, $0a9c, $5555, $0000, $0000, $002d
-dw $0b28, $0b38, $0010, $0b30, $5555, $0000, $0000, $002e
+dw $0b28, $0b38, $0010, $0b30, $5555, $0000, $0001, $002e
 dw $0b70, $0ba0, $0030, $0b88, $5555, $0000, $0000, $002f
 dw $0a40, $0b10, $00d0, $0aa8, $5d5d, $0000, $0000, $0030
 dw $0350, $0390, $0040, $0370, $5861, $0000, $0000, $0031
@@ -1104,11 +1244,11 @@ dw $04d8, $04f8, $0020, $04e8, $6a6a, $0000, $0000, $0038
 dw $0688, $06b0, $0028, $069c, $6b6b, $0000, $0000, $0039
 dw $08d0, $08f0, $0020, $08e0, $6c6c, $0000, $0000, $003a
 dw $0a80, $0b40, $00c0, $0ae0, $6d6d, $0000, $0000, $003b
-dw $0d38, $0d58, $0020, $0d48, $6e6e, $0000, $0000, $003c
+dw $0d38, $0d58, $0020, $0d48, $6e6e, $0000, $0001, $003c
 dw $0d90, $0da0, $0010, $0d98, $6e6e, $0000, $0000, $003d
 dw $06a0, $07b0, $0110, $0728, $7373, $0000, $0000, $003e
 dw $0830, $09b0, $0180, $08f0, $7474, $0000, $0000, $003f
-dw $0e78, $0e88, $0010, $0e80, $7777, $0000, $0000, $0040
+dw $0e78, $0e88, $0010, $0e80, $7777, $0000, $0001, $0040
 dw $0ee0, $0fc0, $00e0, $0f50, $7777, $0000, $0000, $0041
 dw $0080, $0080, $0000, $0080, $8080, $0000, $0000, $0000 ;Pedestal (unused)
 dw $0288, $02c0, $0038, $02a4, $8189, $0000, $0000, $0002 ;Zora (unused)
@@ -1123,10 +1263,10 @@ dw $0488, $0500, $0078, $04c4, $1313, $0000, $0000, $0006
 dw $0538, $05a8, $0070, $0570, $1313, $0000, $0000, $0007
 dw $0470, $05a8, $0138, $050c, $1414, $0000, $0000, $0008
 dw $0470, $0598, $0128, $0504, $1515, $0000, $0000, $0009
-dw $0480, $0488, $0008, $0484, $1616, $0000, $0000, $000a
+dw $0480, $0488, $0008, $0484, $1616, $0000, $0001, $000a
 dw $04b0, $0510, $0060, $04e0, $1616, $0000, $0000, $000b
 dw $0560, $0588, $0028, $0574, $1616, $0000, $0000, $000c
-dw $0450, $0458, $0008, $0454, $1717, $0000, $0000, $000d
+dw $0450, $0458, $0008, $0454, $1717, $0000, $0001, $000d
 dw $0480, $04a8, $0028, $0494, $1717, $0000, $0000, $000e
 dw $0718, $0738, $0020, $0728, $1b1b, $0000, $0000, $000f
 dw $0908, $0948, $0040, $0928, $2222, $0000, $0000, $0010
@@ -1136,13 +1276,13 @@ dw $0b60, $0ba0, $0040, $0b80, $2a2a, $0000, $0000, $0013
 dw $0ab0, $0ad0, $0020, $0ac0, $2c2c, $0000, $0000, $0014
 dw $0af0, $0b40, $0050, $0b18, $2c2c, $0000, $0000, $0015
 dw $0b78, $0ba0, $0028, $0b8c, $2c2c, $0000, $0000, $0016
-dw $0b10, $0b28, $0018, $0b1c, $2d2d, $0000, $0000, $604a ;Stone Bridge (exit only)
+dw $0b10, $0b28, $0018, $0b1c, $2d2d, $0000, $0001, $604a ;Stone Bridge (exit only)
 dw $0b68, $0b98, $0030, $0b80, $2d2d, $0000, $0000, $0017
 dw $0a68, $0ab8, $0050, $0a90, $2e2e, $0000, $0000, $0018
-dw $0b00, $0b78, $0078, $0b3c, $2e2e, $0000, $0000, $0019
+dw $0b00, $0b78, $0078, $0b3c, $2e2e, $0000, $0001, $0019
 dw $0c50, $0db8, $0168, $0d04, $3333, $0000, $0000, $001a
 dw $0c78, $0ce3, $006b, $0cad, $3434, $0000, $0000, $001b
-dw $0ce4, $0d33, $004f, $0d0b, $3434, $0000, $0000, $001c
+dw $0ce4, $0d33, $004f, $0d0b, $3434, $0000, $0001, $001c
 dw $0d34, $0db8, $0084, $0d76, $3434, $0000, $0000, $001d
 dw $0ea8, $0f20, $0078, $0ee4, $3a3a, $0000, $0000, $001e
 dw $0f70, $0fa8, $0038, $0f8c, $3a3a, $0000, $0000, $001f
@@ -1150,7 +1290,7 @@ dw $0f18, $0f18, $0000, $0f18, $3b3b, $0000, $0000, $0020
 dw $0fc8, $0fc8, $0000, $0fc8, $3b3b, $0000, $0000, $0021
 dw $0e28, $0fb8, $0190, $0ef0, $3c3c, $0000, $0000, $0022
 dw $0f78, $0fb8, $0040, $0f98, $353d, $0000, $0000, $0023
-dw $0f20, $0f40, $0020, $0f30, $3f3f, $0000, $0000, $0024
+dw $0f20, $0f40, $0020, $0f30, $3f3f, $0000, $0001, $0024
 dw $0f70, $0fb8, $0048, $0f94, $3f3f, $0000, $0000, $0025
 dw $0070, $00a0, $0030, $0088, $4242, $0000, $0000, $0026
 dw $0068, $0078, $0010, $0070, $4545, $0000, $0000, $0027
@@ -1162,10 +1302,10 @@ dw $0488, $0500, $0078, $04c4, $5353, $0000, $0000, $002c
 dw $0538, $05a8, $0070, $0570, $5353, $0000, $0000, $002d
 dw $0470, $05a8, $0138, $050c, $5454, $0000, $0000, $002e
 dw $0470, $0598, $0128, $0504, $5555, $0000, $0000, $002f
-dw $0480, $0488, $0008, $0484, $5656, $0000, $0000, $0030
+dw $0480, $0488, $0008, $0484, $5656, $0000, $0001, $0030
 dw $04b0, $0510, $0060, $04e0, $5656, $0000, $0000, $0031
 dw $0560, $0588, $0028, $0574, $5656, $0000, $0000, $0032
-dw $0450, $0458, $0008, $0454, $5757, $0000, $0000, $0033
+dw $0450, $0458, $0008, $0454, $5757, $0000, $0001, $0033
 dw $0480, $04a8, $0028, $0494, $5757, $0000, $0000, $0034
 dw $0908, $0948, $0040, $0928, $6262, $0000, $0000, $0035
 dw $0878, $08a8, $0030, $0890, $6565, $0000, $0000, $0036
@@ -1177,16 +1317,16 @@ dw $0af0, $0b40, $0050, $0b18, $6c6c, $0000, $0000, $003b
 dw $0b78, $0ba0, $0028, $0b8c, $6c6c, $0000, $0000, $003c
 dw $0b68, $0b98, $0030, $0b80, $6d6d, $0000, $0000, $003d
 dw $0a68, $0ab8, $0050, $0a90, $6e6e, $0000, $0000, $003e
-dw $0b00, $0b78, $0078, $0b3c, $6e6e, $0000, $0000, $003f
+dw $0b00, $0b78, $0078, $0b3c, $6e6e, $0000, $0001, $003f
 dw $0c50, $0db8, $0168, $0d04, $7373, $0000, $0000, $0040
 dw $0c78, $0ce3, $006b, $0cad, $7474, $0000, $0000, $0041
-dw $0ce4, $0d33, $004f, $0d0b, $7474, $0000, $0000, $0042
+dw $0ce4, $0d33, $004f, $0d0b, $7474, $0000, $0001, $0042
 dw $0d34, $0db8, $0084, $0d76, $7474, $0000, $0000, $0043
 dw $0f18, $0f18, $0000, $0f18, $7b7b, $0000, $0000, $0044
 dw $0fc8, $0fc8, $0000, $0fc8, $7b7b, $0000, $0000, $0045
 dw $0e28, $0fb8, $0190, $0ef0, $7c7c, $0000, $0000, $0046
 dw $0f78, $0fb8, $0040, $0f98, $757d, $0000, $0000, $0047
-dw $0f20, $0f40, $0020, $0f30, $7f7f, $0000, $0000, $0048
+dw $0f20, $0f40, $0020, $0f30, $7f7f, $0000, $0001, $0048
 dw $0f70, $0fb8, $0048, $0f94, $7f7f, $0000, $0000, $0049
 OWEastEdges:
 dw $0070, $00a0, $0030, $0088, $0001, $0000, $0000, $0000
@@ -1199,10 +1339,10 @@ dw $0488, $0500, $0078, $04c4, $1212, $0000, $0000, $0006
 dw $0538, $05a8, $0070, $0570, $1212, $0000, $0000, $0007
 dw $0470, $05a8, $0138, $050c, $1313, $0000, $0000, $0008
 dw $0470, $0598, $0128, $0504, $1414, $0000, $0000, $0009
-dw $0480, $0488, $0008, $0484, $1515, $0000, $0000, $000a
+dw $0480, $0488, $0008, $0484, $1515, $0000, $0001, $000a
 dw $04b0, $0510, $0060, $04e0, $1515, $0000, $0000, $000b
 dw $0560, $0588, $0028, $0574, $1515, $0000, $0000, $000c
-dw $0450, $0458, $0008, $0454, $1616, $0000, $0000, $000d
+dw $0450, $0458, $0008, $0454, $1616, $0000, $0001, $000d
 dw $0480, $04a8, $0028, $0494, $1616, $0000, $0000, $000e
 dw $0718, $0738, $0020, $0728, $1a1a, $0000, $0000, $000f
 dw $0908, $0948, $0040, $0928, $1821, $0000, $0000, $0010
@@ -1214,10 +1354,10 @@ dw $0af0, $0b40, $0050, $0b18, $2b2b, $0000, $0000, $0015
 dw $0b78, $0ba0, $0028, $0b8c, $2b2b, $0000, $0000, $0016
 dw $0b68, $0b98, $0030, $0b80, $2c2c, $0000, $0000, $0018
 dw $0a68, $0ab8, $0050, $0a90, $2d2d, $0000, $0000, $0019
-dw $0b00, $0b78, $0078, $0b3c, $2d2d, $0000, $0000, $001a
+dw $0b00, $0b78, $0078, $0b3c, $2d2d, $0000, $0001, $001a
 dw $0c50, $0db8, $0168, $0d04, $3232, $0000, $0000, $001b
 dw $0c78, $0ce3, $006b, $0cad, $3333, $0000, $0000, $001c
-dw $0ce4, $0d33, $004f, $0d0b, $3333, $0000, $0000, $001d
+dw $0ce4, $0d33, $004f, $0d0b, $3333, $0000, $0001, $001d
 dw $0d34, $0db8, $0084, $0d76, $3333, $0000, $0000, $001e
 dw $0ea8, $0f20, $0078, $0ee4, $3039, $0000, $0000, $001f
 dw $0f70, $0fa8, $0038, $0f8c, $3039, $0000, $0000, $0020
@@ -1225,7 +1365,7 @@ dw $0f18, $0f18, $0000, $0f18, $3a3a, $0000, $0000, $0021
 dw $0fc8, $0fc8, $0000, $0fc8, $3a3a, $0000, $0000, $0022
 dw $0e28, $0fb8, $0190, $0ef0, $3b3b, $0000, $0000, $0023
 dw $0f78, $0fb8, $0040, $0f98, $3c3c, $0000, $0000, $0024
-dw $0f20, $0f40, $0020, $0f30, $353e, $0000, $0000, $0025
+dw $0f20, $0f40, $0020, $0f30, $353e, $0000, $0001, $0025
 dw $0f70, $0fb8, $0048, $0f94, $353e, $0000, $0000, $0026
 dw $0070, $00a0, $0030, $0088, $4041, $0000, $0000, $0027 ;Skull Woods
 dw $0068, $0078, $0010, $0070, $4344, $0000, $0000, $0028
@@ -1237,10 +1377,10 @@ dw $0488, $0500, $0078, $04c4, $5252, $0000, $0000, $002d
 dw $0538, $05a8, $0070, $0570, $5252, $0000, $0000, $002e
 dw $0470, $05a8, $0138, $050c, $5353, $0000, $0000, $002f
 dw $0470, $0598, $0128, $0504, $5454, $0000, $0000, $0030
-dw $0480, $0488, $0008, $0484, $5555, $0000, $0000, $0031
+dw $0480, $0488, $0008, $0484, $5555, $0000, $0001, $0031
 dw $04b0, $0510, $0060, $04e0, $5555, $0000, $0000, $0032
 dw $0560, $0588, $0028, $0574, $5555, $0000, $0000, $0033
-dw $0450, $0458, $0008, $0454, $5656, $0000, $0000, $0034
+dw $0450, $0458, $0008, $0454, $5656, $0000, $0001, $0034
 dw $0480, $04a8, $0028, $0494, $5656, $0000, $0000, $0035
 dw $0908, $0948, $0040, $0928, $5861, $0000, $0000, $0036
 dw $0878, $08a8, $0030, $0890, $5b64, $0000, $0000, $0037
@@ -1252,18 +1392,18 @@ dw $0af0, $0b40, $0050, $0b18, $6b6b, $0000, $0000, $003c
 dw $0b78, $0ba0, $0028, $0b8c, $6b6b, $0000, $0000, $003d
 dw $0b68, $0b98, $0030, $0b80, $6c6c, $0000, $0000, $003e
 dw $0a68, $0ab8, $0050, $0a90, $6d6d, $0000, $0000, $003f
-dw $0b00, $0b78, $0078, $0b3c, $6d6d, $0000, $0000, $0040
+dw $0b00, $0b78, $0078, $0b3c, $6d6d, $0000, $0001, $0040
 dw $0c50, $0db8, $0168, $0d04, $7272, $0000, $0000, $0041
 dw $0c78, $0ce3, $006b, $0cad, $7373, $0000, $0000, $0042
-dw $0ce4, $0d33, $004f, $0d0b, $7373, $0000, $0000, $0043
+dw $0ce4, $0d33, $004f, $0d0b, $7373, $0000, $0001, $0043
 dw $0d34, $0db8, $0084, $0d76, $7373, $0000, $0000, $0044
 dw $0f18, $0f18, $0000, $0f18, $7a7a, $0000, $0000, $0045
 dw $0fc8, $0fc8, $0000, $0fc8, $7a7a, $0000, $0000, $0046
 dw $0e28, $0fb8, $0190, $0ef0, $7b7b, $0000, $0000, $0047
 dw $0f78, $0fb8, $0040, $0f98, $7c7c, $0000, $0000, $0048
-dw $0f20, $0f40, $0020, $0f30, $757e, $0000, $0000, $0049
+dw $0f20, $0f40, $0020, $0f30, $757e, $0000, $0001, $0049
 dw $0f70, $0fb8, $0048, $0f94, $757e, $0000, $0000, $004a
-dw $0058, $00c0, $0068, $008c, $8080, $0000, $0000, $0017 ;Hobo (unused)
+dw $0058, $00c0, $0068, $008c, $8080, $0000, $0001, $0017 ;Hobo (unused)
 
 org $aab9a0 ;PC 1539a0
 OWSpecialDestIndex:

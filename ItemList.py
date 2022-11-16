@@ -545,12 +545,122 @@ def create_dynamic_shop_locations(world, player):
                         loc.locked = True
 
 
+def create_farm_locations(world, player):
+    bush_bombs = ['Flute Boy Approach Area',
+                'Kakariko Area',
+                'Village of Outcasts Area',
+                'Forgotten Forest Area',
+                'Bat Cave Ledge',
+                'East Dark Death Mountain (Bottom)']
+    rock_bombs = ['Links House Area',
+                'Dark Chapel Area',
+                'Wooden Bridge Area',
+                'Ice Cave Area',
+                'Eastern Nook Area',
+                'West Death Mountain (Bottom)',
+                'Kakariko Fortune Area',
+                'Skull Woods Forest',
+                'Catfish Area',
+                'Dark Fortune Area',
+                'Qirn Jump Area',
+                'Shield Shop Area',
+                'Palace of Darkness Nook Area',
+                'Swamp Nook Area',
+                'Dark South Pass Area']
+    bonk_bombs = ['Kakariko Fortune Area', 'Dark Graveyard Area'] #TODO: Flute Boy Approach Area and Bonk Rock Ledge are available post-Aga
+    bomb_caves = ['Graveyard Cave', 'Light World Bomb Hut']
+
+    rupee_caves = ['50 Rupee Cave', '20 Rupee Cave']
+    rupee_games = ['Archery Game']
+
+    tree_pulls = ['Lost Woods East Area',
+                'Snitch Lady (East)',
+                'Turtle Rock Area',
+                'Pyramid Area',
+                'Hype Cave Area',
+                'Dark South Pass Area',
+                'Bumper Cave Area']
+    pre_aga_tree_pulls = ['Hyrule Castle Courtyard', 'Mountain Entry Area']
+    post_aga_tree_pulls = ['Statues Area', 'Eastern Palace Area']
+
+    bush_crabs = ['Lost Woods East Area', 'Mountain Entry Area']
+    pre_aga_bush_crabs = ['Lumberjack Area', 'South Pass Area']
+    rock_crabs = ['Desert Pass Area']
+
+    # NOTE: Altho pre-Aga locations cannot technically be guaranteed by the player, the
+    # goal here is just to ensure access to early rupees/bombs to get the player started,
+    # and hopefully access to more permanent farm locations
+
+    def create_and_fill_location(region_name, loc_description, item_name):
+        loc = world.get_location_unsafe(f'{region_name} {loc_description}', player)
+        if loc:
+            loc.access_rule = lambda state: True
+        else:
+            region = world.get_region(region_name, player)
+            loc = Location(player, f'{region_name} {loc_description}', 0, region)
+            loc.type = LocationType.Logical
+            loc.parent_region = region
+            loc.event = True
+            loc.locked = True
+            loc.address = None
+            loc.skip = True
+
+            world.push_item(loc, ItemFactory(item_name, player), False)
+        
+            region.locations.append(loc)
+            world.dynamic_locations.append(loc)
+        return loc
+
+    from Rules import set_rule, add_rule, add_bunny_rule
+    for region in bush_bombs:
+        loc = create_and_fill_location(region, 'Bush Drop', 'Farmable Bombs')
+        add_bunny_rule(loc, player)
+    for region in rock_bombs:
+        loc = create_and_fill_location(region, 'Rock Drop', 'Farmable Bombs')
+        set_rule(loc, lambda state: state.can_lift_rocks(player))
+        add_bunny_rule(loc, player)
+    if not world.shuffle_bonk_drops[player]:
+        for region in bonk_bombs:
+            loc = create_and_fill_location(region, 'Bonk Drop', 'Farmable Bombs')
+            set_rule(loc, lambda state: state.can_collect_bonkdrops(player))
+            add_bunny_rule(loc, player)
+    if world.pottery[player] in ['none', 'keys', 'dungeon']:
+        for region in bomb_caves + rupee_caves:
+            loc = create_and_fill_location(region, 'Pot Drop', 'Farmable Rupees' if region in rupee_caves else 'Farmable Bombs')
+            add_bunny_rule(loc, player)
+    for region in rupee_games:
+        loc = create_and_fill_location(region, 'Prize', 'Farmable Rupees')
+        add_bunny_rule(loc, player)
+    if any(i in [0xda, 0xdb, 0xdc, 0xdd, 0xde] for i in world.prizes[player]['pull']):
+        rupee_farm = any(i in [0xda, 0xdb] for i in world.prizes[player]['pull'])
+        for region in tree_pulls + pre_aga_tree_pulls + post_aga_tree_pulls:
+            loc = create_and_fill_location(region, 'Tree Pull', 'Farmable Rupees' if rupee_farm else 'Farmable Bombs')
+            set_rule(loc, lambda state: state.can_kill_most_things(player))
+            if region in pre_aga_tree_pulls:
+                add_rule(loc, lambda state: not state.has_beaten_aga(player))
+            elif region in post_aga_tree_pulls:
+                add_rule(loc, lambda state: state.has_beaten_aga(player))
+            add_bunny_rule(loc, player)
+    if world.enemy_shuffle[player] == 'none' and any(i in [0xda, 0xdb, 0xdc, 0xdd, 0xde] for i in world.prizes[player]['crab']):
+        rupee_farm = any(i in [0xda, 0xdb] for i in world.prizes[player]['crab'])
+        for region in bush_crabs + pre_aga_bush_crabs + rock_crabs:
+            loc = create_and_fill_location(region, 'Crab Drop', 'Farmable Rupees' if rupee_farm else 'Farmable Bombs')
+            if region in pre_aga_bush_crabs:
+                set_rule(loc, lambda state: not state.has_beaten_aga(player))
+            elif region in rock_crabs:
+                set_rule(loc, lambda state: state.can_lift_rocks(player))
+            add_bunny_rule(loc, player)
+
+    world.clear_location_cache()
+
+
 def create_dynamic_bonkdrop_locations(world, player):
     from Regions import bonk_prize_table
     for bonk_location, (_, _, _, _, region_name, hint_text) in bonk_prize_table.items():
         region = world.get_region(region_name, player)
         loc = Location(player, bonk_location, 0, region, hint_text)
         loc.type = LocationType.Bonk
+        loc.real = True
         loc.parent_region = region
         loc.address = 0x2abb00 + (bonk_prize_table[loc.name][0] * 6) + 3
 
