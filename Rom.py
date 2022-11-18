@@ -1370,11 +1370,11 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x06B123, 0x00)
 
         # Sidenexx fix
-        rom.write_byte(0x18CE61, [0x00, 0x00])
-        rom.write_byte(0x18CE69, [0x00, 0x00])
+        rom.write_bytes(0x18CE61, [0x00, 0x00])
+        rom.write_bytes(0x18CE69, [0x00, 0x00])
 
         rom.write_byte(0x036D7F, 0xFF) # remove hammer usage
-        rom.write_byte(0x043DB4, 0xFF) # remove powder usage
+        rom.write_byte(0x043BD4, 0xFF) # remove powder usage
     elif world.swords[player] == 'bombs':
         rom.write_byte(0x18002F, 0x01)  # special bombs
         rom.initial_sram.set_swordless_curtains()  # open curtains
