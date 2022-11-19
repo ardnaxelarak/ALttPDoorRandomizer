@@ -230,6 +230,12 @@ def generate_itempool(world, player):
     world.push_item(world.get_location('Agahnim 2', player), ItemFactory('Beat Agahnim 2', player), False)
     world.get_location('Agahnim 2', player).event = True
     world.get_location('Agahnim 2', player).locked = True
+    world.push_item(world.get_location('Lost Old Man', player), ItemFactory('Escort Old Man', player), False)
+    world.get_location('Lost Old Man', player).event = True
+    world.get_location('Lost Old Man', player).locked = True
+    world.push_item(world.get_location('Old Man Drop Off', player), ItemFactory('Return Old Man', player), False)
+    world.get_location('Old Man Drop Off', player).event = True
+    world.get_location('Old Man Drop Off', player).locked = True
     world.push_item(world.get_location('Dark Blacksmith Ruins', player), ItemFactory('Pick Up Purple Chest', player), False)
     world.get_location('Dark Blacksmith Ruins', player).event = True
     world.get_location('Dark Blacksmith Ruins', player).locked = True

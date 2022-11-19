@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.11.3
+- Fixed error during multiworld generation
+- Added proper Old Man pathing to the logic and spoiler playthru
+- Removed the delay in spawning sprites when bonking items out of bonk locations
+- Removed useless hints in Lite/Lean ER that are already categorically assumed
+- Added GT and Links House entrance hints when either are shuffled in the pool
+
 ## 0.2.11.2
 - Implemented proper Districting with Mixed OWR, affecting Hints and District modes
 - Suppressed item locations in spoiler log that are junk or logical
@@ -21,13 +28,13 @@
 - Various logic corrections, including the DR Bumper Cave fix for pottery logic
 
 ## 0.2.10.1
-- Merged DR v1.0.1.3
+- \~Merged v1.0.1.3~
   - Fixed Zelda despawn in TT Prison
   - Fixed issue with key door usage in rainstate
 - Added missing modes to example mystery yaml
 
 ## 0.2.10.0
-- Merged DR v1.0.1.1-1.0.1.2
+- \~Merged v1.0.1.1-1.0.1.2~
   - Removed text color from hint tiles
   - Removed Good Bee requirement from Mothula
   - Some keylogic/generation fixes
@@ -56,7 +63,7 @@
 - Fixed issue with pre-opened pyramid when not expected
 
 ### 0.2.8.0
-- ~Merged DR v1.0.1.0 - Pottery options, BPS support, MSU Resume, Collection Rate Counter~
+- \~Merged DR v1.0.1.0 - Pottery options, BPS support, MSU Resume, Collection Rate Counter~
 - Various improvements to increase generation success rate and reduce generation time
 - Fixed issue with playthru recognizing Aga accessibility
 - Fixed issue with applying rules correctly to Murahdahla, fixing Murahdahla+Beatable issues
@@ -81,7 +88,7 @@
 - Added proper branch-specific versioning (ie. Dev branch has '-u' suffixing the version number while Release/Main branch does not)
 
 ### 0.2.7.0
-- ~Merged DR v1.0.0.3 - MANY changes, major things listed below~
+- \~Merged DR v1.0.0.3 - MANY changes, major things listed below~
   - New Item Fills (Districts/Vanilla/Major Location/Dungeon)
   - New OW Map Prize Indicators (In ER, map checks can spoil dungeon locations with a user setting)
   - Forbidden Boss Items (Exclude certain dungeon items from dropping on bosses)
@@ -132,7 +139,7 @@
 - Fixed issue with incorrect Mirror bonking
 - Fixed issue with old man follower death to Pyramid
 - Fixed Hera boss music not playing when boss not defeated
-- ~Merged DR v0.5.1.7 - TT boss trap door fix/Applied Glitched flag~
+- \~Merged DR v0.5.1.7 - TT boss trap door fix/Applied Glitched flag~
 
 ### 0.2.4.0
 - Added Guaranteed OWR Reachability
@@ -158,7 +165,7 @@
 - Fake flipper damage fix improved to skip the long delay after the scroll
 - Fixed missing Blue Potion in Lake Shop in Inverted
 - Added legacy OW Crossed option 'None (Allowed)' to support old behavior when invalid option was used in Mystery
-- ~Merged DR v0.5.1.6 - Money balancing fix/Boss logic fixes with Bombbag~
+- \~Merged DR v0.5.1.6 - Money balancing fix/Boss logic fixes with Bombbag~
 
 ### 0.2.3.3
 - Added OW Layout validation that reduces the cases where some screens are unreachable
@@ -200,7 +207,7 @@
 - Fixed music track change to Sanc music when Standard mode is delivering Zelda
 - Fixed SP flooding issue
 - Fixed issue with Shuffle Ganon in CLI/GUI
-- ~Merged DR v0.5.1.5 - Mystery subweights~
+- \~Merged DR v0.5.1.5 - Mystery subweights~
 
 ### 0.2.1.2
 - Fixed issue with whirlpools not changing world when in Crossed OW
@@ -221,7 +228,7 @@
 - Smith deletion on S+Q only occurs if Blacksmith not reachable from starting locations
 - Spoiler log improvements to prevent spoiling in the beginning 'meta' section
 - Various minor fixes and improvements
-- ~Merged DR v0.5.1.4 - ROM bug fixes/keylogic improvements~
+- \~Merged DR v0.5.1.4 - ROM bug fixes/keylogic improvements~
 
 ### 0.1.9.4
 - Hotfix for bad 0.1.9.3 version
@@ -234,11 +241,11 @@
 ### 0.1.9.2
 - Fixed spoiler log and mystery for new Crossed/Mixed structure
 - Minor preparations and tweaks to ER framework (added global Entrance/Exit pool)
-- ~Merged DR v0.5.1.2 - Blind Prison shuffled outside TT/Keylogic Improvements~
+- \~Merged DR v0.5.1.2 - Blind Prison shuffled outside TT/Keylogic Improvements~
 
 ### 0.1.9.1
 - Fixed logic issue with leaving IP entrance not requiring flippers
-- ~Merged DR v0.5.1.1 - Map Indicator Fix/Boss Shuffle Bias/Shop Hints~
+- \~Merged DR v0.5.1.1 - Map Indicator Fix/Boss Shuffle Bias/Shop Hints~
 
 ### 0.1.9.0
 - Expanded Crossed OW to four separate options, see Readme for details
@@ -252,7 +259,7 @@
 - Fixed issues with Link/Bunny state in Crossed OW
 - Fixed issue with Standard+Parallel not using vanilla connections for Escape
 - Fixed issue with Mystery for OW boolean options
-- ~Merged DR v0.5.1.0 - Major Keylogic Update~
+- \~Merged DR v0.5.1.0 - Major Keylogic Update~
 
 ### 0.1.8.1
 - Fixed issue with activating flute in DW (OW Mixed)
@@ -267,12 +274,12 @@
 - Added OW Shuffle support for Plando module (needs user testing)
 - Fixed issue with Sanc start at TR as bunny when it is LW
 - Fixed issue with Pyramid Hole not getting shuffled
-- ~Merged DR v0.5.0.3 - Minor DR fixes~
+- \~Merged DR v0.5.0.3 - Minor DR fixes~
 
 ### 0.1.7.4
 - Fixed issue with Mixed OW failing to generate when HC/Pyramid is swapped
 - Various fixes to improve generation rates for Mixed OW Shuffle
-- ~Merged DR v0.5.0.2 - Shuffle SFX~
+- \~Merged DR v0.5.0.2 - Shuffle SFX~
 
 ### 0.1.7.3
 - Fixed minor issue with ambient SFX stopping and starting on OW screen load
@@ -292,10 +299,10 @@
 
 ### 0.1.7.0
 - Expanded new DR bomb logic to all modes (bomb usage in logic only if there is an unlimited supply of bombs available)
-- ~Merged DR v0.5.0.1 - Bombbag mode / Enemizer fixes~
+- \~Merged DR v0.5.0.1 - Bombbag mode / Enemizer fixes~
 
 ### 0.1.6.9
-- ~Merged DR v0.4.0.12 - Secure random update / Credits fix~
+- \~Merged DR v0.4.0.12 - Secure random update / Credits fix~
 
 ### 0.1.6.8
 - Implemented a smarter Balanced Flute Shuffle algorithm
@@ -309,14 +316,14 @@
 - Fixed Boss Music when boss room is entered thru straight stairs
 - Suppressed in-dungeon music changes when DR is enabled
 - Fixed issue with Pyramid Exit exiting to wrong location in ER
-- ~Merged DR v0.4.0.11 - Various DR changes~
+- \~Merged DR v0.4.0.11 - Various DR changes~
 
 ### 0.1.6.6
-- ~Merged DR v0.4.0.9 - P/C Indicator / Credits fix / CLI Hints Fix~
+- \~Merged DR v0.4.0.9 - P/C Indicator / Credits fix / CLI Hints Fix~
 
 ### 0.1.6.5
 - Reduced chance of diagonal flute spot in Balanced
-- ~Merged DR v0.4.0.8 - Boss Indicator / Psuedo Boots / Quickswap Update / Credits Updates~
+- \~Merged DR v0.4.0.8 - Boss Indicator / Psuedo Boots / Quickswap Update / Credits Updates~
 
 ### 0.1.6.4
 - Fixed Frogsmith and Stumpy and restored progression in these locations
@@ -355,15 +362,15 @@
 ### 0.1.5.0
 - Added OW Tile Swap setting
 - Fixed horizontal VRAM visual loading glitch on megatiles
-- ~~Merged DR v0.4.0.7 - Fast Credits / Reduced Flashing / Sprite Author in Credits~~ Didn't fully merge
+- ~\~Merged DR v0.4.0.7 - Fast Credits / Reduced Flashing / Sprite Author in Credits~~ Didn't fully merge
 
 ### 0.1.4.3
-- ~Merged DR v0.4.0.6 - TT Maiden Attic Hint / DR Entrance Floor Mat Mods / Hard/Expert Item Pool Fix~
+- \~Merged DR v0.4.0.6 - TT Maiden Attic Hint / DR Entrance Floor Mat Mods / Hard/Expert Item Pool Fix~
 
 ### 0.1.4.2
 - Modified various OW map terrain specific to OW Shuffle
 - Changed World check to table-based vs OW ID-based (should have no effect with current modes)
-- ~Merged DR v0.4.0.5 - Mystery Boss Shuffle Fix / Swordless+Hard Item Pool Fix / Insanity+Inverted ER Fixes~
+- \~Merged DR v0.4.0.5 - Mystery Boss Shuffle Fix / Swordless+Hard Item Pool Fix / Insanity+Inverted ER Fixes~
 
 ### 0.1.4.1
 - Moved Inverted Pyramid Entrance to top of HC Ledge
@@ -377,11 +384,11 @@
 - Various logic fixes and region prep for Inverted
 - Fixed muted MSU-1 music in door rando when descending GT Climb stairs
 - Fixed Standard + Vanilla (thanks compiling)
-- ~Merged DR v0.4.0.4 - Shuffle Link's House / Experimental Bunny Start / 10 Bomb Fix~
+- \~Merged DR v0.4.0.4 - Shuffle Link's House / Experimental Bunny Start / 10 Bomb Fix~
 
 ### 0.1.3.0
 - Added OWG Logic for OW Shuffle
-- ~Merged DR v0.4.0.2 - OWG Framework / YAML~
+- \~Merged DR v0.4.0.2 - OWG Framework / YAML~
 
 ### 0.1.2.2
 - Re-purposed OW Shuffle setting to Layout Shuffle
@@ -390,7 +397,7 @@
 
 ### 0.1.2.1
 - Made possible fix for Standard
-- ~Merged DR v0.3.1.10 - Fixed Standard generation~
+- \~Merged DR v0.3.1.10 - Fixed Standard generation~
 
 ### 0.1.2.0
 - Added 'Parallel Worlds' toggle option
@@ -400,7 +407,7 @@
 ### 0.1.1.2
 - If Link's current position fits within the incoming gap, Link will not get re-centered to the incoming gap
 - Added Rule for Pearl required to drop down back of SW
-- ~Merged DR v0.3.1.8 - Improved Shopsanity pricing - Fixed Retro generation~
+- \~Merged DR v0.3.1.8 - Improved Shopsanity pricing - Fixed Retro generation~
 
 ### 0.1.1.1
 - Fixed camera unlocking issue

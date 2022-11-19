@@ -7,7 +7,7 @@ from OWEdges import OWTileRegions, OWEdgeGroups, OWEdgeGroupsTerrain, OWExitType
 from OverworldGlitchRules import create_owg_connections
 from Utils import bidict
 
-version_number = '0.2.11.2'
+version_number = '0.2.11.3'
 # branch indicator is intentionally different across branches
 version_branch = ''
 
@@ -613,7 +613,7 @@ def shuffle_tiles(world, groups, result_list, do_grouped, player):
                 parity[5] += 1
         if 0x1b in group and world.mode[player] != 'standard':
             parity[5] += 1
-        if 0x1b in group and world.shuffle_ganon:
+        if 0x1b in group and world.shuffle_ganon[player]:
             parity[5] -= 1
         group_parity[group[0]] = parity
 
@@ -1154,6 +1154,7 @@ mandatory_connections = [# Intra-tile OW Connections
                          ('Lost Woods Bush (East)', 'Lost Woods West Area'), #pearl
                          ('West Death Mountain Drop', 'West Death Mountain (Bottom)'),
                          ('Spectacle Rock Drop', 'West Death Mountain (Top)'),
+                         ('Old Man Drop Off', 'Old Man Drop Off'),
                          ('DM Hammer Bridge (West)', 'East Death Mountain (Top East)'), #hammer
                          ('DM Hammer Bridge (East)', 'East Death Mountain (Top West)'), #hammer
                          ('East Death Mountain Spiral Ledge Drop', 'Spiral Cave Ledge'),

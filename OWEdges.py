@@ -1024,6 +1024,7 @@ OWTileRegions = bidict({
     'West Death Mountain (Top)': 0x03,
     'Spectacle Rock Ledge': 0x03,
     'West Death Mountain (Bottom)': 0x03,
+    'Old Man Drop Off': 0x03,
 
     'East Death Mountain (Top West)': 0x05,
     'East Death Mountain (Top East)': 0x05,
@@ -1553,6 +1554,7 @@ OWExitTypes = {
         ],
     'OWTerrain': ['Lost Woods Bush (West)',
                 'Lost Woods Bush (East)',
+                'Old Man Drop Off',
                 'Spectacle Rock Approach',
                 'Spectacle Rock Leave',
                 'DM Hammer Bridge (West)',

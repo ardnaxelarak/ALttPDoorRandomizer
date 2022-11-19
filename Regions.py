@@ -15,7 +15,8 @@ def create_regions(world, player):
         create_lw_region(player, 'Lumberjack Area', None, ['Lumberjack Tree Tree', 'Lumberjack Tree Cave', 'Lumberjack House', 'Dark Lumberjack Mirror Spot', 'Lumberjack WN', 'Lumberjack SW']),
         create_lw_region(player, 'West Death Mountain (Top)', ['Ether Tablet'], ['Spectacle Rock Approach', 'West Death Mountain Drop', 'Tower of Hera', 'West Dark Death Mountain (Top) Mirror Spot', 'West Death Mountain EN']),
         create_lw_region(player, 'Spectacle Rock Ledge', ['Spectacle Rock'], ['Spectacle Rock Leave', 'Spectacle Rock Drop', 'Bubble Boy Mirror Spot']),
-        create_lw_region(player, 'West Death Mountain (Bottom)', None, ['Old Man Cave (East)', 'Old Man House (Bottom)', 'Old Man House (Top)', 'Death Mountain Return Cave (East)', 'Spectacle Rock Cave', 'Spectacle Rock Cave Peak', 'Spectacle Rock Cave (Bottom)', 'West Dark Death Mountain (Bottom) Mirror Spot', 'West Death Mountain Teleporter', 'West Death Mountain ES']),
+        create_lw_region(player, 'West Death Mountain (Bottom)', ['Old Man Drop Off'], ['Old Man Drop Off', 'Old Man Cave (East)', 'Old Man House (Bottom)', 'Old Man House (Top)', 'Death Mountain Return Cave (East)', 'Spectacle Rock Cave', 'Spectacle Rock Cave Peak', 'Spectacle Rock Cave (Bottom)', 'West Dark Death Mountain (Bottom) Mirror Spot', 'West Death Mountain Teleporter', 'West Death Mountain ES']),
+        create_dw_region(player, 'Old Man Drop Off', ['Old Man'], None),
         create_lw_region(player, 'East Death Mountain (Top West)', None, ['DM Hammer Bridge (West)', 'East Dark Death Mountain (Top West) Mirror Spot', 'East Death Mountain WN']),
         create_lw_region(player, 'East Death Mountain (Top East)', None, ['DM Hammer Bridge (East)', 'Floating Island Bridge (East)', 'East Death Mountain Spiral Ledge Drop', 'East Death Mountain Fairy Ledge Drop', 'East Death Mountain Mimic Ledge Drop', 'Paradox Cave (Top)', 'East Dark Death Mountain (Top East) Mirror Spot', 'East Death Mountain EN']),
         create_lw_region(player, 'Spiral Cave Ledge', None, ['Spiral Ledge Drop', 'Spiral Mimic Bridge (West)', 'Spiral Cave', 'TR Ledge (West) Mirror Spot']),
@@ -233,7 +234,7 @@ def create_regions(world, player):
         create_cave_region(player, 'Lumberjack Tree (top)', 'a drop\'s exit', ['Lumberjack Tree'], ['Lumberjack Tree (top to bottom)']),
         create_cave_region(player, 'Lumberjack Tree (bottom)', 'a drop\'s exit', None, ['Lumberjack Tree Exit']),
         create_cave_region(player, 'Lumberjack House', 'a boring house'),
-        create_cave_region(player, 'Old Man Cave', 'a connector', ['Old Man'], ['Old Man Cave Exit (East)']),
+        create_cave_region(player, 'Old Man Cave', 'a connector', ['Lost Old Man'], ['Old Man Cave Exit (East)']),
         create_cave_region(player, 'Old Man Cave Ledge', 'a connector', None, ['Old Man Cave Exit (West)', 'Old Man Cave Dropdown']),
         create_cave_region(player, 'Old Man House', 'a connector', None, ['Old Man House Exit (Bottom)', 'Old Man House Front to Back']),
         create_cave_region(player, 'Old Man House Back', 'a connector', None, ['Old Man House Exit (Top)', 'Old Man House Back to Front']),
@@ -1200,7 +1201,7 @@ def adjust_locations(world, player):
     for l in ['Ganon', 'Agahnim 1', 'Agahnim 2', 'Dark Blacksmith Ruins', 'Middle Aged Man',
               'Frog', 'Missing Smith', 'Floodgate', 'Trench 1 Switch', 'Trench 2 Switch', 'Swamp Drain',
               'Attic Cracked Floor', 'Suspicious Maiden', 'Revealing Light', 'Big Bomb', 'Pyramid Crack',
-              'Ice Block Drop', 'Zelda Pickup', 'Zelda Drop Off', 'Skull Star Tile']:
+              'Ice Block Drop', 'Lost Old Man', 'Old Man Drop Off', 'Zelda Pickup', 'Zelda Drop Off', 'Skull Star Tile']:
         location = world.get_location_unsafe(l, player)
         if location:
             location.type = LocationType.Logical
@@ -1585,6 +1586,8 @@ location_table = {'Mushroom': (0x180013, 0x186338, False, 'in the woods'),
                   'Ganon': (None, None, False, 'from me'),
                   'Agahnim 1': (None, None, False, 'from Ganon\'s wizardry form'),
                   'Agahnim 2': (None, None, False, 'from Ganon\'s wizardry form'),
+                  'Lost Old Man': (None, None, False, None),
+                  'Old Man Drop Off': (None, None, False, None),
                   'Floodgate': (None, None, False, None),
                   'Frog': (None, None, False, None),
                   'Missing Smith': (None, None, False, None),
