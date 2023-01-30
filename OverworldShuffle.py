@@ -829,7 +829,7 @@ def adjust_edge_groups(world, trimmed_groups, edges_to_swap, player):
 
 def create_flute_exits(world, player):
     for region in (r for r in world.regions if r.player == player and r.terrain == Terrain.Land and r.name not in ['Zoras Domain', 'Master Sword Meadow', 'Hobo Bridge']):
-        if region.type == (RegionType.LightWorld if world.mode != 'inverted' else RegionType.DarkWorld):
+        if region.type == (RegionType.LightWorld if world.mode[player] != 'inverted' else RegionType.DarkWorld):
             exitname = 'Flute From ' + region.name
             exit = Entrance(region.player, exitname, region)
             exit.spot_type = 'Flute'
