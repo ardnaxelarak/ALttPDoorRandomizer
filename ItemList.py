@@ -39,7 +39,7 @@ Difficulty = namedtuple('Difficulty',
                         ['baseitems', 'bottles', 'bottle_count', 'same_bottle', 'progressiveshield',
                          'basicshield', 'progressivearmor', 'basicarmor', 'swordless', 'bombs_only', 'cane_only',
                          'progressivesword', 'basicsword', 'basicbow', 'timedohko', 'timedother',
-                         'retro', 'bombbag',
+                         'rupee_bow', 'bombbag',
                          'extras', 'progressive_sword_limit', 'progressive_shield_limit',
                          'progressive_armor_limit', 'progressive_bottle_limit',
                          'progressive_bow_limit', 'heart_piece_limit', 'boss_heart_container_limit'])
@@ -65,7 +65,7 @@ difficulties = {
         basicbow = ['Bow', 'Silver Arrows'],
         timedohko = ['Green Clock'] * 25,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
-        retro = ['Small Key (Universal)'] * 18 + ['Rupees (20)'] * 10,
+        rupee_bow = ['Small Key (Universal)'] * 18 + ['Rupees (20)'] * 10,
         bombbag = ['Bomb Upgrade (+10)'] * 2,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 4,
@@ -93,7 +93,7 @@ difficulties = {
         basicbow = ['Bow'] * 2,
         timedohko = ['Green Clock'] * 25,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
-        retro = ['Small Key (Universal)'] * 13 + ['Rupees (5)'] * 15,
+        rupee_bow = ['Small Key (Universal)'] * 13 + ['Rupees (5)'] * 15,
         bombbag = ['Bomb Upgrade (+10)'] * 2,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 3,
@@ -121,7 +121,7 @@ difficulties = {
         basicbow = ['Bow'] * 2,
         timedohko = ['Green Clock'] * 20 + ['Red Clock'] * 5,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
-        retro = ['Small Key (Universal)'] * 13 + ['Rupees (5)'] * 15,
+        rupee_bow = ['Small Key (Universal)'] * 13 + ['Rupees (5)'] * 15,
         bombbag = ['Bomb Upgrade (+10)'] * 2,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 2,
@@ -188,7 +188,7 @@ def get_custom_array_key(item):
 
 
 def maybe_replace_item(world, player, item):
-    if world.retro[player] and item in ['Single Arrow', 'Arrows (5)', 'Arrows (10)', 'Arrow Upgrade (+5)', 'Arrow Upgrade (+10)']:
+    if world.rupee_bow[player] and item in ['Single Arrow', 'Arrows (5)', 'Arrows (10)', 'Arrow Upgrade (+5)', 'Arrow Upgrade (+10)']:
         return 'Rupees (5)'
     if world.swords[player] == 'bombs' and item in ['Single Bomb', 'Bombs (3)', 'Bombs (10)', 'Bomb Upgrade (+5)', 'Bomb Upgrade (+10)']:
         return 'Small Heart'
@@ -196,7 +196,7 @@ def maybe_replace_item(world, player, item):
 
 
 def generate_itempool(world, player):
-    if (world.difficulty[player] not in ['normal', 'hard', 'expert'] or world.goal[player] not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'trinity', 'crystals']
+    if (world.difficulty[player] not in ['normal', 'hard', 'expert'] or world.goal[player] not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'trinity', 'crystals', 'z1']
             or world.mode[player] not in ['open', 'standard', 'inverted'] or world.timer not in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown'] or world.progressive not in ['on', 'off', 'random']):
         raise NotImplementedError('Not supported yet')
 
@@ -346,7 +346,7 @@ def generate_itempool(world, player):
                     if not found_sword and world.swords[player] != 'swordless':
                         found_sword = True
                         possible_weapons.append(item)
-                if item in ['Progressive Bow', 'Bow'] and not found_bow and not world.retro[player]:
+                if item in ['Progressive Bow', 'Bow'] and not found_bow and not world.rupee_bow[player]:
                     found_bow = True
                     possible_weapons.append(item)
                 if item in ['Hammer', 'Fire Rod', 'Cane of Somaria', 'Cane of Byrna']:
@@ -396,7 +396,7 @@ def generate_itempool(world, player):
         world.clock_mode = clock_mode
 
     goal = world.goal[player]
-    if goal in ['triforcehunt', 'trinity']:
+    if goal in ['triforcehunt', 'trinity', 'z1']:
         g, t = set_default_triforce(goal, world.treasure_hunt_count[player], world.treasure_hunt_total[player])
         world.treasure_hunt_count[player], world.treasure_hunt_total[player] = g, t
         world.treasure_hunt_icon[player] = 'Triforce Piece'
@@ -448,6 +448,8 @@ def generate_itempool(world, player):
 
     if world.retro[player]:
         set_up_take_anys(world, player)
+
+    if world.universal_keys[player]:
         if world.dropshuffle[player]:
             world.itempool += [ItemFactory('Small Key (Universal)', player)] * 13
         if world.pottery[player] not in ['none', 'cave']:
@@ -705,7 +707,8 @@ def fill_prizes(world, attempts=15):
 
 
 def set_up_shops(world, player):
-    if world.retro[player]:
+    # TODO: separate universal key replacements from rupee bow replacements
+    if world.retro[player] or world.goal[player] in ['z1']:
         if world.shopsanity[player]:
             removals = [next(item for item in world.itempool if item.name == 'Arrows (10)' and item.player == player)]
             red_pots = [item for item in world.itempool if item.name == 'Red Potion' and item.player == player][:5]
@@ -765,7 +768,7 @@ def set_up_shops(world, player):
 
 
 def customize_shops(world, player):
-    found_bomb_upgrade, found_arrow_upgrade = False, world.retro[player]
+    found_bomb_upgrade, found_arrow_upgrade = False, world.rupee_bow[player]
     possible_replacements = []
     shops_to_customize = shop_to_location_table.copy()
     if world.retro[player]:
@@ -791,7 +794,7 @@ def customize_shops(world, player):
                 price = 0
             else:
                 price = 120 if shop_name == 'Potion Shop' and item.name == 'Red Potion' else item.price
-                if world.retro[player] and item.name == 'Single Arrow':
+                if world.rupee_bow[player] and item.name == 'Single Arrow':
                     price = 80
             # randomize price
             shop.add_inventory(idx, item.name, randomize_price(price), max_repeat, player=item.player)
@@ -818,7 +821,7 @@ def customize_shops(world, player):
         if not found_arrow_upgrade and len(possible_replacements) > 0:
             choices = []
             for shop, idx, loc, item in possible_replacements:
-                if item.name == 'Arrows (10)' or (item.name == 'Single Arrow' and not world.retro[player]):
+                if item.name == 'Arrows (10)' or (item.name == 'Single Arrow' and not world.rupee_bow[player]):
                     choices.append((shop, idx, loc, item))
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
@@ -987,7 +990,7 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
     placed_items = {}
     precollected_items = []
     clock_mode = None
-    if treasure_hunt_total == 0 and goal in ['triforcehunt', 'trinity']:
+    if treasure_hunt_total == 0 and goal in ['triforcehunt', 'trinity', 'z1']:
         treasure_hunt_total = 30 if goal == 'triforcehunt' else 10
     # triforce pieces max out
     triforcepool = ['Triforce Piece'] * min(treasure_hunt_total, max_goal)
@@ -1004,6 +1007,23 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
 
     def want_progressives():
         return random.choice([True, False]) if progressive == 'random' else progressive == 'on'
+
+    # in z1 mode, preplace triforce pieces on bosses and boots on green pendant turn-in
+    if goal == 'z1':
+        place_item('Sahasrahla', 'Pegasus Boots')
+        place_item('Eastern Palace - Boss', 'Triforce Piece')
+        place_item('Desert Palace - Boss', 'Triforce Piece')
+        place_item('Tower of Hera - Boss', 'Triforce Piece')
+        place_item('Palace of Darkness - Boss', 'Triforce Piece')
+        place_item('Swamp Palace - Boss', 'Triforce Piece')
+        place_item('Skull Woods - Boss', 'Triforce Piece')
+        place_item('Thieves\' Town - Boss', 'Triforce Piece')
+        place_item('Ice Palace - Boss', 'Triforce Piece')
+        place_item('Misery Mire - Boss', 'Triforce Piece')
+        place_item('Turtle Rock - Boss', 'Triforce Piece')
+        pool.remove('Pegasus Boots')
+        pool.remove('Ocarina')
+        pool.append('Ocarina (Activated)')
 
     # provide boots to boots glitch dependent modes
     if logic in ['owglitches', 'nologic']:
@@ -1033,6 +1053,13 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
     diff = difficulties[difficulty]
     pool.extend(diff.baseitems)
 
+    if goal == 'z1':
+        pool.remove('Sanctuary Heart Container')
+        pool.extend(['Boss Heart Container'] * 3)
+        for _ in range(24):
+            pool.remove('Piece of Heart')
+        pool.extend(['Rupees (20)'] * 12)
+
     if bombbag:
         pool = [item.replace('Bomb Upgrade (+5)','Rupees (5)') for item in pool]
         pool = [item.replace('Bomb Upgrade (+10)','Rupees (5)') for item in pool]
@@ -1057,7 +1084,7 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
     else:
         pool.extend(diff.basicarmor)
 
-    if want_progressives():
+    if want_progressives() and goal != "z1":
         pool.extend(['Progressive Bow'] * 2)
     elif swords != 'swordless':
         pool.extend(diff.basicbow)
@@ -1089,15 +1116,24 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
             place_item('Master Sword Pedestal', 'Triforce')
             pool.append(swords_to_use.pop())
     else:
-        pool.extend(diff.progressivesword if want_progressives() else diff.basicsword)
-        if swords in ['assured', 'assured_pseudo']:
-            if want_progressives():
+        if want_progressives():
+            pool.extend(diff.progressivesword)
+            if swords in ['assured', 'assured_pseudo']:
                 precollected_items.append('Progressive Sword')
                 pool.remove('Progressive Sword')
-            else:
+                pool.extend(['Rupees (50)'])
+            if goal in ['z1']:
+                pool.remove('Progressive Sword')
+                pool.extend(['Rupees (20)'])
+        else:
+            pool.extend(diff.basicsword)
+            if swords in ['assured', 'assured_pseudo']:
                 precollected_items.append('Fighter Sword')
                 pool.remove('Fighter Sword')
-            pool.extend(['Rupees (50)'])
+                pool.extend(['Rupees (50)'])
+            if goal in ['z1']:
+                pool.remove('Golden Sword')
+                pool.extend(['Rupees (20)'])
 
     if timer in ['timed', 'timed-countdown']:
         pool.extend(diff.timedother)
@@ -1115,12 +1151,12 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
 
     if goal in ['pedestal', 'trinity'] and swords != 'vanilla':
         place_item('Master Sword Pedestal', 'Triforce')
-    if retro:
+    if retro or goal == 'z1':
         pool = [item.replace('Single Arrow','Rupees (5)') for item in pool]
         pool = [item.replace('Arrows (10)','Rupees (5)') for item in pool]
         pool = [item.replace('Arrow Upgrade (+5)','Rupees (5)') for item in pool]
         pool = [item.replace('Arrow Upgrade (+10)','Rupees (5)') for item in pool]
-        pool.extend(diff.retro)
+        pool.extend(diff.rupee_bow)
         if door_shuffle != 'vanilla':  # door shuffle needs more keys for retro
             replace = 'Rupees (20)' if difficulty == 'normal' else 'Rupees (5)'
             indices = [i for i, x in enumerate(pool) if x == replace]
@@ -1168,7 +1204,7 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         customitemarray["triforce"] = total_items_to_place
 
     # Triforce Pieces
-    if goal in ['triforcehunt', 'trinity']:
+    if goal in ['triforcehunt', 'trinity', 'z1']:
         g, t = set_default_triforce(goal, customitemarray["triforcepiecesgoal"], customitemarray["triforcepieces"])
         customitemarray["triforcepiecesgoal"], customitemarray["triforcepieces"] = g, t
 
@@ -1206,7 +1242,7 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         treasure_hunt_count = max(min(customitemarray["triforcepiecesgoal"], max_goal), 1)
         treasure_hunt_icon = 'Triforce Piece'
         # Ensure game is always possible to complete here, force sufficient pieces if the player is unwilling.
-        if ((customitemarray["triforcepieces"] < treasure_hunt_count) and (goal in ['triforcehunt', 'trinity'])
+        if ((customitemarray["triforcepieces"] < treasure_hunt_count) and (goal in ['triforcehunt', 'trinity', 'z1'])
            and (customitemarray["triforce"] == 0)):
             extrapieces = treasure_hunt_count - customitemarray["triforcepieces"]
             pool.extend(['Triforce Piece'] * extrapieces)
@@ -1224,7 +1260,7 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         itemtotal = itemtotal + 1
 
     if mode == 'standard':
-        if retro:
+        if retro or goal == 'z1':
             key_location = random.choice(['Secret Passage', 'Hyrule Castle - Boomerang Chest', 'Hyrule Castle - Map Chest', 'Hyrule Castle - Zelda\'s Chest', 'Sewers - Dark Cross'])
             place_item(key_location, 'Small Key (Universal)')
             pool.extend(['Small Key (Universal)'] * max((customitemarray["generickeys"] - 1), 0))
@@ -1236,6 +1272,23 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
     pool.extend(['Fighter Sword'] * customitemarray["sword1"])
     pool.extend(['Progressive Sword'] * customitemarray["progressivesword"])
 
+    # in z1 mode, preplace triforce pieces on bosses and boots on green pendant turn-in
+    if goal == 'z1':
+        place_item('Sahasrahla', 'Pegasus Boots')
+        place_item('Eastern Palace - Boss', 'Triforce Piece')
+        place_item('Desert Palace - Boss', 'Triforce Piece')
+        place_item('Tower of Hera - Boss', 'Triforce Piece')
+        place_item('Palace of Darkness - Boss', 'Triforce Piece')
+        place_item('Swamp Palace - Boss', 'Triforce Piece')
+        place_item('Skull Woods - Boss', 'Triforce Piece')
+        place_item('Thieves\' Town - Boss', 'Triforce Piece')
+        place_item('Ice Palace - Boss', 'Triforce Piece')
+        place_item('Misery Mire - Boss', 'Triforce Piece')
+        place_item('Turtle Rock - Boss', 'Triforce Piece')
+        pool.remove('Pegasus Boots')
+        pool.remove('Ocarina')
+        pool.append('Ocarina (Activated)')
+
     if shuffle == 'insanity_legacy':
         place_item('Link\'s House', 'Magic Mirror')
         place_item('Sanctuary', 'Moon Pearl')
@@ -1245,7 +1298,7 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         pool.extend(['Magic Mirror'] * customitemarray["mirror"])
         pool.extend(['Moon Pearl'] * customitemarray["pearl"])
 
-    if retro:
+    if retro or goal == 'z1':
         itemtotal = itemtotal - 28 # Corrects for small keys not being in item pool in Retro Mode
     if itemtotal < total_items_to_place:
         nothings = total_items_to_place - itemtotal
@@ -1253,19 +1306,6 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         pool.extend(['Nothing'] * nothings)
 
     return (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_total, treasure_hunt_icon, lamps_needed_for_dark_rooms)
-
-def set_default_triforce(goal, custom_goal, custom_total):
-    triforce_goal, triforce_total = 0, 0
-    if goal == 'triforcehunt':
-        triforce_goal, triforce_total = 20, 30
-    elif goal == 'trinity':
-        triforce_goal, triforce_total = 8, 10
-    if custom_goal > 0:
-        triforce_goal = max(min(custom_goal, 128), 1)
-    if custom_total > 0 or custom_goal > 0:
-        triforce_total = max(min(custom_total, 128), triforce_goal) #128 max to ensure other progression can fit.
-    return (triforce_goal, triforce_total)
-
 
 def make_customizer_pool(world, player):
     pool = []
@@ -1307,17 +1347,22 @@ def set_default_triforce(goal, custom_goal, custom_total):
         triforce_goal, triforce_total = 20, 30
     elif goal == 'trinity':
         triforce_goal, triforce_total = 8, 10
-    if custom_goal > 0:
-        triforce_goal = max(min(custom_goal, max_goal), 1)
-    if custom_total > 0:
-        triforce_total = max(min(custom_total, max_goal), triforce_goal)
+    if goal == 'z1':
+        triforce_goal, triforce_total = 8, 10
+        if custom_goal > 0:
+            triforce_goal = max(min(custom_goal, 10), 1)
+    else:
+        if custom_goal > 0:
+            triforce_goal = max(min(custom_goal, max_goal), 1)
+        if custom_total > 0:
+            triforce_total = max(min(custom_total, max_goal), triforce_goal)
     return triforce_goal, triforce_total
 
 
 # A quick test to ensure all combinations generate the correct amount of items.
 def test():
     for difficulty in ['normal', 'hard', 'expert']:
-        for goal in ['ganon', 'triforcehunt', 'pedestal', 'trinity']:
+        for goal in ['ganon', 'triforcehunt', 'pedestal', 'trinity', 'z1']:
             for timer in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown']:
                 for mode in ['open', 'standard', 'inverted', 'retro']:
                     for swords in ['random', 'assured', 'swordless', 'vanilla', 'bombs', 'byrna', 'somaria', 'cane']:

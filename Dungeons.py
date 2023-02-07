@@ -5,7 +5,7 @@ from Items import ItemFactory
 
 def create_dungeons(world, player):
     def make_dungeon(name, id, default_boss, dungeon_regions, big_key, small_keys, dungeon_items):
-        dungeon = Dungeon(name, dungeon_regions, big_key, [] if world.retro[player] else small_keys,
+        dungeon = Dungeon(name, dungeon_regions, big_key, [] if world.universal_keys[player] else small_keys,
                           dungeon_items, player, id)
         dungeon.boss = BossFactory(default_boss, player)
         for region in dungeon.regions:

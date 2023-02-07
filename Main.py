@@ -251,7 +251,7 @@ def main(args, seed=None, fish=None):
     for player in range(1, world.players + 1):
         if world.shopsanity[player]:
             sell_potions(world, player)
-            if world.retro[player]:
+            if world.universal_keys[player]:
                 sell_keys(world, player)
         else:
             lock_shop_locations(world, player)

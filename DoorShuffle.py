@@ -428,7 +428,7 @@ def choose_portals(world, player):
         for dungeon, info in shuffled_info:
             outstanding_portals = list(dungeon_portals[dungeon])
             hc_flag = std_flag and dungeon == 'Hyrule Castle'
-            rupee_bow_flag = hc_flag and world.retro[player]  # rupee bow
+            rupee_bow_flag = hc_flag and world.rupee_bow[player]  # rupee bow
             if hc_flag:
                 sanc = world.get_portal('Sanctuary', player)
                 sanc.destination = True
@@ -1003,7 +1003,7 @@ def cross_dungeon(world, player):
     assign_cross_keys(dungeon_builders, world, player)
     all_dungeon_items_cnt = len(list(y for x in world.dungeons if x.player == player for y in x.all_items))
     target_items = 34
-    if world.retro[player]:
+    if world.universal_keys[player]:
         target_items += 1 if world.dropshuffle[player] else 0  # the hc big key
     else:
         target_items += 29  # small keys in chests
@@ -1067,7 +1067,7 @@ def cross_dungeon(world, player):
 def assign_cross_keys(dungeon_builders, world, player):
     logging.getLogger('').info(world.fish.translate("cli", "cli", "shuffling.keydoors"))
     start = time.process_time()
-    if world.retro[player]:
+    if world.universal_keys[player]:
         remaining = 29
         if world.dropshuffle[player]:
             remaining += 13
@@ -1146,7 +1146,7 @@ def assign_cross_keys(dungeon_builders, world, player):
     # Last Step: Adjust Small Key Dungeon Pool
     for name, builder in dungeon_builders.items():
         reassign_key_doors(builder, world, player)
-        if not world.retro[player]:
+        if not world.universal_keys[player]:
             log_key_logic(builder.name, world.key_logic[player][builder.name])
             actual_chest_keys = max(builder.key_doors_num - builder.key_drop_cnt, 0)
             dungeon = world.get_dungeon(name, player)

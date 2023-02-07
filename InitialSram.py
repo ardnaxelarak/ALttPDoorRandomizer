@@ -76,7 +76,7 @@ class InitialSram:
         if startingstate.has('Bow', player):
             equip[0x340] = 3 if startingstate.has('Silver Arrows', player) else 1
             equip[0x38E] |= 0x20  # progressive flag to get the correct hint in all cases
-            if not world.retro[player]:
+            if not world.rupee_bow[player]:
                 equip[0x38E] |= 0x80
         if startingstate.has('Silver Arrows', player):
             equip[0x38E] |= 0x40
@@ -208,7 +208,7 @@ class InitialSram:
             elif item.name in bombs:
                 starting_bombs += bombs[item.name]
             elif item.name in arrows:
-                if world.retro[player]:
+                if world.rupee_bow[player]:
                     equip[0x38E] |= 0x80
                     starting_arrows = 1
                 else:

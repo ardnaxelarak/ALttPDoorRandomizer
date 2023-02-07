@@ -882,7 +882,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     dr_flags = DROptions.Eternal_Mini_Bosses if world.doorShuffle[player] == 'vanilla' else DROptions.Town_Portal
     if world.doorShuffle[player] == 'crossed':
         dr_flags |= DROptions.Map_Info
-    if world.collection_rate[player] and world.goal[player] not in ['triforcehunt', 'trinity']:
+    if world.collection_rate[player] and world.goal[player] not in ['triforcehunt', 'trinity', 'z1']:
         dr_flags |= DROptions.Debug
     if world.doorShuffle[player] == 'crossed' and world.logic[player] != 'nologic'\
        and world.mixed_travel[player] == 'prevent':
@@ -948,7 +948,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x138002, 2)
         for name, layout in world.key_layout[player].items():
             offset = compass_data[name][4]//2
-            if world.retro[player]:
+            if world.universal_keys[player]:
                 rom.write_byte(0x13f030+offset, layout.max_chests + layout.max_drops)
             else:
                 rom.write_byte(0x13f020+offset, layout.max_chests + layout.max_drops)  # not currently used
@@ -1054,7 +1054,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x142A50, 1)  # StandingItemsOn
     multiClientFlags = ((0x1 if world.dropshuffle[player] else 0)
                         | (0x2 if world.shopsanity[player] else 0)
-                        | (0x4 if world.retro[player] else 0)
+                        | (0x4 if world.retro[player] or world.goal[player] in 'z1' else 0)
                         | (0x8 if world.pottery[player] != 'none' else 0)
                         | (0x10 if is_mystery else 0))
     rom.write_byte(0x142A51, multiClientFlags)
@@ -1271,7 +1271,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         pack_prizes = [prize_replacements.get(prize, prize) for prize in pack_prizes]
         dig_prizes = [prize_replacements.get(prize, prize) for prize in dig_prizes]
 
-    if world.retro[player]:
+    if world.rupee_bow[player]:
         prize_replacements = {0xE1: 0xDA, # 5 Arrows -> Blue Rupee
                               0xE2: 0xDB} # 10 Arrows -> Red Rupee
         pack_prizes = [prize_replacements.get(prize, prize) for prize in pack_prizes]
@@ -1310,7 +1310,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         0x12, 0x01, 0x35, 0xFF, # lamp -> 5 rupees
         0x51, 0x00 if world.bombbag[player] else 0x06, 0x31 if world.bombbag[player] else 0x52, 0xFF, # 6 +5 bomb upgrades -> +10 bomb upgrade. If bombbag -> turns into Bombs (10)
         0x53, 0x06, 0x54, 0xFF, # 6 +5 arrow upgrades -> +10 arrow upgrade
-        0x58, 0x01, 0x36 if world.retro[player] else 0x43, 0xFF, # silver arrows -> single arrow (red 20 in retro mode)
+        0x58, 0x01, 0x36 if world.rupee_bow[player] else 0x43, 0xFF, # silver arrows -> single arrow (red 20 in retro mode)
         0x3E, difficulty.boss_heart_container_limit, 0x47, 0xff, # boss heart -> green 20
         0x17, difficulty.heart_piece_limit, 0x47, 0xff, # piece of heart -> green 20
         0xFF, 0xFF, 0xFF, 0xFF, # end of table sentinel
@@ -1525,7 +1525,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     # set up goals for treasure hunt
     rom.write_bytes(0x180165, [0x0E, 0x28] if world.treasure_hunt_icon[player] == 'Triforce Piece' else [0x0D, 0x28])
-    if world.goal[player] in ['triforcehunt', 'trinity']:
+    if world.goal[player] in ['triforcehunt', 'trinity', 'z1']:
         rom.write_bytes(0x180167, int16_as_bytes(world.treasure_hunt_count[player]))
     rom.write_byte(0x180194, 1)  # Must turn in triforce pieces (instant win not enabled)
 
@@ -1601,6 +1601,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x18003E, 0x02)  # make ganon invincible until all dungeons are beat
     elif world.goal[player] in ['crystals', 'trinity']:
         rom.write_byte(0x18003E, 0x04)  # make ganon invincible until all crystals
+    elif world.goal[player] in ['z1']:
+        rom.write_byte(0x18003E, 0x05)  # make ganon invincible until sufficient triforce pieces
     else:
         rom.write_byte(0x18003E, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
 
@@ -1779,17 +1781,17 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     write_int16(rom, 0x18017A, get_reveal_bytes('Green Pendant') if world.mapshuffle[player] else 0x0000) # Sahasrahla reveal
     write_int16(rom, 0x18017C, get_reveal_bytes('Crystal 5')|get_reveal_bytes('Crystal 6') if world.mapshuffle[player] else 0x0000) # Bomb Shop Reveal
 
-    rom.write_byte(0x180172, 0x01 if world.retro[player] else 0x00)  # universal keys
-    rom.write_byte(0x180175, 0x01 if world.retro[player] else 0x00)  # rupee bow
-    rom.write_byte(0x180176, 0x0A if world.retro[player] else 0x00)  # wood arrow cost
-    rom.write_byte(0x180178, 0x32 if world.retro[player] else 0x00)  # silver arrow cost
-    rom.write_byte(0x301FC, 0xDA if world.retro[player] else 0xE1)  # rupees replace arrows under pots
+    rom.write_byte(0x180172, 0x01 if world.universal_keys[player] else 0x00)  # universal keys
+    rom.write_byte(0x180175, 0x01 if world.rupee_bow[player] else 0x00)  # rupee bow
+    rom.write_byte(0x180176, 0x0A if world.rupee_bow[player] else 0x00)  # wood arrow cost
+    rom.write_byte(0x180178, 0x32 if world.rupee_bow[player] else 0x00)  # silver arrow cost
+    rom.write_byte(0x301FC, 0xDA if world.rupee_bow[player] else 0xE1)  # rupees replace arrows under pots
     if enemized:
-        rom.write_byte(0x1B152e, 0xDA if world.retro[player] else 0xE1)
-    rom.write_byte(0x30052, 0xDB if world.retro[player] else 0xE2) # replace arrows in fish prize from bottle merchant
-    rom.write_bytes(0xECB4E, [0xA9, 0x00, 0xEA, 0xEA] if world.retro[player] else [0xAF, 0x77, 0xF3, 0x7E])  # Thief steals rupees instead of arrows
-    rom.write_bytes(0xF0D96, [0xA9, 0x00, 0xEA, 0xEA] if world.retro[player] else [0xAF, 0x77, 0xF3, 0x7E])  # Pikit steals rupees instead of arrows
-    rom.write_bytes(0xEDA5, [0x35, 0x41] if world.retro[player] else [0x43, 0x44])  # Chest game gives rupees instead of arrows
+        rom.write_byte(0x1B152e, 0xDA if world.rupee_bow[player] else 0xE1)
+    rom.write_byte(0x30052, 0xDB if world.rupee_bow[player] else 0xE2) # replace arrows in fish prize from bottle merchant
+    rom.write_bytes(0xECB4E, [0xA9, 0x00, 0xEA, 0xEA] if world.rupee_bow[player] else [0xAF, 0x77, 0xF3, 0x7E])  # Thief steals rupees instead of arrows
+    rom.write_bytes(0xF0D96, [0xA9, 0x00, 0xEA, 0xEA] if world.rupee_bow[player] else [0xAF, 0x77, 0xF3, 0x7E])  # Pikit steals rupees instead of arrows
+    rom.write_bytes(0xEDA5, [0x35, 0x41] if world.rupee_bow[player] else [0x43, 0x44])  # Chest game gives rupees instead of arrows
     digging_game_rng = random.randint(1, 30)  # set rng for digging game
     rom.write_byte(0x180020, digging_game_rng)
     rom.write_byte(0xEFD95, digging_game_rng)
@@ -2669,6 +2671,8 @@ def write_strings(rom, world, player, team):
 
     if world.goal[player] in ['dungeons']:
         tt['sign_ganon'] = 'You need to complete all the dungeons.'
+    elif world.goal[player] in ['z1']:
+        tt['sign_ganon'] = 'You need %d triforce pieces from bosses to beat Ganon.' % int(world.treasure_hunt_count[player])
 
     tt['uncle_leaving_text'] = Uncle_texts[random.randint(0, len(Uncle_texts) - 1)]
     tt['end_triforce'] = "{NOBORDER}\n" + Triforce_texts[random.randint(0, len(Triforce_texts) - 1)]

@@ -212,7 +212,8 @@ def roll_settings(weights):
                     'dungeons': 'dungeons',
                     'pedestal': 'pedestal',
                     'triforce-hunt': 'triforcehunt',
-                    'trinity': 'trinity'
+                    'trinity': 'trinity',
+                    'z1': 'z1'
                     }[goal]
 
     ret.openpyramid = get_choice('open_pyramid') if 'open_pyramid' in weights else 'auto'

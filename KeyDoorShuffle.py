@@ -275,7 +275,7 @@ def analyze_dungeon(key_layout, world, player):
     key_logic.bk_chests.update(find_big_chest_locations(key_layout.all_chest_locations))
     key_logic.bk_chests.update(find_big_key_locked_locations(key_layout.all_chest_locations))
     key_logic.prize_location = dungeon_table[key_layout.sector.name].prize
-    if world.retro[player] and world.mode[player] != 'standard':
+    if world.universal_keys[player] and world.mode[player] != 'standard':
         return
 
     original_key_counter = find_counter({}, False, key_layout, False)
@@ -926,7 +926,7 @@ def self_lock_possible(counter):
 
 
 def available_chest_small_keys(key_counter, world, player):
-    if not world.keyshuffle[player] and not world.retro[player]:
+    if not world.keyshuffle[player] and not world.universal_keys[player]:
         cnt = 0
         for loc in key_counter.free_locations:
             if key_counter.big_key_opened or '- Big Chest' not in loc.name:
@@ -937,7 +937,7 @@ def available_chest_small_keys(key_counter, world, player):
 
 
 def available_chest_small_keys_logic(key_counter, world, player, sm_restricted):
-    if not world.keyshuffle[player] and not world.retro[player]:
+    if not world.keyshuffle[player] and not world.universal_keys[player]:
         cnt = 0
         for loc in key_counter.free_locations:
             if loc not in sm_restricted and (key_counter.big_key_opened or '- Big Chest' not in loc.name):
@@ -1404,7 +1404,7 @@ def prize_relevance(key_layout, dungeon_entrance, is_atgt_swapped):
 # Soft lock stuff
 def validate_key_layout(key_layout, world, player):
     # retro is all good - except for hyrule castle in standard mode
-    if (world.retro[player] and (world.mode[player] != 'standard' or key_layout.sector.name != 'Hyrule Castle')) or world.logic[player] == 'nologic':
+    if (world.universal_keys[player] and (world.mode[player] != 'standard' or key_layout.sector.name != 'Hyrule Castle')) or world.logic[player] == 'nologic':
         return True
     flat_proposal = key_layout.flat_prop
     state = ExplorationState(dungeon=key_layout.sector.name)
@@ -1532,7 +1532,7 @@ def enough_small_locations(state, avail_small_loc):
 
 
 def determine_prize_lock(key_layout, world, player):
-    if ((world.retro[player] and (world.mode[player] != 'standard' or key_layout.sector.name != 'Hyrule Castle'))
+    if ((world.universal_keys[player] and (world.mode[player] != 'standard' or key_layout.sector.name != 'Hyrule Castle'))
        or world.logic[player] == 'nologic'):
         return  # done, doesn't matter what
     flat_proposal = key_layout.flat_prop
@@ -1565,7 +1565,7 @@ def determine_prize_lock(key_layout, world, player):
 
 
 def cnt_avail_small_locations(free_locations, key_only, state, world, player):
-    if not world.keyshuffle[player] and not world.retro[player]:
+    if not world.keyshuffle[player] and not world.universal_keys[player]:
         bk_adj = 1 if state.big_key_opened and not state.big_key_special else 0
         avail_chest_keys = min(free_locations - bk_adj, state.key_locations - key_only)
         return max(0, avail_chest_keys + key_only - state.used_smalls)
@@ -1573,7 +1573,7 @@ def cnt_avail_small_locations(free_locations, key_only, state, world, player):
 
 
 def cnt_avail_small_locations_by_ctr(free_locations, counter, layout, world, player):
-    if not world.keyshuffle[player] and not world.retro[player]:
+    if not world.keyshuffle[player] and not world.universal_keys[player]:
         bk_adj = 1 if counter.big_key_opened and not layout.big_key_special else 0
         avail_chest_keys = min(free_locations - bk_adj, layout.max_chests)
         return max(0, avail_chest_keys + len(counter.key_only_locations) - counter.used_keys)
@@ -2016,7 +2016,7 @@ def val_rule(rule, skn, allow=False, loc=None, askn=None, setCheck=None):
 
 # Soft lock stuff
 def validate_key_placement(key_layout, world, player):
-    if world.retro[player] or world.accessibility[player] == 'none':
+    if world.universal_keys[player] or world.accessibility[player] == 'none':
         return True  # Can't keylock in retro.  Expected if beatable only.
     max_counter = find_max_counter(key_layout)
     keys_outside = 0

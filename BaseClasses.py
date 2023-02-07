@@ -72,6 +72,8 @@ class World(object):
         self.shuffle_ganon = shuffle_ganon
         self.fix_gtower_exit = self.shuffle_ganon
         self.retro = retro.copy()
+        self.rupee_bow = retro.copy()
+        self.universal_keys = retro.copy()
         self.custom = custom
         self.customitemarray = customitemarray
         self.can_take_damage = True
@@ -109,6 +111,11 @@ class World(object):
             if self.mode[player] == "retro":
                 self.mode[player] = "open"
                 self.retro[player] = True
+                self.rupee_bow[player] = True
+                self.universal_keys[player] = True
+            if self.goal[player] == "z1":
+                self.rupee_bow[player] = True
+                self.universal_keys[player] = True
             def set_player_attr(attr, val):
                 self.__dict__.setdefault(attr, {})[player] = val
             set_player_attr('_region_cache', {})
@@ -332,7 +339,7 @@ class World(object):
         else:
             if self.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
                 return False
-            elif self.goal[player] in ['crystals', 'trinity']:
+            elif self.goal[player] in ['crystals', 'trinity', 'z1']:
                 return True
             else:
                 return False
@@ -694,7 +701,7 @@ class CollectionState(object):
                     if key_logic.sm_doors[door]:
                         self.reached_doors[player].add(key_logic.sm_doors[door].name)
                 if not connection.can_reach(self):
-                    checklist_key = 'Universal' if self.world.retro[player] else dungeon_name
+                    checklist_key = 'Universal' if self.world.universal_keys[player] else dungeon_name
                     checklist = self.dungeons_to_check[player][checklist_key]
                     checklist[connection.name] = (connection, crystal_state)
                 elif door.name not in self.opened_doors[player]:
@@ -1117,7 +1124,7 @@ class CollectionState(object):
         return self.prog_items[item, player] >= count
 
     def has_sm_key(self, item, player, count=1):
-        if self.world.retro[player]:
+        if self.world.universal_keys[player]:
             if self.world.mode[player] == 'standard' and self.world.doorShuffle[player] == 'vanilla' and item == 'Small Key (Escape)':
                 return True  # Cannot access the shop until escape is finished.  This is safe because the key is manually placed in make_custom_item_pool
             return self.can_buy_unlimited('Small Key (Universal)', player)
@@ -1253,7 +1260,7 @@ class CollectionState(object):
             or self.has('Cane of Somaria', player))
 
     def can_shoot_arrows(self, player):
-        if self.world.retro[player]:
+        if self.world.rupee_bow[player]:
             #todo: Non-progressive silvers grant wooden arrows, but progressive bows do not.  Always require shop arrows to be safe
             return self.has('Bow', player) and (self.can_buy_unlimited('Single Arrow', player) or self.has('Single Arrow', player))
         return self.has('Bow', player)
@@ -3212,7 +3219,7 @@ class Spoiler(object):
                 outfile.write('Retro:'.ljust(line_width) + '%s\n' % yn(self.metadata['retro'][player]))
                 outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
                 outfile.write('Goal:'.ljust(line_width) + '%s\n' % self.metadata['goal'][player])
-                if self.metadata['goal'][player] in ['triforcehunt', 'trinity']:
+                if self.metadata['goal'][player] in ['triforcehunt', 'trinity', 'z1']:
                     outfile.write('Triforce Pieces Required:'.ljust(line_width) + '%s\n' % self.metadata['triforcegoal'][player])
                     outfile.write('Triforce Pieces Total:'.ljust(line_width) + '%s\n' % self.metadata['triforcepool'][player])
                 outfile.write('Crystals Required for GT:'.ljust(line_width) + '%s\n' % str(self.world.crystals_gt_orig[player]))
@@ -3536,7 +3543,7 @@ world_mode = {"open": 0, "standard": 1, "inverted": 2}
 sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "swordless_hammer": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 5, "byrna": 6, "somaria": 6, "cane": 6, "bees": 7}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
-goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4, "trinity": 5}
+goal_mode = {"ganon": 0, "pedestal": 1, "dungeons": 2, "triforcehunt": 3, "crystals": 4, "trinity": 5, "z1": 6}
 diff_mode = {"normal": 0, "hard": 1, "expert": 2}
 func_mode = {"normal": 0, "hard": 1, "expert": 2}
 

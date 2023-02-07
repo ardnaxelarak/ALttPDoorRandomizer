@@ -65,6 +65,8 @@ def set_rules(world, player):
         for location in world.get_region('Hyrule Castle Courtyard', player).locations:
             if location.name == 'Murahdahla':
                 add_rule(location, lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
+    elif world.goal[player] in ['z1']:
+        add_rule(world.get_location('Ganon', player), lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
 
     # if swamp and dam have not been moved we require mirror for swamp palace
     if not world.swamp_patch_required[player]:
@@ -648,7 +650,7 @@ def global_rules(world, player):
         world.get_location('Ganon', player),
         lambda state: (state.has_real_sword(player, 2) or state.has_special_weapon_level(player, 3))
             and state.has_fire_source(player)
-            and state.has_crystals(world.crystals_needed_for_ganon[player], player)
+            and (state.has_crystals(world.crystals_needed_for_ganon[player], player) or world.goal[player] == 'z1')
             and (state.has_real_sword(player, 3) or
                 state.can_hit_stunned_ganon(player) or
                 state.has_real_sword(player, 2) and
@@ -2144,7 +2146,7 @@ def add_key_logic_rules(world, player):
             add_rule(big_chest, create_rule(d_logic.bk_name, player))
             if len(d_logic.bk_doors) == 0 and len(d_logic.bk_chests) <= 1:
                 set_always_allow(big_chest, allow_big_key_in_big_chest(d_logic.bk_name, player))
-    if world.retro[player]:
+    if world.universal_keys[player]:
         for d_name, layout in world.key_layout[player].items():
             for door in layout.flat_prop:
                 if world.mode[player] != 'standard' or not retro_in_hc(door.entrance):

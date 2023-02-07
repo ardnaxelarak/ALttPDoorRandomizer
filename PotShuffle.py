@@ -879,7 +879,7 @@ def shuffle_pots(world, player):
             elif old_pot.item == PotItem.Switch:
                 available_pots = (pot for pot in new_pots if (pot.room == old_pot.room or pot.room in movable_switch_rooms[old_pot.room]) and not (pot.flags & PotFlags.NoSwitch))
             elif old_pot.item == PotItem.Key:
-                if world.doorShuffle[player] == 'vanilla' and not world.retro[player] and world.pottery[player] == 'none' and world.logic[player] != 'nologic':
+                if world.doorShuffle[player] == 'vanilla' and not world.universal_keys[player] and world.pottery[player] == 'none' and world.logic[player] != 'nologic':
                     available_pots = (pot for pot in new_pots if pot.room not in invalid_key_rooms)
                 else:
                     available_pots = new_pots
@@ -890,7 +890,7 @@ def shuffle_pots(world, player):
 
             new_pot = random.choice(available_pots)
             new_pot.item = old_pot.item
-            if world.retro[player] and new_pot.item == PotItem.FiveArrows:
+            if world.rupee_bow[player] and new_pot.item == PotItem.FiveArrows:
                 new_pot.item = PotItem.FiveRupees
 
             if new_pot.item == PotItem.Key:
@@ -938,7 +938,7 @@ def shuffle_pot_switches(world, player):
 
             new_pot = random.choice(available_pots)
             new_pot.item, old_pot.item = old_pot.item, new_pot.item
-            if world.retro[player] and new_pot.item == PotItem.FiveArrows:
+            if world.rupee_bow[player] and new_pot.item == PotItem.FiveArrows:
                 new_pot.item = PotItem.FiveRupees
 
             if new_pot.item == PotItem.Switch and (new_pot.flags & PotFlags.SwitchLogicChange):

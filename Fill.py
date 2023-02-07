@@ -160,7 +160,7 @@ def valid_key_placement(item, location, key_pool, world):
     if not valid_reserved_placement(item, location, world):
         return False
     if ((not item.smallkey and not item.bigkey) or item.player != location.player
-       or world.retro[item.player] or world.logic[item.player] == 'nologic'):
+       or world.universal_keys[item.player] or world.logic[item.player] == 'nologic'):
         return True
     dungeon = location.parent_region.dungeon
     if dungeon:
@@ -405,7 +405,7 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
         else:
             max_trash = gt_count
         scaled_trash = math.floor(max_trash * scale_factor)
-        if world.goal[player] in ['triforcehunt', 'trinity']:
+        if world.goal[player] in ['triforcehunt', 'trinity', 'z1']:
             gftower_trash_count = random.randint(scaled_trash, max_trash)
         else:
             gftower_trash_count = random.randint(0, scaled_trash)
@@ -507,7 +507,7 @@ def ensure_good_pots(world, write_skips=False):
         #         else:
         #             loc.item = ItemFactory(invalid_location_replacement[loc.item.name], loc.player)
         # do the arrow retro check
-        if world.retro[loc.item.player] and loc.item.name in {'Arrows (5)', 'Arrows (10)'}:
+        if world.rupee_bow[loc.item.player] and loc.item.name in {'Arrows (5)', 'Arrows (10)'}:
             loc.item = ItemFactory('Rupees (5)', loc.item.player)
         # don't write out all pots to spoiler
         if write_skips:
@@ -823,7 +823,9 @@ def balance_money_progression(world):
             return True
         if item.name in ['Progressive Armor', 'Blue Mail', 'Red Mail']:
             return True
-        if world.retro[player] and (item.name in ['Single Arrow', 'Small Key (Universal)']):
+        if world.universal_keys and item.name == 'Small Key (Universal)':
+            return True
+        if world.rupee_bow and item.name == 'Single Arrow':
             return True
         if location.name in pay_for_locations:
             return True
@@ -975,7 +977,7 @@ def set_prize_drops(world, player):
                               0xE3: 0xD8} # Big magic -> small magic
         new_prizes = [prize_replacements.get(prize, prize) for prize in new_prizes]
 
-    if world.retro[player]:
+    if world.rupee_bow[player]:
         prize_replacements = {0xE1: 0xDA, #5 Arrows -> Blue Rupee
                               0xE2: 0xDB} #10 Arrows -> Red Rupee
         new_prizes = [prize_replacements.get(prize, prize) for prize in new_prizes]
