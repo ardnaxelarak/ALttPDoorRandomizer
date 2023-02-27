@@ -6,7 +6,7 @@ import subprocess # do stuff at the shell level
 
 env = common.prepare_env()
 
-pip_requirements = os.path.join("..","resources","app","meta","manifests","pip_requirements.txt")
+pip_requirements = os.path.join(".","resources","app","meta","manifests","pip_requirements.txt")
 if not os.path.isfile(pip_requirements):
   pip_requirements = os.path.join("..","..","..","resources","app","meta","manifests","pip_requirements.txt")
 

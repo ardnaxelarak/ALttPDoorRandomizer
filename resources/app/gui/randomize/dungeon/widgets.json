@@ -1,11 +1,20 @@
 {
   "widgets": {
+    "smallkeyshuffle": {
+      "type": "selectbox",
+      "options": [
+        "none",
+        "wild",
+        "universal"
+      ]
+    },
     "dungeondoorshuffle": {
       "type": "selectbox",
       "default": "vanilla",
       "options": [
         "vanilla",
         "basic",
+        "partitioned",
         "crossed"
       ]
     },
@@ -22,6 +31,42 @@
         "width": 45
       }
     },
+    "door_type_mode": {
+      "type": "selectbox",
+      "default": "original",
+      "options": [
+        "original",
+        "big",
+        "all",
+        "chaos"
+      ],
+      "config": {
+        "width": 45
+      }
+    },
+    "trap_door_mode": {
+      "type": "selectbox",
+      "default": "optional",
+      "options": [
+        "vanilla",
+        "optional",
+        "boss",
+        "oneway"
+      ],
+      "config": {
+        "width": 30
+      }
+    },
+    "key_logic_algorithm": {
+      "type": "selectbox",
+      "default": "default",
+      "options": [
+        "default",
+        "partial",
+        "strict"
+      ]
+    },
+    "decoupledoors": { "type": "checkbox" },
     "keydropshuffle": { "type": "checkbox" },
     "pottery": {
       "type": "selectbox",

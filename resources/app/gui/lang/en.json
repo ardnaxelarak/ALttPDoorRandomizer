@@ -53,8 +53,12 @@
     "randomizer.dungeon.mapshuffle": "Maps",
     "randomizer.dungeon.compassshuffle": "Compasses",
     "randomizer.dungeon.smallkeyshuffle": "Small Keys",
+    "randomizer.dungeon.smallkeyshuffle.none": "In Dungeon",
+    "randomizer.dungeon.smallkeyshuffle.wild": "Randomized",
+    "randomizer.dungeon.smallkeyshuffle.universal": "Universal",
     "randomizer.dungeon.bigkeyshuffle": "Big Keys",
     "randomizer.dungeon.keydropshuffle": "Key Drop Shuffle (Legacy)",
+    "randomizer.dungeon.decoupledoors": "Decouple Doors",
     "randomizer.dungeon.dropshuffle": "Shuffle Enemy Key Drops",
     "randomizer.dungeon.potshuffle": "Pot Shuffle (Legacy)",
     "randomizer.dungeon.pottery": "Pottery",
@@ -72,6 +76,7 @@
     "randomizer.dungeon.dungeondoorshuffle": "Dungeon Door Shuffle",
     "randomizer.dungeon.dungeondoorshuffle.vanilla": "Vanilla",
     "randomizer.dungeon.dungeondoorshuffle.basic": "Basic",
+    "randomizer.dungeon.dungeondoorshuffle.partitioned": "Partitioned",
     "randomizer.dungeon.dungeondoorshuffle.crossed": "Crossed",
 
     "randomizer.dungeon.dungeonintensity": "Intensity Level",
@@ -79,6 +84,23 @@
     "randomizer.dungeon.dungeonintensity.2": "2: Open Edges, Straight Stairs and In-Room Stairs",
     "randomizer.dungeon.dungeonintensity.3": "3: Dungeon Lobbies",
     "randomizer.dungeon.dungeonintensity.random": "Random",
+
+    "randomizer.dungeon.door_type_mode": "Door Types to Shuffle",
+    "randomizer.dungeon.door_type_mode.original": "Small Key Doors, Bomb Doors, Dash Doors",
+    "randomizer.dungeon.door_type_mode.big": "Adds Big Key Doors",
+    "randomizer.dungeon.door_type_mode.all": "Adds Trap Doors",
+    "randomizer.dungeon.door_type_mode.chaos": "Increases all door types",
+
+    "randomizer.dungeon.trap_door_mode": "Trap Door Removal",
+    "randomizer.dungeon.trap_door_mode.vanilla": "No Removal",
+    "randomizer.dungeon.trap_door_mode.optional": "Removed If Blocking Path",
+    "randomizer.dungeon.trap_door_mode.boss": "Also Remove Boss Traps",
+    "randomizer.dungeon.trap_door_mode.oneway": "Remove All Annoying Traps",
+
+    "randomizer.dungeon.key_logic_algorithm": "Key Logic Algorithm",
+    "randomizer.dungeon.key_logic_algorithm.default": "Default",
+    "randomizer.dungeon.key_logic_algorithm.partial": "Partial Protection",
+    "randomizer.dungeon.key_logic_algorithm.strict": "Strict",
 
     "randomizer.dungeon.experimental": "Enable Experimental Features",
 
@@ -159,6 +181,7 @@
     "randomizer.entrance.openpyramid.no": "No",
     "randomizer.entrance.shuffleganon": "Include Ganon's Tower and Pyramid Hole in shuffle pool",
     "randomizer.entrance.shufflelinks": "Include Link's House in the shuffle pool",
+    "randomizer.entrance.shuffletavern": "Include the back of the tavern in the entrance shuffle pool",
     "randomizer.entrance.overworld_map": "Overworld Map",
     "randomizer.entrance.overworld_map.default": "Default (no location display)",
     "randomizer.entrance.overworld_map.compass": "Compass indicates location",
@@ -166,21 +189,20 @@
 
     "randomizer.entrance.entranceshuffle": "Entrance Shuffle",
     "randomizer.entrance.entranceshuffle.vanilla": "Vanilla",
+    "randomizer.entrance.entranceshuffle.lite": "Lite",
     "randomizer.entrance.entranceshuffle.simple": "Simple",
     "randomizer.entrance.entranceshuffle.restricted": "Restricted",
     "randomizer.entrance.entranceshuffle.full": "Full",
-    "randomizer.entrance.entranceshuffle.lite": "Lite",
     "randomizer.entrance.entranceshuffle.lean": "Lean",
     "randomizer.entrance.entranceshuffle.crossed": "Crossed",
     "randomizer.entrance.entranceshuffle.insanity": "Insanity",
-    "randomizer.entrance.entranceshuffle.restricted_legacy": "Restricted (Legacy)",
-    "randomizer.entrance.entranceshuffle.full_legacy": "Full (Legacy)",
-    "randomizer.entrance.entranceshuffle.madness_legacy": "Madness (Legacy)",
-    "randomizer.entrance.entranceshuffle.insanity_legacy": "Insanity (Legacy)",
     "randomizer.entrance.entranceshuffle.dungeonsfull": "Dungeons + Full",
     "randomizer.entrance.entranceshuffle.dungeonssimple": "Dungeons + Simple",
 
-
+    "randomizer.entrance.take_any": "Take Any Caves",
+    "randomizer.entrance.take_any.none": "None",
+    "randomizer.entrance.take_any.random": "Random",
+    "randomizer.entrance.take_any.fixed": "Fixed",
 
     "randomizer.gameoptions.nobgm": "Disable Music & MSU-1",
     "randomizer.gameoptions.quickswap": "L/R Quickswapping",
@@ -229,8 +251,10 @@
     "randomizer.generation.createspoiler": "Create Spoiler Log",
     "randomizer.generation.createrom": "Create Patched ROM",
     "randomizer.generation.calcplaythrough": "Calculate Playthrough",
+    "randomizer.generation.print_custom_yaml": "Print Customizer File",
     "randomizer.generation.usestartinventory": "Use Starting Inventory",
     "randomizer.generation.usecustompool": "Use Custom Item Pool",
+    "randomizer.generation.race": "Generate \"Race\" ROM",
 
     "randomizer.generation.saveonexit": "Save Settings on Exit",
     "randomizer.generation.saveonexit.ask": "Ask Me",
@@ -243,7 +267,7 @@
     "randomizer.generation.rom.dialog.allfiles": "All Files",
 
     "randomizer.item.hints": "Include Helpful Hints",
-    "randomizer.item.retro": "Retro mode (universal keys)",
+    "randomizer.item.retro": "Retro mode",
     "randomizer.item.pseudoboots": "Start with Pseudo Boots",
     "randomizer.item.bombbag": "Bombbag",
 
@@ -266,6 +290,8 @@
     "randomizer.item.goal.triforcehunt": "Triforce Hunt",
     "randomizer.item.goal.trinity": "Trinity",
     "randomizer.item.goal.crystals": "Crystals",
+    "randomizer.item.goal.ganonhunt": "Triforce Hunt + Ganon",
+    "randomizer.item.goal.completionist": "Completionist",
 
     "randomizer.item.crystals_gt": "Crystals to open GT",
     "randomizer.item.crystals_gt.0": "0",
@@ -334,6 +360,16 @@
     "randomizer.item.itemfunction.normal": "Normal",
     "randomizer.item.itemfunction.hard": "Hard",
     "randomizer.item.itemfunction.expert": "Expert",
+    
+    "randomizer.item.flute_mode": "Flute Mode",
+    "randomizer.item.flute_mode.normal": "Normal",
+    "randomizer.item.flute_mode.active": "Pre-Activated",
+
+    "randomizer.item.bow_mode": "Bow Mode",
+    "randomizer.item.bow_mode.progressive": "Progressive",
+    "randomizer.item.bow_mode.silvers": "Silvers Separate",
+    "randomizer.item.bow_mode.retro": "Retro (Progressive)",
+    "randomizer.item.bow_mode.retro_silvers": "Retro + Silvers",
 
     "randomizer.item.timer": "Timer Setting",
     "randomizer.item.timer.none": "No Timer",
@@ -342,11 +378,6 @@
     "randomizer.item.timer.timed-ohko": "Timed OHKO",
     "randomizer.item.timer.ohko": "OHKO",
     "randomizer.item.timer.timed-countdown": "Timed Countdown",
-
-    "randomizer.item.progressives": "Progressive Items",
-    "randomizer.item.progressives.on": "On",
-    "randomizer.item.progressives.off": "Off",
-    "randomizer.item.progressives.random": "Random",
 
     "randomizer.item.accessibility": "Accessibility",
     "randomizer.item.accessibility.items": "100% Inventory",

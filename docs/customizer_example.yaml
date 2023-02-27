@@ -1,0 +1,108 @@
+meta:
+  algorithm: balanced
+  players: 1
+  seed: 42
+  names: Lonk
+settings:
+  1:
+    door_shuffle: basic
+    dropshuffle: true
+    experimental: true
+    goal: ganon
+    hints: true
+    intensity: 3
+    overworld_map: compass
+    pseudoboots: true
+    pottery: keys
+    shopsanity: true
+    shuffle: crossed
+    shufflelinks: true
+    shufflebosses: unique
+item_pool:
+  1:
+    Blue Boomerang: 3
+    Bombos: 3
+    Book of Mudora: 3
+    Boss Heart Container: 30
+    Bottle (Random): 12
+    Bug Catching Net: 3
+    Cane of Byrna: 3
+    Cane of Somaria: 3
+    Cape: 3
+    Ether: 3
+    Fire Rod: 3
+    Flippers: 3
+    Hammer: 3
+    Hookshot: 3
+    Ice Rod: 3
+    Lamp: 3
+    Magic Mirror: 3
+    Magic Powder: 3
+    Magic Upgrade (1/2): 3
+    Moon Pearl: 3
+    Mushroom: 3
+    Ocarina: 3
+    Pegasus Boots: 3
+    Piece of Heart: 24
+    Progressive Armor: 6
+    Progressive Bow: 6
+    Progressive Glove: 6
+    Progressive Shield: 9
+    Progressive Sword: 12
+    Quake: 3
+    Red Boomerang: 3
+    Rupees (300): 10
+    Bombs (3): 20
+    Sanctuary Heart Container: 3
+    Shovel: 3
+    Single Arrow: 1
+placements:
+  1:
+    Palace of Darkness - Big Chest: Hammer
+    Capacity Upgrade - Left: Moon Pearl
+    Turtle Rock - Pokey 2 Key Drop: Ice Rod
+entrances:
+  1:
+    entrances:
+      Bat Cave Drop: Pyramid
+      Dam: Chicken House
+      Snitch Lady (West): Cave 45
+    exits:
+      Misery Mire: Chris Houlihan Room Exit
+    two-way:
+      Bat Cave Cave: Pyramid Exit
+      Bumper Cave (Bottom): Bumper Cave Exit (Bottom)
+      Bumper Cave (Top): Bumper Cave Exit (Top)
+      Skull Woods Final Section: Ganons Tower Exit
+      Misery Mire: Links House Exit
+doors:
+  1:
+    lobbies:
+      Sanctuary: Sewers Pull Switch S
+      Skull 2 East: Skull 1 Lobby S
+      Skull 3: Skull 2 West Lobby S
+      Turtle Rock Lazy Eyes: TR Roller Room SW
+    doors:
+      Hyrule Dungeon Guardroom Abyss Edge: Hyrule Castle Lobby W
+      Sewers Rat Path WS:
+        dest: Sewers Secret Room ES
+        type: Key Door
+      Sewers Rat Path WN:
+        dest: Sewers Secret Room EN
+        type: Key Door
+      Tower Pacifist Run WS:
+        dest: Tower Circle of Pots ES
+        type: Key Door
+      Hera Lobby Up Stairs: Hera 4F Down Stairs
+medallions:
+  1:
+    Misery Mire: Bombos
+bosses:
+  1:
+    Palace of Darkness: Arrghus
+    Thieves Town: Blind
+    Ganons Tower (top): Vitreous
+start_inventory:
+  1:
+    - Pegasus Boots
+

@@ -14,8 +14,7 @@ def ItemFactory(items, player):
             advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text = item_table[item]
             ret.append(Item(item, advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text, player))
         else:
-            logging.getLogger('').warning('Unknown Item: %s', item)
-            return None
+            raise RuntimeError(f'Unknown Item: {item}')
 
     if singleton:
         return ret[0]
@@ -84,7 +83,7 @@ item_table = {'Bow': (True, False, None, 0x0B, 200, 'You have\nchosen the\narche
               'Arrows (5)': (False, False, None, 0xB5, 15, 'This will give\nyou five shots\nwith your bow!', 'and the arrow pack', 'stick-collecting kid', 'sewing kit for sale', 'fungus for arrows', 'archer boy sews again', 'five arrows'),
               'Small Magic': (False, False, None, 0x45, 5, 'A bit of magic', 'and the bit of magic', 'bit-o-magic kid', 'magic bit for sale', 'fungus for magic', 'magic boy conjures again', 'a bit of magic'),
               'Big Magic': (False, False, None, 0xB4, 40, 'A lot of magic', 'and lots of magic', 'lot-o-magic kid', 'magic refill for sale', 'fungus for magic', 'magic boy conjures again', 'a magic refill'),
-              'Chicken': (False, False, None, 0xB3, 999, 'Cucco of Legend', 'and the legendary cucco', 'chicken kid', 'fried chicken for sale', 'fungus for chicken', 'cucco boy clucks again', 'a cucco'),
+              'Chicken': (False, False, None, 0xB3, 5, 'Cucco of Legend', 'and the legendary cucco', 'chicken kid', 'fried chicken for sale', 'fungus for chicken', 'cucco boy clucks again', 'a cucco'),
               'Bombs (3)': (False, False, None, 0x28, 15, 'I make things\ngo triple\nBOOM!!!', 'and the explosions', 'the bomb-holding kid', 'firecrackers for sale', 'blend fungus into bombs', '\'splosion boy explodes again', 'three bombs'),
               'Bombs (10)': (False, False, None, 0x31, 50, 'I make things\ngo BOOM! Ten\ntimes!', 'and the explosions', 'the bomb-holding kid', 'firecrackers for sale', 'blend fungus into bombs', '\'splosion boy explodes again', 'ten bombs'),
               'Bomb Upgrade (+10)': (False, False, None, 0x52, 100, 'Increase bomb\nstorage, low\nlow price', 'and the bomb bag', 'boom-enlarging kid', 'bomb boost for sale', 'the shroom goes boom', 'upgrade boy explodes more again', 'bomb capacity'),
@@ -193,6 +192,7 @@ item_table = {'Bow': (True, False, None, 0x0B, 200, 'You have\nchosen the\narche
               'Trench 1 Filled': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Trench 2 Filled': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Drained Swamp': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
+              'Turtle Opened': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Shining Light': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Maiden Rescued': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Maiden Unmasked': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),

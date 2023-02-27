@@ -157,8 +157,8 @@ def adjust_page(top, parent, settings):
             "quickswap": "quickswap",
             "nobgm": "disablemusic",
             "reduce_flashing": "reduce_flashing",
-            'msu_resume': 'msu_resume',
             "shuffle_sfx": "shuffle_sfx",
+            "msu_resume": "msu_resume"
         }
         guiargs = Namespace()
         for option in options:

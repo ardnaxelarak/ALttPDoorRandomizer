@@ -91,7 +91,6 @@ Triforce_texts = [
     'Who stole the fourth triangle?',
     'Trifource?\nMore Like Tritrice, am I right?'
     '\n    Well Done!',
-    'You just wasted 2 hours of your life.',
     'This was meant to be a trapezoid',
     # these ones are from web randomizer
     "\n       G G",

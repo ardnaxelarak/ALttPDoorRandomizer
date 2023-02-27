@@ -11,8 +11,17 @@
         "width": 10
       }
     },
+    "take_any":  {
+      "type": "selectbox",
+      "options": [
+        "none",
+        "random",
+        "fixed"
+      ]
+    },
     "shuffleganon":     { "type": "checkbox" },
     "shufflelinks":     { "type": "checkbox" },
+    "shuffletavern":     { "type": "checkbox" },
     "overworld_map": {
       "type": "selectbox",
       "options": [

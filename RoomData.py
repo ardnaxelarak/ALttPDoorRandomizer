@@ -103,7 +103,7 @@ def create_rooms(world, player):
         Room(player, 0x60, 0x51309).door(Position.NorthE2, DoorKind.NormalLow2).door(Position.East2, DoorKind.NormalLow2).door(Position.East2, DoorKind.ToggleFlag).door(Position.EastN, DoorKind.Normal).door(Position.SouthE, DoorKind.Normal).door(Position.SouthE, DoorKind.IncognitoEntrance),
         Room(player, 0x61, 0x51454).door(Position.West2, DoorKind.NormalLow).door(Position.West2, DoorKind.ToggleFlag).door(Position.East2, DoorKind.NormalLow).door(Position.East2, DoorKind.ToggleFlag).door(Position.South2, DoorKind.NormalLow).door(Position.South2, DoorKind.IncognitoEntrance).door(Position.WestN, DoorKind.Normal),
         Room(player, 0x62, 0x51577).door(Position.West2, DoorKind.NormalLow2).door(Position.West2, DoorKind.ToggleFlag).door(Position.NorthW2, DoorKind.NormalLow2).door(Position.North, DoorKind.Normal).door(Position.SouthW, DoorKind.Normal).door(Position.SouthW, DoorKind.IncognitoEntrance),
-        Room(player, 0x63, 0xf88ed).door(Position.NorthE, DoorKind.StairKey).door(Position.InteriorW, DoorKind.TrapTriggerable).door(Position.SouthW, DoorKind.DungeonEntrance),  # looked like a huge typo - I had to guess on StairKey
+        Room(player, 0x63, 0xf88ed).door(Position.NorthW, DoorKind.StairKey).door(Position.InteriorW, DoorKind.TrapTriggerable).door(Position.SouthW, DoorKind.DungeonEntrance),  # looked like a huge typo - I had to guess on StairKey
         Room(player, 0x64, 0xfda53).door(Position.InteriorS, DoorKind.Trap2),
         Room(player, 0x65, 0xfdac5).door(Position.InteriorS, DoorKind.Normal),
         Room(player, 0x66, 0xfa01b).door(Position.InteriorE2, DoorKind.Waterfall).door(Position.SouthW2, DoorKind.NormalLow2).door(Position.SouthW2, DoorKind.ToggleFlag).door(Position.InteriorW2, DoorKind.NormalLow2),
@@ -244,7 +244,9 @@ def create_rooms(world, player):
         # Room(player, 0xff, 0x52c9a).door(Position.InteriorW, DoorKind.Bombable).door(Position.InteriorE, DoorKind.Bombable).door(Position.SouthE, DoorKind.CaveEntrance),
     ]
     # fix some wonky things
-    world.get_room(0x51, player).change(1, DoorKind.Normal)  # fix the dungeon changer
+    # should I put back the dungeon changer for certain logic - like no logic? maybe in basic
+    if world.doorShuffle[player] != 'vanilla':
+        world.get_room(0x51, player).delete(1)   # remove the dungeon changer
     world.get_room(0x60, player).swap(2, 4)  # puts the exit at pos 2 - enables pos 3
     world.get_room(0x61, player).swap(1, 6)  # puts the WN door at pos 1 - enables it
     world.get_room(0x61, player).swap(5, 6)  # puts the Incognito Entrance at the end, so it can be deleted
@@ -316,6 +318,18 @@ class Room(object):
             byte_array.append(kind.value)
         return byte_array
 
+    def next_free(self, pos=4):
+        for i, door in enumerate(self.doorList):
+            if i >= pos:
+                return None
+            position, kind = door
+            if kind not in [DoorKind.SmallKey, DoorKind.Dashable, DoorKind.Bombable, DoorKind.TrapTriggerable,
+                            DoorKind.Trap, DoorKind.Trap2, DoorKind.TrapTriggerableLow, DoorKind.TrapLowE3,
+                            DoorKind.BigKey, DoorKind.StairKey, DoorKind.StairKey2, DoorKind.StairKeyLow,
+                            DoorKind.BlastWall, DoorKind.BombableEntrance]:
+                return i
+        return None
+
     def __str__(self):
         return str(self.__unicode__())
 
@@ -383,8 +397,8 @@ class DoorKind(Enum):
     Bombable = 0x2E
     BlastWall = 0x30
     Hidden = 0x32
-    TrapTriggerable = 0x36  # right side trap or south side trap
-    Trap2 = 0x38  # left side trap or north side trap
+    TrapTriggerable = 0x36  # right side trap or bottom side trap (door directions: West, North)
+    Trap2 = 0x38  # left side trap or top side trap (door directions: East, South)
     NormalLow2 = 0x40
     TrapTriggerableLow = 0x44
     Warp = 0x46

@@ -608,16 +608,18 @@ OWEdgeTransition:
 }
 OWSpecialExit:
 {
-    PHY
-    LDY.b #$00
-    LDA.w $0418 : LSR : BNE +
-        LDY.w $0704 : BRA ++
-    +
-    LDA.w $0704 : BNE ++
-        LDY.b #$02
-    ++
-    JSR OWWorldTerrainUpdate
-    PLY
+    LDA.l OWMode : ORA.l OWMode+1 : BEQ .vanilla
+        PHY
+        LDY.b #$00
+        LDA.w $0418 : LSR : BNE +
+            LDY.w $0704 : BRA ++
+        +
+        LDA.w $0704 : BNE ++
+            LDY.b #$02
+        ++
+        JSR OWWorldTerrainUpdate
+        PLY
+    .vanilla
     LDA.l $7EFD40,X ; what we wrote over
     RTL
 }

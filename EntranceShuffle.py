@@ -10,7 +10,7 @@ from Utils import stack_size3a
 entrance_pool = list()
 exit_pool = list()
 entrance_exits = list()
-ignore_pool = False
+ignore_pool = True
 suppress_spoiler = True
 
 def link_entrances(world, player):
@@ -39,7 +39,6 @@ def link_entrances(world, player):
     if not world.is_tile_swapped(0x1b, player):
         drop_connections.append(tuple(('Pyramid Hole', 'Pyramid')))
         dropexit_connections.append(tuple(('Pyramid Entrance', 'Pyramid Exit')))
-        connect_simple(world, 'Other World S&Q', 'Pyramid Area', player)
     else:
         entrance_pool.remove('Pyramid Hole')
         entrance_pool.append('Inverted Pyramid Hole')
@@ -47,7 +46,6 @@ def link_entrances(world, player):
         entrance_pool.append('Inverted Pyramid Entrance')
         drop_connections.append(tuple(('Inverted Pyramid Hole', 'Pyramid')))
         dropexit_connections.append(tuple(('Inverted Pyramid Entrance', 'Pyramid Exit')))
-        connect_simple(world, 'Other World S&Q', 'Hyrule Castle Ledge', player)
         
     unbias_some_entrances(Dungeon_Exits, Cave_Exits, Old_Man_House, Cave_Three_Exits)
     Cave_Exits.extend(Cave_Exits_Directional)
@@ -55,16 +53,6 @@ def link_entrances(world, player):
     # setup mandatory connections
     for exitname, regionname in mandatory_connections:
         connect_simple(world, exitname, regionname, player)
-
-    if not world.is_bombshop_start(player):
-        connect_simple(world, 'Links House S&Q', 'Links House', player)
-    else:
-        connect_simple(world, 'Links House S&Q', 'Big Bomb Shop', player)
-    
-    if not invFlag:
-        connect_simple(world, 'Sanctuary S&Q', 'Sanctuary', player)
-    else:
-        connect_simple(world, 'Sanctuary S&Q', 'Dark Sanctuary Hint', player)
 
     connect_simple(world, 'Tavern North', 'Tavern', player)
     
@@ -74,7 +62,8 @@ def link_entrances(world, player):
 
     # if we do not shuffle, set default connections
     if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
-        for entrancename, exitname in default_connections + default_pot_connections + drop_connections + default_item_connections + default_shop_connections:
+        for entrancename, exitname in (default_connections + default_pot_connections +
+               default_takeany_connections + drop_connections + default_item_connections + default_shop_connections):
             connect_logical(world, entrancename, exitname, player, exitname.endswith(' Exit'))
         for entrancename, exitname in default_connector_connections + dropexit_connections:
             connect_logical(world, entrancename, exitname, player, True)
@@ -221,6 +210,8 @@ def link_entrances(world, player):
             bomb_shop_doors = list(entrance_pool)
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             bomb_shop = random.choice(bomb_shop_doors)
             connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
             
@@ -267,6 +258,8 @@ def link_entrances(world, player):
             bomb_shop_doors = list(entrance_pool)
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             bomb_shop = random.choice(bomb_shop_doors)
             connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
             
@@ -325,6 +318,8 @@ def link_entrances(world, player):
             bomb_shop_doors = [e for e in entrance_pool if e not in list(zip(*drop_connections + dropexit_connections))[0]]
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in bomb_shop_doors if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             bomb_shop = random.choice(bomb_shop_doors)
             connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
             
@@ -342,7 +337,10 @@ def link_entrances(world, player):
         # place remaining doors
         connect_doors(world, list(entrance_pool), list(exit_pool), player)
     elif world.shuffle[player] == 'lite':
-        for entrancename, exitname in default_connections + ([] if world.shopsanity[player] else default_shop_connections) + ([] if world.pottery[player] not in ['none', 'keys', 'dungeon'] else default_pot_connections):
+        for entrancename, exitname in (default_connections +
+               ([] if world.shopsanity[player] else default_shop_connections) +
+               ([] if world.pottery[player] not in ['none', 'keys', 'dungeon'] else default_pot_connections) +
+               ([] if world.take_any[player] == 'fixed' else default_takeany_connections)):
             connect_logical(world, entrancename, exitname, player, False)
         if invFlag:
             world.get_entrance('Dark Sanctuary Hint Exit', player).connect(world.get_entrance('Dark Sanctuary Hint', player).parent_region)
@@ -426,13 +424,18 @@ def link_entrances(world, player):
             bomb_shop_doors = list(entrance_pool)
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             bomb_shop = random.choice(bomb_shop_doors)
             connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
             
         # place remaining doors
         connect_doors(world, list(entrance_pool), list(exit_pool), player)
     elif world.shuffle[player] == 'lean':
-        for entrancename, exitname in default_connections + ([] if world.shopsanity[player] else default_shop_connections) + ([] if world.pottery[player] not in ['none', 'keys', 'dungeon'] else default_pot_connections):
+        for entrancename, exitname in (default_connections +
+               ([] if world.shopsanity[player] else default_shop_connections) +
+               ([] if world.pottery[player] not in ['none', 'keys', 'dungeon'] else default_pot_connections) +
+               ([] if world.take_any[player] == 'fixed' else default_takeany_connections)):
             connect_logical(world, entrancename, exitname, player, False)
         if invFlag:
             world.get_entrance('Dark Sanctuary Hint Exit', player).connect(world.get_entrance('Dark Sanctuary Hint', player).parent_region)
@@ -481,6 +484,8 @@ def link_entrances(world, player):
             bomb_shop_doors = list(entrance_pool)
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             bomb_shop = random.choice(bomb_shop_doors)
             connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
             
@@ -531,6 +536,8 @@ def link_entrances(world, player):
             bomb_shop_doors = list(entrance_pool)
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             bomb_shop = random.choice(bomb_shop_doors)
             connect_entrance(world, bomb_shop, 'Big Bomb Shop', player)
             
@@ -615,6 +622,8 @@ def link_entrances(world, player):
             bomb_shop_doors = list(entrance_pool)
             if world.logic[player] in ['noglitches', 'minorglitches'] or world.is_tile_swapped(0x1b, player):
                 bomb_shop_doors = [e for e in entrance_pool if e not in ['Pyramid Fairy']]
+            if world.is_tile_swapped(0x03, player):
+                bomb_shop_doors = [x for x in bomb_shop_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
             random.shuffle(bomb_shop_doors)
             bomb_shop = bomb_shop_doors.pop()
             pool.remove(bomb_shop)
@@ -704,9 +713,9 @@ def connect_logical(world, entrancename, exitname, player, isTwoWay = False):
 def connect_entrance(world, entrancename, exitname, player, mark_two_way=True):
     if not ignore_pool:
         logging.getLogger('').debug('Connecting %s -> %s', entrancename, exitname)
-        assert entrancename in entrance_pool, 'Entrance not in pool: ' + entrancename
+        assert entrancename in entrance_pool, f'Entrance not in pool: {entrancename}'
         if mark_two_way:
-            assert exitname in exit_pool, 'Exit not in pool: ' + exitname
+            assert exitname in exit_pool, f'Exit not in pool: {exitname}'
     
     entrance = world.get_entrance(entrancename, player)
     # check if we got an entrance or a region to connect to
@@ -807,7 +816,7 @@ def connect_mandatory_exits(world, entrances, caves, must_be_exits, player, must
 
     # if world.logic[player] in ['owglitches', 'nologic']:
     #     import OverworldGlitchRules
-    #     for entrance in OverworldGlitchRules.get_non_mandatory_exits(world.mode[player] == 'inverted'):
+    #     for entrance in OverworldGlitchRules.get_non_mandatory_exits(world, player):
     #         if entrance in must_be_exits:
     #             must_be_exits.remove(entrance)
     #             entrances.append(entrance)
@@ -1353,8 +1362,13 @@ def place_links_house(world, player, ignore_list=[]):
             links_house_doors = [i for i in get_distant_entrances(world, dark_sanc, player) if i in entrance_pool]
         else:
             links_house_doors = [i for i in get_starting_entrances(world, player, world.shuffle[player] != 'insanity') if i in entrance_pool]
+        if world.is_bombshop_start(player) and world.is_tile_swapped(0x03, player):
+            links_house_doors = [x for x in links_house_doors if x not in ['Spectacle Rock Cave', 'Spectacle Rock Cave (Bottom)']]
         if world.shuffle[player] in ['lite', 'lean']:
-            links_house_doors = [e for e in links_house_doors if e in list(zip(*(default_item_connections + (default_shop_connections if world.shopsanity[player] else []) + (default_pot_connections if world.pottery[player] not in ['none', 'keys', 'dungeon'] else []))))[0]]
+            links_house_doors = [e for e in links_house_doors if e in list(zip(*(default_item_connections +
+               (default_shop_connections if world.shopsanity[player] else []) +
+               (default_pot_connections if world.pottery[player] not in ['none', 'keys', 'dungeon'] else []) +
+               (default_takeany_connections if world.take_any[player] == 'fixed' else []))))[0]]
         
         #TODO: Need to improve Links House placement to choose a better sector or eliminate entrances that are after ledge drops
         links_house_doors = [e for e in links_house_doors if e not in ignore_list]
@@ -1370,7 +1384,7 @@ def place_links_house(world, player, ignore_list=[]):
 
 def place_dark_sanc(world, player, ignore_list=[]):
     if not world.shufflelinks[player]:
-        sanc_doors = [i for i in get_distant_entrances(world, 'Big Bomb Shop', player) if i in entrance_pool]
+        sanc_doors = [i for i in get_distant_entrances(world, 'Big Bomb Shop' if world.is_bombshop_start(player) else 'Links House', player) if i in entrance_pool]
     else:
         sanc_doors = [i for i in get_starting_entrances(world, player, world.shuffle[player] != 'insanity') if i in entrance_pool]
     if world.shuffle[player] in ['lite', 'lean']:
@@ -1388,8 +1402,7 @@ def place_blacksmith(world, links_house, player):
     invFlag = world.mode[player] == 'inverted'
     
     assumed_inventory = list()
-    region = world.get_region('Frog Prison', player)
-    if world.logic[player] in ['noglitches', 'minorglitches'] and region.type == (RegionType.DarkWorld if not invFlag else RegionType.LightWorld):
+    if world.logic[player] in ['noglitches', 'minorglitches'] and (world.is_tile_swapped(0x29, player) == invFlag):
         assumed_inventory.append('Titans Mitts')
     
     links_region = world.get_entrance(links_house, player).parent_region.name
@@ -1402,7 +1415,10 @@ def place_blacksmith(world, links_house, player):
         sanc_region = world.get_entrance('Sanctuary Exit', player).connected_region.name
         blacksmith_doors = list(OrderedDict.fromkeys(blacksmith_doors + list(build_accessible_entrance_list(world, sanc_region, player, assumed_inventory, False, True, True))))
     if world.shuffle[player] in ['lite', 'lean']:
-        blacksmith_doors = [e for e in blacksmith_doors if e in list(zip(*(default_item_connections + (default_shop_connections if world.shopsanity[player] else []) + (default_pot_connections if world.pottery[player] not in ['none', 'keys', 'dungeon'] else []))))[0]]
+        blacksmith_doors = [e for e in blacksmith_doors if e in list(zip(*(default_item_connections +
+           (default_shop_connections if world.shopsanity[player] else []) +
+           (default_pot_connections if world.pottery[player] not in ['none', 'keys', 'dungeon'] else []) +
+           (default_takeany_connections if world.take_any[player] == 'fixed' else []))))[0]]
     
     assert len(blacksmith_doors), 'No valid candidates to place Blacksmiths Hut'
     blacksmith_hut = random.choice(blacksmith_doors)
@@ -1420,6 +1436,7 @@ def place_old_man(world, pool, player, ignore_list=[]):
     old_man_entrances = [e for e in old_man_entrances if e != 'Old Man House (Bottom)' and e not in ignore_list]
     if world.shuffle[player] in ['lite', 'lean']:
         old_man_entrances = [e for e in old_man_entrances if e in pool]
+    assert len(old_man_entrances), 'No available entrances left to place Old Man Cave'
     random.shuffle(old_man_entrances)
     old_man_exit = None
     while not old_man_exit:
@@ -1469,72 +1486,166 @@ def junk_fill_inaccessible(world, player):
                 if not exit.connected_region and exit.name in entrance_pool:
                     inaccessible_entrances.append(exit.name)
 
-    junk_locations = [e for e in list(zip(*(default_connections + ([] if world.pottery[player] not in ['none', 'keys', 'dungeon'] else default_pot_connections))))[1] if e in exit_pool]
+    junk_locations = [e for e in list(zip(*(default_connections +
+                       ([] if world.pottery[player] not in ['none', 'keys', 'dungeon'] else default_pot_connections) +
+                       ([] if world.take_any[player] == 'fixed' else default_takeany_connections))))[1] if e in exit_pool]
     random.shuffle(junk_locations)
     for entrance in inaccessible_entrances:
         connect_entrance(world, entrance, junk_locations.pop(), player)
 
 
 def connect_inaccessible_regions(world, lw_entrances, dw_entrances, caves, player, ignore_list=[]):
-    invFlag = world.mode[player] == 'inverted'
+    def find_inacessible_ow_regions():
+        nonlocal inaccessible_regions
+        find_inaccessible_regions(world, player)
+        inaccessible_regions = list(world.inaccessible_regions[player])
+        
+        # find OW regions that don't have a multi-entrance dungeon exit connected
+        glitch_regions = ['Central Cliffs', 'Eastern Cliff', 'Desert Northeast Cliffs', 'Hyrule Castle Water',
+                          'Dark Central Cliffs', 'Darkness Cliff', 'Mire Northeast Cliffs', 'Pyramid Water']
+        multi_dungeon_exits = {
+            'Hyrule Castle South Portal', 'Hyrule Castle West Portal', 'Hyrule Castle East Portal', 'Sanctuary Portal',
+            'Desert South Portal', 'Desert West Portal',
+            'Skull 2 East Portal', 'Skull 2 West Portal',
+            'Turtle Rock Main Portal', 'Turtle Rock Lazy Eyes Portal', 'Turtle Rock Eye Bridge Portal'
+        }
+        for region_name in world.inaccessible_regions[player]:
+            if (world.logic[player] in ['noglitches', 'minorglitches'] and region_name in glitch_regions) \
+                    or (region_name == 'Pyramid Exit Ledge' and (world.shuffle[player] != 'insanity' or world.is_tile_swapped(0x1b, player))) \
+                    or (region_name == 'Spiral Mimic Ledge Extend' and not world.is_tile_swapped(0x05, player)):
+                # removing irrelevant and resolved regions
+                inaccessible_regions.remove(region_name)
+                continue
+            region = world.get_region(region_name, player)
+            if region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
+                inaccessible_regions.remove(region_name)
+                continue
+            if world.shuffle[player] != 'insanity':
+                for exit in region.exits:
+                    # because dungeon regions haven't been connected yet, the inaccessibility check won't be able to know it's reachable yet
+                    if exit.connected_region and exit.connected_region.name in multi_dungeon_exits:
+                        resolved_regions.append(region_name)
+                        break
 
-    if stack_size3a() > 500:
-        from DungeonGenerator import GenerationException
-        raise GenerationException(f'Infinite loop detected at \'connect_inaccessible_regions\'')
+    inaccessible_regions = list()
+    resolved_regions = list()
+    find_inacessible_ow_regions()
 
-    random.shuffle(lw_entrances)
-    random.shuffle(dw_entrances)
-
-    find_inaccessible_regions(world, player)
-    
-    # remove regions that have a dungeon entrance
-    accessible_regions = list()
-    for region_name in world.inaccessible_regions[player]:
+    # keep track of neighboring regions for later consolidation
+    must_exit_links = OrderedDict()
+    for region_name in inaccessible_regions:
         region = world.get_region(region_name, player)
-        for exit in region.exits:
-            if exit.connected_region and exit.connected_region.type == RegionType.Dungeon:
-                accessible_regions.append(region_name)
-                break
-    for region_name in accessible_regions.copy():
-        accessible_regions = list(OrderedDict.fromkeys(accessible_regions + list(build_accessible_region_list(world, region_name, player, True, True, False, False))))
-    world.inaccessible_regions[player] = [r for r in world.inaccessible_regions[player] if r not in accessible_regions]
-    
-    # split inaccessible into 2 lists for each world
-    inaccessible_regions = list(world.inaccessible_regions[player])
+        must_exit_links[region_name] = [x.connected_region.name for x in region.exits if x.connected_region and x.connected_region.name in inaccessible_regions]
+
+    # group neighboring regions together, separated by one-ways
+    def consolidate_group(region):
+        processed_regions.append(region)
+        must_exit_links_copy.pop(region)
+        region_group.append(region)
+        for dest_region in must_exit_links[region]:
+            if region in must_exit_links[dest_region]:
+                if dest_region not in processed_regions:
+                    consolidate_group(dest_region)
+            else:
+                one_ways.append(tuple((region, dest_region)))
+
+    processed_regions = list()
+    must_exit_candidates = list()
+    one_ways = list()
+    must_exit_links_copy = must_exit_links.copy()
+    while len(must_exit_links_copy):
+        region_group = list()
+        region_name = next(iter(must_exit_links_copy))
+        consolidate_group(region_name)
+        must_exit_candidates.append(region_group)
+
+    # get available entrances in each group
+    for regions in must_exit_candidates:
+        entrances = list()
+        for region_name in regions:
+            region = world.get_region(region_name, player)
+            entrances = entrances + [x.name for x in region.exits if x.spot_type == 'Entrance' and not x.connected_region]
+        entrances = [e for e in entrances if e in entrance_pool and e not in ignore_list]
+        must_exit_candidates[must_exit_candidates.index(regions)] = tuple((regions, entrances))
+
+    # necessary for circular relations between region groups, it will pick the last group
+    # and fill one of those entrances, and we don't want it to bias the same group
+    random.shuffle(must_exit_candidates)
+
+    # remove must exit candidates that would be made accessible thru other region groups
+    def find_group(region):
+        for group in must_exit_candidates:
+            regions, _ = group
+            if region in regions:
+                return group
+        raise Exception(f'Could not find region group for {region}')
+
+    def cascade_ignore(group):
+        nonlocal ignored_regions
+        regions, _ = group
+        ignored_regions = ignored_regions + regions
+        for from_region, to_region in one_ways:
+            if from_region in regions and to_region not in ignored_regions:
+                cascade_ignore(find_group(to_region))
+
+    def process_group(group):
+        nonlocal processed_regions, ignored_regions
+        regions, entrances = group
+        must_exit_candidates_copy.remove(group)
+        processed_regions = processed_regions + regions
+        if regions[0] not in ignored_regions:
+            for from_region, to_region in one_ways:
+                if to_region in regions and from_region not in ignored_regions + processed_regions:
+                    process_group(find_group(from_region)) # process the parent region group
+            if regions[0] not in ignored_regions:
+                # this is the top level region
+                if any(r in resolved_regions for r in regions):
+                    cascade_ignore(group)
+                else:
+                    if len(entrances):
+                        # we will fulfill must exit here and cascade access to children
+                        must_exit_regions.append(group)
+                        cascade_ignore(group)
+                    else:
+                        ignored_regions = ignored_regions + regions
+
+    processed_regions = list()
+    ignored_regions = list()
     must_exit_regions = list()
-    otherworld_must_exit_regions = list()
-    for region_name in inaccessible_regions.copy():
-        region = world.get_region(region_name, player)
-        if region.type not in [RegionType.LightWorld, RegionType.DarkWorld] or not any((not exit.connected_region and exit.spot_type == 'Entrance') for exit in region.exits) \
-                or (region_name == 'Pyramid Exit Ledge' and (world.shuffle[player] != 'insanity' or world.is_tile_swapped(0x1b, player))) \
-                or region_name in ['Hyrule Castle Water', 'Pyramid Water']:
-            inaccessible_regions.remove(region_name)
-        elif region.type == (RegionType.LightWorld if not invFlag else RegionType.DarkWorld):
-            must_exit_regions.append(region_name)
-        elif region.type == (RegionType.DarkWorld if not invFlag else RegionType.LightWorld):
-            otherworld_must_exit_regions.append(region_name)
-    
-    def connect_one(region_name, pool):
-        inaccessible_entrances = list()
-        region = world.get_region(region_name, player)
-        for exit in region.exits:
-            if not exit.connected_region and exit.name in [e for e in entrance_pool if e not in ignore_list] and (world.shuffle[player] not in ['lite', 'lean'] or exit.name in pool):
-                inaccessible_entrances.append(exit.name)
-        if len(inaccessible_entrances):
-            random.shuffle(inaccessible_entrances)
-            connect_mandatory_exits(world, pool, caves, [inaccessible_entrances.pop()], player)
-        connect_inaccessible_regions(world, lw_entrances, dw_entrances, caves, player, ignore_list)
-    
-    # connect one connector at a time to ensure multiple connectors aren't assigned to the same inaccessible set of regions
-    pool = [e for e in (lw_entrances if world.shuffle[player] in ['lean', 'crossed', 'insanity'] else dw_entrances) if e in entrance_pool]
-    if len(otherworld_must_exit_regions) > 0 and len(pool):
-        random.shuffle(otherworld_must_exit_regions)
-        connect_one(otherworld_must_exit_regions[0], pool)
-    elif len(must_exit_regions) > 0:
-        pool = [e for e in lw_entrances if e in entrance_pool]
+    must_exit_candidates_copy = must_exit_candidates.copy()
+    while len(must_exit_candidates_copy):
+        region_group = next(iter(must_exit_candidates_copy))
+        process_group(region_group)
+
+    # connect must exits
+    random.shuffle(must_exit_regions)
+    must_exits_lw = list()
+    must_exits_dw = list()
+    for regions, entrances in must_exit_regions:
+        region = world.get_region(regions[0], player)
+        if region.type == RegionType.LightWorld:
+            must_exits_lw.append(random.choice(entrances))
+        else:
+            must_exits_dw.append(random.choice(entrances))
+    if world.shuffle[player] in ['lean', 'crossed', 'insanity']: # cross world
+        pool = [e for e in lw_entrances + dw_entrances if e in entrance_pool and e not in must_exits_lw + must_exits_dw]
+        connect_mandatory_exits(world, pool, caves, must_exits_lw + must_exits_dw, player)
+    else:
+        pool = [e for e in lw_entrances if e in entrance_pool and e not in must_exits_lw]
         if len(pool):
-            random.shuffle(must_exit_regions)
-            connect_one(must_exit_regions[0], pool)
+            connect_mandatory_exits(world, pool, caves, must_exits_lw, player)
+        pool = [e for e in dw_entrances if e in entrance_pool and e not in must_exits_dw]
+        if len(pool):
+            connect_mandatory_exits(world, pool, caves, must_exits_dw, player)
+
+    # check accessibility afterwards
+    resolved_regions = list()
+    find_inacessible_ow_regions()
+    inaccessible_regions = [e for e in inaccessible_regions if e not in resolved_regions]
+    # TODO: Instead of line above, this should cascade from the resolved regions down to regions it can access
+    if len(inaccessible_regions) > 0:
+        logging.getLogger('').debug(f'Could not resolve inaccessible regions: [{", ".join(inaccessible_regions)}]')
+        logging.getLogger('').debug(f'^ This is most often a false positive because Dungeon regions aren\'t connected yet')
 
 
 def unbias_some_entrances(Dungeon_Exits, Cave_Exits, Old_Man_House, Cave_Three_Exits):
@@ -1604,6 +1715,7 @@ def unbias_dungeons(Dungeon_Exits):
 def build_accessible_entrance_list(world, start_region, player, assumed_inventory=[], cross_world=False, region_rules=True, exit_rules=True, include_one_ways=False):
     from Main import copy_world_premature
     from Items import ItemFactory
+    from OverworldShuffle import one_way_ledges
     
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
@@ -1672,6 +1784,8 @@ def get_starting_entrances(world, player, force_starting_world=True):
 
 
 def get_distant_entrances(world, start_entrance, player):
+    from OverworldShuffle import one_way_ledges
+    
     # get walkable sector in which initial entrance was placed
     start_region = world.get_entrance(start_entrance, player).parent_region.name
     regions = next(s for s in world.owsectors[player] if any(start_region in w for w in s))
@@ -2039,11 +2153,9 @@ Exit_Pool_Base = ['Links House Exit',
                 'Skull Pot Circle',
                 'Pyramid']
 
-# these are connections that cannot be shuffled and always exist. They link together separate parts of the world we need to divide into regions
-mandatory_connections = [('Old Man S&Q', 'Old Man House'),
-
-                         # UW Connections
-                         ('Lost Woods Hideout (top to bottom)', 'Lost Woods Hideout (bottom)'),
+# these are connections that cannot be shuffled and always exist.
+# They link together underworld regions
+mandatory_connections = [('Lost Woods Hideout (top to bottom)', 'Lost Woods Hideout (bottom)'),
                          ('Lumberjack Tree (top to bottom)', 'Lumberjack Tree (bottom)'),
                          ('Kakariko Well (top to bottom)', 'Kakariko Well (bottom)'),
                          ('Kakariko Well (top to back)', 'Kakariko Well (back)'),
@@ -2084,8 +2196,6 @@ mandatory_connections = [('Old Man S&Q', 'Old Man House'),
 default_connections = [('Bonk Fairy (Light)', 'Bonk Fairy (Light)'),
                        ('Lake Hylia Fairy', 'Lake Hylia Healer Fairy'),
                        ('Lake Hylia Fortune Teller', 'Lake Hylia Fortune Teller'),
-                       ('Light Hype Fairy', 'Swamp Healer Fairy'),
-                       ('Desert Fairy', 'Desert Healer Fairy'),
                        ('Lost Woods Gamble', 'Lost Woods Gamble'),
                        ('Fortune Teller (Light)', 'Fortune Teller (Light)'),
                        ('Bush Covered House', 'Bush Covered House'),
@@ -2095,15 +2205,19 @@ default_connections = [('Bonk Fairy (Light)', 'Bonk Fairy (Light)'),
                        
                        ('East Dark World Hint', 'East Dark World Hint'),
                        ('Dark Lake Hylia Fairy', 'Dark Lake Hylia Healer Fairy'),
-                       ('Dark Lake Hylia Ledge Fairy', 'Dark Lake Hylia Ledge Healer Fairy'),
                        ('Dark Lake Hylia Ledge Hint', 'Dark Lake Hylia Ledge Hint'),
-                       ('Bonk Fairy (Dark)', 'Bonk Fairy (Dark)'),
                        ('Dark Sanctuary Hint', 'Dark Sanctuary Hint'),
                        ('Fortune Teller (Dark)', 'Fortune Teller (Dark)'),
                        ('Archery Game', 'Archery Game'),
-                       ('Dark Desert Fairy', 'Dark Desert Healer Fairy'),
-                       ('Dark Death Mountain Fairy', 'Dark Death Mountain Healer Fairy'),
+                       ('Dark Desert Fairy', 'Dark Desert Healer Fairy')
                     ]
+
+default_takeany_connections = [('Light Hype Fairy', 'Swamp Healer Fairy'),
+                               ('Desert Fairy', 'Desert Healer Fairy'),
+                               ('Dark Lake Hylia Ledge Fairy', 'Dark Lake Hylia Ledge Healer Fairy'),
+                               ('Bonk Fairy (Dark)', 'Bonk Fairy (Dark)'),
+                               ('Dark Death Mountain Fairy', 'Dark Death Mountain Healer Fairy')
+                            ]
 
 default_pot_connections = [('Lumberjack House', 'Lumberjack House'),
                            ('Snitch Lady (East)', 'Snitch Lady (East)'),
@@ -2249,77 +2363,6 @@ open_default_dungeon_connections = [('Ganons Tower', 'Ganons Tower Exit'),
 inverted_default_dungeon_connections = [('Ganons Tower', 'Agahnims Tower Exit'),
                                         ('Agahnims Tower', 'Ganons Tower Exit')
                                     ]
-
-one_way_ledges = {
-    'West Death Mountain (Bottom)':      {'West Death Mountain (Top)',
-                                          'Spectacle Rock Ledge'},
-    'East Death Mountain (Bottom)':      {'East Death Mountain (Top East)',
-                                          'Spiral Cave Ledge'},
-    'Fairy Ascension Plateau':           {'Fairy Ascension Ledge'},
-    'Mountain Entry Area':               {'Mountain Entry Ledge'},
-    'Sanctuary Area':                    {'Bonk Rock Ledge'},
-    'Graveyard Area':                    {'Graveyard Ledge'},
-    'Potion Shop Water':                 {'Potion Shop Area',
-                                          'Potion Shop Northeast'},
-    'Zora Approach Water':               {'Zora Approach Area'},
-    'Hyrule Castle Area':                {'Hyrule Castle Ledge'},
-    'Wooden Bridge Water':               {'Wooden Bridge Area',
-                                          'Wooden Bridge Northeast'},
-    'Maze Race Area':                    {'Maze Race Ledge',
-                                          'Maze Race Prize'},
-    'Flute Boy Approach Area':           {'Cave 45 Ledge'},
-    'Desert Area':                       {'Desert Ledge',
-                                          'Desert Palace Entrance (North) Spot',
-                                          'Desert Checkerboard Ledge',
-                                          'Desert Palace Mouth',
-                                          'Desert Palace Stairs',
-                                          'Bombos Tablet Ledge',
-                                          'Desert Palace Teleporter Ledge'},
-    'Desert Pass Area':                  {'Desert Pass Ledge'},
-    'Lake Hylia Water':                  {'Lake Hylia South Shore',
-                                          'Lake Hylia Island'},
-    'West Dark Death Mountain (Bottom)': {'West Dark Death Mountain (Top)'},
-    'West Dark Death Mountain (Top)':    {'Dark Death Mountain Floating Island'},
-    'East Dark Death Mountain (Bottom)': {'East Dark Death Mountain (Top)'},
-    'Turtle Rock Area':                  {'Turtle Rock Ledge'},
-    'Bumper Cave Area':                  {'Bumper Cave Ledge'},
-    'Qirn Jump Water':                   {'Qirn Jump Area'},
-    'Dark Witch Water':                  {'Dark Witch Area',
-                                          'Dark Witch Northeast'},
-    'Catfish Approach Water':            {'Catfish Approach Area'},
-    'Pyramid Area':                      {'Pyramid Exit Ledge'},
-    'Broken Bridge Water':               {'Broken Bridge West',
-                                          'Broken Bridge Area',
-                                          'Broken Bridge Northeast'},
-    'Misery Mire Area':                  {'Misery Mire Teleporter Ledge'},
-    'Ice Lake Water':                    {'Ice Lake Area',
-                                          'Ice Lake Ledge (West)',
-                                          'Ice Lake Ledge (East)'}
-}
-
-indirect_connections = {
-    'Turtle Rock Ledge': 'Turtle Rock',
-    'Big Bomb Shop': 'Pyramid Crack',
-    #'East Dark World': 'Pyramid Fairy',
-    'Pyramid Area': 'Pyramid Crack', # HC Ledge/Courtyard
-    #'Dark Desert': 'Pyramid Fairy',
-    #'Misery Mire Area': 'Pyramid Fairy', # Desert/Checkerboard Ledge
-    #'West Dark World': 'Pyramid Fairy',
-    #'Dark Chapel Area': 'Pyramid Fairy', # Bonk Rocks
-    #'Dark Graveyard North': 'Pyramid Fairy', # Graveyard Ledge/Kings Tomb
-    #'South Dark World': 'Pyramid Fairy',
-    #'Dig Game Ledge': 'Pyramid Fairy', # Brother House Left
-    #'Stumpy Approach Area': 'Pyramid Fairy', # Cave 45
-    # Inverted Cases
-    #'Light World': 'Pyramid Fairy',
-    #'Lost Woods West Area': 'Pyramid Fairy', # Skull Woods Back
-    #'East Death Mountain (Top East)': 'Pyramid Fairy', # Floating Island
-    #'Blacksmith Area': 'Pyramid Fairy', # Hammerpegs
-    #'Forgotten Forest Area': 'Pyramid Fairy', # Shield Shop
-    #'Desert Area': 'Pyramid Fairy', # Mire Area
-    'Old Man Drop Off': 'Old Man S&Q',
-    'Old Man Cave': 'Old Man S&Q'
-}
 # format:
 # Key=Name
 # addr = (door_index, exitdata, ow_flag) # multiexit
@@ -2402,7 +2445,7 @@ door_addresses = {'Links House':                            (0x00, (0x0104, 0x2c
                   'Light Hype Fairy':                       (0x6B, (0x0115, 0x34, 0x00a0, 0x0c04, 0x0900, 0x0c58, 0x0988, 0x0c73, 0x0985, 0x0a, 0xf6, 0x0000, 0x0000), 0x02),
                   'Desert Fairy':                           (0x71, (0x0115, 0x3a, 0x0000, 0x0e00, 0x0400, 0x0e26, 0x0468, 0x0e6d, 0x0485, 0x00, 0x00, 0x0000, 0x0000), 0x00),
                   'Kings Grave':                            (0x5A, (0x0113, 0x14, 0x0320, 0x0456, 0x0900, 0x04a6, 0x0998, 0x04c3, 0x097d, 0x0a, 0xf6, 0x0000, 0x0000), 0x20),
-                  'Tavern North':                           (0x42, (0x0103, 0x18, 0x1440, 0x08a7, 0x0206, 0x08f9, 0x0288, 0x0914, 0x0293, 0xf7, 0x09, 0xFFFF, 0x0000), 0x00),  # do not use, buggy
+                  'Tavern North':                           (0x42, (0x0103, 0x18, 0x1440, 0x08a7, 0x0206, 0x091b, 0x0288, 0x0914, 0x0293, 0xf7, 0x09, 0xFFFF, 0x0000), 0x00),
                   'Chicken House':                          (0x4A, (0x0108, 0x18, 0x1120, 0x0837, 0x0106, 0x0888, 0x0188, 0x08a4, 0x0193, 0x07, 0xf9, 0x1530, 0x0000), 0x00),
                   'Aginahs Cave':                           (0x70, (0x010a, 0x30, 0x0656, 0x0cc6, 0x02aa, 0x0d18, 0x0328, 0x0d33, 0x032f, 0x08, 0xf8, 0x0000, 0x0000), 0x00),
                   'Sahasrahlas Hut':                        (0x44, (0x0105, 0x1e, 0x0610, 0x06d4, 0x0c76, 0x0727, 0x0cf0, 0x0743, 0x0cfb, 0x0a, 0xf6, 0x0000, 0x0000), 0x00),
@@ -2683,7 +2726,7 @@ ow_prize_table = {'Links House': (0x8b1, 0xb2d),
                   'Light Hype Fairy': (0x940, 0xc80),
                   'Desert Fairy': (0x420, 0xe00),
                   'Kings Grave': (0x920, 0x520),
-                  'Tavern North': None,  # can't mark this one technically
+                  'Tavern North': (0x270, 0x900),
                   'Chicken House': (0x120, 0x880),
                   'Aginahs Cave': (0x2e0, 0xd00),
                   'Sahasrahlas Hut': (0xcf0, 0x6c0),

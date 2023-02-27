@@ -7,12 +7,30 @@ algorithm:
   district: 1
 door_shuffle:
   vanilla: 1
-  basic: 2
+  basic: 1
+  partitioned: 1
   crossed: 3  # crossed yield more errors so is preferred
 intensity:
   1: 1
   2: 1
   3: 2  # intensity 3 usually yield more errors
+door_type_mode:
+  original: 2
+  big: 2
+  all: 1
+  chaos: 1
+trap_door_mode:
+  vanilla: 3  # more errors
+  optional: 1
+  boss: 1
+  oneway: 1
+key_logic_algorithm:
+  default: 1
+  partial: 0
+  strict: 0
+decoupledoors:
+  off: 9  # more strict
+  on: 1
 dropshuffle:
   on: 1
   off: 1
@@ -43,11 +61,13 @@ entrance_shuffle:
 shufflelinks:
   on: 1
   off: 1
+shuffletavern:
+  on: 1
+  off: 1
 world_state:
   standard: 1
   open: 1
   inverted: 1
-  retro: 0
 retro:
   on: 1
   off: 1

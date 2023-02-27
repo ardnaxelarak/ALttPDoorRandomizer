@@ -4,6 +4,9 @@
 *.bmbp
 *.log
 *_Spoiler.json
+*_custom.yaml
+*_meta.txt
+*.bps
 *.pyc
 *.sfc
 *.srm

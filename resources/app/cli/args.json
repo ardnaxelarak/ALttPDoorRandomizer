@@ -34,6 +34,10 @@
       "retro"
     ]
   },
+  "boots_hint": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "swords": {
     "choices": [
       "random",
@@ -50,6 +54,20 @@
       "swordless_hammer"
     ]
   },
+  "flute_mode": {
+    "choices": [
+      "normal",
+      "active"
+    ]
+  },
+  "bow_mode": {
+    "choices": [
+      "progressive",
+      "silvers",
+      "retro",
+      "retro_silvers"
+    ]
+  },
   "goal": {
     "choices": [
       "ganon",
@@ -58,7 +76,9 @@
       "triforcehunt",
       "trinity",
       "crystals",
-      "z1"
+      "z1",
+      "ganonhunt",
+      "completionist"
     ]
   },
   "difficulty": {
@@ -207,6 +227,7 @@
   "door_shuffle": {
     "choices": [
       "basic",
+      "partitioned",
       "crossed",
       "vanilla"
     ]
@@ -218,6 +239,33 @@
       "1",
       "random"
     ]
+  },
+  "door_type_mode": {
+    "choices":[
+      "original",
+      "big",
+      "all",
+      "chaos"
+    ]
+  },
+  "trap_door_mode": {
+    "choices": [
+      "vanilla",
+      "optional",
+      "boss",
+      "oneway"
+    ]
+  },
+  "key_logic_algorithm": {
+    "choices": [
+      "default",
+      "partial",
+      "strict"
+    ]
+  },
+  "decoupledoors": {
+    "action": "store_true",
+    "type": "bool"
   },
   "experimental": {
     "action": "store_true",
@@ -341,8 +389,11 @@
     "type": "bool"
   },
   "keyshuffle": {
-    "action": "store_true",
-    "type": "bool"
+    "choices": [
+      "none",
+      "wild",
+      "universal"
+    ]
   },
   "bigkeyshuffle": {
     "action": "store_true",
@@ -360,6 +411,13 @@
   "retro": {
     "action": "store_true",
     "type": "bool"
+  },
+  "take_any": {
+    "choices": [
+      "none",
+      "random",
+      "fixed"
+    ]
   },
   "startinventory": {},
   "usestartinventory": {
@@ -455,6 +513,10 @@
     "dest": "shuffleganon"
   },
   "shufflelinks": {
+    "action": "store_true",
+    "type": "bool"
+  },
+  "shuffletavern": {
     "action": "store_true",
     "type": "bool"
   },

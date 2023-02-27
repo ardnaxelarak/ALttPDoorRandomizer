@@ -9,8 +9,8 @@ See https://alttpr.com/ for more details on the normal randomizer.
 This is a very new mode of LTTPR so the tools and info is very limited.
 - There is an [OW Rando Cheat Sheet](https://zelda.codemann8.com/images/shared/ow-rando-reference-sheet.png) that shows all the transitions that exist and are candidates for shuffle.
 - There is OW tracking capability within the following trackers:
-  - [Community Tracker](https://alttptracker.dunka.net/)
-  - CodeTracker, an [EmoTracker](https://emotracker.net) package for LTTPR
+    - [Community Tracker](https://alttptracker.dunka.net/)
+    - CodeTracker, an [EmoTracker](https://emotracker.net) package for LTTPR
 - There is an [OW OWG Reference Sheet](https://zelda.codemann8.com/images/shared/ow-owg-reference-sheet.png) that shows all the in-logic places where boots/mirror clips and fake flippers are expected from the player.
 
 # Known Issues
@@ -30,15 +30,18 @@ All feedback and dev conversation happens in the #ow-rando channel on the [ALTTP
 
 # Installation from Source
 
-1) Download the source code from the repository directly and put it in a folder of your choosing.
+1. Download the source code from the repository directly and put it in a folder of your choosing. Any method of grabbing the source code is fine, but due to some changes on GitHub's site, some of the other alternatives might be better options for some people.
+    - Use [GitHub Desktop](https://desktop.github.com) to clone this repository to a folder on your computer. Once a repository is established, you can click `Fetch origin` or `Pull` to re-download whenever you want to grab the latest version. This is the best option for a simple one-click solution.
+    - Download the [source code](https://github.com/codemann8/ALttPDoorRandomizer/archive/refs/heads/OverworldShuffle.zip) from GitHub manually.
 
-2) You must have Python installed (version 3.7 - 3.10 supported), and ensure PATH is included during the installation.
+2. You must have [Python](https://www.python.org/downloads) installed (version 3.7 - 3.10 supported), and ensure PATH is included during the installation.
+    - A common issue with users is that there are multiple instances of Python installed on the same computer. This causes the computer to be confused with which Python instance it uses. Ensure that any older Python installations have been removed.
 
-3) This program requires all python dependencies that are necessary to run OW Randomizer. There are multiple ways to install them:
-  - Try running ```pip install missingdependency``` or ```python -m pip install missingdependency``` on the command line (replace ```missingdependency``` with the specific package that is missing) to install the dependency.
-  - The simpler method, run (double-click) ```resources/ci/common/local_install.py``` to install all the missing dependencies as well.
+3. This program requires all python dependencies that are necessary to run OW Randomizer. There are multiple ways to install them:
+    - Try running ```pip install missingdependency``` or ```python -m pip install missingdependency``` on the command line (replace ```missingdependency``` with the specific package that is missing) to install the dependency.
+    - The simpler method, run (double-click) ```resources/ci/common/local_install.py``` to install all the missing dependencies as well.
 
-4) Once installed, you should be able to run (double-click) ```Gui.py``` and the OWR program will appear, where you can select your desired settings.
+4. Once installed, you should be able to run (double-click) ```Gui.py``` and the OWR program will appear, where you can select your desired settings.
 
 See the following link if you have additional trouble: https://github.com/codemann8/ALttPDoorRandomizer/blob/OverworldShuffle/docs/BUILDING.md
 
@@ -61,18 +64,18 @@ OWR definitely has a lot of options, and all of them by themselves are pretty si
 ## "Any recommendations for a first-timer?"
 For a first (and second) seed... *and I say "second" because I feel like both of these recommendations I'm about to make have VERY different vibes, have different levels of challenge, but are both, of their own right, worthy of being tried at least once.* Your first OWR experience can be combined with any mode combination that you are already familiar with and have a lot of experience in playing. If you like Crosskeys and feel very comfortable running that, feel free to turn on all those settings in addition to ONE of these two options:
 1. `OW Tile Flip (Mixed)` - Overly, a pretty easy-breezy mode, it doesn't require too much big brain, and is pretty managable even without proper logic tracking, as long as you at least have a standard map tracker. This is actually my favorite way to run OWR today
-  - DO NOT turn on Layout or Whirlpool Shuffle, leave this on `Vanilla`
-  - DO NOT turn on Crossed OWR
-  - `Flute Shuffle` or `Bonk Drops` could be enabled if desired, altho I'd recommend against it, at least for a fresh viewpoint of Mixed OWR
+    - DO NOT turn on Layout or Whirlpool Shuffle, leave this on `Vanilla`
+    - DO NOT turn on Crossed OWR
+    - `Flute Shuffle` or `Bonk Drops` could be enabled if desired, altho I'd recommend against it, at least for a fresh viewpoint of Mixed OWR
 2. `OW Layout Shuffle` - Set to `Parallel`. This is the original spirit and vision of OWR from the time of its own founding. It's definitely much more complicated to run than OW Tile Flip, so keep that in mind.
-  - `Starting Boots` - Either actual boots or pseudoboots, you will be spending a lot of time navigating the OW, so it's best to do it with the ability to run fast.
-  - DO NOT turn on OW Tile Flip (Mixed)
-  - DO NOT turn on Crossed OWR
-  - Enable `Whirlpool Shuffle` - Recommended to always be enabled with Layout Shuffle
-  - Enable `Keep Similar Edges Together` - This just helps keep some of your sanity for a first experience
-  - Enable `Flute Shuffle` - I recommend setting this to `Balanced`, this helps space out the flute spots across the world. Being that the world itself is shuffled, the vanilla flute spots are likely NOT as conveniently located as they normally are.
-  - `Free Terrain` - Recommend to NOT turn this on for a first run, but definitely on a second run.
-  - `Bonk Drops` - Recommend to NOT turn this on, especially if you don't have starting boots, but you could enable this in future seeds if you've become more familiar with OWR, as you'll be visiting these screens anyways, you might as well grab the items on the way :)
+    - `Starting Boots` - Either actual boots or pseudoboots, you will be spending a lot of time navigating the OW, so it's best to do it with the ability to run fast.
+    - DO NOT turn on OW Tile Flip (Mixed)
+    - DO NOT turn on Crossed OWR
+    - Enable `Whirlpool Shuffle` - Recommended to always be enabled with Layout Shuffle
+    - Enable `Keep Similar Edges Together` - This just helps keep some of your sanity for a first experience
+    - Enable `Flute Shuffle` - I recommend setting this to `Balanced`, this helps space out the flute spots across the world. Being that the world itself is shuffled, the vanilla flute spots are likely NOT as conveniently located as they normally are.
+    - `Free Terrain` - Recommend to NOT turn this on for a first run, but definitely on a second run.
+    - `Bonk Drops` - Recommend to NOT turn this on, especially if you don't have starting boots, but you could enable this in future seeds if you've become more familiar with OWR, as you'll be visiting these screens anyways, you might as well grab the items on the way :)
 
 ## "What tracker should I use?"
 I personally use 2 trackers together, at least if Layout Shuffle is enabled. Currently, DunkaTracker is the ONLY tracker that is useful for tracking Layout Shuffle, can highly recommend. However, I personally don't like the main portion of the tracker and ignore the main window completely. For tracking everything else, I use `CodeTracker`, a tracker pack that is installable within `EmoTracker`, this handles ALL OWR modes EXCEPT Layout Shuffle (and generally Crossed OW, but missing that doesn't make much of a difference). I am unaware of ANY trackers outside of these 2 that handle OWR modes, so my advice would be to familiarize yourself with both trackers and pick and choose the parts you find most useful for yourself.
@@ -201,8 +204,8 @@ Tile Flip (often referred to as Mixed OWR) can be thought of as a hybrid of Open
 Being that this uses concepts from Inverted, it will be important to review the OWR-exclusive changes that have been made to Inverted (often referred to as Inverted 2.0). See `Inverted Changes` for more details.
 
 During gameplay:
-  - When on the OW, there will be an L or D in the upper left corner, indicating which world you are currently in. Mirroring still works the same, you must be in the DW to mirror to the LW.
-  - When doing a map check (pressing X while on the OW), the tiles shown will reflect the flipped tiles. This means that dungeon prizes will show the prizes for the dungeons that are now part of that world, beware of Desert/Mire and Eastern/PoD. Here is an image showing the difference of appearance when tiles are flipped on the [map check](https://media.discordapp.net/attachments/783989090017738753/970646558049714196/lttp-lw-mapcheck.gif) screen.
+    - When on the OW, there will be an L or D in the upper left corner, indicating which world you are currently in. Mirroring still works the same, you must be in the DW to mirror to the LW.
+    - When doing a map check (pressing X while on the OW), the tiles shown will reflect the flipped tiles. This means that dungeon prizes will show the prizes for the dungeons that are now part of that world, beware of Desert/Mire and Eastern/PoD. Here is an image showing the difference of appearance when tiles are flipped on the [map check](https://media.discordapp.net/attachments/783989090017738753/970646558049714196/lttp-lw-mapcheck.gif) screen.
 
 Note: Tiles are put into Tile Groups (see `Terminology`) that must be shuffled together when certain settings are enabled. For instance, if ER is disabled, then any tiles that have a connector cave that leads to a different tile, then those tiles must flip together.
 
@@ -210,14 +213,14 @@ Note: Tiles are put into Tile Groups (see `Terminology`) that must be shuffled t
 The above OWR options are very difficult to describe. The above descriptions are written in a way that is most correct even when these options are combined with more complicated modes. But, this section aims to simplify the explanation by assuming the user chooses a normal 'Open 7/7 Defeat Ganon' seed but with just one OWR setting enabled.
 
 Both of these options are very similar and often confused from each other.
-- Tile Flip is a mode where some DW tiles are moved and BECOME part of the LW (and the LW counterparts become part of the DW). What does it mean to "become" part of a world? It means that it will inherit (NOT bring over) the properties of that world it is moving to (such as being able to flute, ability to use the mirror, or being susceptible to bunnying).
-- Crossed on the other hand doesn't change the properties of tiles, instead it transports Link *physically?* across worlds upon transitioning. This also means that Link can be transformed into a bunny moving from tile to tile.
+    - Tile Flip is a mode where some DW tiles are moved and BECOME part of the LW (and the LW counterparts become part of the DW). What does it mean to "become" part of a world? It means that it will inherit (NOT bring over) the properties of that world it is moving to (such as being able to flute, ability to use the mirror, or being susceptible to bunnying).
+    - Crossed on the other hand doesn't change the properties of tiles, instead it transports Link *physically?* across worlds upon transitioning. This also means that Link can be transformed into a bunny moving from tile to tile.
 tldr: Tile Flip moves the tiles, Crossed moves Link
 
 So, let's run an example of 2 tiles, Link's House and the screen to the right of it. Transitioning right from Link's House: In vanilla, you get the Stone Bridge screen and Link stays his normal self and is just normal LW behavior. Now, let's assume Links House screen stays vanilla, but the tile to the right is getting Flipped or Crossed.
-- In Tile Flip, you'd get the Hammer Bridge screen and Link would stay as Link and you'd be able to flute away from this screen if you had a flute.
-- In Crossed, you'd get the same Hammer Bridge Screen, but this time Link would be transformed into a bunny, just like he'd normally be when on that tile.
-- In Polar Crossed (when both Tile Flip and Crossed effects are applied together), you get the normal Stone Bridge screen, but Link is transformed to a bunny (because the Stone Bridge screen has moved to the DW AND Link is also moving across worlds).
+    - In Tile Flip, you'd get the Hammer Bridge screen and Link would stay as Link and you'd be able to flute away from this screen if you had a flute.
+    - In Crossed, you'd get the same Hammer Bridge Screen, but this time Link would be transformed into a bunny, just like he'd normally be when on that tile.
+    - In Polar Crossed (when both Tile Flip and Crossed effects are applied together), you get the normal Stone Bridge screen, but Link is transformed to a bunny (because the Stone Bridge screen has moved to the DW AND Link is also moving across worlds).
 
 As you can see, things get pretty complicated when mixing modes together. Doing this can definitely create a very unique and interesting experience, but one that is very hard to grasp. And then beyond that there is OW Layout Shuffle, which is where transition destinations are shuffled, so Link will get transported to a different tile entirely, but the same rules apply when you eventually find the Stone/Hammer Bridge screen, you just likely won't find that screen thru a transition on Link's House screen.
 
@@ -248,17 +251,17 @@ New flute spots are chosen at random with minimum bias.
 This adds 41 new item locations to the game. These bonk locations are limited to the ones that drop a static item in the vanilla game.
 
 - Bonk Locations consist of some trees, rocks, and statues
-  - 33 Trees
-    - 8 of the tree locations require Agahnim to be defeated to access the item
-  - 6 Rocks
-    - 1 of the rocks drops 2 items
-  - 1 Statue
+    - 33 Trees
+        - 8 of the tree locations require Agahnim to be defeated to access the item
+    - 6 Rocks
+        - 1 of the rocks drops 2 items
+    - 1 Statue
 - Bonk locations can be collected by bonking into them with the Pegasus Boots or using the Quake Medallion
 - One of the bonk locations are guaranteed to have a full magic decanter
 - Some of the drops can be farmed repeatedly, but only increments the collection rate once
 - All of the bonk trees have been given an alternate color (and all non-bonk trees are reverted to normal tree color)
-  - Some screens are coded to change the "alternate tree color", some of them are strange (just how the vanilla game does it)
-  - Rocks and statues are unable to be made to have a different color
+    - Some screens are coded to change the "alternate tree color", some of them are strange (just how the vanilla game does it)
+    - Rocks and statues are unable to be made to have a different color
 - Since Fairies and Apples are new items that can appear in plain sight, they don't have a proper graphic for them yet. For now, they show up as Power Stars
 
 Here is a map that shows all the [Bonk Locations](https://media.discordapp.net/attachments/783989090017738753/1000880877548609607/unknown.png?width=1399&height=702). FYI, the 2-4 and 2-3-4 refer to the tree numbers that have the items. The 2 by Dark Fortune Teller indicate that there are 2 bonk items there. The stars with a green square are all Bonk Locations that are unlocked after you kill Aga 1.
@@ -293,8 +296,8 @@ This mode is intended to be a beginner-friendly introduction to playing ER, unli
 This mode groups entrances into types and shuffles them freely within those groups.
 - Dungeons and Connectors (Multi-Entrance Caves)
 - Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop)
-  - Includes Shops only if Shopsanity is enabled
-  - Includes caves with pots only if Pottery settings have them shuffled)
+    - Includes Shops only if Shopsanity is enabled
+    - Includes caves with pots only if Pottery settings have them shuffled)
 - Dropdowns and their associated exits (Skull Woods dropdowns are handled the same as in Crossed)
 - Non-item locations (junk locations) all remain vanilla
 
@@ -322,8 +325,8 @@ This mode is intended to be a more refined and more competitive format to Crosse
 This mode groups entrances into types and shuffles them freely within those groups.
 - Dungeons and Connectors (Multi-Entrance Caves)
 - Item Locations (Single-Entrance Caves with an item, includes Potion Shop and Red Bomb Shop)
-  - Includes Shops only if Shopsanity is enabled
-  - Includes caves with pots only if Pottery settings have them shuffled)
+    - Includes Shops only if Shopsanity is enabled
+    - Includes caves with pots only if Pottery settings have them shuffled)
 - Dropdowns and their associated exits (Skull Woods dropdowns are handled the same as in Crossed)
 - Non-item locations (junk locations) all remain vanilla
 

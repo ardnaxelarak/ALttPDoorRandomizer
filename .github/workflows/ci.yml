@@ -32,10 +32,10 @@ jobs:
     steps:
     # checkout commit
     - name: Checkout commit
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     # install python
     - name: Install python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: "x64"
@@ -50,21 +50,21 @@ jobs:
         pip install pyinstaller
     # get parent directory
     - name: Get Repo Name
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: repoName
       with:
         source: ${{ github.repository }}
         find: '${{ github.repository_owner }}/'
         replace: ''
     - name: Get Parent Directory Path (!Windows)
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: parentDirNotWin
       with:
         source: ${{ github.workspace }}
         find: '${{ steps.repoName.outputs.value }}/${{ steps.repoName.outputs.value }}'
         replace: ${{ steps.repoName.outputs.value }}
     - name: Get Parent Directory Path (Windows)
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: parentDir
       with:
         source: ${{ steps.parentDirNotWin.outputs.value }}
@@ -92,7 +92,7 @@ jobs:
         python ./resources/ci/common/prepare_binary.py
     # upload binary artifacts for later step
     - name: Upload Binary Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: binaries-${{ matrix.os-name }}
         path: ${{ steps.parentDir.outputs.value }}/artifact
@@ -117,10 +117,10 @@ jobs:
     steps:
     # checkout commit
     - name: Checkout commit
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     # install python
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: "x64"
@@ -134,21 +134,21 @@ jobs:
         python ./resources/ci/common/install.py
     # get parent directory
     - name: Get Repo Name
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: repoName
       with:
         source: ${{ github.repository }}
         find: '${{ github.repository_owner }}/'
         replace: ''
     - name: Get Parent Directory Path (!Windows)
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: parentDirNotWin
       with:
         source: ${{ github.workspace }}
         find: '${{ steps.repoName.outputs.value }}/${{ steps.repoName.outputs.value }}'
         replace: ${{ steps.repoName.outputs.value }}
     - name: Get Parent Directory Path (Windows)
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: parentDir
       with:
         source: ${{ steps.parentDirNotWin.outputs.value }}
@@ -156,7 +156,7 @@ jobs:
         replace: ${{ steps.repoName.outputs.value }}
     # download binary artifact
     - name: Download Binary Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: binaries-${{ matrix.os-name }}
         path: ./
@@ -170,13 +170,13 @@ jobs:
         python ./resources/ci/common/prepare_release.py
     # upload appversion artifact for later step
     - name: Upload AppVersion Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: appversion-${{ matrix.os-name }}
         path: ./resources/app/meta/manifests/app_version.txt
     # upload archive artifact for later step
     - name: Upload Archive Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: archive-${{ matrix.os-name }}
         path: ${{ steps.parentDir.outputs.value }}/deploy
@@ -202,24 +202,24 @@ jobs:
     steps:
     # checkout commit
     - name: Checkout commit
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     # get parent directory
     - name: Get Repo Name
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: repoName
       with:
         source: ${{ github.repository }}
         find: '${{ github.repository_owner }}/'
         replace: ''
     - name: Get Parent Directory Path (!Windows)
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: parentDirNotWin
       with:
         source: ${{ github.workspace }}
         find: '${{ steps.repoName.outputs.value }}/${{ steps.repoName.outputs.value }}'
         replace: ${{ steps.repoName.outputs.value }}
     - name: Get Parent Directory Path (Windows)
-      uses: mad9000/actions-find-and-replace-string@1
+      uses: mad9000/actions-find-and-replace-string@3
       id: parentDir
       with:
         source: ${{ steps.parentDirNotWin.outputs.value }}
@@ -230,25 +230,25 @@ jobs:
         python -m pip install pytz requests
     # download appversion artifact
     - name: Download AppVersion Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: appversion-${{ matrix.os-name }}
         path: ${{ steps.parentDir.outputs.value }}/build
     # download ubuntu archive artifact
     - name: Download Ubuntu Archive Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: archive-ubuntu-latest
         path: ${{ steps.parentDir.outputs.value }}/deploy/linux
     # download macos archive artifact
     - name: Download MacOS Archive Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: archive-macOS-latest
         path: ${{ steps.parentDir.outputs.value }}/deploy/macos
     # download windows archive artifact
     - name: Download Windows Archive Artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: archive-windows-latest
         path: ${{ steps.parentDir.outputs.value }}/deploy/windows

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0.0
+- Merged in all DR Customizer features since its initial release up to v1.2.0.9
+- Major revamp of Aerinon's ER 2.0 to better support OWR modes
+- Fixed various incorrect logic issues (Inverted flute spots, Bomb Shop start, etc)
+- Flute is disabled in rain state except glitched modes
+
+## 0.2.11.4
+- Fixed broken OWG logic issues
+- Gave chickens a base price for shopsanity
+- Modeled TR entrance opening to use a logical pseudo-item
+
 ## 0.2.11.3
 - Fixed error during multiworld generation
 - Added proper Old Man pathing to the logic and spoiler playthru

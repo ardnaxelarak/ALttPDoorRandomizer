@@ -142,21 +142,15 @@ def get_boots_clip_exits_lw(world, player):
     """
 
     for name, parent_region, target_region in boots_clips_local:
-        if not world.is_tile_swapped(OWTileRegions[parent_region], player):
+        if world.is_tile_lw_like(OWTileRegions[parent_region], player):
             yield(name, parent_region, target_region)
 
-    for name, parent_region, target_region in boots_clips:
-        parent_swapped, target_swapped = get_swapped_status(world, player, parent_region, target_region)
-        if parent_region[0] and not parent_swapped:
-            if target_region[0] and not target_swapped:
-                yield(name[0], parent_region[0], target_region[0])
-            elif target_region[1]:
-                yield(name[0], parent_region[0], target_region[1])
-        elif parent_region[1]:
-            if target_region[0] and not target_swapped:
-                yield(name[1], parent_region[1], target_region[0])
-            elif target_region[1]:
-                yield(name[1], parent_region[1], target_region[1])
+    for names, parent_regions, target_regions in boots_clips:
+        region_pair = get_world_pair(world, player, get_region_pairs(world, player, names, parent_regions, target_regions), True)
+        if region_pair and region_pair[2]:
+            assert(region_pair[0], f'Exit name missing in OWG pairing from {region_pair[1]} to {region_pair[2]}')
+            yield(region_pair[0], region_pair[1], region_pair[2])
+
 
 def get_boots_clip_exits_dw(world, player):
     """
@@ -164,21 +158,14 @@ def get_boots_clip_exits_dw(world, player):
     """
 
     for name, parent_region, target_region in boots_clips_local:
-        if world.is_tile_swapped(OWTileRegions[parent_region], player):
+        if not world.is_tile_lw_like(OWTileRegions[parent_region], player):
             yield(name, parent_region, target_region)
 
-    for name, parent_region, target_region in boots_clips:
-        parent_swapped, target_swapped = get_swapped_status(world, player, parent_region, target_region)
-        if parent_region[0] and parent_swapped:
-            if target_region[0] and target_swapped:
-                yield(name[0], parent_region[0], target_region[0])
-            elif target_region[1]:
-                yield(name[0], parent_region[0], target_region[1])
-        elif parent_region[1]:
-            if target_region[0] and target_swapped:
-                yield(name[1], parent_region[1], target_region[0])
-            elif target_region[1]:
-                yield(name[1], parent_region[1], target_region[1])
+    for names, parent_regions, target_regions in boots_clips:
+        region_pair = get_world_pair(world, player, get_region_pairs(world, player, names, parent_regions, target_regions), False)
+        if region_pair and region_pair[2]:
+            assert(region_pair[0], f'Exit name missing in OWG pairing from {region_pair[1]} to {region_pair[2]}')
+            yield(region_pair[0], region_pair[1], region_pair[2])
 
 
 def get_glitched_speed_drops_lw(world, player):
@@ -198,21 +185,14 @@ def get_mirror_clip_spots(world, player):
     """
 
     for name, parent_region, target_region in mirror_clips_local:
-        if not world.is_tile_swapped(OWTileRegions[parent_region], player):
+        if not world.is_tile_lw_like(OWTileRegions[parent_region], player):
             yield(name, parent_region, target_region)
 
-    for name, parent_region, target_region in mirror_clips:
-        parent_swapped, target_swapped = get_swapped_status(world, player, parent_region, target_region)
-        if parent_region[0] and not parent_swapped:
-            if target_region[0] and not target_region:
-                yield(name[0], parent_region[0], target_region[0])
-            elif target_region[1]:
-                yield(name[0], parent_region[0], target_region[1])
-        elif parent_region[1]:
-            if target_region[0] and not target_region:
-                yield(name[1], parent_region[1], target_region[0])
-            elif target_region[1]:
-                yield(name[1], parent_region[1], target_region[1])
+    for names, parent_regions, target_regions in mirror_clips:
+        region_pair = get_world_pair(world, player, get_region_pairs(world, player, names, parent_regions, target_regions), False)
+        if region_pair and region_pair[2] and not world.is_tile_lw_like(OWTileRegions[region_pair[1]], player):
+            assert(region_pair[0], f'Exit name missing in OWG pairing from {region_pair[1]} to {region_pair[2]}')
+            yield(region_pair[0], region_pair[1], region_pair[2])
 
 
 def get_mirror_offset_spots(world, player):
@@ -222,19 +202,11 @@ def get_mirror_offset_spots(world, player):
 
     # TODO: These really should check to see if there is a mirrorless path to the mirror portal
     # but being that OWG is very very open, it's very unlikely there isn't a path, but possible
-
-    for name, parent_region, target_region, path_to in mirror_offsets:
-        parent_swapped, target_swapped = get_swapped_status(world, player, parent_region, target_region)
-        if parent_region[0] and not parent_swapped:
-            if target_region[0] and not target_region:
-                yield(name[0], parent_region[0], target_region[0])
-            elif target_region[1]:
-                yield(name[0], parent_region[0], target_region[1])
-        elif parent_region[1]:
-            if target_region[0] and not target_region:
-                yield(name[1], parent_region[1], target_region[0])
-            elif target_region[1]:
-                yield(name[1], parent_region[1], target_region[1])
+    for names, parent_regions, target_regions, path_to in mirror_offsets:
+        region_pair = get_world_pair(world, player, get_region_pairs(world, player, names, parent_regions, target_regions, path_to), False)
+        if region_pair and region_pair[2] and not world.is_tile_lw_like(OWTileRegions[region_pair[1]], player):
+            assert(region_pair[0], f'Exit name missing in OWG pairing from {region_pair[1]} to {region_pair[2]}')
+            yield(region_pair[0], region_pair[1], region_pair[2], region_pair[3])
 
 
 def get_swapped_status(world, player, parents, targets):
@@ -252,7 +224,47 @@ def get_swapped_status(world, player, parents, targets):
             target_swapped = world.is_tile_swapped(OWTileRegions[targets[1]], player)
 
     return parent_swapped, target_swapped
-        
+
+
+def get_region_pairs(world, player, names, parent_regions, target_regions, path_regions=None):
+    # this pairs the source region to the proper destination
+    region_pairs = [None, None]
+    parent_swapped, target_swapped = get_swapped_status(world, player, parent_regions, target_regions)
+    if parent_regions[0]:
+        region_pairs[0] = [names[0], parent_regions[0]]
+        if parent_swapped == target_swapped:
+            region_pairs[0].append(target_regions[0])
+            if path_regions:
+                region_pairs[0].append(path_regions[0])
+        else:
+            region_pairs[0].append(target_regions[1])
+            if path_regions:
+                region_pairs[0].append(path_regions[1])
+    if parent_regions[1]:
+        region_pairs[1] = [names[1], parent_regions[1]]
+        if parent_swapped == target_swapped:
+            region_pairs[1].append(target_regions[1])
+            if path_regions:
+                region_pairs[1].append(path_regions[1])
+        else:
+            region_pairs[1].append(target_regions[0])
+            if path_regions:
+                region_pairs[1].append(path_regions[0])
+    return region_pairs
+
+
+def get_world_pair(world, player, region_pairs, get_light_world):
+    # this chooses the region pair that is in the right world
+    if region_pairs[0]:
+        is_lw = world.is_tile_lw_like(OWTileRegions[region_pairs[0][1]], player)
+    else:
+        is_lw = not world.is_tile_lw_like(OWTileRegions[region_pairs[1][1]], player)
+    
+    if is_lw == get_light_world:
+        return region_pairs[0]
+    else:
+        return region_pairs[1]
+
 
 def create_owg_connections(world, player):
     """
@@ -267,7 +279,10 @@ def create_owg_connections(world, player):
 
     # Mirror clip spots.
     create_no_logic_connections(player, world, get_mirror_clip_spots(world, player))
-    create_no_logic_connections(player, world, get_mirror_offset_spots(world, player))
+    
+    # Mirror offset spots.
+    for data in get_mirror_offset_spots(world, player):
+        create_no_logic_connections(player, world, [data[0:3]])
 
 
 def overworld_glitches_rules(world, player):
@@ -281,7 +296,10 @@ def overworld_glitches_rules(world, player):
 
     # Mirror clip spots.
     set_owg_rules(player, world, get_mirror_clip_spots(world, player), lambda state: state.has_Mirror(player))
-    set_owg_rules(player, world, get_mirror_offset_spots(world, player), lambda state: state.has_Mirror(player) and state.can_boots_clip_lw(player))
+    
+    # Mirror offset spots.
+    for data in get_mirror_offset_spots(world, player):
+        set_owg_rules(player, world, [data[0:3]], lambda state: state.has_Mirror(player) and state.can_boots_clip_lw(player) and state.can_reach(data[3], None, player))
 
     # Regions that require the boots and some other stuff.
     # TODO: Revisit below when we can guarantee water walk
@@ -294,15 +312,13 @@ def overworld_glitches_rules(world, player):
     #add_alternate_rule(world.get_location('Zora\'s Ledge', player), lambda state: state.has_Boots(player)) #revisit when we can guarantee water walk
 
     # Adding additional item requirements to OWG Clips
-    add_additional_rule(world.get_entrance('VoO To Dig Game Hook Clip', player), lambda state: state.has('Hookshot', player))
+    if world.is_tile_swapped(0x18, player) != world.is_tile_swapped(0x28, player):
+        add_additional_rule(world.get_entrance('Kakariko To Dig Game Hook Clip', player), lambda state: state.has('Hookshot', player))
+    else:
+        add_additional_rule(world.get_entrance('VoO To Dig Game Hook Clip', player), lambda state: state.has('Hookshot', player))
     add_additional_rule(world.get_entrance('Tree Line Water Clip', player), lambda state: state.has('Flippers', player))
     add_additional_rule(world.get_entrance('Dark Tree Line Water Clip', player), lambda state: state.has('Flippers', player))
-    if not world.is_tile_swapped(0x33, player):
-        add_additional_rule(world.get_entrance('South Teleporter Cliff Ledge Drop', player), lambda state: state.can_lift_rocks(player) and state.has_Pearl(player))
-        world.get_entrance('Dark South Teleporter Cliff Ledge Drop', player).access_rule = lambda state: False
-    else:
-        add_additional_rule(world.get_entrance('Dark South Teleporter Cliff Ledge Drop', player), lambda state: state.can_lift_rocks(player) and state.has_Pearl(player))
-        world.get_entrance('South Teleporter Cliff Ledge Drop', player).access_rule = lambda state: False
+
 
 def add_alternate_rule(entrance, rule):
     old_rule = entrance.access_rule
@@ -315,7 +331,7 @@ def add_additional_rule(entrance, rule):
 
 
 def create_no_logic_connections(player, world, connections):
-    for entrance, parent_region, target_region, *rule_override in connections:
+    for entrance, parent_region, target_region, *_ in connections:
         parent = world.get_region(parent_region, player)
         target = world.get_region(target_region, player)
         connection = Entrance(player, entrance, parent)
@@ -325,7 +341,7 @@ def create_no_logic_connections(player, world, connections):
 
 
 def set_owg_rules(player, world, connections, default_rule):
-    for entrance, parent_region, target_region, *rule_override in connections:
+    for entrance, _, _, *rule_override in connections:
         connection = world.get_entrance(entrance, player)
         rule = rule_override[0] if len(rule_override) > 0 else default_rule
         connection.access_rule = rule
@@ -463,7 +479,7 @@ boots_clips = [
 
     (['C Whirlpool To Cliff Clip', 'Dark C Whirlpool To Cliff Clip'], ['C Whirlpool Area', 'Dark C Whirlpool Area'], ['Central Cliffs', 'Dark Central Cliffs']),
     (['C Whirlpool Outer To Cliff Clip', 'Dark C Whirlpool Outer To Cliff Clip'], ['C Whirlpool Outer Area', 'Dark C Whirlpool Outer Area'], ['Central Cliffs', 'Dark Central Cliffs']),
-    (['South Teleporter Cliff Ledge Drop', 'Dark South Teleporter Cliff Ledge Drop'], ['C Whirlpool Area', 'Dark C Whirlpool Area'], ['Dark Central Cliffs', 'Central Cliffs']), # glove/pearl
+    (['C Whirlpool Portal Bomb Clip', 'Dark C Whirlpool Portal Bomb Clip'], ['C Whirlpool Portal Area', 'Dark C Whirlpool Portal Area'], ['Central Cliffs', 'Dark Central Cliffs']), # bomb TODO: bombbag not considered
 
     (['Statues To Cliff Clip', 'Hype To Cliff Clip'], ['Statues Area', 'Hype Cave Area'], ['Central Cliffs', 'Dark Central Cliffs']),
 
@@ -495,6 +511,6 @@ mirror_clips = [
 ]
 
 mirror_offsets = [
-    (['DM Offset Mirror', 'DDM Offset Mirror'], ['West Death Mountain (Bottom)', 'West Dark Death Mountain (Bottom)'], ['Hyrule Castle Courtyard', 'Pyramid Area'], ['Pyramid Area', 'Hyrule Castle Courtyard']),
+    (['DM Offset Mirror', 'DDM Offset Mirror'], ['West Death Mountain (Bottom)', 'West Dark Death Mountain (Bottom)'], ['Hyrule Castle Courtyard Northeast', 'Pyramid Crack'], ['Pyramid Area', 'Hyrule Castle Courtyard']),
     (['DM To HC Ledge Offset Mirror', 'DDM To HC Ledge Offset Mirror'], ['West Death Mountain (Bottom)', 'West Dark Death Mountain (Bottom)'], ['Hyrule Castle Ledge', None], ['Pyramid Area', None])
 ]

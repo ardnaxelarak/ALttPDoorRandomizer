@@ -93,12 +93,12 @@ vanilla_pots = {
            Pot(28, 23, PotItem.Nothing, 'Ice Pengator Switch', obj=RoomObject(0x1FC388, [0x3B, 0xBB, 0xFA])),
            Pot(86, 26, PotItem.Nothing, 'Ice Big Key', obj=RoomObject(0x1FC397, [0xAF, 0xD3, 0xFA])),
            Pot(86, 27, PotItem.Nothing, 'Ice Big Key', obj=RoomObject(0x1FC39A, [0xAF, 0xDB, 0xFA]))],
-    0x21: [Pot(160, 20, PotItem.Nothing, 'Sewers Key Rat', obj=RoomObject(0x0A8C71, [0x43, 0xA7, 0xFA])),
-           Pot(168, 24, PotItem.SmallMagic, 'Sewers Key Rat', obj=RoomObject(0x0A8C7A, [0x53, 0xC7, 0xFA])),
-           Pot(48, 28, PotItem.Heart, 'Sewers Key Rat', obj=RoomObject(0x0A8C80, [0x63, 0xE3, 0xFA])),
-           Pot(82, 28, PotItem.SmallMagic, 'Sewers Key Rat', obj=RoomObject(0x0A8C7D, [0xA7, 0xE3, 0xFA])),
-           Pot(100, 28, PotItem.Nothing, 'Sewers Key Rat', obj=RoomObject(0x0A8C74, [0xCB, 0xE3, 0xFA])),
-           Pot(104, 28, PotItem.Nothing, 'Sewers Key Rat', obj=RoomObject(0x0A8C77, [0xD3, 0xE3, 0xFA]))],
+    0x21: [Pot(160, 20, PotItem.Nothing, 'Sewers Dark Aquabats', obj=RoomObject(0x0A8C71, [0x43, 0xA7, 0xFA])),
+           Pot(168, 24, PotItem.SmallMagic, 'Sewers Dark Aquabats', obj=RoomObject(0x0A8C7A, [0x53, 0xC7, 0xFA])),
+           Pot(48, 28, PotItem.Heart, 'Sewers Dark Aquabats', obj=RoomObject(0x0A8C80, [0x63, 0xE3, 0xFA])),
+           Pot(82, 28, PotItem.SmallMagic, 'Sewers Dark Aquabats', obj=RoomObject(0x0A8C7D, [0xA7, 0xE3, 0xFA])),
+           Pot(100, 28, PotItem.Nothing, 'Sewers Dark Aquabats', obj=RoomObject(0x0A8C74, [0xCB, 0xE3, 0xFA])),
+           Pot(104, 28, PotItem.Nothing, 'Sewers Dark Aquabats', obj=RoomObject(0x0A8C77, [0xD3, 0xE3, 0xFA]))],
     0x23: [Pot(86, 26, PotItem.OneRupee, 'TR Lazy Eyes', obj=RoomObject(0x1FED09, [0xAF, 0xD3, 0xFA])),
            Pot(90, 26, PotItem.Heart, 'TR Lazy Eyes', obj=RoomObject(0x1FED0C, [0xB7, 0xD3, 0xFA])),
            Pot(94, 26, PotItem.OneRupee, 'TR Lazy Eyes', obj=RoomObject(0x1FED0F, [0xBF, 0xD3, 0xFA])),
@@ -879,7 +879,8 @@ def shuffle_pots(world, player):
             elif old_pot.item == PotItem.Switch:
                 available_pots = (pot for pot in new_pots if (pot.room == old_pot.room or pot.room in movable_switch_rooms[old_pot.room]) and not (pot.flags & PotFlags.NoSwitch))
             elif old_pot.item == PotItem.Key:
-                if world.doorShuffle[player] == 'vanilla' and not world.universal_keys[player] and world.pottery[player] == 'none' and world.logic[player] != 'nologic':
+                if (world.doorShuffle[player] == 'vanilla' and world.keyshuffle[player] != 'universal'
+                   and world.pottery[player] == 'none' and world.logic[player] != 'nologic'):
                     available_pots = (pot for pot in new_pots if pot.room not in invalid_key_rooms)
                 else:
                     available_pots = new_pots
@@ -890,7 +891,7 @@ def shuffle_pots(world, player):
 
             new_pot = random.choice(available_pots)
             new_pot.item = old_pot.item
-            if world.rupee_bow[player] and new_pot.item == PotItem.FiveArrows:
+            if world.bow_mode[player].startswith('retro') and new_pot.item == PotItem.FiveArrows:
                 new_pot.item = PotItem.FiveRupees
 
             if new_pot.item == PotItem.Key:
@@ -938,7 +939,7 @@ def shuffle_pot_switches(world, player):
 
             new_pot = random.choice(available_pots)
             new_pot.item, old_pot.item = old_pot.item, new_pot.item
-            if world.rupee_bow[player] and new_pot.item == PotItem.FiveArrows:
+            if world.bow_mode[player].startswith('retro') and new_pot.item == PotItem.FiveArrows:
                 new_pot.item = PotItem.FiveRupees
 
             if new_pot.item == PotItem.Switch and (new_pot.flags & PotFlags.SwitchLogicChange):

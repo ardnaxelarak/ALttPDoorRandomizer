@@ -36,7 +36,9 @@
         "dungeons",
         "triforcehunt",
         "trinity",
-        "crystals"
+        "crystals",
+        "ganonhunt",
+        "completionist"
       ]
     },
     "crystals_gt": {
@@ -102,6 +104,22 @@
         "expert"
       ]
     },
+    "flute_mode": {
+      "type": "selectbox",
+      "options": [
+        "normal",
+        "active"
+      ]
+    },
+    "bow_mode": {
+      "type": "selectbox",
+      "options": [
+        "progressive",
+        "silvers",
+        "retro",
+        "retro_silvers"
+      ]
+    },
     "timer": {
       "type": "selectbox",
       "options": [
@@ -111,14 +129,6 @@
         "timed-ohko",
         "ohko",
         "timed-countdown"
-      ]
-    },
-    "progressives": {
-      "type": "selectbox",
-      "options": [
-        "on",
-        "off",
-        "random"
       ]
     },
     "accessibility": {

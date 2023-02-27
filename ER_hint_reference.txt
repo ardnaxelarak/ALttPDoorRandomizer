@@ -91,6 +91,7 @@ While the exact verbage of location names and item names can be found in the sou
 
 Overworld Entrance naming:
 
+Links House: The hero's old residence
 Turtle Rock: Turtle Rock Main
 Misery Mire: Misery Mire
 Ice Palace: Ice Palace
@@ -141,6 +142,7 @@ Lake Hylia Fairy: A cave NE of Lake Hylia
 Light Hype Fairy: The cave south of your house
 Desert Fairy: The cave near the desert
 Chicken House: The chicken lady's house
+Tavern North: A backdoor
 Aginahs Cave: The open desert cave
 Sahasrahlas Hut: The house near armos
 Cave Shop (Lake Hylia): The cave NW Lake Hylia

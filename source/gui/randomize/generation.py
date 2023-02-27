@@ -79,6 +79,48 @@ def generation_page(parent,settings):
     # frame: pack
     self.widgets[widget].pieces["frame"].pack(fill=X)
 
+
+    self.frames["customizer"] = Frame(self)
+    self.frames["customizer"].pack(anchor=W, fill=X)
+    ## Customizer file
+    # This one's more-complicated, build it and stuff it
+    # widget ID
+    widget = "customizer"
+
+    # Empty object
+    self.widgets[widget] = Empty()
+    # pieces
+    self.widgets[widget].pieces = {}
+
+    # frame
+    self.widgets[widget].pieces["frame"] = Frame(self.frames["customizer"])
+    # frame: label
+    self.widgets[widget].pieces["frame"].label = Label(self.widgets[widget].pieces["frame"], text='Customizer File: ')
+    # storage var
+    self.widgets[widget].storageVar = StringVar()
+    # textbox
+    self.widgets[widget].pieces["textbox"] = Entry(self.widgets[widget].pieces["frame"],
+                                                   textvariable=self.widgets[widget].storageVar)
+    self.widgets[widget].storageVar.set(settings["customizer"])
+
+    # FIXME: Translate these
+    def FileSelect():
+        file = filedialog.askopenfilename(filetypes=[("Yaml Files", (".yaml", ".yml")), ("All Files", "*")],
+                                          initialdir=os.path.join("."))
+        self.widgets["customizer"].storageVar.set(file)
+    # dialog button
+    self.widgets[widget].pieces["button"] = Button(self.widgets[widget].pieces["frame"],
+                                                   text='Select File', command=FileSelect)
+
+    # frame label: pack
+    self.widgets[widget].pieces["frame"].label.pack(side=LEFT)
+    # textbox: pack
+    self.widgets[widget].pieces["textbox"].pack(side=LEFT, fill=X, expand=True)
+    # button: pack
+    self.widgets[widget].pieces["button"].pack(side=LEFT)
+    # frame: pack
+    self.widgets[widget].pieces["frame"].pack(fill=X)
+
     ## Run Diagnostics
     # This one's more-complicated, build it and stuff it
     # widget ID

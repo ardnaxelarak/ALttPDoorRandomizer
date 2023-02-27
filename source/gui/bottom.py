@@ -220,6 +220,11 @@ def create_guiargs(parent):
     # Get baserom path
     guiargs.rom = parent.pages["randomizer"].pages["generation"].widgets["rom"].storageVar.get()
 
+    # Get customizer path
+    customizer_value = parent.pages["randomizer"].pages["generation"].widgets["customizer"].storageVar.get()
+    if customizer_value and customizer_value != 'None':
+        guiargs.customizer = customizer_value
+
     # Get if we're using the Custom Item Pool
     guiargs.custom = bool(parent.pages["randomizer"].pages["generation"].widgets["usecustompool"].storageVar.get())
 
@@ -279,5 +284,13 @@ def create_guiargs(parent):
     if guiargs.keydropshuffle:
         guiargs.dropshuffle = 1
         guiargs.pottery = 'keys' if guiargs.pottery == 'none' else guiargs.pottery
+
+    if guiargs.retro or guiargs.mode == 'retro':
+        if guiargs.bow_mode == 'progressive':
+            guiargs.bow_mode = 'retro'
+        elif guiargs.bow_mode == 'silvers':
+            guiargs.bow_mode = 'retro_silvers'
+        guiargs.take_any = 'random' if guiargs.take_any == 'none' else guiargs.take_any
+        guiargs.keyshuffle = 'universal'
 
     return guiargs

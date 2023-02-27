@@ -190,7 +190,7 @@ def guiMain(args=None):
     self.pages["startinventory"].content.pack(side=TOP, fill=BOTH, expand=True)
 
     # Custom Controls
-    self.pages["custom"].content = custom_page(self,self.pages["custom"])
+    self.pages["custom"].content = custom_page(self, self.pages["custom"])
     self.pages["custom"].content.pack(side=TOP, fill=BOTH, expand=True)
 
     def validation(P):

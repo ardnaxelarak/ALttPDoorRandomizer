@@ -9,6 +9,7 @@ import sys
 from source.classes.BabelFish import BabelFish
 
 from Utils import update_deprecated_args
+from source.classes.CustomSettings import CustomSettings
 
 
 class ArgumentDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
@@ -32,10 +33,24 @@ def parse_cli(argv, no_defaults=False):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--settingsfile', help="input json file of settings", type=str)
     parser.add_argument('--multi', default=defval(settings["multi"]), type=lambda value: min(max(int(value), 1), 255))
+    parser.add_argument('--customizer', help='input yaml file for customizations', type=str)
+    parser.add_argument('--print_custom_yaml', help='print example yaml for current settings',
+                        default=False, action="store_true")
+    parser.add_argument('--mystery', dest="mystery", default=False, action="store_true")
+
     multiargs, _ = parser.parse_known_args(argv)
 
     if multiargs.settingsfile:
         settings = apply_settings_file(settings, multiargs.settingsfile)
+
+    player_num = multiargs.multi
+    if multiargs.customizer:
+        custom = CustomSettings()
+        custom.load_yaml(multiargs.customizer)
+        cp = custom.determine_players()
+        if cp:
+            player_num = cp
+
 
     parser = argparse.ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
 
@@ -78,38 +93,61 @@ def parse_cli(argv, no_defaults=False):
     parser.add_argument('--securerandom', default=defval(settings["securerandom"]), action='store_true')
     parser.add_argument('--teams', default=defval(1), type=lambda value: max(int(value), 1))
     parser.add_argument('--settingsfile', dest="filename", help="input json file of settings", type=str)
+    parser.add_argument('--customizer', dest="customizer", help='input yaml file for customizations', type=str)
+    parser.add_argument('--print_custom_yaml', dest="print_custom_yaml", default=False, action="store_true")
 
-    if multiargs.multi:
-        for player in range(1, multiargs.multi + 1):
+    if player_num:
+        for player in range(1, player_num + 1):
             parser.add_argument(f'--p{player}', default=defval(''), help=argparse.SUPPRESS)
 
     ret = parser.parse_args(argv)
 
     if ret.keysanity:
-        ret.mapshuffle, ret.compassshuffle, ret.keyshuffle, ret.bigkeyshuffle = [True] * 4
+        ret.mapshuffle, ret.compassshuffle, ret.bigkeyshuffle = [True] * 3
+        ret.keyshuffle = 'wild'
 
     if ret.keydropshuffle:
         ret.dropshuffle = True
         ret.pottery = 'keys' if ret.pottery == 'none' else ret.pottery
 
-    if multiargs.multi:
+    if ret.goal == 'z1':
+        ret.bow_mode = 'retro_silvers'
+        ret.keyshuffle = 'universal'
+        ret.flute_mode = 'active'
+
+    if ret.retro or ret.mode == 'retro':
+        if ret.bow_mode == 'progressive':
+            ret.bow_mode = 'retro'
+        elif ret.bow_mode == 'silvers':
+            ret.bow_mode = 'retro_silvers'
+        ret.take_any = 'random' if ret.take_any == 'none' else ret.take_any
+        ret.keyshuffle = 'universal'
+
+    if player_num:
         defaults = copy.deepcopy(ret)
-        for player in range(1, multiargs.multi + 1):
+        for player in range(1, player_num + 1):
             playerargs = parse_cli(shlex.split(getattr(ret, f"p{player}")), True)
+
+            if playerargs.filename:
+                playersettings = apply_settings_file({}, playerargs.filename)
+                for k, v in playersettings.items():
+                    setattr(playerargs, k, v)
 
             for name in ['logic', 'mode', 'swords', 'goal', 'difficulty', 'item_functionality', 'ow_shuffle',
                          'ow_terrain', 'ow_crossed', 'ow_keepsimilar', 'ow_mixed', 'ow_whirlpool', 'ow_fluteshuffle',
+                         'flute_mode', 'bow_mode', 'take_any', 'boots_hint',
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'ganon_item', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
                          'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items',
                          'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
-                         'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'pseudoboots',
-                         'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
+                         'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
+                         'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
                          'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
-                         'msu_resume', 'collection_rate', 'colorizepots', 'bonk_drops']:
+                         'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
+                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -135,20 +173,23 @@ def parse_settings():
         "retro": False,
         "bombbag": False,
         "mode": "open",
+        "boots_hint": False,
         "logic": "noglitches",
         "goal": "ganon",
         "crystals_gt": "7",
         "crystals_ganon": "7",
         "ganon_item": "default",
         "swords": "random",
+        "flute_mode": "normal",
+        "bow_mode": "progressive",
         "difficulty": "normal",
         "item_functionality": "normal",
         "timer": "none",
         "progressive": "on",
         "accessibility": "items",
         "algorithm": "balanced",
-        'mystery': False,
-        'suppress_meta': False,
+        "mystery": False,
+        "suppress_meta": False,
         "restrict_boss_items": "none",
 
         # Shuffle Ganon defaults to TRUE
@@ -164,7 +205,9 @@ def parse_settings():
         "bonk_drops": False,
         "shuffle": "vanilla",
         "shufflelinks": False,
+        "shuffletavern": False,
         "overworld_map": "default",
+        "take_any": "none",
         "pseudoboots": False,
 
         "shuffleenemies": "none",
@@ -174,18 +217,22 @@ def parse_settings():
         "enemizercli": os.path.join(".", "EnemizerCLI", "EnemizerCLI.Core"),
 
         "shopsanity": False,
-        'keydropshuffle': False,
-        'dropshuffle': False,
-        'pottery': 'none',
-        'colorizepots': False,
-        'shufflepots': False,
+        "keydropshuffle": False,
+        "dropshuffle": False,
+        "pottery": "none",
+        "colorizepots": False,
+        "shufflepots": False,
         "mapshuffle": False,
         "compassshuffle": False,
-        "keyshuffle": False,
+        "keyshuffle": "none",
         "bigkeyshuffle": False,
         "keysanity": False,
         "door_shuffle": "vanilla",
         "intensity": 3,
+        "door_type_mode": "original",
+        "trap_door_mode": "optional",
+        "key_logic_algorithm": "default",
+        "decoupledoors": False,
         "experimental": False,
         "dungeon_counters": "default",
         "mixed_travel": "prevent",
@@ -215,8 +262,8 @@ def parse_settings():
         "uw_palettes": "default",
         "reduce_flashing": False,
         "shuffle_sfx": False,
-        'msu_resume': False,
-        'collection_rate': False,
+        "msu_resume": False,
+        "collection_rate": False,
 
         # Spoiler     defaults to TRUE
         # Playthrough defaults to TRUE

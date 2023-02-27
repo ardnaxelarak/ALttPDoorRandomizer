@@ -43,7 +43,7 @@ def create_district_helper(world, player):
     world.districts[player] = districts
 
 
-def resolve_districts(world):
+def init_districts(world):
     def exclude_area(world, owid, area, player):
         # area can be a region or entrancecurrently, could potentially be a problem later if name collision
         std_regions = ['Pyramid Ledge', 'Pyramid Hole', 'Pyramid Entrance']
@@ -54,14 +54,7 @@ def resolve_districts(world):
         return False
 
     create_districts(world)
-    state = CollectionState(world)
-    state.sweep_for_events()
     for player in range(1, world.players + 1):
-        # these are not static for OWR - but still important
-        inaccessible = [r for r in inaccessible_regions_std if not world.is_tile_swapped(OWTileRegions[r], player)]
-        inaccessible = inaccessible + [r for r in inaccessible_regions_inv if world.is_tile_swapped(OWTileRegions[r], player)]
-        check_set = find_reachable_locations(state, player)
-        
         # adding regions to districts
         for owid, (alt_regions, alt_districts, default_districts) in OWTileDistricts.items():
             idx = 0 if (world.mode[player] == 'inverted') == world.is_tile_swapped(owid, player) else 1
@@ -81,7 +74,26 @@ def resolve_districts(world):
                         world.districts[player][alt_districts[(idx + 1) % 2]].regions.append(region)
                     else:
                         world.districts[player][default_districts[(idx + 1) % 2]].regions.append(region)
-                
+
+        # adding entrances to districts
+        for name, district in world.districts[player].items():
+            if not district.dungeon:
+                for region_name in district.regions:
+                    region = world.get_region(region_name, player)
+                    for exit in region.exits:
+                        if exit.spot_type == 'Entrance' and not exclude_area(world, OWTileRegions[region.name], exit.name, player):
+                            district.entrances.append(exit.name)
+
+
+def resolve_districts(world):
+    state = CollectionState(world)
+    state.sweep_for_events()
+    for player in range(1, world.players + 1):
+        # these are not static for OWR - but still important
+        inaccessible = [r for r in inaccessible_regions_std if not world.is_tile_swapped(OWTileRegions[r], player)]
+        inaccessible = inaccessible + [r for r in inaccessible_regions_inv if world.is_tile_swapped(OWTileRegions[r], player)]
+        check_set = find_reachable_locations(state, player)
+        
         for name, district in world.districts[player].items():
             if district.dungeon:
                 layout = world.dungeon_layouts[player][district.dungeon]
@@ -93,9 +105,6 @@ def resolve_districts(world):
                     for location in region.locations:
                         if not location.item and location.real:
                             district.locations.add(location.name)
-                    for exit in region.exits:
-                        if exit.spot_type == 'Entrance' and not exclude_area(world, OWTileRegions[region.name], exit.name, player):
-                            district.entrances.append(exit.name)
                 for entrance in district.entrances:
                     ent = world.get_entrance(entrance, player)
                     queue = deque([ent.connected_region])

@@ -31,11 +31,27 @@
   door_shuffle:
     vanilla: 0
     basic: 2
+    partitioned: 1
     crossed: 2
   intensity:
     1: 2
     2: 2
     3: 4
+  door_type_mode:
+    original: 2
+    big: 2
+    all: 1
+    chaos: 1
+  trap_door_mode:
+    vanilla: 0
+    optional: 1
+    boss: 0
+    oneway: 0
+  key_logic_algorithm:
+    default: 1
+    partial: 0
+    strict: 0
+  decoupledoors: off
   dropshuffle:
     on: 1
     off: 1
@@ -58,6 +74,14 @@
   bombbag:
     on: 1
     off: 4
+  flute_mode:
+    normal: 3
+    active: 1
+  bow_mode:
+    progressive: 5
+    silvers: 5
+    retro: 1
+    retro_silvers: 1
   entrance_shuffle:
     none: 15
     dungeonssimple: 3
@@ -79,6 +103,9 @@
   shuffleganon:
     on: 1
     off: 1
+  shuffletavern:
+    on: 1
+    off: 1
   overworld_map: # control how the overworld map operates when entrance shuffle is on
     default: 1
     compass: 10
@@ -88,9 +115,10 @@
     open: 1
     inverted: 1
     retro: 0
-  retro:
-    on: 1
-    off: 4
+  take_any:
+    random: 1
+    fixed: 3
+    none: 16
   goals:
     ganon: 2
     fast_ganon: 2
@@ -98,6 +126,8 @@
     pedestal: 2
     triforce-hunt: 2
     trinity: 2
+    ganonhunt: 2
+    completionist: 1
   triforce_goal_min: 10
   triforce_goal_max: 30
   triforce_pool_min: 20
@@ -118,6 +148,21 @@
     mc: 3
     mcs: 2
     full: 5
+    mcu: 1  # map, compass, universal smalls
+  # for use when you aren't using the dungeon_items above
+  # map_shuffle:
+  #   on: 1
+  #   off: 1
+  # compass_shuffle:
+  #   on: 1
+  #   off: 1
+  # smallkey_shuffle:
+  #   none: 5
+  #   wild: 1
+  #   universal: 1
+  # bigkey_shuffle:
+  #   on: 1
+  #   off: 1
   dungeon_counters:
     on: 5
     off: 0
@@ -198,6 +243,10 @@
   startinventory:
     Pegasus Boots: on
   rom:
+    sprite:
+      'Link': 1
+      random: 0
+      randomonhit: 0
     quickswap: on
     heartcolor:
       red: 1

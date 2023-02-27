@@ -45,7 +45,7 @@ def main(args=None):
 
     test("Vanilla   ", "--shuffle vanilla")
     test("Retro     ", "--retro --shuffle vanilla")
-    test("Keysanity ", "--shuffle vanilla --dropshuffle --keysanity")
+    test("Keysanity ", "--shuffle vanilla --keydropshuffle --keysanity")
     test("Shopsanity", "--shuffle vanilla --shopsanity")
     test("Simple    ", "--shuffle simple")
     test("Full      ", "--shuffle full")
