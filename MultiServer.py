@@ -46,6 +46,9 @@ class Context:
         self.lookup_name_to_id = {}
         self.lookup_id_to_name = {}
 
+    async def process_command(self, input):
+        await process_command(ctx, input)
+
 async def send_msgs(websocket, msgs):
     if not websocket or not websocket.open or websocket.closed:
         return
@@ -296,54 +299,56 @@ def set_password(ctx : Context, password):
 async def console(ctx : Context):
     while True:
         input = await aioconsole.ainput()
+        await process_command(ctx, input)
 
-        command = shlex.split(input)
-        if not command:
-            continue
+async def process_command(ctx : Context, input):
+    command = shlex.split(input)
+    if not command:
+        return
 
-        if command[0] == '/exit':
-            ctx.server.ws_server.close()
-            break
+    if command[0] == '/exit':
+        ctx.server.ws_server.close()
+        return
 
-        if command[0] == '/players':
-            logging.info(get_connected_players_string(ctx))
-        if command[0] == '/password':
-            set_password(ctx, command[1] if len(command) > 1 else None)
-        if command[0] == '/kick' and len(command) > 1:
-            team = int(command[2]) - 1 if len(command) > 2 and command[2].isdigit() else None
+    if command[0] == '/players':
+        logging.info(get_connected_players_string(ctx))
+    if command[0] == '/password':
+        set_password(ctx, command[1] if len(command) > 1 else None)
+    if command[0] == '/kick' and len(command) > 1:
+        team = int(command[2]) - 1 if len(command) > 2 and command[2].isdigit() else None
+        for client in ctx.clients:
+            if client.auth and client.name.lower() == command[1].lower() and (team is None or team == client.team):
+                if client.socket and not client.socket.closed:
+                    await client.socket.close()
+
+    if command[0] == '/forfeitslot' and len(command) > 1 and command[1].isdigit():
+        if len(command) > 2 and command[2].isdigit():
+            team = int(command[1]) - 1
+            slot = int(command[2])
+        else:
+            team = 0
+            slot = int(command[1])
+        forfeit_player(ctx, team, slot)
+    if command[0] == '/forfeitplayer' and len(command) > 1:
+        team = int(command[2]) - 1 if len(command) > 2 and command[2].isdigit() else None
+        for client in ctx.clients:
+            if client.auth and client.name.lower() == command[1].lower() and (team is None or team == client.team):
+                if client.socket and not client.socket.closed:
+                    forfeit_player(ctx, client.team, client.slot)
+    if command[0] == '/senditem' and len(command) > 2:
+        [(player, item)] = re.findall(r'\S* (\S*) (.*)', input)
+        if item in Items.item_table:
             for client in ctx.clients:
-                if client.auth and client.name.lower() == command[1].lower() and (team is None or team == client.team):
-                    if client.socket and not client.socket.closed:
-                        await client.socket.close()
+                if client.auth and client.name.lower() == player.lower():
+                    new_item = ReceivedItem(Items.item_table[item][3], "cheat console", client.slot)
+                    get_received_items(ctx, client.team, client.slot).append(new_item)
+                    notify_all(ctx, 'Cheat console: sending "' + item + '" to ' + client.name)
+            send_new_items(ctx)
+        else:
+            logging.warning("Unknown item: " + item)
 
-        if command[0] == '/forfeitslot' and len(command) > 1 and command[1].isdigit():
-            if len(command) > 2 and command[2].isdigit():
-                team = int(command[1]) - 1
-                slot = int(command[2])
-            else:
-                team = 0
-                slot = int(command[1])
-            forfeit_player(ctx, team, slot)
-        if command[0] == '/forfeitplayer' and len(command) > 1:
-            team = int(command[2]) - 1 if len(command) > 2 and command[2].isdigit() else None
-            for client in ctx.clients:
-                if client.auth and client.name.lower() == command[1].lower() and (team is None or team == client.team):
-                    if client.socket and not client.socket.closed:
-                        forfeit_player(ctx, client.team, client.slot)
-        if command[0] == '/senditem' and len(command) > 2:
-            [(player, item)] = re.findall(r'\S* (\S*) (.*)', input)
-            if item in Items.item_table:
-                for client in ctx.clients:
-                    if client.auth and client.name.lower() == player.lower():
-                        new_item = ReceivedItem(Items.item_table[item][3], "cheat console", client.slot)
-                        get_received_items(ctx, client.team, client.slot).append(new_item)
-                        notify_all(ctx, 'Cheat console: sending "' + item + '" to ' + client.name)
-                send_new_items(ctx)
-            else:
-                logging.warning("Unknown item: " + item)
-
-        if command[0][0] != '/':
-            notify_all(ctx, '[Server]: ' + input)
+    if command[0][0] != '/':
+        notify_all(ctx, '[Server]: ' + input)
 
 
 def init_lookups(ctx):
