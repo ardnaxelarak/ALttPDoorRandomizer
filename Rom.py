@@ -2598,17 +2598,17 @@ def write_strings(rom, world, player, team):
         tt['ganon_phase_3_silvers'] = 'Oh no! A bee!\nMy one true\nweakness!'
     else:
         name_table = {
-            'boomerang': ['a boomerang', 'a boomerang', 'Red Boomerang'],
-            'hookshot': ['a hookshot', 'a hookshot', 'Hookshot'],
-            'powder': ['the powder', 'powder', 'Magic Powder'],
-            'fire_rod': ['the fire rod', 'the fire rod', 'Fire Rod'],
-            'ice_rod': ['the ice rod', 'the ice rod', 'Ice Rod'],
-            'bombos': ['bombos', 'bombos', 'Bombos'],
-            'ether': ['ether', 'ether', 'Ether'],
-            'quake': ['quake', 'quake', 'Quake'],
-            'hammer': ['a hammer', 'a hammer', 'Hammer'],
-            'somaria': ['somaria', 'somaria', 'Cane of Somaria'],
-            'byrna': ['byrna', 'byrna', 'Cane of Byrna'],
+            'boomerang': ['a boomerang', 'A boomerang', 'Red Boomerang'],
+            'hookshot': ['a hookshot', 'A hookshot', 'Hookshot'],
+            'powder': ['the powder', 'Powder', 'Magic Powder'],
+            'fire_rod': ['the fire rod', 'The fire rod', 'Fire Rod'],
+            'ice_rod': ['the ice rod', 'The ice rod', 'Ice Rod'],
+            'bombos': ['bombos', 'Bombos', 'Bombos'],
+            'ether': ['ether', 'Ether', 'Ether'],
+            'quake': ['quake', 'Quake', 'Quake'],
+            'hammer': ['a hammer', 'A hammer', 'Hammer'],
+            'somaria': ['somaria', 'Somaria', 'Cane of Somaria'],
+            'byrna': ['byrna', 'Byrna', 'Cane of Byrna'],
         }
         locations = world.find_items(name_table[ganon_item][2], player)
         random.shuffle(locations)
