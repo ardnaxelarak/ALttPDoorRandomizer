@@ -1188,18 +1188,12 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
                 precollected_items.append('Progressive Sword')
                 pool.remove('Progressive Sword')
                 pool.extend(['Rupees (50)'])
-            if goal in ['z1']:
-                pool.remove('Progressive Sword')
-                pool.extend(['Rupees (20)'])
         else:
             pool.extend(diff.basicsword)
             if swords in ['assured', 'assured_pseudo']:
                 precollected_items.append('Fighter Sword')
                 pool.remove('Fighter Sword')
                 pool.extend(['Rupees (50)'])
-            if goal in ['z1']:
-                pool.remove('Golden Sword')
-                pool.extend(['Rupees (20)'])
 
     if timer in ['timed', 'timed-countdown']:
         pool.extend(diff.timedother)
