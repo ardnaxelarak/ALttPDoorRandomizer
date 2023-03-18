@@ -47,7 +47,7 @@ class Context:
         self.lookup_id_to_name = {}
 
     async def process_command(self, input):
-        await process_command(ctx, input)
+        await process_command(self, input)
 
 async def send_msgs(websocket, msgs):
     if not websocket or not websocket.open or websocket.closed:
