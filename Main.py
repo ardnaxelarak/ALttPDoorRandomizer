@@ -166,6 +166,7 @@ def main(args, seed=None, fish=None):
     world.restrict_boss_items = args.restrict_boss_items.copy()
     world.collection_rate = args.collection_rate.copy()
     world.colorizepots = args.colorizepots.copy()
+    world.trolls = args.trolls.copy()
 
     world.rom_seeds = {player: random.randint(0, 999999999) for player in range(1, world.players + 1)}
     world.finish_init()
@@ -539,6 +540,7 @@ def copy_world(world):
     ret.prizes = world.prizes.copy()
     ret.restrict_boss_items = world.restrict_boss_items.copy()
     ret.inaccessible_regions = world.inaccessible_regions.copy()
+    ret.trolls = world.trolls.copy()
 
     for player in range(1, world.players + 1):
         create_regions(ret, player)
@@ -715,6 +717,7 @@ def copy_world_premature(world, player):
     ret.prizes = world.prizes.copy()
     ret.restrict_boss_items = world.restrict_boss_items.copy()
     ret.key_logic = world.key_logic.copy()
+    ret.trolls = world.trolls.copy()
 
     ret.is_copied_world = True
 

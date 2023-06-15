@@ -187,7 +187,7 @@ class World(object):
             if self.goal[player] == 'completionist':
                 self.accessibility[player] = 'locations'
             if self.trolls[player]:
-                self.can_take_damage[player] = False
+                self.can_take_damage = False
 
     def get_name_string_for_object(self, obj):
         return obj.name if self.players == 1 else f'{obj.name} ({self.get_player_names(obj.player)})'

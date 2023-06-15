@@ -2726,7 +2726,7 @@ def write_strings(rom, world, player, team):
         tt['telepathic_tile_swamp_entrance'] = "Please take your boots off before entering my room.\n\n          - Arrghus"
         tt['telepathic_tile_thieves_town_upstairs'] = "Secret power is said to be in the shovel."
         tt['blind_by_the_light'] = "I'd really dig it if you didn't bring a shovel."
-        tt['telepathic_tile_ice_entrace'] = "Kholdstare's hypnotic eyes can be confusing..."
+        tt['telepathic_tile_ice_entrance'] = "Kholdstare's hypnotic eyes can be confusing..."
         tt['telepathic_tile_ice_stalfos_knights_room'] = "Bomb fuses may be shorter or longer than they appear."
         tt['telepathic_tile_ice_large_room'] = "Does your sword feel heavier than usual?"
         tt['telepathic_tile_misery_mire'] = "Vitreous' small eyes require explosives to defeat."

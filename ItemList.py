@@ -1127,7 +1127,6 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
         pool.extend(['Rupees (20)'] * 12)
 
     if world.trolls[player]:
-        pool.remove('Rupees (20)')
         pool.extend(['Magic Upgrade (1/2)'])
 
     if bombbag:
