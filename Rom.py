@@ -2715,6 +2715,46 @@ def write_strings(rom, world, player, team):
         rom.write_byte(0x04a529, 0x19)  # x tile shifted right a few tiles
         rom.write_byte(0x04a52e, 0x06)  # follower set to blind maiden
 
+    if world.trolls[player]:
+        tt['telepathic_tile_eastern_palace'] = "Health will not help you against the Armos Knights."
+        tt['telepathic_tile_desert_bonk_torch_room'] = "Who ever saw lanmolas fly so fast?"
+        tt['telepathic_tile_tower_of_hera_entrance'] = "Please stop tickling my tail. It makes me freeze up and lower my defenses.\n\n          - Moldorm"
+        tt['telepathic_tile_tower_of_hera_floor_4'] = "Hookshots and boomerangs are forbidden in my tower.\n\n          - Moldorm"
+        tt['telepathic_tile_spectacle_rock'] = "With greater health and armor come shorter periods of refuge from damage."
+        tt['telepathic_tile_castle_tower'] = "Agahnim does not care for your foolish mortal patterns."
+        tt['telepathic_tile_palace_of_darkness'] = "Who weakened my mask?\n\n   - Helmasaur King"
+        tt['telepathic_tile_swamp_entrance'] = "Please take your boots off before entering my room.\n\n          - Arrghus"
+        tt['telepathic_tile_thieves_town_upstairs'] = "Secret power is said to be in the shovel."
+        tt['blind_by_the_light'] = "I'd really dig it if you didn't bring a shovel."
+        tt['telepathic_tile_ice_entrace'] = "Kholdstare's hypnotic eyes can be confusing..."
+        tt['telepathic_tile_ice_stalfos_knights_room'] = "Bomb fuses may be shorter or longer than they appear."
+        tt['telepathic_tile_ice_large_room'] = "Does your sword feel heavier than usual?"
+        tt['telepathic_tile_misery_mire'] = "Vitreous' small eyes require explosives to defeat."
+        tt['telepathic_tile_turtle_rock'] = "Trinexx has upped her defenses, requiring more powerful spells to defeat her. Consider whether you have enough magic reserves."
+
+        ganon_mock = 'Can you keep up with my changing weaknesses?';
+        tt['ganon_phase_3_no_bow'] = ganon_mock
+        tt['ganon_phase_3_no_silvers'] = ganon_mock
+        tt['ganon_phase_3_no_silvers_alt'] = ganon_mock
+        tt['ganon_phase_3_silvers'] = ganon_mock
+
+        tt.insertText('ganon_fall_in_mushroom', "I smell a mushroom!")
+        tt.insertText('ganon_phase_3_mushroom', "Your mushroom grants me invulnerability!")
+        tt.insertText('ganon_phase_4_silvers',   "\n   SILVER ARROWS   ")
+        tt.insertText('ganon_phase_4_boomerang', "\n     BOOMERANG     ")
+        tt.insertText('ganon_phase_4_hookshot',  "\n     HOOKSHOT      ")
+        tt.insertText('ganon_phase_4_bomb',      "\n       BOMB        ")
+        tt.insertText('ganon_phase_4_powder',    "\n      POWDER       ")
+        tt.insertText('ganon_phase_4_fire_rod',  "\n     FIRE ROD      ")
+        tt.insertText('ganon_phase_4_ice_rod',   "\n      ICE ROD      ")
+        tt.insertText('ganon_phase_4_bombos',    "\n      BOMBOS       ")
+        tt.insertText('ganon_phase_4_ether',     "\n       ETHER       ")
+        tt.insertText('ganon_phase_4_quake',     "\n       QUAKE       ")
+        tt.insertText('ganon_phase_4_hammer',    "\n      HAMMER       ")
+        tt.insertText('ganon_phase_4_bee',       "\n        BEE        ")
+        tt.insertText('ganon_phase_4_somaria',   "\n      SOMARIA      ")
+        tt.insertText('ganon_phase_4_byrna',     "\n       BYRNA       ")
+
     # inverted spawn menu changes
     if world.mode[player] == 'inverted':
         tt['menu_start_2'] = "{MENU}\n{SPEED0}\n≥@'s House\n Dark Chapel\n{CHOICE3}"

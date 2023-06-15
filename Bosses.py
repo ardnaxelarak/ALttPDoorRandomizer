@@ -38,6 +38,8 @@ def LanmolasDefeatRule(state, player):
         state.has_special_weapon_level(player, 1)))
 
 def MoldormDefeatRule(state, player):
+    if state.world.trolls[player] and not (state.has('Blue Boomerang', player) or state.has('Red Boomerang', player) or state.has('Hookshot', player)):
+        return False
     return (state.special_weapon_check(player, 1) and
         (state.has_blunt_weapon(player) or state.has_special_weapon_level(player, 1)))
 
@@ -74,6 +76,8 @@ def MothulaDefeatRule(state, player):
         state.has_special_weapon_level(player, 1)))
 
 def BlindDefeatRule(state, player):
+    if state.world.trolls[player]:
+        return state.has('Shovel', player)
     return (state.special_weapon_check(player, 1) and
         (state.has_blunt_weapon(player) or state.has('Cane of Somaria', player) or
         state.has('Cane of Byrna', player) or state.has_special_weapon_level(player, 1)))
@@ -107,6 +111,14 @@ def VitreousDefeatRule(state, player):
             state.has_special_weapon_level(player, 2)))
 
 def TrinexxDefeatRule(state, player):
+    if state.world.trolls[player]:
+        if not (state.has('Bombos', player) and state.has('Ether', player)):
+            return False
+        return (state.has('Hammer', player) or
+                state.has_real_sword(player, 3) or
+                state.has_special_weapon_level(player, 4) or
+                ((state.has_real_sword(player, 2) or state.has_special_weapon_level(player, 3))
+                    and state.can_extend_magic(player, 24)))
     if not (state.has('Fire Rod', player) and state.has('Ice Rod', player)):
         return False
     if not state.special_weapon_check(player, 2):

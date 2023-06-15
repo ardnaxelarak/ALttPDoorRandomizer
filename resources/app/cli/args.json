@@ -603,5 +603,9 @@
     ]
   },
   "outputname": {},
-  "code": {}
+  "code": {},
+  "trolls": {
+    "action": "store_true",
+    "type": "bool"
+  }
 }

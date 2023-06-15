@@ -105,6 +105,7 @@ class World(object):
         self.sanc_portal = {}
         self.fish = BabelFish()
         self.pot_contents = {}
+        self.trolls = {}
 
         for player in range(1, players + 1):
             def set_player_attr(attr, val):
@@ -177,6 +178,7 @@ class World(object):
 
             set_player_attr('exp_cache', defaultdict(dict))
             set_player_attr('enabled_entrances', {})
+            set_player_attr('trolls', False)
 
     def finish_init(self):
         for player in range(1, self.players + 1):
@@ -184,6 +186,8 @@ class World(object):
                 self.mode[player] = 'open'
             if self.goal[player] == 'completionist':
                 self.accessibility[player] = 'locations'
+            if self.trolls[player]:
+                self.can_take_damage[player] = False
 
     def get_name_string_for_object(self, obj):
         return obj.name if self.players == 1 else f'{obj.name} ({self.get_player_names(obj.player)})'
@@ -352,7 +356,7 @@ class World(object):
                 return True
             else:
                 return False
-    
+
     def check_for_door(self, doorname, player):
         if isinstance(doorname, Door):
             return doorname

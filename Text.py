@@ -1390,6 +1390,16 @@ class TextTable(object):
             return data.ljust(self.SIZE, b'\xff')
         return data
 
+    def insertText(self, key, value):
+        if key in self._text:
+            raise KeyError(key)
+        if isinstance(value, str):
+            self._text[key] = CompressedTextMapper.convert(value)
+        else:
+            self._text[key] = value
+        self._text.move_to_end('end_pad_data')
+        self._text.move_to_end('terminator')
+
     def removeUnwantedText(self):
         nomessage = bytes(CompressedTextMapper.convert("{NOTEXT}", False))
         messages_to_zero = [

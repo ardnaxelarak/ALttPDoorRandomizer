@@ -35,7 +35,7 @@ def adjust(args):
                        args.sprite, args.ow_palettes, args.uw_palettes, args.reduce_flashing, args.shuffle_sfx,
                        args.msu_resume)
 
-    output_path.cached_path = args.outputpath
+    # output_path.cached_path = args.outputpath
     rom.write_to_file(output_path('%s.sfc' % outfilebase))
 
     logger.info('Done. Enjoy.')
