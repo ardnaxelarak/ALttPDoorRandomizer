@@ -130,6 +130,7 @@ bonk_prize_lookup = {
     'Chicken':      (0x0b,  0, None),
     'Bee Trap':     (0x79,  6, None),
     'Apples':       (0xac,  8, None),
+    'Good Bee':     (0xb2,  1, None),
     'Small Heart':  (0xd8,  2, None),
     'Rupee (1)':    (0xd9,  0, None),
     'Rupees (5)':   (0xda,  3, None), # TODO: add in murahdahla tree rupee

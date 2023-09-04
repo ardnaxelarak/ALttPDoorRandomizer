@@ -924,9 +924,9 @@ def create_doors(world, player):
         create_door(player, 'Mire Torches Top SW', Intr).dir(So, 0x97, Left, High).pos(1),
         create_door(player, 'Mire Torches Bottom Holes', Hole),
         create_door(player, 'Mire Torches Bottom NW', Intr).dir(No, 0x97, Left, High).pos(1),
-        create_door(player, 'Mire Torches Bottom WS', Intr).dir(We, 0x97, Bot, High).pos(0),
+        create_door(player, 'Mire Torches Bottom ES', Intr).dir(Ea, 0x97, Bot, High).pos(0),
         create_door(player, 'Mire Torches Top Holes', Hole),
-        create_door(player, 'Mire Attic Hint ES', Intr).dir(Ea, 0x97, Bot, High).pos(0),
+        create_door(player, 'Mire Attic Hint WS', Intr).dir(We, 0x97, Bot, High).pos(0),
         create_door(player, 'Mire Attic Hint Hole', Hole),
         create_door(player, 'Mire Dark Shooters Up Stairs', Sprl).dir(Up, 0x93, 0, LTH).ss(A, 0x32, 0xec),
         create_door(player, 'Mire Dark Shooters SW', Intr).dir(So, 0x93, Left, High).pos(0),
@@ -1115,6 +1115,8 @@ def create_doors(world, player):
         create_door(player, 'GT Invisible Catwalk NE', Nrml).dir(No, 0x9c, Right, High).pos(2),
         create_door(player, 'GT Conveyor Cross EN', Nrml).dir(Ea, 0x8b, Top, High).pos(2),
         create_door(player, 'GT Conveyor Cross WN', Intr).dir(We, 0x8b, Top, High).pos(0),
+        create_door(player, 'GT Conveyor Cross Hammer Path', Lgcl),
+        create_door(player, 'GT Conveyor Cross Hookshot Path', Lgcl),
         create_door(player, 'GT Hookshot EN', Intr).dir(Ea, 0x8b, Top, High).pos(0),
         create_door(player, 'GT Hookshot East-Mid Path', Lgcl),
         create_door(player, 'GT Hookshot Mid-East Path', Lgcl),
@@ -1497,7 +1499,7 @@ def create_doors(world, player):
 
     # static portal flags
     world.get_door('Sanctuary S', player).dead_end(allowPassage=True)
-    if world.mode[player] == 'open' and world.shuffle[player] not in ['crossed', 'insanity']:
+    if world.mode[player] == 'open' and world.shuffle[player] not in ['lean', 'swapped', 'crossed', 'insanity']:
         world.get_door('Sanctuary S', player).lw_restricted = True
     world.get_door('Eastern Hint Tile Blocked Path SE', player).passage = False
     world.get_door('TR Big Chest Entrance SE', player).passage = False

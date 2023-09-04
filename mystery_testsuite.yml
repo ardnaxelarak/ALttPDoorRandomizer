@@ -31,6 +31,9 @@ key_logic_algorithm:
 decoupledoors:
   off: 9  # more strict
   on: 1
+door_self_loops:
+  on: 1
+  off: 1
 dropshuffle:
   on: 1
   off: 1
@@ -56,6 +59,9 @@ entrance_shuffle:
   simple: 1
   restricted: 1
   full: 1
+  lite: 1
+  lean: 1
+  swapped: 1
   crossed: 1
   insanity: 1
 shufflelinks:
@@ -83,6 +89,7 @@ triforce_goal_max: 30
 triforce_pool_min: 30
 triforce_pool_max: 40
 triforce_min_difference: 10
+triforce_max_difference: 12
 map_shuffle:
   on: 1
   off: 1

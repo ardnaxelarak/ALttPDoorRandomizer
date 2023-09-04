@@ -1,7 +1,96 @@
 # Changelog
 
+## 0.3.2.2
+- Added Customizer support for Flute Shuffle (thanks Catobat)
+- Fixed bad Old Man rescue possibility in Swapped ER
+- Fixed vanilla placement issue in Swapped ER
+- Removed entrance hints in Swapped ER
+- Fixed various generation/validation errors
+
+## 0.3.2.1
+- \~Merged in DR v1.2.0.20~
+- Some minor Swapped ER improvements
+- Fixed generation error with Flute Activation
+
+## 0.3.2.0
+- New Swapped ER mode option
+- Fixed issue with flipper rules not properly getting pearl requirement added
+- Fixed minor issues in generating non-crossed ER on subsequent attempts
+
+## 0.3.1.2
+- Retro now gives a universal key from bottle vendor fish prize
+- Fixed issue with Aga Door preventing Murahduhla Cutscene
+- Fixed issue with Ice Cave/Shopping Mall water transitions not flipping in Mixed OWR
+- Minor improvements to item GFX draw routine
+
+## 0.3.1.1
+- \~Merged in DR v1.2.0.17~
+- Various renames/reorganizations of region/rule definition to match upcoming DR world remodel
+- Minor improvements to item GFX draw routine
+- Minor change to terrain/logic of Spiral/Mimic Ledge in Inverted 2.0
+
+## 0.3.1.0
+- Added new Triforce Cutscene when getting Triforce item (turning in TF Pieces)
+- Fixed issue with enemy key drops displaying the wrong GFX
+- Fixed issue with boss music playing in Hera after boss is defeated
+- Fixed issue that limited the Bonk count to cap at 99
+- Made Murahdahla interactable on Pyramid in Rainstate
+
+## 0.3.0.8
+- All Bonk prize GFX are no longer using the Power Star placeholder GFX
+- Fixed issue with dislaying Key GFX during tablet animations
+- Fixed issue with DPad input being disabled in Pause Menu if an item GFX is on screen
+
+## 0.3.0.7
+- \~Merged in DR v1.2.0.16~
+- Major overhaul of how item GFX are drawn on screen
+  - Bonk prize GFX can now all be displayed simultaneously
+  - Rupee items that are in-plain-sight are now animated
+  - Narrow items are now centered within their tile space
+  - Fixed issue with pottery items showing bad GFX after map check or medallion use
+- Fixed issue with bonk drop items causing duplicate sprite spawns
+
+## 0.3.0.6
+- \~Merged in DR v1.2.0.15~
+- Fixed Tower of Hera music silence issue
+- Improved symmetrical GT crystal cutscene
+- Changed bonk prizes to not mark as collected unless it is visible on screen
+
+## 0.3.0.5
+- Major reorganization to GUI Options
+- Corrected various fake world behavior in glitched modes
+- Fixed various issues with glitched mode logic
+- Various minor logic fixes
+
+## 0.3.0.4
+- \~Merged in DR v1.2.0.14~
+  - Fixed issue with enemy drops on OW enemies
+  - Fixed issue with magically opened doors
+- Inverted + Vanilla ER can now generate
+- Fixed issue with Multiworld bonk items not sending to correct player
+- Minor improvements to OW Palettes on screen transition
+
+## 0.3.0.3
+- Fixed issue with new Cold Fairy Statue location not dropping correct item
+- Fixed issue with Multiworld due to new Cold Fairy Statue location
+- Improved water collision to only target Heart Piece sprites (rando items)
+
+## 0.3.0.2
+- \~Merged in DR v1.2.0.12~
+  - Fixed some door landing issues
+- Added Cold Fairy Statue as a new Bonk Location in Bonk Drop Shuffle
+- Added Customizer support for enabling OWR Options
+- Removed `Arrows (5)` item from Item Table, replaces with `Arrows (10)`
+
+## 0.3.0.1
+- \~Merged in DR v1.2.0.10~
+  - Fixed some door landing issues
+- Added Customizer support for OWR Tile Flips
+  - Added 'Standard+Inverted' template customizer yaml
+- Fixed some ER issues with placing Sanc Drop in non-crossed ER
+
 ## 0.3.0.0
-- Merged in all DR Customizer features since its initial release up to v1.2.0.9
+- \~Merged in all DR Customizer features since its initial release up to v1.2.0.9~
 - Major revamp of Aerinon's ER 2.0 to better support OWR modes
 - Fixed various incorrect logic issues (Inverted flute spots, Bomb Shop start, etc)
 - Flute is disabled in rain state except glitched modes
@@ -321,7 +410,7 @@
 - Removed sortedcontainers dependency
 
 ### 0.1.6.7
-- Mountain Entry and West Death Mountain are now Swapped independently (Old Man rescue is always in your starting world)
+- Mountain Pass and West Death Mountain are now Swapped independently (Old Man rescue is always in your starting world)
 - Fixed issue with AT/GT access logic
 - Improved spoiler log playthru accuracy
 - Fixed Boss Music when boss room is entered thru straight stairs
@@ -347,7 +436,7 @@
 
 ### 0.1.6.2
 - Added Balanced option for Flute Shuffle
-- Fixed issue with Flute Spot to Mountain Entry softlocking
+- Fixed issue with Flute Spot to Mountain Pass softlocking
 - Fixed logic bug with Inverted Kakariko Portal
 
 ### 0.1.6.1

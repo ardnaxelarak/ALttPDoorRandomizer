@@ -203,13 +203,20 @@ def create_guiargs(parent):
 
     # Cycle through each page
     for mainpage in options:
+        subpage = None
+        _, v = next(iter(options[mainpage].items()))
+        if isinstance(v, str):
+            subpage = ""
         # Cycle through each subpage (in case of Item Randomizer)
-        for subpage in options[mainpage]:
+        for subpage in (options[mainpage] if subpage is None else [subpage]):
             # Cycle through each widget
-            for widget in options[mainpage][subpage]:
+            for widget in (options[mainpage][subpage] if subpage != "" else options[mainpage]):
                 # Get the value and set it
-                arg = options[mainpage][subpage][widget]
-                setattr(guiargs, arg, parent.pages[mainpage].pages[subpage].widgets[widget].storageVar.get())
+                arg = options[mainpage][subpage][widget] if subpage != "" else options[mainpage][widget]
+                page = parent.pages[mainpage].pages[subpage] if subpage != "" else parent.pages[mainpage]
+                pagewidgets = page.content.customWidgets if mainpage == "custom" else page.content.startingWidgets if mainpage == "startinventory" else page.widgets
+                if hasattr(pagewidgets[widget], 'storageVar'):
+                    setattr(guiargs, arg, pagewidgets[widget].storageVar.get())
 
     # Get EnemizerCLI setting
     guiargs.enemizercli = parent.pages["randomizer"].pages["enemizer"].widgets["enemizercli"].storageVar.get()
@@ -226,7 +233,7 @@ def create_guiargs(parent):
         guiargs.customizer = customizer_value
 
     # Get if we're using the Custom Item Pool
-    guiargs.custom = bool(parent.pages["randomizer"].pages["generation"].widgets["usecustompool"].storageVar.get())
+    guiargs.custom = bool(parent.pages["custom"].content.customWidgets["usecustompool"].storageVar.get())
 
     # Get Seed ID
     guiargs.seed = None
@@ -279,18 +286,5 @@ def create_guiargs(parent):
     guiargs.outputpath = parent.settings["outputpath"]
 
     guiargs = update_deprecated_args(guiargs)
-
-    # Key drop shuffle stuff
-    if guiargs.keydropshuffle:
-        guiargs.dropshuffle = 1
-        guiargs.pottery = 'keys' if guiargs.pottery == 'none' else guiargs.pottery
-
-    if guiargs.retro or guiargs.mode == 'retro':
-        if guiargs.bow_mode == 'progressive':
-            guiargs.bow_mode = 'retro'
-        elif guiargs.bow_mode == 'silvers':
-            guiargs.bow_mode = 'retro_silvers'
-        guiargs.take_any = 'random' if guiargs.take_any == 'none' else guiargs.take_any
-        guiargs.keyshuffle = 'universal'
 
     return guiargs

@@ -4,9 +4,6 @@
     "bps":                { "type": "checkbox" },
     "createspoiler":      { "type": "checkbox" },
     "calcplaythrough":    { "type": "checkbox" },
-    "print_custom_yaml":  { "type": "checkbox" },
-    "usestartinventory":  { "type": "checkbox" },
-    "usecustompool":      { "type": "checkbox" },
-    "race":               { "type": "checkbox" }
+    "print_custom_yaml":  { "type": "checkbox" }
   }
 }

@@ -226,6 +226,21 @@ def generate_itempool(world, player):
         loc.locked = True
         loc.forced_item = loc.item
 
+    if (world.flute_mode[player] != 'active' and not world.is_tile_swapped(0x18, player)
+            and 'Ocarina (Activated)' not in list(map(str, [i for i in world.precollected_items if i.player == player]))):
+        region = world.get_region('Kakariko Village',player)
+
+        loc = Location(player, "Flute Activation", parent=region)
+        region.locations.append(loc)
+        world.dynamic_locations.append(loc)
+
+        world.clear_location_cache()
+
+        world.push_item(loc, ItemFactory('Ocarina (Activated)', player), False)
+        loc.event = True
+        loc.locked = True
+        loc.forced_item = loc.item
+
     world.get_location('Ganon', player).event = True
     world.get_location('Ganon', player).locked = True
     world.push_item(world.get_location('Agahnim 1', player), ItemFactory('Beat Agahnim 1', player), False)
@@ -432,21 +447,7 @@ def generate_itempool(world, player):
         for i in range(4):
             next(adv_heart_pieces).advancement = True
 
-    beeweights = {'0': {None: 100},
-                  '1': {None: 75, 'trap': 25},
-                  '2': {None: 40, 'trap': 40, 'bee': 20},
-                  '3': {'trap': 50, 'bee': 50},
-                  '4': {'trap': 100}}
-    def beemizer(item):
-        if world.beemizer[item.player] and not item.advancement and not item.priority and not item.type:
-            choice = random.choices(list(beeweights[world.beemizer[item.player]].keys()), weights=list(beeweights[world.beemizer[item.player]].values()))[0]
-            return item if not choice else ItemFactory("Bee Trap", player) if choice == 'trap' else ItemFactory("Bee", player)
-        return item
-
-    if not skip_pool_adjustments:
-        world.itempool += [beemizer(item) for item in items]
-    else:
-        world.itempool += items
+    world.itempool += items
 
     # shuffle medallions
     mm_medallion, tr_medallion = None, None
@@ -503,6 +504,20 @@ def generate_itempool(world, player):
     # modfiy based on start inventory, if any
     modify_pool_for_start_inventory(start_inventory, world, player)
 
+    beeweights = {'0': {None: 100},
+                  '1': {None: 75, 'trap': 25},
+                  '2': {None: 40, 'trap': 40, 'bee': 20},
+                  '3': {'trap': 50, 'bee': 50},
+                  '4': {'trap': 100}}
+    def beemizer(item):
+        if world.beemizer[item.player] and not item.advancement and not item.priority and not item.type:
+            choice = random.choices(list(beeweights[world.beemizer[item.player]].keys()), weights=list(beeweights[world.beemizer[item.player]].values()))[0]
+            return item if not choice else ItemFactory("Bee Trap", player) if choice == 'trap' else ItemFactory("Bee", player)
+        return item
+
+    if not skip_pool_adjustments:
+        world.itempool = [beemizer(item) for item in world.itempool]
+
     # increase pool if not enough items
     ttl_locations = sum(1 for x in world.get_unfilled_locations(player) if '- Prize' not in x.name)
     pool_size = count_player_dungeon_item_pool(world, player)
@@ -520,15 +535,15 @@ def generate_itempool(world, player):
 take_any_locations = [
     'Snitch Lady (East)', 'Snitch Lady (West)', 'Bush Covered House', 'Light World Bomb Hut',
     'Fortune Teller (Light)', 'Lake Hylia Fortune Teller', 'Lumberjack House', 'Bonk Fairy (Light)',
-    'Bonk Fairy (Dark)', 'Lake Hylia Healer Fairy', 'Swamp Healer Fairy', 'Desert Healer Fairy',
-    'Dark Lake Hylia Healer Fairy', 'Dark Lake Hylia Ledge Healer Fairy', 'Dark Desert Healer Fairy',
+    'Bonk Fairy (Dark)', 'Lake Hylia Healer Fairy', 'Light Hype Fairy', 'Desert Healer Fairy',
+    'Dark Lake Hylia Healer Fairy', 'Dark Lake Hylia Ledge Healer Fairy', 'Mire Healer Fairy',
     'Dark Death Mountain Healer Fairy', 'Long Fairy Cave', 'Good Bee Cave', '20 Rupee Cave',
     'Kakariko Gamble Game', '50 Rupee Cave', 'Lost Woods Gamble', 'Hookshot Fairy',
     'Palace of Darkness Hint', 'East Dark World Hint', 'Archery Game', 'Dark Lake Hylia Ledge Hint',
-    'Dark Lake Hylia Ledge Spike Cave', 'Fortune Teller (Dark)', 'Dark Sanctuary Hint', 'Dark Desert Hint']
+    'Dark Lake Hylia Ledge Spike Cave', 'Fortune Teller (Dark)', 'Dark Sanctuary Hint', 'Mire Hint']
 
 fixed_take_anys = [
-    'Desert Healer Fairy', 'Swamp Healer Fairy', 'Dark Death Mountain Healer Fairy',
+    'Desert Healer Fairy', 'Light Hype Fairy', 'Dark Death Mountain Healer Fairy',
     'Dark Lake Hylia Ledge Healer Fairy', 'Bonk Fairy (Dark)']
 
 
@@ -615,10 +630,10 @@ def create_dynamic_shop_locations(world, player):
 
 def create_farm_locations(world, player):
     bush_bombs = ['Flute Boy Approach Area',
-                'Kakariko Area',
-                'Village of Outcasts Area',
+                'Kakariko Village',
+                'Village of Outcasts',
                 'Forgotten Forest Area',
-                'Bat Cave Ledge',
+                'Blacksmith Ledge',
                 'East Dark Death Mountain (Bottom)']
     rock_bombs = ['Links House Area',
                 'Dark Chapel Area',
@@ -632,7 +647,7 @@ def create_farm_locations(world, player):
                 'Dark Fortune Area',
                 'Qirn Jump Area',
                 'Shield Shop Area',
-                'Palace of Darkness Nook Area',
+                'Darkness Nook Area',
                 'Swamp Nook Area',
                 'Dark South Pass Area']
     bonk_bombs = ['Kakariko Fortune Area', 'Dark Graveyard Area'] #TODO: Flute Boy Approach Area and Bonk Rock Ledge are available post-Aga
@@ -648,10 +663,10 @@ def create_farm_locations(world, player):
                 'Hype Cave Area',
                 'Dark South Pass Area',
                 'Bumper Cave Area']
-    pre_aga_tree_pulls = ['Hyrule Castle Courtyard', 'Mountain Entry Area']
+    pre_aga_tree_pulls = ['Hyrule Castle Courtyard', 'Mountain Pass Area']
     post_aga_tree_pulls = ['Statues Area', 'Eastern Palace Area']
 
-    bush_crabs = ['Lost Woods East Area', 'Mountain Entry Area']
+    bush_crabs = ['Lost Woods East Area', 'Mountain Pass Area']
     pre_aga_bush_crabs = ['Lumberjack Area', 'South Pass Area']
     rock_crabs = ['Desert Pass Area']
 
@@ -1006,9 +1021,9 @@ def balance_prices(world, player):
 
 
 def check_hints(world, player):
-    if world.shuffle[player] in ['simple', 'restricted', 'full', 'lite', 'lean', 'crossed', 'insanity']:
+    if world.shuffle[player] in ['simple', 'restricted', 'full', 'lite', 'lean', 'swapped', 'crossed', 'insanity']:
         for shop, location_list in  shop_to_location_table.items():
-            if shop in ['Capacity Upgrade', 'Light World Death Mountain Shop', 'Potion Shop']:
+            if shop in ['Capacity Upgrade', 'Paradox Shop', 'Potion Shop']:
                 continue  # near the queen, near potions, and near 7 chests are fine
             for loc_name in location_list:  # other shops are indistinguishable in ER
                 world.get_location(loc_name, player).hint_text = f'for sale'
@@ -1126,9 +1141,6 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
             pool.remove('Piece of Heart')
         pool.extend(['Rupees (20)'] * 12)
 
-    if world.trolls[player]:
-        pool.extend(['Magic Upgrade (1/2)'])
-
     if bombbag:
         pool = [item.replace('Bomb Upgrade (+5)','Rupees (5)') for item in pool]
         pool = [item.replace('Bomb Upgrade (+10)','Rupees (5)') for item in pool]
@@ -1222,10 +1234,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     if world.keyshuffle[player] == 'universal':
         pool.extend(diff.retro)
         if door_shuffle != 'vanilla':  # door shuffle needs more keys for universal keys
-            replace = 'Rupees (20)' if difficulty == 'normal' else 'Rupees (5)'
-            indices = [i for i, x in enumerate(pool) if x == replace]
-            for i in range(0, min(10, len(indices))):
-                pool[indices[i]] = 'Small Key (Universal)'
+            pool.extend(['Small Key (Universal)'] * 5)  # reduce to 5 for now
         if mode == 'standard':
             if door_shuffle == 'vanilla':
                 key_location = random.choice(['Secret Passage', 'Hyrule Castle - Boomerang Chest', 'Hyrule Castle - Map Chest', 'Hyrule Castle - Zelda\'s Chest', 'Sewers - Dark Cross'])
@@ -1275,8 +1284,19 @@ item_alternates = {
 
 
 def modify_pool_for_start_inventory(start_inventory, world, player):
-    # skips custom item pools - these shouldn't be adjusted
     if (world.customizer and world.customizer.get_item_pool()) or world.custom:
+        # custom item pools only adjust in dungeon items
+        for item in start_inventory:
+            if item.dungeon:
+                d = world.get_dungeon(item.dungeon, item.player)
+                match = next((i for i in d.all_items if i.name == item.name), None)
+                if match:
+                    if match.map or match.compass:
+                        d.dungeon_items.remove(match)
+                    elif match.smallkey:
+                        d.small_keys.remove(match)
+                    elif match.bigkey and d.big_key == match:
+                        d.big_key = None
         return
     for item in start_inventory:
         if item.player == player:
@@ -1302,8 +1322,8 @@ def modify_pool_for_start_inventory(start_inventory, world, player):
                         d.dungeon_items.remove(match)
                     elif match.smallkey:
                         d.small_keys.remove(match)
-                    elif match.bigkey:
-                        d.big_key.remove(match)
+                    elif match.bigkey and d.big_key == match:
+                        d.big_key = None
 
 
 def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer, goal, mode, swords, bombbag, customitemarray):
@@ -1346,7 +1366,21 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
     itemtotal = itemtotal + customitemarray["generickeys"]
 
     customitems = [
-      "Bow", "Silver Arrows", "Blue Boomerang", "Red Boomerang", "Hookshot", "Mushroom", "Magic Powder", "Fire Rod", "Ice Rod", "Bombos", "Ether", "Quake", "Lamp", "Hammer", "Shovel", "Ocarina", "Bug Catching Net", "Book of Mudora", "Cane of Somaria", "Cane of Byrna", "Cape", "Pegasus Boots", "Power Glove", "Titans Mitts", "Progressive Glove", "Flippers", "Piece of Heart", "Boss Heart Container", "Sanctuary Heart Container", "Master Sword", "Tempered Sword", "Golden Sword", "L1 Bombs", "L2 Bombs", "L3 Bombs", "L4 Bombs", "L5 Bombs", "Progressive Bombs", "L1 Cane", "L2 Cane", "L3 Cane", "L4 Cane", "L5 Cane", "Progressive Cane", "Blue Shield", "Red Shield", "Mirror Shield", "Progressive Shield", "Blue Mail", "Red Mail", "Progressive Armor", "Magic Upgrade (1/2)", "Magic Upgrade (1/4)", "Bomb Upgrade (+5)", "Bomb Upgrade (+10)", "Arrow Upgrade (+5)", "Arrow Upgrade (+10)", "Single Arrow", "Arrows (10)", "Single Bomb", "Bombs (3)", "Rupee (1)", "Rupees (5)", "Rupees (20)", "Rupees (50)", "Rupees (100)", "Rupees (300)", "Rupoor", "Blue Clock", "Green Clock", "Red Clock", "Progressive Bow", "Bombs (10)", "Triforce Piece", "Triforce"
+      "Bow", "Silver Arrows", "Blue Boomerang", "Red Boomerang", "Hookshot", "Mushroom", "Magic Powder",
+      "Fire Rod", "Ice Rod", "Bombos", "Ether", "Quake",
+      "Lamp", "Hammer", "Shovel", "Ocarina", "Bug Catching Net", "Book of Mudora",
+      "Cane of Somaria", "Cane of Byrna", "Cape",
+      "Pegasus Boots", "Power Glove", "Titans Mitts", "Progressive Glove", "Flippers",
+      "Piece of Heart", "Boss Heart Container", "Sanctuary Heart Container",
+      "Master Sword", "Tempered Sword", "Golden Sword",
+      "Progressive Bombs", "Progressive Cane",
+      "Blue Shield", "Red Shield", "Mirror Shield", "Progressive Shield",
+      "Blue Mail", "Red Mail", "Progressive Armor", "Magic Upgrade (1/2)", "Magic Upgrade (1/4)",
+      "Bomb Upgrade (+5)", "Bomb Upgrade (+10)", "Arrow Upgrade (+5)", "Arrow Upgrade (+10)",
+      "Single Arrow", "Arrows (10)", "Single Bomb", "Bombs (3)", "Bombs (10)",
+      "Rupee (1)", "Rupees (5)", "Rupees (20)", "Rupees (50)", "Rupees (100)", "Rupees (300)", "Rupoor",
+      "Blue Clock", "Green Clock", "Red Clock",
+      "Progressive Bow", "Triforce Piece", "Triforce"
     ]
     for customitem in customitems:
         pool.extend([customitem] * customitemarray[get_custom_array_key(customitem)])
@@ -1524,6 +1558,9 @@ def make_customizer_pool(world, player):
         place_item('Master Sword Pedestal', 'Triforce')
 
     guaranteed_items = alwaysitems + ['Magic Mirror', 'Moon Pearl']
+    if world.is_tile_swapped(0x18, player) or world.flute_mode[player] == 'active':
+        guaranteed_items.remove('Ocarina')
+        guaranteed_items.append('Ocarina (Activated)')
     missing_items = []
     if world.shopsanity[player]:
         guaranteed_items.extend(['Blue Potion', 'Green Potion', 'Red Potion'])
@@ -1552,7 +1589,8 @@ def make_customizer_pool(world, player):
     bow_found = next((i for i in pool if i in {'Bow', 'Progressive Bow'}), None)
     if not bow_found:
         missing_items.append('Progressive Bow')
-    logging.getLogger('').warning(f'The following items are not in the custom item pool {", ".join(missing_items)}')
+    if missing_items:
+        logging.getLogger('').warning(f'The following items are not in the custom item pool {", ".join(missing_items)}')
 
     g, t = set_default_triforce(world.goal[player], world.treasure_hunt_count[player],
                                 world.treasure_hunt_total[player])
@@ -1561,20 +1599,23 @@ def make_customizer_pool(world, player):
         if pieces < t:
             pool.extend(['Triforce Piece'] * (t - pieces))
 
-    if not world.customizer.get_start_inventory():
-        if world.logic[player] in ['owglitches', 'nologic']:
-            precollected_items.append('Pegasus Boots')
-            if 'Pegasus Boots' in pool:
-                pool.remove('Pegasus Boots')
-                pool.append('Rupees (20)')
-        if world.swords[player] == 'assured':
-            precollected_items.append('Progressive Sword')
-            if 'Progressive Sword' in pool:
-                pool.remove('Progressive Sword')
-                pool.append('Rupees (50)')
-            elif 'Fighter Sword' in pool:
-                pool.remove('Fighter Sword')
-                pool.append('Rupees (50)')
+    sphere_0 = world.customizer.get_start_inventory()
+    no_start_inventory = not sphere_0 or not sphere_0[player]
+    init_equip = [] if no_start_inventory else sphere_0[player]
+    if (world.logic[player] in ['owglitches', 'nologic']
+       and (no_start_inventory or all(x != 'Pegasus Boots' for x in init_equip))):
+        precollected_items.append('Pegasus Boots')
+        if 'Pegasus Boots' in pool:
+            pool.remove('Pegasus Boots')
+            pool.append('Rupees (20)')
+    if world.swords[player] == 'assured' and (no_start_inventory or all(' Sword' not in x for x in init_equip)):
+        precollected_items.append('Progressive Sword')
+        if 'Progressive Sword' in pool:
+            pool.remove('Progressive Sword')
+            pool.append('Rupees (50)')
+        elif 'Fighter Sword' in pool:
+            pool.remove('Fighter Sword')
+            pool.append('Rupees (50)')
 
     return pool, placed_items, precollected_items, clock_mode, 1
 
@@ -1648,10 +1689,13 @@ def fill_specific_items(world):
                                                                         dungeon_pool, prize_set, prize_pool)
                     if item_to_place:
                         world.push_item(loc, item_to_place, False)
+                        loc.locked = True
                         track_outside_keys(item_to_place, loc, world)
                         track_dungeon_items(item_to_place, loc, world)
                         loc.event = (event_flag or item_to_place.advancement
                                      or item_to_place.bigkey or item_to_place.smallkey)
+                    else:
+                        raise Exception(f'Did not find "{item}" in item pool to place at "{location}"')
         advanced_placements = world.customizer.get_advanced_placements()
         if advanced_placements:
             for player, placement_list in advanced_placements.items():
@@ -1661,7 +1705,7 @@ def fill_specific_items(world):
                         item_to_place, event_flag = get_item_and_event_flag(item, world, player,
                                                                             dungeon_pool, prize_set, prize_pool)
                         if not item_to_place:
-                            continue
+                            raise Exception(f'Did not find "{item}" in item pool to place for a LocationGroup"')
                         locations = placement['locations']
                         handled = False
                         while not handled:
@@ -1681,6 +1725,7 @@ def fill_specific_items(world):
                                 if loc.item:
                                     continue
                                 world.push_item(loc, item_to_place, False)
+                                loc.locked = True
                                 track_outside_keys(item_to_place, loc, world)
                                 track_dungeon_items(item_to_place, loc, world)
                                 loc.event = (event_flag or item_to_place.advancement

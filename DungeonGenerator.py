@@ -1360,7 +1360,7 @@ def create_dungeon_builders(all_sectors, connections_tuple, world, player, dunge
         for name, builder in dungeon_map.items():
             calc_allowance_and_dead_ends(builder, connections_tuple, world, player)
 
-        if world.mode[player] == 'open' and world.shuffle[player] not in ['crossed', 'insanity']:
+        if world.mode[player] == 'open' and world.shuffle[player] not in ['lean', 'swapped', 'crossed', 'insanity']:
             sanc = find_sector('Sanctuary', candidate_sectors)
             if sanc:  # only run if sanc if a candidate
                 lw_builders = []
@@ -1538,8 +1538,8 @@ def calc_allowance_and_dead_ends(builder, connections_tuple, world, player):
             if entrance in connections.keys():
                 enabling_region = connections[entrance]
                 check_list = list(potentials[enabling_region])
-                if enabling_region.name in ['Desert Ledge', 'Desert Palace Entrance (North) Spot']:
-                    alternate = 'Desert Palace Entrance (North) Spot' if enabling_region.name == 'Desert Ledge' else 'Desert Ledge'
+                if enabling_region.name in ['Desert Ledge', 'Desert Ledge Keep']:
+                    alternate = 'Desert Ledge Keep' if enabling_region.name == 'Desert Ledge' else 'Desert Ledge'
                     if world.get_region(alternate, player) in potentials:
                         check_list.extend(potentials[world.get_region(alternate, player)])
                 connecting_entrances = [x for x in check_list if x != entrance and x not in dead_entrances and x not in drop_entrances_allowance]
@@ -1677,10 +1677,24 @@ def assign_location_sectors_minimal(dungeon_map, free_location_sectors, global_p
     random.shuffle(sector_list)
     orig_location_set = build_orig_location_set(dungeon_map)
     num_dungeon_items = requested_dungeon_items(world, player)
+    locations_to_distribute = sum(sector.chest_locations for sector in free_location_sectors.keys())
+    reserved_per_dungeon = {d_name: count_reserved_locations(world, player, orig_location_set[d_name])
+                            for d_name in dungeon_map.keys()}
+    base_free, found_enough = 2, False
+    while not found_enough:
+        needed = sum(max(0, max(base_free, reserved_per_dungeon[d]) + num_dungeon_items - len(orig_location_set[d]))
+                     for d in dungeon_map.keys())
+        if needed > locations_to_distribute:
+            if base_free == 0:
+                raise Exception('Unable to meet minimum requirements, check for customizer problems')
+            base_free -= 1
+        else:
+            found_enough = True
     d_idx = {builder.name: i for i, builder in enumerate(dungeon_map.values())}
     next_sector = sector_list.pop()
     while not valid:
-        choice, totals, location_set = weighted_random_location(dungeon_map, choices, orig_location_set, world, player)
+        choice, totals, location_set = weighted_random_location(dungeon_map, choices, orig_location_set,
+                                                                base_free, world, player)
         if not choice:
             break
         choices[choice].append(next_sector)
@@ -1691,7 +1705,7 @@ def assign_location_sectors_minimal(dungeon_map, free_location_sectors, global_p
             valid = True
             for d_name, idx in d_idx.items():
                 free_items = count_reserved_locations(world, player, location_set[d_name])
-                target = max(free_items, 2) + num_dungeon_items
+                target = max(free_items, base_free) + num_dungeon_items
                 if totals[idx] < target:
                     valid = False
                     break
@@ -1699,8 +1713,7 @@ def assign_location_sectors_minimal(dungeon_map, free_location_sectors, global_p
                 if len(sector_list) == 0:
                     choices = defaultdict(list)
                     sector_list = list(free_location_sectors)
-                else:
-                    next_sector = sector_list.pop()
+                next_sector = sector_list.pop()
         else:
             choices[choice].remove(next_sector)
     for builder, choice_list in choices.items():
@@ -1709,7 +1722,7 @@ def assign_location_sectors_minimal(dungeon_map, free_location_sectors, global_p
     return free_location_sectors
 
 
-def weighted_random_location(dungeon_map, choices, orig_location_set, world, player):
+def weighted_random_location(dungeon_map, choices, orig_location_set, base_free, world, player):
     population = []
     totals = []
     location_set = {x: set(y) for x, y in orig_location_set.items()}
@@ -1720,7 +1733,7 @@ def weighted_random_location(dungeon_map, choices, orig_location_set, world, pla
         builder_set = location_set[dungeon_builder.name]
         builder_set.update(set().union(*(s.chest_location_set for s in choices[dungeon_builder])))
         free_items = count_reserved_locations(world, player, builder_set)
-        target = max(free_items, 2) + num_dungeon_items
+        target = max(free_items, base_free) + num_dungeon_items
         if ttl < target:
             population.append(dungeon_builder)
     choice = random.choice(population) if len(population) > 0 else None
@@ -1775,7 +1788,7 @@ def count_reserved_locations(world, player, proposed_set):
     return 2
 
 
-def assign_crystal_switch_sectors(dungeon_map, crystal_switches, crystal_barriers, global_pole, assign_one=False):
+def assign_crystal_switch_sectors(dungeon_map, crystal_switches, crystal_barriers, global_pole):
     population = []
     some_c_switches_present = False
     for name, builder in dungeon_map.items():
@@ -1784,7 +1797,7 @@ def assign_crystal_switch_sectors(dungeon_map, crystal_switches, crystal_barrier
         if builder.c_switch_present and not builder.c_locked:
             some_c_switches_present = True
     if len(population) == 0:  # nothing needs a switch
-        if assign_one and not some_c_switches_present:  # something should have one
+        if len(crystal_barriers) > 0 and not some_c_switches_present:  # something should have one
             if len(crystal_switches) == 0:
                 raise GenerationException('No crystal switches to assign. Ref %s' % next(iter(dungeon_map.keys())))
             valid, builder_choice, switch_choice = False, None, None
@@ -3139,8 +3152,7 @@ def balance_split(candidate_sectors, dungeon_map, global_pole, builder_info):
     check_for_forced_assignments(dungeon_map, candidate_sectors, global_pole)
     check_for_forced_crystal(dungeon_map, candidate_sectors, global_pole)
     crystal_switches, crystal_barriers, neutral_sectors, polarized_sectors = categorize_sectors(candidate_sectors)
-    leftover = assign_crystal_switch_sectors(dungeon_map, crystal_switches, crystal_barriers,
-                                             global_pole, len(crystal_barriers) > 0)
+    leftover = assign_crystal_switch_sectors(dungeon_map, crystal_switches, crystal_barriers, global_pole)
     ensure_crystal_switches_reachable(dungeon_map, leftover, polarized_sectors, crystal_barriers, global_pole)
     for sector in leftover:
         if sector.polarity().is_neutral():

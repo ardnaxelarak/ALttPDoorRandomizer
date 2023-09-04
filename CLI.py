@@ -139,7 +139,7 @@ def parse_cli(argv, no_defaults=False):
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'ganon_item', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
                          'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items',
-                         'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
+                         'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max', 'triforce_max_difference',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
                          'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
@@ -147,7 +147,7 @@ def parse_cli(argv, no_defaults=False):
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
                          'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
                          'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
-                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm', 'trolls']:
+                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm', 'door_self_loops']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -220,7 +220,7 @@ def parse_settings():
         "keydropshuffle": False,
         "dropshuffle": False,
         "pottery": "none",
-        "colorizepots": False,
+        "colorizepots": True,
         "shufflepots": False,
         "mapshuffle": False,
         "compassshuffle": False,
@@ -233,6 +233,7 @@ def parse_settings():
         "trap_door_mode": "optional",
         "key_logic_algorithm": "default",
         "decoupledoors": False,
+        "door_self_loops": False,
         "experimental": False,
         "dungeon_counters": "default",
         "mixed_travel": "prevent",
@@ -245,6 +246,7 @@ def parse_settings():
         "triforce_goal_min": 0,
         "triforce_goal_max": 0,
         "triforce_min_difference": 0,
+        "triforce_max_difference": 10000,
 
         "code": "",
         "multi": 1,
@@ -361,7 +363,7 @@ def parse_settings():
         "saveonexit": "ask",
         "outputname": "",
         "startinventoryarray": {},
-        "trolls": False,
+        "notes": ""
     }
 
     if sys.platform.lower().find("windows"):

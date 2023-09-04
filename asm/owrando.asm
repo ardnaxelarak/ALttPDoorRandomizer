@@ -11,9 +11,11 @@ OWMode:
 dw 0
 OWFlags:
 dw 0
-org $aa8010
 OWReserved:
 dw 0
+org $aa8010
+OWVersionInfo:
+dw $0000, $0000, $0000, $0000, $0000, $0000, $0000, $0000
 
 ;Hooks
 org $02a929
@@ -44,6 +46,10 @@ org $04E881
 Overworld_LoadSpecialOverworld_RoomId:
 org $04E8B4
 Overworld_LoadSpecialOverworld:
+
+org $02A9DA
+JSL OWSkipPalettes
+BCC OverworldHandleTransitions_change_palettes : NOP #4
 
 org $07982A
 Link_ResetSwimmingState:
@@ -157,6 +163,14 @@ and #$7f : eor #$40 : nop #2
 
 org $06AD4C
 jsl.l OWBonkDrops : nop #4
+org $1EDE6F
+jsl.l OWBonkGoodBeeDrop : bra +
+GoldBee_SpawnSelf_SetProperties:
+phb : lda.b #$1E : pha : plb ; switch to bank 1E
+    jsr GoldBee_SpawnSelf+12
+plb : rtl
+nop #3
++
 
 ;Code
 org $aa8800
@@ -230,6 +244,19 @@ OWWhirlpoolEnd:
     RTL
 }
 
+OWDestroyItemSprites:
+{
+    PHX : LDX.b #$0F
+    .nextSprite
+    LDA.w $0E20,X
+    CMP.b #$D8 : BCC .continue
+    CMP.b #$EC : BCS .continue
+    .killSprite ; need to kill sprites from D8 to EB on screen transition
+    STZ.w $0DD0,X
+    .continue
+    DEX : BPL .nextSprite
+    PLX : RTL
+}
 OWMirrorSpriteOnMap:
 {
     lda.w $1ac0,x : bit.b #$f0 : beq .continue
@@ -395,13 +422,127 @@ LoadMapDarkOrMixed:
     dw $0400+$0210 ; bottom right
 }
 
+OWBonkGoodBeeDrop:
+{
+    LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BNE .shuffled
+        .vanilla ; what we wrote over
+        STZ.w $0DD0,X
+        LDA.l BottleContentsOne : ORA.l BottleContentsTwo
+            ORA.l BottleContentsThree : ORA.l BottleContentsFour
+        RTL
+    .shuffled
+    LDA.w $0DD0,X : BNE +
+        JMP .return+1
+    + PHY : TXY
+    LDA.l RoomDataWRAM[$0120].high : AND.b #$02 : PHA : BNE + ; check if collected
+        LDA.b #$1B : STA $12F ; JSL Sound_SetSfx3PanLong ; seems that when you bonk, there is a pending bonk sfx, so we clear that out and replace with reveal secret sfx
+    +
+    LDA.l OWBonkPrizeTable[42].mw_player : BEQ + ; multiworld item
+        LDA.l OWBonkPrizeTable[42].loot
+        JMP .spawn_item
+    +
+
+    .determine_type ; S = Collected
+    LDA.l OWBonkPrizeTable[42].loot ; A = item id
+    CMP.b #$B0 : BNE +
+        LDA.b #$79 : JMP .sprite_transform ; transform to bees
+    + CMP.b #$42 : BNE +
+        JSL.l Sprite_TransmuteToBomb ; transform a heart to bomb, vanilla behavior
+        JMP .mark_collected
+    + CMP.b #$34 : BNE +
+        LDA.b #$D9 : JMP .sprite_transform ; transform to single rupee
+    + CMP.b #$35 : BNE +
+        LDA.b #$DA : JMP .sprite_transform ; transform to blue rupee
+    + CMP.b #$36 : BNE +
+        LDA.b #$DB : BRA .sprite_transform ; transform to red rupee
+    + CMP.b #$27 : BNE +
+        LDA.b #$DC : BRA .sprite_transform ; transform to 1 bomb
+    + CMP.b #$28 : BNE +
+        LDA.b #$DD : BRA .sprite_transform ; transform to 4 bombs
+    + CMP.b #$31 : BNE +
+        LDA.b #$DE : BRA .sprite_transform ; transform to 8 bombs
+    + CMP.b #$45 : BNE +
+        LDA.b #$DF : BRA .sprite_transform ; transform to small magic
+    + CMP.b #$B4 : BNE +
+        LDA.b #$E0 : BRA .sprite_transform ; transform to big magic
+    + CMP.b #$B5 : BNE +
+        LDA.b #$79 : JSL.l OWBonkSpritePrep
+        JSL.l GoldBee_SpawnSelf_SetProperties ; transform to good bee
+        BRA .mark_collected
+    + CMP.b #$44 : BNE +
+        LDA.b #$E2 : BRA .sprite_transform ; transform to 10 arrows
+    + CMP.b #$B1 : BNE +
+        LDA.b #$AC : BRA .sprite_transform ; transform to apples
+    + CMP.b #$B2 : BNE +
+        LDA.b #$E3 : BRA .sprite_transform ; transform to fairy
+    + CMP.b #$B3 : BNE .spawn_item
+        INX : INX : LDA.l OWBonkPrizeTable[42].vert_offset
+        CLC : ADC.b #$08 : PHA
+        LDA.w $0D00,Y : SEC : SBC.b 1,S : STA.w $0D00,Y
+            LDA.w $0D20,Y : SBC.b #$00 : STA.w $0D20,Y : PLX
+        LDA.b #$0B : SEC ; BRA .sprite_transform ; transform to chicken
+    
+    .sprite_transform
+    JSL.l OWBonkSpritePrep
+
+    .mark_collected ; S = Collected
+    PLA : BNE +
+        LDA.l RoomDataWRAM[$0120].high : ORA.b #$02 : STA.l RoomDataWRAM[$0120].high
+        
+        REP #$20
+            LDA.l TotalItemCounter : INC : STA.l TotalItemCounter
+        SEP #$20
+    + BRA .return
+
+    ; spawn itemget item
+    .spawn_item ; A = item id ; Y = bonk sprite slot ; S = Collected
+    PLX : BEQ + : LDA.b #$00 : STA.w $0DD0,Y : BRA .return
+        + PHA
+
+        LDA.b #$01 : STA !FORCE_HEART_SPAWN
+
+        LDA.b #$EB : STA.l $7FFE00
+        JSL Sprite_SpawnDynamically+15 ; +15 to skip finding a new slot, use existing sprite
+
+        LDA.b #$01 : STA.w !SPRITE_REDRAW,Y
+
+        PLA : STA.w $0E80,Y
+
+        ; affects the rate the item moves in the Y/X direction
+        LDA.b #$00 : STA.w $0D40,Y
+        LDA.b #$0A : STA.w $0D50,Y
+
+        LDA.b #$1A : STA.w $0F80,Y ; amount of force (gives height to the arch)
+        LDA.b #$FF : STA.w $0B58,Y ; stun timer
+        LDA.b #$30 : STA.w $0F10,Y ; aux delay timer 4 ?? dunno what that means
+
+        LDA.b #$00 : STA.w $0F20,Y ; layer the sprite is on
+
+        ; sets the tile type that is underneath the sprite, water
+        TYX : LDA.b #$09 : STA.l $7FF9C2,X ; TODO: Figure out how to get the game to set this
+
+        ; sets OW event bitmask flag, uses free RAM
+        LDA.l OWBonkPrizeTable[42].flag : STA.w $0ED0,Y
+
+        ; determines the initial spawn point of item
+        LDA.w $0D00,Y : SEC : SBC.l OWBonkPrizeTable[42].vert_offset : STA.w $0D00,Y
+            LDA.w $0D20,Y : SBC #$00 : STA.w $0D20,Y
+
+    .return
+    PLY
+    LDA #$08 ; makes original good bee not spawn
+    RTL
+}
+
 ; Y = sprite slot index of bonk sprite
 OWBonkDrops:
 {
     CMP.b #$D8 : BEQ +
         RTL
-    + LDA.l OWFlags+1 : AND.b #!FLAG_OW_CROSSED : BNE +
+    + LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BNE +
         JSL.l Sprite_TransmuteToBomb : RTL
+    + LDA.w $0DD0,Y : BNE +
+        RTL
     +
 
     ; loop thru rando bonk table to find match
@@ -439,7 +580,7 @@ OWBonkDrops:
     + CMP.b #$34 : BNE +
         LDA.b #$D9 : CLC : JMP .sprite_transform ; transform to single rupee
     + CMP.b #$35 : BNE +
-        LDA.b #$DA : CLC : BRA .sprite_transform ; transform to blue rupee
+        LDA.b #$DA : CLC : JMP .sprite_transform ; transform to blue rupee
     + CMP.b #$36 : BNE +
         LDA.b #$DB : CLC : BRA .sprite_transform ; transform to red rupee
     + CMP.b #$27 : BNE +
@@ -453,7 +594,9 @@ OWBonkDrops:
     + CMP.b #$B4 : BNE +
         LDA.b #$E0 : CLC : BRA .sprite_transform ; transform to big magic
     + CMP.b #$B5 : BNE +
-        LDA.b #$E1 : CLC : BRA .sprite_transform ; transform to 5 arrows
+        LDA.b #$79 : JSL.l OWBonkSpritePrep
+        JSL.l GoldBee_SpawnSelf_SetProperties ; transform to good bee
+        BRA .mark_collected
     + CMP.b #$44 : BNE +
         LDA.b #$E2 : CLC : BRA .sprite_transform ; transform to 10 arrows
     + CMP.b #$B1 : BNE +
@@ -468,42 +611,37 @@ OWBonkDrops:
         LDA.b #$0B : SEC ; BRA .sprite_transform ; transform to chicken
     
     .sprite_transform
-    STA.w $0E20,Y
-    TYX : JSL.l Sprite_LoadProperties
-    BEQ +
-        ; these are sprite properties that make it fall out of the tree to the east 
-        LDA #$30 : STA $0F80,Y ; amount of force (related to speed)
-        LDA #$10 : STA $0D50,Y ; eastward rate of speed
-        LDA #$FF : STA $0B58,Y ; expiration timer
-    +
+    JSL.l OWBonkSpritePrep
 
     .mark_collected ; S = Collected, FlagBitmask, X (row + 2)
     PLA : BNE + ; S = FlagBitmask, X (row + 2)
+    TYX : JSL Sprite_IsOnscreen : BCC +
         LDX.b $8A : LDA.l OverworldEventDataWRAM,X : ORA 1,S : STA.l OverworldEventDataWRAM,X
         
         REP #$20
-			LDA.l TotalItemCounter : INC : STA.l TotalItemCounter
+            LDA.l TotalItemCounter : INC : STA.l TotalItemCounter
         SEP #$20
     + JMP .return
 
     ; spawn itemget item
     .spawn_item ; A = item id ; Y = tree sprite slot ; S = Collected, FlagBitmask, X (row + 2)
     PLX : BEQ + : LDA.b #$00 : STA.w $0DD0,Y : JMP .return ; S = FlagBitmask, X (row + 2)
-        + LDA 2,S : TAX : INX : INX
-        LDA.w OWBonkPrizeData,X : STA.l !MULTIWORLD_SPRITEITEM_PLAYER_ID
-        DEX
+        + PHA
 
-        LDA.b #$01 : STA !REDRAW
+        LDA.b #$01 : STA !FORCE_HEART_SPAWN
 
-        LDA.b #$EB
-        STA.l $7FFE00
+        LDA.b #$EB : STA.l $7FFE00
         JSL Sprite_SpawnDynamically+15 ; +15 to skip finding a new slot, use existing sprite
+
+        LDA.b #$01 : STA.w !SPRITE_REDRAW,Y
+
+        PLA : STA.w $0E80,Y
 
         ; affects the rate the item moves in the Y/X direction
         LDA.b #$00 : STA.w $0D40,Y
         LDA.b #$0A : STA.w $0D50,Y
 
-        LDA.b #$20 : STA.w $0F80,Y ; amount of force (gives height to the arch)
+        LDA.b #$1A : STA.w $0F80,Y ; amount of force (gives height to the arch)
         LDA.b #$FF : STA.w $0B58,Y ; stun timer
         LDA.b #$30 : STA.w $0F10,Y ; aux delay timer 4 ?? dunno what that means
 
@@ -511,23 +649,35 @@ OWBonkDrops:
 
         ; sets OW event bitmask flag, uses free RAM
         PLA : STA.w $0ED0,Y ; S = X (row + 2)
-        
+
         ; determines the initial spawn point of item
         PLX : INX : INX : INX
         LDA.w $0D00,Y : SEC : SBC.w OWBonkPrizeData,X : STA.w $0D00,Y
             LDA.w $0D20,Y : SBC #$00 : STA.w $0D20,Y
 
-        LDA.b #$01 : STA !REDRAW : STA !FORCE_HEART_SPAWN
-        
         PLB : RTL
 
     .return
     PLA : PLA : PLB : RTL
 }
 
+; A = SpriteID, Y = Sprite Slot Index, X = free/overwritten
+OWBonkSpritePrep:
+{
+    STA.w $0E20,Y
+    TYX : JSL.l Sprite_LoadProperties
+    BEQ +
+        ; these are sprite properties that make it fall out of the tree to the east 
+        LDA #$30 : STA $0F80,Y ; amount of force (related to speed)
+        LDA #$10 : STA $0D50,Y ; eastward rate of speed
+        LDA #$FF : STA $0B58,Y ; expiration timer
+    + RTL
+}
+
 org $aa9000
 OWDetectEdgeTransition:
 {
+    JSL OWDestroyItemSprites
     STZ.w $06FC
     LDA.l OWMode : ORA.l OWMode+1 : BEQ .vanilla
         JSR OWShuffle
@@ -721,31 +871,33 @@ OWNewDestination:
 {
     tya : sta $4202 : lda #16 : sta $4203 ;wait 8 cycles
     rep #$20 : txa : nop : !add $4216 : tax ;a = offset to dest record
-    lda.w $0006,x : sta $06 ;set coord
     lda.w $0008,x : sta $04 ;save dest OW slot/ID
-    lda.w $000a,x : sta $84 ;VRAM
-
+    ldy $20 : lda $418 : dec #2 : bpl + : ldy $22 : + sty $06
+    
     ;;22	e0	e2	61c	61e - X
     ;;20	e6	e8	618	61a - Y
     ;keep current position if within incoming gap
     lda.w $0000,x : and #$01ff : pha : lda.w $0002,x : and #$01ff : pha
-    ldy $20 : lda $418 : dec #2 : bpl + : ldy $22
-    + tya : and #$01ff : cmp 3,s : !blt .adjustMainAxis
-    dec : cmp 1,s : !bge .adjustMainAxis
-        inc : pha : lda $06 : and #$fe00 : !add 1,s : sta $06 : pla
+    LDA.l OWMode : AND.w #$0007 : BEQ .noLayoutShuffle ;temporary fix until VRAM issues are solved
+        lda.w $0006,x : sta $06 ;set coord
+        lda.w $000a,x : sta $84 ;VRAM
+        tya : and #$01ff : cmp 3,s : !blt .adjustMainAxis
+        dec : cmp 1,s : !bge .adjustMainAxis
+            inc : pha : lda $06 : and #$fe00 : !add 1,s : sta $06 : pla
 
-        ; adjust and set other VRAM addresses
-        lda.w $0006,x : pha : lda $06 : !sub 1,s 
-        jsl DivideByTwoPreserveSign : jsl DivideByTwoPreserveSign : jsl DivideByTwoPreserveSign : jsl DivideByTwoPreserveSign : pha ; number of tiles
-        lda $418 : dec #2 : bmi +
-            pla : pea $0000 : bra ++ ;pla : asl #7 : pha : bra ++ ; y-axis shifts VRAM by increments of 0x80 (disabled for now)
-        + pla : asl : pha ; x-axis shifts VRAM by increments of 0x02
-        ++ lda $84 : !add 1,s : sta $84 : pla : pla
+            ; adjust and set other VRAM addresses
+            lda.w $0006,x : pha : lda $06 : !sub 1,s 
+            jsl DivideByTwoPreserveSign : jsl DivideByTwoPreserveSign : jsl DivideByTwoPreserveSign : jsl DivideByTwoPreserveSign : pha ; number of tiles
+            lda $418 : dec #2 : bmi +
+                pla : pea $0000 : bra ++ ;pla : asl #7 : pha : bra ++ ; y-axis shifts VRAM by increments of 0x80 (disabled for now)
+            + pla : asl : pha ; x-axis shifts VRAM by increments of 0x02
+            ++ lda $84 : !add 1,s : sta $84 : pla : pla
 
-    .adjustMainAxis
-    LDA $84 : SEC : SBC #$0400 : AND #$0F00 : ASL : XBA : STA $88 ; vram
-    LDA $84 : SEC : SBC #$0010 : AND #$003E : LSR : STA $86
+        .adjustMainAxis
+        LDA $84 : SEC : SBC #$0400 : AND #$0F00 : ASL : XBA : STA $88 ; vram
+        LDA $84 : SEC : SBC #$0010 : AND #$003E : LSR : STA $86
 
+    .noLayoutShuffle
     LDA.w $000F,X : AND.w #$00FF : STA.w $06FC ; position to walk to after transition (if non-zero)
 
     LDY.w #$0000
@@ -805,8 +957,12 @@ OWNewDestination:
     
     ; crossed OW shuffle and terrain
     ldx $05 : ldy $08 : jsr OWWorldTerrainUpdate
+    
+    ldx $8a : lda $05 : sta $8a : stx $05 ; $05 is prev screen id, $8a is dest screen
 
-    lda $05 : sta $8a
+    jsr OWGfxUpdate
+
+    lda $8a
     rep #$30 : rts
 }
 OWLoadSpecialArea:
@@ -846,17 +1002,17 @@ OWWorldTerrainUpdate: ; x = owid of destination screen, y = 1 for land to water,
         lda #$38 : sta $012f ; play sfx - #$3b is an alternative
 
         ; toggle bunny mode
-        lda MoonPearlEquipment : bne .nobunny
-        lda.l InvertedMode : bne .inverted
+        lda MoonPearlEquipment : beq + : jmp .nobunny
+        + lda.l InvertedMode : bne .inverted
             lda CurrentWorld : bra +
             .inverted lda CurrentWorld : eor #$40
         + and #$40 : beq .nobunny
-
             LDA.w $0703 : BEQ + ; check if forced transition
-                CPY.b #$03 : BEQ .end_forced_whirlpool
-                LDA.b #$17 : STA.b $5D
-                LDA.b #$01 : STA.w $02E0 : STA.b $56
-                LDA.w $0703 : BRA .end_forced_edge
+                CPY.b #$03 : BEQ ++
+                    LDA.b #$17 : STA.b $5D
+                    LDA.b #$01 : STA.w $02E0 : STA.b $56
+                    LDA.w $0703 : JSR OWLoadGearPalettes : BRA .end_forced_edge
+                ++ JSR OWLoadGearPalettes : BRA .end_forced_whirlpool
             +
             CPY.b #$01 : BEQ .auto ; check if going from land to water
             CPY.b #$02 : BEQ .to_bunny_reset_swim ; bunny state if swimming to land
@@ -875,8 +1031,8 @@ OWWorldTerrainUpdate: ; x = owid of destination screen, y = 1 for land to water,
                     STZ.b $5D
                     PLX
                     BRA .to_pseudo_bunny
-                .whirlpool
-                    PLX : RTS
+                    .whirlpool
+                    PLX : JMP OWLoadGearPalettes
             .to_bunny_reset_swim
             LDA.b $5D : CMP.b #$04 : BNE .to_bunny ; check if swimming
                 JSL Link_ResetSwimmingState
@@ -885,7 +1041,7 @@ OWWorldTerrainUpdate: ; x = owid of destination screen, y = 1 for land to water,
             LDA.b #$17 : STA.b $5D
             .to_pseudo_bunny
             LDA.b #$01 : STA.w $02E0 : STA.b $56
-            RTS
+            JMP OWLoadGearPalettes
 
         .nobunny
         lda $5d : cmp #$17 : bne + ; retain current state unless bunny
@@ -933,6 +1089,68 @@ OWWorldTerrainUpdate: ; x = owid of destination screen, y = 1 for land to water,
                 STZ.b $5D
     .return
     RTS
+}
+OWGfxUpdate:
+{
+    REP #$20 : LDA.l OWMode : AND.w #$0207 : BEQ .is_only_mixed : SEP #$20
+        ;;;;PLA : AND.b #$3F : BEQ .leaving_woods
+        LDA.b $8A : AND.b #$3F : BEQ .entering_woods
+        ;LDA.b $05 : JSL OWSkipPalettes : BCS .skip_palettes
+            LDA.b $8A : JSR OWDetermineScreensPaletteSet
+            CPX.w $0AB3 : BEQ .skip_palettes ; check if next screen's palette is different
+                LDA $00 : PHA
+                JSL OverworldLoadScreensPaletteSet_long ; loading correct OW palette
+                PLA : STA $00
+    .leaving_woods
+    .entering_woods
+    .is_only_mixed
+    .skip_palettes
+    SEP #$20
+}
+OWLoadGearPalettes:
+{
+    PHX : PHY : LDA $00 : PHA
+    LDA.w $02E0 : BEQ +
+        JSL LoadGearPalettes_bunny
+        BRA .return
+    +
+    JSL LoadGearPalettes_link
+    .return
+    PLA : STA $00 : PLY : PLX
+    RTS
+}
+OWDetermineScreensPaletteSet: ; A = OWID to check
+{
+    LDX.b #$02
+    PHA : AND.b #$3F
+    CMP.b #$03 : BEQ .death_mountain
+    CMP.b #$05 : BEQ .death_mountain
+    CMP.b #$07 : BEQ .death_mountain
+        LDX.b #$00
+    .death_mountain
+    PLA : PHX : TAX : LDA.l OWTileWorldAssoc,X : BEQ +
+        PLX : INX : RTS
+    + PLX : RTS
+}
+OWSkipPalettes:
+{
+    STA.b $05 ; A = previous screen, also stored in $05
+    ; only skip mosaic if OWR Layout or Crossed
+    PHP : REP #$20 : LDA.l OWMode : AND.w #$0207 : BEQ .vanilla : PLP
+        ; checks to see if going to from any DM screens
+        ;LDA.b $05 : JSR OWDetermineScreensPaletteSet : TXA : AND.b #$FE : STA $04
+        ;LDA.b $8A : JSR OWDetermineScreensPaletteSet : TXA : AND.b #$FE
+        ;CMP.b $04 : BNE .skip_palettes
+        BRA .vanilla+1
+
+    .vanilla
+    PLP
+    LDA.b $05 : AND.b #$3F : BEQ .skip_palettes ; what we
+    LDA.b $8A : AND.b #$BF : BNE .change_palettes ; wrote over, kinda
+    .skip_palettes
+    SEC : RTL ; mosaic transition occurs
+    .change_palettes
+    CLC : RTL
 }
 OWAdjustExitPosition:
 {
@@ -1287,7 +1505,7 @@ dw $0c78, $0ce3, $006b, $0cad, $3434, $0000, $0000, $001b
 dw $0ce4, $0d33, $004f, $0d0b, $3434, $0000, $0001, $001c
 dw $0d34, $0db8, $0084, $0d76, $3434, $0000, $0000, $001d
 dw $0ea8, $0f20, $0078, $0ee4, $3a3a, $0000, $0000, $001e
-dw $0f70, $0fa8, $0038, $0f8c, $3a3a, $0000, $0000, $001f
+dw $0f78, $0fa8, $0030, $0f90, $3a3a, $0000, $0000, $001f
 dw $0f18, $0f18, $0000, $0f18, $3b3b, $0000, $0000, $0020
 dw $0fc8, $0fc8, $0000, $0fc8, $3b3b, $0000, $0000, $0021
 dw $0e28, $0fb8, $0190, $0ef0, $3c3c, $0000, $0000, $0022
@@ -1362,7 +1580,7 @@ dw $0c78, $0ce3, $006b, $0cad, $3333, $0000, $0000, $001c
 dw $0ce4, $0d33, $004f, $0d0b, $3333, $0000, $0001, $001d
 dw $0d34, $0db8, $0084, $0d76, $3333, $0000, $0000, $001e
 dw $0ea8, $0f20, $0078, $0ee4, $3039, $0000, $0000, $001f
-dw $0f70, $0fa8, $0038, $0f8c, $3039, $0000, $0000, $0020
+dw $0f78, $0fa8, $0030, $0f90, $3039, $0000, $0000, $0020
 dw $0f18, $0f18, $0000, $0f18, $3a3a, $0000, $0000, $0021
 dw $0fc8, $0fc8, $0000, $0fc8, $3a3a, $0000, $0000, $0022
 dw $0e28, $0fb8, $0190, $0ef0, $3b3b, $0000, $0000, $0023
@@ -1539,6 +1757,7 @@ db $6e, $8c, $10, $35, $00, $10
 db $6e, $90, $08, $b0, $00, $10
 db $6e, $a4, $04, $b1, $00, $10
 db $74, $4e, $10, $b1, $00, $1c
+db $ff, $00, $02, $b5, $00, $08
 
 ; temporary fix - murahdahla replaces one of the bonk tree prizes
 ;    so we copy the sprite table here and update the pointer

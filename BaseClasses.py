@@ -26,9 +26,10 @@ class World(object):
         self.teams = 1
         self.owShuffle = owShuffle.copy()
         self.owTerrain = {}
-        self.owCrossed = owCrossed.copy()
         self.owKeepSimilar = {}
         self.owMixed = owMixed.copy()
+        self.owCrossed = owCrossed.copy()
+        self.owCrossed = self.owCrossed if self.owCrossed != 'polar' or self.owMixed else 'none'
         self.owWhirlpoolShuffle = {}
         self.owFluteShuffle = {}
         self.shuffle = shuffle.copy()
@@ -95,6 +96,7 @@ class World(object):
         self.rooms = []
         self._room_cache = {}
         self.dungeon_layouts = {}
+        self.dungeon_pool = {}
         self.inaccessible_regions = {}
         self.enabled_entrances = {}
         self.key_logic = {}
@@ -105,7 +107,6 @@ class World(object):
         self.sanc_portal = {}
         self.fish = BabelFish()
         self.pot_contents = {}
-        self.trolls = {}
 
         for player in range(1, players + 1):
             def set_player_attr(attr, val):
@@ -132,7 +133,7 @@ class World(object):
             set_player_attr('can_access_trock_big_chest', None)
             set_player_attr('can_access_trock_middle', None)
             set_player_attr('fix_fake_world', logic[player] not in ['owglitches', 'nologic']
-                            or shuffle[player] in ['lean', 'crossed', 'insanity'])
+                            or shuffle[player] in ['lean', 'swapped', 'crossed', 'insanity'])
             set_player_attr('mapshuffle', False)
             set_player_attr('compassshuffle', False)
             set_player_attr('keyshuffle', 'none')
@@ -163,9 +164,10 @@ class World(object):
             set_player_attr('pot_contents', None)
             set_player_attr('pseudoboots', False)
             set_player_attr('collection_rate', False)
-            set_player_attr('colorizepots', False)
+            set_player_attr('colorizepots', True)
             set_player_attr('pot_pool', {})
             set_player_attr('decoupledoors', False)
+            set_player_attr('door_self_loops', False)
             set_player_attr('door_type_mode', 'original')
             set_player_attr('trap_door_mode', 'optional')
             set_player_attr('key_logic_algorithm', 'default')
@@ -178,7 +180,6 @@ class World(object):
 
             set_player_attr('exp_cache', defaultdict(dict))
             set_player_attr('enabled_entrances', {})
-            set_player_attr('trolls', False)
 
     def finish_init(self):
         for player in range(1, self.players + 1):
@@ -186,8 +187,6 @@ class World(object):
                 self.mode[player] = 'open'
             if self.goal[player] == 'completionist':
                 self.accessibility[player] = 'locations'
-            if self.trolls[player]:
-                self.can_take_damage = False
 
     def get_name_string_for_object(self, obj):
         return obj.name if self.players == 1 else f'{obj.name} ({self.get_player_names(obj.player)})'
@@ -352,7 +351,7 @@ class World(object):
         else:
             if self.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
                 return False
-            elif self.goal[player] in ['crystals', 'trinity', 'z1']:
+            elif self.goal[player] in ['crystals', 'trinity', 'z1', 'ganonhunt']:
                 return True
             else:
                 return False
@@ -1329,6 +1328,9 @@ class CollectionState(object):
             return self.has('Golden Sword', player) or self.has('Tempered Sword', player) or self.has('Master Sword', player) or self.has('Fighter Sword', player)
         return False
 
+    def can_use_medallions(self, player):
+        return self.has_sword(player) or self.world.swords[player] in ['pseudo', 'assured_pseudo']
+
     def has_real_sword(self, player, level=1):
         if self.world.swords[player] in ['pseudo', 'assured_pseudo']:
             return False;
@@ -1431,11 +1433,7 @@ class CollectionState(object):
     def can_flute(self, player):
         if self.world.mode[player] == 'standard' and not self.has('Zelda Delivered', player):
             return False  # can't flute in rain state
-        if any(map(lambda i: i.name in ['Ocarina', 'Ocarina (Activated)'], self.world.precollected_items)):
-            return True
-        lw = self.world.get_region('Kakariko Area', player)
-        return self.has('Ocarina (Activated)', player) or (self.has('Ocarina', player) and lw.can_reach(self)
-                                                         and self.is_not_bunny(lw, player))
+        return self.has('Ocarina (Activated)', player)
 
     def can_melt_things(self, player):
         return self.has('Fire Rod', player) or (self.has('Bombos', player) and self.can_use_medallions(player))
@@ -2236,6 +2234,7 @@ class Door(object):
         self.dest = None
         self.blocked = False  # Indicates if the door is normally blocked off as an exit. (Sanc door or always closed)
         self.blocked_orig = False
+        self.trapped = False
         self.stonewall = False  # Indicate that the door cannot be enter until exited (Desert Torches, PoD Eye Statue)
         self.smallKey = False  # There's a small key door on this side
         self.bigKey = False  # There's a big key door on this side
@@ -2346,7 +2345,7 @@ class Door(object):
         return self
 
     def no_exit(self):
-        self.blocked = self.blocked_orig = True
+        self.blocked = self.blocked_orig = self.trapped = True
         return self
 
     def no_entrance(self):
@@ -3082,9 +3081,11 @@ class Spoiler(object):
                          'trap_door_mode': self.world.trap_door_mode,
                          'key_logic': self.world.key_logic_algorithm,
                          'decoupledoors': self.world.decoupledoors,
+                         'door_self_loops': self.world.door_self_loops,
                          'dungeon_counters': self.world.dungeon_counters,
                          'item_pool': self.world.difficulty,
                          'item_functionality': self.world.difficulty_adjustments,
+                         'beemizer': self.world.beemizer,
                          'gt_crystals': self.world.crystals_needed_for_gt,
                          'ganon_crystals': self.world.crystals_needed_for_ganon,
                          'ganon_vulnerability_item': self.world.ganon_item,
@@ -3110,7 +3111,10 @@ class Spoiler(object):
                          'pseudoboots': self.world.pseudoboots,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
-                         'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
+                         'race': self.world.settings.world_rep['meta']['race'],
+                         'user_notes': self.world.settings.world_rep['meta']['user_notes'],
+                         'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)},
+                         'seed': self.world.seed
                          }
 
         for p in range(1, self.world.players + 1):
@@ -3258,6 +3262,8 @@ class Spoiler(object):
             outfile.write('ALttP Overworld Randomizer  -  Seed: %s\n\n' % (self.world.seed))
             for k,v in self.metadata["versions"].items():
                 outfile.write((k + ' Version:').ljust(line_width) + '%s\n' % v)
+            if self.metadata['user_notes']:
+                outfile.write('User Notes:'.ljust(line_width) + '%s\n' % self.metadata['user_notes'])
             outfile.write('Filling Algorithm:'.ljust(line_width) + '%s\n' % self.world.algorithm)
             outfile.write('Players:'.ljust(line_width) + '%d\n' % self.world.players)
             outfile.write('Teams:'.ljust(line_width) + '%d\n' % self.world.teams)
@@ -3265,9 +3271,9 @@ class Spoiler(object):
                 if self.world.players > 1:
                     outfile.write('\nPlayer %d: %s\n' % (player, self.world.get_player_names(player)))
                 outfile.write('Settings Code:'.ljust(line_width) + '%s\n' % self.metadata["code"][player])
-                outfile.write('Logic:'.ljust(line_width) + '%s\n' % self.metadata['logic'][player])
+                outfile.write('\n')
                 outfile.write('Mode:'.ljust(line_width) + '%s\n' % self.metadata['mode'][player])
-                outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
+                outfile.write('Logic:'.ljust(line_width) + '%s\n' % self.metadata['logic'][player])
                 outfile.write('Goal:'.ljust(line_width) + '%s\n' % self.metadata['goal'][player])
                 if self.metadata['goal'][player] in ['triforcehunt', 'trinity', 'z1', 'ganonhunt']:
                     outfile.write('Triforce Pieces Required:'.ljust(line_width) + '%s\n' % self.metadata['triforcegoal'][player])
@@ -3275,16 +3281,24 @@ class Spoiler(object):
                 outfile.write('Crystals Required for GT:'.ljust(line_width) + '%s\n' % str(self.world.crystals_gt_orig[player]))
                 outfile.write('Crystals Required for Ganon:'.ljust(line_width) + '%s\n' % str(self.world.crystals_ganon_orig[player]))
                 outfile.write('Ganon Vulnerability Item:'.ljust(line_width) + '%s\n' % str(self.metadata['ganon_vulnerability_item'][player]))
+                outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
+                outfile.write('\n')
                 outfile.write('Accessibility:'.ljust(line_width) + '%s\n' % self.metadata['accessibility'][player])
                 outfile.write('Restricted Boss Items:'.ljust(line_width) + '%s\n' % self.metadata['restricted_boss_items'][player])
-                outfile.write('Difficulty:'.ljust(line_width) + '%s\n' % self.metadata['item_pool'][player])
                 outfile.write('Item Functionality:'.ljust(line_width) + '%s\n' % self.metadata['item_functionality'][player])
+                outfile.write('Difficulty:'.ljust(line_width) + '%s\n' % self.metadata['item_pool'][player])
                 outfile.write('Flute Mode:'.ljust(line_width) + '%s\n' % self.metadata['flute_mode'][player])
                 outfile.write('Bow Mode:'.ljust(line_width) + '%s\n' % self.metadata['bow_mode'][player])
-                outfile.write('Take Any Caves:'.ljust(line_width) + '%s\n' % self.metadata['take_any'][player])
-                outfile.write('Shopsanity:'.ljust(line_width) + '%s\n' % yn(self.metadata['shopsanity'][player]))
+                outfile.write('Beemizer:'.ljust(line_width) + '%s\n' % self.metadata['beemizer'][player])
                 outfile.write('Bombbag:'.ljust(line_width) + '%s\n' % yn(self.metadata['bombbag'][player]))
-                outfile.write('Pseudoboots:'.ljust(line_width) + '%s\n' % yn(self.metadata['pseudoboots'][player]))
+                outfile.write('\n')
+                outfile.write('Shopsanity:'.ljust(line_width) + '%s\n' % yn(self.metadata['shopsanity'][player]))
+                outfile.write('Bonk Drops:'.ljust(line_width) + '%s\n' % yn(self.metadata['bonk_drops'][player]))
+                outfile.write('Pottery Mode:'.ljust(line_width) + '%s\n' % self.metadata['pottery'][player])
+                outfile.write('Pot Shuffle (Legacy):'.ljust(line_width) + '%s\n' % yn(self.metadata['potshuffle'][player]))
+                outfile.write('Enemy Drop Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['dropshuffle'][player]))
+                outfile.write('Take Any Caves:'.ljust(line_width) + '%s\n' % self.metadata['take_any'][player])
+                outfile.write('\n')
                 outfile.write('Overworld Layout Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_shuffle'][player])
                 if self.metadata['ow_shuffle'][player] != 'vanilla':
                     outfile.write('Free Terrain:'.ljust(line_width) + '%s\n' % yn(self.metadata['ow_terrain'][player]))
@@ -3294,35 +3308,38 @@ class Spoiler(object):
                 outfile.write('OW Tile Flip (Mixed):'.ljust(line_width) + '%s\n' % yn(self.metadata['ow_mixed'][player]))
                 outfile.write('Whirlpool Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['ow_whirlpool'][player]))
                 outfile.write('Flute Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['ow_fluteshuffle'][player])
-                outfile.write('Bonk Drops:'.ljust(line_width) + '%s\n' % yn(self.metadata['bonk_drops'][player]))
+                outfile.write('\n')
                 outfile.write('Entrance Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['shuffle'][player])
                 if self.metadata['shuffle'][player] != 'vanilla':
                     outfile.write('Shuffle GT/Ganon:'.ljust(line_width) + '%s\n' % yn(self.metadata['shuffleganon'][player]))
-                    outfile.write('Shuffle Links:'.ljust(line_width) + '%s\n' % yn(self.metadata['shufflelinks'][player]))
+                    outfile.write('Shuffle Link\'s House:'.ljust(line_width) + '%s\n' % yn(self.metadata['shufflelinks'][player]))
                     outfile.write('Shuffle Tavern:'.ljust(line_width) + '%s\n' % yn(self.metadata['shuffletavern'][player]))
+                outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % self.metadata['open_pyramid'][player])
                 if self.metadata['shuffle'][player] != 'vanilla' or self.metadata['ow_mixed'][player]:
                     outfile.write('Overworld Map:'.ljust(line_width) + '%s\n' % self.metadata['overworld_map'][player])
-                outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % self.metadata['open_pyramid'][player])
+                outfile.write('\n')
+                outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['mapshuffle'][player]))
+                outfile.write('Compass Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['compassshuffle'][player]))
+                outfile.write('Small Key Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['keyshuffle'][player])
+                outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['bigkeyshuffle'][player]))
+                outfile.write('Key Logic Algorithm:'.ljust(line_width) + '%s\n' % self.metadata['key_logic'][player])
+                outfile.write('\n')
                 outfile.write('Door Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['door_shuffle'][player])
                 if self.metadata['door_shuffle'][player] != 'vanilla':
                     outfile.write('Intensity:'.ljust(line_width) + '%s\n' % self.metadata['intensity'][player])
                     outfile.write('Door Type Mode:'.ljust(line_width) + '%s\n' % self.metadata['door_type_mode'][player])
                     outfile.write('Trap Door Mode:'.ljust(line_width) + '%s\n' % self.metadata['trap_door_mode'][player])
-                    outfile.write('Key Logic Algorithm:'.ljust(line_width) + '%s\n' % self.metadata['key_logic'][player])
                     outfile.write('Decouple Doors:'.ljust(line_width) + '%s\n' % yn(self.metadata['decoupledoors'][player]))
-                    outfile.write('Experimental:'.ljust(line_width) + '%s\n' % yn(self.metadata['experimental'][player]))
+                    outfile.write('Spiral Stairs Self-Loop:'.ljust(line_width) + '%s\n' % yn(self.metadata['door_self_loops'][player]))
+                outfile.write('Experimental:'.ljust(line_width) + '%s\n' % yn(self.metadata['experimental'][player]))
                 outfile.write('Dungeon Counters:'.ljust(line_width) + '%s\n' % self.metadata['dungeon_counters'][player])
-                outfile.write('Enemy Drop Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['dropshuffle'][player]))
-                outfile.write('Pottery Mode:'.ljust(line_width) + '%s\n' % self.metadata['pottery'][player])
-                outfile.write('Pot Shuffle (Legacy):'.ljust(line_width) + '%s\n' % yn(self.metadata['potshuffle'][player]))
-                outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['mapshuffle'][player]))
-                outfile.write('Compass Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['compassshuffle'][player]))
-                outfile.write('Small Key Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['keyshuffle'][player])
-                outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['bigkeyshuffle'][player]))
+                outfile.write('\n')
                 outfile.write('Boss Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['boss_shuffle'][player])
                 outfile.write('Enemy Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['enemy_shuffle'][player])
                 outfile.write('Enemy Health:'.ljust(line_width) + '%s\n' % self.metadata['enemy_health'][player])
                 outfile.write('Enemy Damage:'.ljust(line_width) + '%s\n' % self.metadata['enemy_damage'][player])
+                outfile.write('\n')
+                outfile.write('Pseudoboots:'.ljust(line_width) + '%s\n' % yn(self.metadata['pseudoboots'][player]))
                 outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
                 outfile.write('Race:'.ljust(line_width) + '%s\n' % yn(self.world.settings.world_rep['meta']['race']))
             
@@ -3584,6 +3601,9 @@ class Pot(object):
         item = self.item if not self.indicator else self.standing_item_code
         return [self.x, high_byte, item]
 
+    def get_region(self, world, player):
+        return world.get_region(self.room, 1)
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.room == other.room
 
@@ -3592,9 +3612,9 @@ class Pot(object):
 
 
 # byte 0: DDDE EEEE (DR, ER)
-dr_mode = {"basic": 1, "crossed": 2, "vanilla": 0, "partitioned": 3}
+dr_mode = {"basic": 1, "crossed": 2, "vanilla": 0, "partitioned": 3, 'paired': 4}
 er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "crossed": 4, "insanity": 5, 'lite': 8,
-           'lean': 9, "dungeonsfull": 7, "dungeonssimple": 6}
+           'lean': 9, "dungeonsfull": 7, "dungeonssimple": 6, "swapped": 10}
 
 # byte 1: LLLW WSSS (logic, mode, sword)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
@@ -3617,10 +3637,10 @@ mixed_travel_mode = {"prevent": 0, "allow": 1, "force": 2}
 pottery_mode = {'none': 0, 'keys': 2, 'lottery': 3, 'dungeon': 4, 'cave': 5, 'cavekeys': 6, 'reduced': 7,
                 'clustered': 8, 'nonempty': 9}
 
-# byte 5: CCCC CTTX (crystals gt, ctr2, experimental)
+# byte 5: SCCC CTTX (self-loop doors, crystals gt, ctr2, experimental)
 counter_mode = {"default": 0, "off": 1, "on": 2, "pickup": 3}
 
-# byte 6: CCCC CPAA (crystals ganon, pyramid, access
+# byte 6: ?CCC CPAA (crystals ganon, pyramid, access
 access_mode = {"items": 0, "locations": 1, "none": 2}
 
 # byte 7: B?MC DDEE (big, ?, maps, compass, door_type, enemies)
@@ -3649,7 +3669,7 @@ flutespot_mode = {"vanilla": 0, "balanced": 1, "random": 2}
 
 # byte 13: FBBB TTSS (flute_mode, bow_mode, take_any, small_key_mode)
 flute_mode = {'normal': 0, 'active': 1}
-keyshuffle_mode = {'none': 0, 'wild': 1, 'universal': 2}  # reserved 8 modes?
+keyshuffle_mode = {'none': 0, 'off': 0, 'wild': 1, 'on': 1, 'universal': 2}  # reserved 8 modes?
 take_any_mode = {'none': 0, 'random': 1, 'fixed': 2}
 bow_mode = {'progressive': 0, 'silvers': 1, 'retro': 2, 'retro_silvers': 3}
 
@@ -3684,11 +3704,12 @@ class Settings(object):
 
             (0x80 if w.shuffletavern[p] else 0) | (0x10 if w.dropshuffle[p] else 0) | (pottery_mode[w.pottery[p]]),
 
-            ((8 if w.crystals_gt_orig[p] == "random" else int(w.crystals_gt_orig[p])) << 3)
+            (0x80 if w.door_self_loops[p] else 0)
+            | ((8 if w.crystals_gt_orig[p] == "random" else int(w.crystals_gt_orig[p])) << 3)
             | (counter_mode[w.dungeon_counters[p]] << 1) | (1 if w.experimental[p] else 0),
 
             ((8 if w.crystals_ganon_orig[p] == "random" else int(w.crystals_ganon_orig[p])) << 3)
-            | (0x4 if w.open_pyramid[p] else 0) | access_mode[w.accessibility[p]],
+            | (0x4 if w.is_pyramid_open(p) else 0) | access_mode[w.accessibility[p]],
 
             (0x80 if w.bigkeyshuffle[p] else 0)
             | (0x20 if w.mapshuffle[p] else 0) | (0x10 if w.compassshuffle[p] else 0)
@@ -3710,8 +3731,8 @@ class Settings(object):
             (flute_mode[w.flute_mode[p]] << 7 | bow_mode[w.bow_mode[p]] << 4
              | take_any_mode[w.take_any[p]] << 2 | keyshuffle_mode[w.keyshuffle[p]]),
 
-            ((0x80 if w.pseudoboots[p] else 0) | overworld_map_mode[w.overworld_map[p]] << 6
-             | trap_door_mode[w.trap_door_mode[p]] << 4 | key_logic_algo[w.key_logic_algorithm[p]]),
+            ((0x80 if w.pseudoboots[p] else 0) | overworld_map_mode[w.overworld_map[p]] << 5
+             | trap_door_mode[w.trap_door_mode[p]] << 3 | key_logic_algo[w.key_logic_algorithm[p]]),
             ])
         return base64.b64encode(code, "+-".encode()).decode()
 
@@ -3749,12 +3770,13 @@ class Settings(object):
         args.dropshuffle[p] = True if settings[4] & 0x10 else False
         args.pottery[p] = r(pottery_mode)[settings[4] & 0x0F]
 
+        args.door_self_loops[p] = True if settings[5] & 0x80 else False
         args.dungeon_counters[p] = r(counter_mode)[(settings[5] & 0x6) >> 1]
-        cgt = (settings[5] & 0xf8) >> 3
+        cgt = (settings[5] & 0x78) >> 3
         args.crystals_gt[p] = "random" if cgt == 8 else cgt
         args.experimental[p] = True if settings[5] & 0x1 else False
 
-        cgan = (settings[6] & 0xf8) >> 3
+        cgan = (settings[6] & 0x78) >> 3
         args.crystals_ganon[p] = "random" if cgan == 8 else cgan
         args.openpyramid[p] = True if settings[6] & 0x4 else False
 
@@ -3794,8 +3816,8 @@ class Settings(object):
 
         if len(settings) > 14:
             args.pseudoboots[p] = True if settings[14] & 0x80 else False
-            args.overworld_map[p] = r(overworld_map_mode)[(settings[14] & 0x60) >> 6]
-            args.trap_door_mode[p] = r(trap_door_mode)[(settings[14] & 0x14) >> 4]
+            args.overworld_map[p] = r(overworld_map_mode)[(settings[14] & 0x60) >> 5]
+            args.trap_door_mode[p] = r(trap_door_mode)[(settings[14] & 0x18) >> 3]
             args.key_logic_algorithm[p] = r(key_logic_algo)[settings[14] & 0x07]
 
 

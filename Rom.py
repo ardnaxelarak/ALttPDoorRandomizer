@@ -38,7 +38,7 @@ from source.dungeon.RoomList import Room0127
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '793bf8996f983ca60bfcd814c50e896e'
+RANDOMIZERBASEHASH = '1602d9fd14dd9132df15c71cc7e6fa21'
 
 
 class JsonRom(object):
@@ -701,17 +701,18 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         flute_spots = default_flute_connections
     else:
         flute_spots = world.owflutespots[player]
-        owFlags |= 0x100
+        owFlags |= 0x0100
 
-    for o in range(0, len(flute_spots)):
-        owslot = flute_spots[o]
+    flute_writes = sorted([(f, flute_data[f][1]) for f in flute_spots], key = lambda f: f[1])
+    for o in range(0, len(flute_writes)):
+        owid = flute_writes[o][0]
         offset = 0
-        data = flute_data[owslot]
+        data = flute_data[owid]
 
         if world.is_tile_swapped(data[1], player):
             offset = 0x40
 
-        write_int16(rom, snes_to_pc(0x02E849 + (o * 2)), data[1] + offset) # owid
+        write_int16(rom, snes_to_pc(0x02E849 + (o * 2)), owid + offset) # owid
         write_int16(rom, snes_to_pc(0x02E8D1 + (o * 2)), data[13] if offset > 0 and len(data) > 13 else data[5]) # link Y
         write_int16(rom, snes_to_pc(0x02E8F3 + (o * 2)), data[14] if offset > 0 and len(data) > 13 else data[6]) # link X
         
@@ -755,12 +756,12 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             owMode = 2
 
         if world.owKeepSimilar[player] and (world.owShuffle[player] != 'vanilla' or world.owCrossed[player] in ['limited', 'chaos']):
-            owMode |= 0x100
+            owMode |= 0x0100
         if world.owCrossed[player] != 'none' and (world.owCrossed[player] != 'polar' or world.owMixed[player]):
-            owMode |= 0x200
+            owMode |= 0x0200
             world.fix_fake_world[player] = True
         if world.owMixed[player]:
-            owMode |= 0x400
+            owMode |= 0x0400
 
         # patches map data specific for OW Shuffle
         #inverted_buffer[0x03] = inverted_buffer[0x03] | 0x2  # convenient portal on WDM
@@ -808,7 +809,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         # for prize, address in zip(bonk_prizes, bonk_addresses):
         #     rom.write_byte(address, prize)
 
-        owFlags |= 0x200
+        owFlags |= 0x0200
 
         # setting spriteID to D8, a placeholder sprite we use to inform ROM to spawn a dynamic item
         #for address in bonk_addresses:
@@ -817,6 +818,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         # temporary fix for screen 1A
         rom.write_byte(snes_to_pc(0x09AE32), 0xD8)
         rom.write_byte(snes_to_pc(0x09AE35), 0xD8)
+
+        rom.write_byte(snes_to_pc(0x06918E), 0x80) # skip good bee bottle check
 
     write_int16(rom, 0x150002, owMode)
     write_int16(rom, 0x150004, owFlags)
@@ -948,6 +951,10 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     old_man_house = world.get_region('Old Man House', player)
     if should_be_bunny(old_man_house, world.mode[player]):
         rom.write_bytes(0x13fff4, [0xe4, 0x00])
+    
+    old_man_cave = world.get_entrance('Old Man Cave Exit (East)', player)
+    if old_man_cave.connected_region.type == RegionType.DarkWorld:
+        rom.write_byte(0x13fff6, 0x40)
 
     # patch doors
     if world.doorShuffle[player] not in ['vanilla', 'basic']:
@@ -1341,7 +1348,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x036D7F, 0xFF) # remove hammer usage
         rom.write_byte(0x043BD4, 0xFF) # remove powder usage
     elif world.swords[player] == 'bombs':
-        rom.write_byte(0x18002F, 0x01)  # special bombs
+        rom.write_byte(0x18002F, 0x81)  # special bombs
         rom.initial_sram.set_swordless_curtains()  # open curtains
         rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
         rom.write_byte(0x180034, 0x00)  # starting max bombs = 0
@@ -1389,7 +1396,6 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     elif world.swords[player] in ['byrna', 'somaria', 'cane']:
         rom.initial_sram.set_swordless_curtains()  # open curtains
         rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
-        rom.write_byte(0x180034, 0x00)  # starting max bombs = 0
 
         # remove magic cost of cane(s)
         if world.swords[player] in ['byrna', 'cane']:
@@ -1406,13 +1412,13 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             rom.write_byte(0x03B0AE, 0x81)
 
         if world.swords[player] == 'byrna':
-            rom.write_byte(0x18002F, 0x03)
+            rom.write_byte(0x18002F, 0x83)
             colr = 0x2C
         elif world.swords[player] == 'somaria':
-            rom.write_byte(0x18002F, 0x04)
+            rom.write_byte(0x18002F, 0x84)
             colr = 0x24
         elif world.swords[player] == 'cane':
-            rom.write_byte(0x18002F, 0x05)
+            rom.write_byte(0x18002F, 0x85)
             colr = 0x28
 
         spritedata = [
@@ -1512,7 +1518,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x180212, warningflags)  # Warning flags
 
     # assorted fixes
-    rom.write_byte(0x1800A2, 0x01 if world.fix_fake_world else 0x00)  # remain in real dark world when dying in dark world dungeon before killing aga1
+    rom.write_byte(0x1800A2, 0x01 if world.fix_fake_world[player] else 0x00)  # remain in real dark world when dying in dark world dungeon before killing aga1
     rom.write_byte(0x180169, 0x01 if world.lock_aga_door_in_escape else 0x00)  # Lock or unlock aga tower door during escape sequence.
     if world.is_atgt_swapped(player):
         rom.write_byte(0x180169, 0x02)  # lock aga/ganon tower door with crystals in inverted
@@ -1755,7 +1761,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x301FC, 0xDA if world.bow_mode[player].startswith('retro') else 0xE1)  # rupees replace arrows under pots
     if enemized:
         rom.write_byte(0x1B152E, 0xDA if world.bow_mode[player].startswith('retro') else 0xE1)
-    rom.write_byte(0x30052, 0xDB if world.bow_mode[player].startswith('retro') else 0xE2) # replace arrows in fish prize from bottle merchant
+    if world.bow_mode[player].startswith('retro'):
+        rom.write_byte(0x30052, 0xE4 if world.keyshuffle[player] == 'universal' else 0xDB) # replace arrows in fish prize from bottle merchant
     rom.write_bytes(0xECB4E, [0xA9, 0x00, 0xEA, 0xEA] if world.bow_mode[player].startswith('retro') else [0xAF, 0x77, 0xF3, 0x7E])  # Thief steals rupees instead of arrows
     rom.write_bytes(0xF0D96, [0xA9, 0x00, 0xEA, 0xEA] if world.bow_mode[player].startswith('retro') else [0xAF, 0x77, 0xF3, 0x7E])  # Pikit steals rupees instead of arrows
     rom.write_bytes(0xEDA5, [0x35, 0x41] if world.bow_mode[player].startswith('retro') else [0x43, 0x44])  # Chest game gives rupees instead of arrows
@@ -1765,7 +1772,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x1800A3, 0x01)  # enable correct world setting behaviour after agahnim kills
     rom.write_byte(0x1800A4, 0x01 if world.logic[player] != 'nologic' else 0x00)  # enable POD EG fix
     rom.write_byte(0x180042, 0x01 if world.save_and_quit_from_boss else 0x00)  # Allow Save and Quit after boss kill
-    rom.write_byte(0x180358, 0x01 if world.logic[player] in ['owglitches', 'nologic'] else 0x00)
+    rom.write_byte(0x180358, 0x01 if (world.logic[player] in ['owglitches', 'nologic']) else 0x00)
 
     # remove shield from uncle
     rom.write_bytes(0x6D253, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
@@ -1820,7 +1827,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     # powder patch: remove the need to leave the screen after powder, since it causes problems for potion shop at race game
     # temporarally we are just nopping out this check we will conver this to a rom fix soon.
-    rom.write_bytes(0x02F539, [0xEA, 0xEA, 0xEA, 0xEA, 0xEA] if world.powder_patch_required[player] else [0xAD, 0xBF, 0x0A, 0xF0, 0x4F])
+    if world.powder_patch_required[player]:
+        rom.write_bytes(0x02F539, [0xEA, 0xEA, 0xEA, 0xEA, 0xEA])
 
     # sprite patches
     rom.write_byte(snes_to_pc(0x0DB7D1), 0x03) # patch apple sprites to not permadeatch like enemies
@@ -1828,9 +1836,11 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     if world.shuffle_bonk_drops[player]:
         # warning, this temporary patch might cause fairies to respawn differently?, limiting this to bonk drop mode only
         rom.write_byte(snes_to_pc(0x0DB808), 0x03) # patch fairies sprites to not permadeath like enemies
+        rom.write_byte(snes_to_pc(0x0DB810), 0x8A) # allows heart pieces to travel across water
+        # rom.write_byte(snes_to_pc(0x0DB730), 0x08) # allows chickens to travel across water
 
     # allow smith into multi-entrance caves in appropriate shuffles
-    if world.shuffle[player] in ['restricted', 'full', 'lite', 'lean', 'crossed', 'insanity'] or (world.shuffle[player] == 'simple' and world.mode[player] == 'inverted'):
+    if world.shuffle[player] in ['restricted', 'full', 'lite', 'lean', 'swapped', 'crossed', 'insanity'] or (world.shuffle[player] == 'simple' and world.mode[player] == 'inverted'):
         rom.write_byte(0x18004C, 0x01)
 
     # set correct flag for hera basement item
@@ -1868,13 +1878,13 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         Room0127.write_to_rom(snes_to_pc(0x2B8000), rom)
 
     if world.pot_contents[player]:
-        colorize_pots = is_mystery or (world.pottery[player] not in ['vanilla', 'lottery']
-                                       and (world.colorizepots[player]
-                                            or world.pottery[player] in ['reduced', 'clustered']))
+        colorize_pots = (world.pottery[player] != 'vanilla'
+                         and (world.colorizepots[player] or world.pottery[player] in ['reduced', 'clustered']))
         if world.pot_contents[player].size() > 0x2800:
             raise Exception('Pot table is too big for current area')
         world.pot_contents[player].write_pot_data_to_rom(rom, colorize_pots)
 
+    write_enemizer_tweaks(rom, world, player)
     write_strings(rom, world, player, team)
 
     # write initial sram
@@ -1885,11 +1895,15 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     # set rom name
     # 21 bytes
     from Main import __version__
+    from OverworldShuffle import __version__ as ORVersion
     seedstring = f'{world.seed:09}' if isinstance(world.seed, int) else world.seed
     # todo: change to DR when Enemizer is okay with DR
     rom.name = bytearray(f'ER{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}O\0', 'utf8')[:21]
     rom.name.extend([0] * (21 - len(rom.name)))
     rom.write_bytes(0x7FC0, rom.name)
+
+    rom.write_bytes(0x138010, bytearray(__version__, 'utf8'))
+    rom.write_bytes(0x150010, bytearray(ORVersion, 'utf8'))
 
     # set player names
     for p in range(1, min(world.players, 255) + 1):
@@ -1964,6 +1978,11 @@ def write_custom_shops(rom, world, player):
     items_data.extend([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
     rom.write_bytes(0x184900, items_data)
 
+
+def write_enemizer_tweaks(rom, world, player):
+    if world.enemy_shuffle[player] != 'none':
+        rom.write_byte(snes_to_pc(0x1DF6D8), 0)  # lets enemies walk on water instead of clipping into infinity?
+        rom.write_byte(snes_to_pc(0x0DB6B3), 0x82)  # hovers don't need water necessarily?
 
 def hud_format_text(text):
     output = bytes()
@@ -2332,8 +2351,9 @@ def write_strings(rom, world, player, team):
                     entrances_to_hint = {}
                     break
         # Now we write inconvenient locations for most shuffles and finish taking care of the less chaotic ones.
-        entrances_to_hint.update(InconvenientOtherEntrances)
-        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
+        if world.shuffle[player] not in ['lite', 'lean']:
+            entrances_to_hint.update(InconvenientOtherEntrances)
+        if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'lite', 'lean', 'swapped']:
             hint_count = 0
         elif world.shuffle[player] in ['simple', 'restricted']:
             hint_count = 2
@@ -2378,7 +2398,7 @@ def write_strings(rom, world, player, team):
                     entrances_to_hint.update({'Inverted Pyramid Entrance': 'The extra castle passage'})
                 else:
                     entrances_to_hint.update({'Pyramid Entrance': 'The pyramid ledge'})
-        hint_count = 4 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull'] else 0
+        hint_count = 4 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'swapped'] else 0
         hint_count -= 2 if world.shuffle[player] not in ['simple', 'restricted'] else 0
         for entrance in all_entrances:
             if entrance.name in entrances_to_hint:
@@ -2397,7 +2417,7 @@ def write_strings(rom, world, player, team):
         if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
             locations_to_hint.extend(InconvenientVanillaLocations)
         random.shuffle(locations_to_hint)
-        hint_count = 3 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull'] else 5
+        hint_count = 3 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'swapped'] else 5
         hint_count -= 2 if world.doorShuffle[player] not in ['vanilla', 'basic'] else 0
         del locations_to_hint[hint_count:]
         for location in locations_to_hint:
@@ -2456,10 +2476,9 @@ def write_strings(rom, world, player, team):
         # of how many exist. This supports many settings well.
         items_to_hint = RelevantItems.copy()
         flute_item = 'Ocarina'
-        if world.is_tile_swapped(0x18, player):
+        if world.is_tile_swapped(0x18, player) or world.flute_mode[player] == 'active':
             items_to_hint.remove(flute_item)
             flute_item = 'Ocarina (Activated)'
-            items_to_hint.append(flute_item)
         if world.owShuffle[player] != 'vanilla' or world.owMixed[player]:
             # Adding a guaranteed hint for the Flute in overworld shuffle.
             this_location = world.find_items_not_key_only(flute_item, player)
@@ -2473,7 +2492,7 @@ def write_strings(rom, world, player, team):
         if world.bigkeyshuffle[player]:
             items_to_hint.extend(BigKeys)
         random.shuffle(items_to_hint)
-        hint_count = 5 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull'] else 8
+        hint_count = 5 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'swapped'] else 8
         hint_count += 2 if world.doorShuffle[player] not in ['vanilla', 'basic'] else 0
         hint_count += 1 if world.owShuffle[player] != 'vanilla' or world.owCrossed[player] != 'none' or world.owMixed[player] else 0
         while hint_count > 0 and len(items_to_hint) > 0:
@@ -2672,7 +2691,7 @@ def write_strings(rom, world, player, team):
         tt['ganon_fall_in_alt'] = 'Why are you even here?\n You can\'t even hurt me! Get the Triforce Pieces.'
         tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'
         tt['sign_ganon'] = 'Go find the Triforce pieces... Ganon is invincible!'
-        tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! you can see me? I knew I should have\nhidden in  a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % int(world.treasure_hunt_count[player])
+        tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! You can see me? I knew I should have\nhidden in a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % int(world.treasure_hunt_count[player])
     elif world.goal[player] in ['pedestal']:
         tt['ganon_fall_in_alt'] = 'Why are you even here?\n You can\'t even hurt me! Your goal is at the pedestal.'
         tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'
@@ -2681,7 +2700,7 @@ def write_strings(rom, world, player, team):
         if world.goal[player] == 'trinity':
             trinity_crystal_text = ('%d crystal to beat Ganon.' if world.crystals_needed_for_ganon[player] == 1 else '%d crystals to beat Ganon.') % world.crystals_needed_for_ganon[player]
             tt['sign_ganon'] = 'Three ways to victory! %s Get to it!' % trinity_crystal_text
-            tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! you can see me? I knew I should have\nhidden in  a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % int(world.treasure_hunt_count[player])
+            tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! You can see me? I knew I should have\nhidden in a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % int(world.treasure_hunt_count[player])
         elif world.goal[player] == 'ganonhunt':
             tt['sign_ganon'] = 'Go find the Triforce pieces to beat Ganon'
         elif world.goal[player] == 'completionist':
@@ -2714,46 +2733,6 @@ def write_strings(rom, world, player, team):
         rom.write_byte(0x04a526, 0xb8)  # y coordinate, shifted down
         rom.write_byte(0x04a529, 0x19)  # x tile shifted right a few tiles
         rom.write_byte(0x04a52e, 0x06)  # follower set to blind maiden
-
-    if world.trolls[player]:
-        tt['telepathic_tile_eastern_palace'] = "Health will not help you against the Armos Knights."
-        tt['telepathic_tile_desert_bonk_torch_room'] = "Who ever saw lanmolas fly so fast?"
-        tt['telepathic_tile_tower_of_hera_entrance'] = "Please stop tickling my tail. It makes me freeze up and lower my defenses.\n\n          - Moldorm"
-        tt['telepathic_tile_tower_of_hera_floor_4'] = "Hookshots and boomerangs are forbidden in my tower.\n\n          - Moldorm"
-        tt['telepathic_tile_spectacle_rock'] = "With greater health and armor come shorter periods of refuge from damage."
-        tt['telepathic_tile_castle_tower'] = "Agahnim does not care for your foolish mortal patterns."
-        tt['telepathic_tile_palace_of_darkness'] = "Who weakened my mask?\n\n   - Helmasaur King"
-        tt['telepathic_tile_swamp_entrance'] = "Please take your boots off before entering my room.\n\n          - Arrghus"
-        tt['telepathic_tile_thieves_town_upstairs'] = "Secret power is said to be in the shovel."
-        tt['blind_by_the_light'] = "I'd really dig it if you didn't bring a shovel."
-        tt['telepathic_tile_ice_entrance'] = "Kholdstare's hypnotic eyes can be confusing..."
-        tt['telepathic_tile_ice_stalfos_knights_room'] = "Bomb fuses may be shorter or longer than they appear."
-        tt['telepathic_tile_ice_large_room'] = "Does your sword feel heavier than usual?"
-        tt['telepathic_tile_misery_mire'] = "Vitreous' small eyes require explosives to defeat."
-        tt['telepathic_tile_turtle_rock'] = "Trinexx has upped her defenses, requiring more powerful spells to defeat her. Consider whether you have enough magic reserves."
-
-        ganon_mock = 'Can you keep up with my changing weaknesses?';
-        tt['ganon_phase_3_no_bow'] = ganon_mock
-        tt['ganon_phase_3_no_silvers'] = ganon_mock
-        tt['ganon_phase_3_no_silvers_alt'] = ganon_mock
-        tt['ganon_phase_3_silvers'] = ganon_mock
-
-        tt.insertText('ganon_fall_in_mushroom', "I smell a mushroom!")
-        tt.insertText('ganon_phase_3_mushroom', "Your mushroom grants me invulnerability!")
-        tt.insertText('ganon_phase_4_silvers',   "\n   SILVER ARROWS   ")
-        tt.insertText('ganon_phase_4_boomerang', "\n     BOOMERANG     ")
-        tt.insertText('ganon_phase_4_hookshot',  "\n     HOOKSHOT      ")
-        tt.insertText('ganon_phase_4_bomb',      "\n       BOMB        ")
-        tt.insertText('ganon_phase_4_powder',    "\n      POWDER       ")
-        tt.insertText('ganon_phase_4_fire_rod',  "\n     FIRE ROD      ")
-        tt.insertText('ganon_phase_4_ice_rod',   "\n      ICE ROD      ")
-        tt.insertText('ganon_phase_4_bombos',    "\n      BOMBOS       ")
-        tt.insertText('ganon_phase_4_ether',     "\n       ETHER       ")
-        tt.insertText('ganon_phase_4_quake',     "\n       QUAKE       ")
-        tt.insertText('ganon_phase_4_hammer',    "\n      HAMMER       ")
-        tt.insertText('ganon_phase_4_bee',       "\n        BEE        ")
-        tt.insertText('ganon_phase_4_somaria',   "\n      SOMARIA      ")
-        tt.insertText('ganon_phase_4_byrna',     "\n       BYRNA       ")
 
     # inverted spawn menu changes
     if world.mode[player] == 'inverted':
@@ -3104,7 +3083,7 @@ InconvenientDungeonEntrances = {'Turtle Rock': 'Turtle Rock Main',
 
 InconvenientOtherEntrances = {'Death Mountain Return Cave (West)': 'The SW DM foothills cave',
                               'Mimic Cave': 'Mimic Ledge',
-                              'Dark World Hammer Peg Cave': 'The rows of pegs',
+                              'Hammer Peg Cave': 'The rows of pegs',
                               'Pyramid Fairy': 'The crack on the pyramid'
                               }
 
@@ -3173,15 +3152,15 @@ ItemEntrances = {'Blinds Hideout': 'Blind\'s old house',
                  'Chest Game': 'The westmost building in the Village of Outcasts'
                  }
 
-ShopEntrances = {'Cave Shop (Lake Hylia)': 'The cave NW Lake Hylia',
+ShopEntrances = {'Lake Hylia Shop': 'The cave NW Lake Hylia',
                  'Kakariko Shop': 'The old Kakariko shop',
                  'Capacity Upgrade': 'The cave on the island',
                  'Dark Lake Hylia Shop': 'The building NW dark Lake Hylia',
                  'Dark World Shop': 'The hammer sealed building',
                  'Red Shield Shop': 'The fenced in building',
-                 'Cave Shop (Dark Death Mountain)': 'The base of east dark DM',
-                 'Dark World Potion Shop': 'The building near the catfish',
-                 'Dark World Lumberjack Shop': 'The northmost Dark World building'
+                 'Dark Death Mountain Shop': 'The base of east dark DM',
+                 'Dark Potion Shop': 'The building near the catfish',
+                 'Dark Lumberjack Shop': 'The northmost Dark World building'
                  }
 
 OtherEntrances = {'Lake Hylia Fairy': 'A cave NE of Lake Hylia',
@@ -3207,12 +3186,12 @@ OtherEntrances = {'Lake Hylia Fairy': 'A cave NE of Lake Hylia',
                   'Dark Lake Hylia Fairy': 'The cave NE dark Lake Hylia',
                   'Dark Death Mountain Fairy': 'The SW cave on dark DM',
                   'East Dark World Hint': 'The dark cave near the eastmost portal',
-                  'Dark Desert Hint': 'The cave east of the mire',
+                  'Mire Hint': 'The cave east of the mire',
                   'Palace of Darkness Hint': 'The building south of Kiki',
                   'Dark Lake Hylia Ledge Spike Cave': 'The rock SE dark Lake Hylia',
                   'Archery Game': 'The old archery game',
                   'Dark Lake Hylia Ledge Hint': 'The open cave SE dark Lake Hylia',
-                  'Dark Desert Fairy': 'The eastern hut in the mire',
+                  'Mire Fairy': 'The eastern hut in the mire',
                   'Dark Lake Hylia Ledge Fairy': 'The sealed cave SE dark Lake Hylia',
                   'Fortune Teller (Dark)': 'The building NE the Village of Outcasts'
                   }

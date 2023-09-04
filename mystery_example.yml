@@ -52,6 +52,9 @@
     partial: 0
     strict: 0
   decoupledoors: off
+  door_self_loops:
+    on: 1
+    off: 1
   dropshuffle:
     on: 1
     off: 1
@@ -91,6 +94,7 @@
     full: 2
     lite: 2
     lean: 2
+    swapped: 2
     crossed: 3
     insanity: 1
   open_pyramid:
@@ -133,6 +137,7 @@
   triforce_pool_min: 20
   triforce_pool_max: 40
   triforce_min_difference: 10
+  triforce_max_difference: 15
   algorithm:
     balanced: 12
     vanilla_fill: 1

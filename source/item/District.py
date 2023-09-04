@@ -119,7 +119,7 @@ def resolve_districts(world):
                                 if not location.item and location.real:
                                     district.locations.add(location.name)
                             for ext in region.exits:
-                                if ext.connected_region is not None and ext.connected_region not in visited:
+                                if ext.connected_region and ext.connected_region not in visited:
                                     queue.appendleft(ext.connected_region)
                         elif region.type == RegionType.Dungeon and region.dungeon:
                             district.dungeons.add(region.dungeon.name)
@@ -138,10 +138,10 @@ def find_reachable_locations(state, player):
     return check_set
 
 
-inaccessible_regions_std = {'Desert Palace Stairs', 'Bumper Cave Ledge', 'Skull Woods Forest (West)',
+inaccessible_regions_std = {'Desert Mouth', 'Bumper Cave Ledge', 'Skull Woods Forest (West)',
                             'Dark Death Mountain Ledge', 'Dark Death Mountain Isolated Ledge',
-                            'Dark Death Mountain Floating Island'}
+                            'Death Mountain Floating Island'}
 
 
-inaccessible_regions_inv = {'Desert Palace Stairs', 'Maze Race Ledge', 'Desert Ledge',
-                            'Desert Palace Entrance (North) Spot', 'Hyrule Castle Ledge', 'Mountain Entry Ledge'}
+inaccessible_regions_inv = {'Desert Mouth', 'Maze Race Ledge', 'Desert Ledge',
+                            'Desert Ledge Keep', 'Hyrule Castle Ledge', 'Mountain Pass Ledge'}

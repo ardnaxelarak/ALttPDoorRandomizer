@@ -46,8 +46,11 @@ class Context:
         self.lookup_name_to_id = {}
         self.lookup_id_to_name = {}
 
+        self.disable_client_forfeit = False
+
     async def process_command(self, input):
         await process_command(self, input)
+
 
 async def send_msgs(websocket, msgs):
     if not websocket or not websocket.open or websocket.closed:
@@ -284,7 +287,10 @@ async def process_client_cmd(ctx : Context, client : Client, cmd, args):
         if args.startswith('!players'):
             notify_all(ctx, get_connected_players_string(ctx))
         if args.startswith('!forfeit'):
-            forfeit_player(ctx, client.team, client.slot)
+            if ctx.disable_client_forfeit:
+                notify_client(client, 'Client-initiated forfeits are disabled.  Please ask the host of this game to forfeit on your behalf.')
+            else:
+                forfeit_player(ctx, client.team, client.slot)
         if args.startswith('!countdown'):
             try:
                 timer = int(args.split()[1])

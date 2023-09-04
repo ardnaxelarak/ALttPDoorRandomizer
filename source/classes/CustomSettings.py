@@ -2,12 +2,15 @@ import os
 import urllib.request
 import urllib.parse
 import yaml
+from typing import Any
 from yaml.representer import Representer
+from Utils import HexInt, hex_representer
 from collections import defaultdict
 from pathlib import Path
 
 import RaceRandom as random
 from BaseClasses import LocationType, DoorType
+from OverworldShuffle import default_flute_connections, flute_data
 from source.tools.MysteryUtils import roll_settings, get_weights
 
 
@@ -46,8 +49,8 @@ class CustomSettings(object):
         return meta['players']
 
     def adjust_args(self, args):
-        def get_setting(value, default):
-            if value:
+        def get_setting(value: Any, default):
+            if value or value == 0:
                 if isinstance(value, dict):
                     return random.choices(list(value.keys()), list(value.values()), k=1)[0]
                 else:
@@ -62,6 +65,7 @@ class CustomSettings(object):
             args.suppress_rom = get_setting(meta['suppress_rom'], args.suppress_rom)
             args.names = get_setting(meta['names'], args.names)
             args.race = get_setting(meta['race'], args.race)
+            args.notes = get_setting(meta['user_notes'], args.notes)
         self.player_range = range(1, args.multi + 1)
         if 'settings' in self.file_source:
             for p in self.player_range:
@@ -72,6 +76,14 @@ class CustomSettings(object):
                     args.mystery = True
                 else:
                     settings = defaultdict(lambda: None, player_setting)
+                args.ow_shuffle[p] = get_setting(settings['ow_shuffle'], args.ow_shuffle[p])
+                args.ow_terrain[p] = get_setting(settings['ow_terrain'], args.ow_terrain[p])
+                args.ow_crossed[p] = get_setting(settings['ow_crossed'], args.ow_crossed[p])
+                args.ow_keepsimilar[p] = get_setting(settings['ow_keepsimilar'], args.ow_keepsimilar[p])
+                args.ow_mixed[p] = get_setting(settings['ow_mixed'], args.ow_mixed[p])
+                args.ow_whirlpool[p] = get_setting(settings['ow_whirlpool'], args.ow_whirlpool[p])
+                args.ow_fluteshuffle[p] = get_setting(settings['ow_fluteshuffle'], args.ow_fluteshuffle[p])
+                args.bonk_drops[p] = get_setting(settings['bonk_drops'], args.bonk_drops[p])
                 args.shuffle[p] = get_setting(settings['shuffle'], args.shuffle[p])
                 args.door_shuffle[p] = get_setting(settings['door_shuffle'], args.door_shuffle[p])
                 args.logic[p] = get_setting(settings['logic'], args.logic[p])
@@ -112,10 +124,12 @@ class CustomSettings(object):
                 args.trap_door_mode[p] = get_setting(settings['trap_door_mode'], args.trap_door_mode[p])
                 args.key_logic_algorithm[p] = get_setting(settings['key_logic_algorithm'], args.key_logic_algorithm[p])
                 args.decoupledoors[p] = get_setting(settings['decoupledoors'], args.decoupledoors[p])
+                args.door_self_loops[p] = get_setting(settings['door_self_loops'], args.door_self_loops[p])
                 args.dungeon_counters[p] = get_setting(settings['dungeon_counters'], args.dungeon_counters[p])
                 args.crystals_gt[p] = get_setting(settings['crystals_gt'], args.crystals_gt[p])
                 args.crystals_ganon[p] = get_setting(settings['crystals_ganon'], args.crystals_ganon[p])
                 args.experimental[p] = get_setting(settings['experimental'], args.experimental[p])
+                args.collection_rate[p] = get_setting(settings['collection_rate'], args.collection_rate[p])
                 args.openpyramid[p] = get_setting(settings['openpyramid'], args.openpyramid[p])
                 args.bigkeyshuffle[p] = get_setting(settings['bigkeyshuffle'], args.bigkeyshuffle[p])
                 args.keyshuffle[p] = get_setting(settings['keyshuffle'], args.keyshuffle[p])
@@ -129,8 +143,8 @@ class CustomSettings(object):
                     args.mapshuffle[p] = True
                     args.compassshuffle[p] = True
 
-                args.shufflebosses[p] = get_setting(settings['shufflebosses'], args.shufflebosses[p])
-                args.shuffleenemies[p] = get_setting(settings['shuffleenemies'], args.shuffleenemies[p])
+                args.shufflebosses[p] = get_setting(settings['boss_shuffle'], args.shufflebosses[p])
+                args.shuffleenemies[p] = get_setting(settings['enemy_shuffle'], args.shuffleenemies[p])
                 args.enemy_health[p] = get_setting(settings['enemy_health'], args.enemy_health[p])
                 args.enemy_damage[p] = get_setting(settings['enemy_damage'], args.enemy_damage[p])
                 args.shufflepots[p] = get_setting(settings['shufflepots'], args.shufflepots[p])
@@ -142,6 +156,12 @@ class CustomSettings(object):
                 args.pseudoboots[p] = get_setting(settings['pseudoboots'], args.pseudoboots[p])
                 args.triforce_goal[p] = get_setting(settings['triforce_goal'], args.triforce_goal[p])
                 args.triforce_pool[p] = get_setting(settings['triforce_pool'], args.triforce_pool[p])
+                args.triforce_goal_min[p] = get_setting(settings['triforce_goal_min'], args.triforce_goal_min[p])
+                args.triforce_goal_max[p] = get_setting(settings['triforce_goal_max'], args.triforce_goal_max[p])
+                args.triforce_pool_min[p] = get_setting(settings['triforce_pool_min'], args.triforce_pool_min[p])
+                args.triforce_pool_max[p] = get_setting(settings['triforce_pool_max'], args.triforce_pool_max[p])
+                args.triforce_min_difference[p] = get_setting(settings['triforce_min_difference'], args.triforce_min_difference[p])
+                args.triforce_max_difference[p] = get_setting(settings['triforce_max_difference'], args.triforce_max_difference[p])
                 args.beemizer[p] = get_setting(settings['beemizer'], args.beemizer[p])
 
                 # mystery usage
@@ -176,6 +196,16 @@ class CustomSettings(object):
             return self.file_source['advanced_placements']
         return None
 
+    def get_owtileflips(self):
+        if 'ow-tileflips' in self.file_source:
+            return self.file_source['ow-tileflips']
+        return None
+
+    def get_owflutespots(self):
+        if 'ow-flutespots' in self.file_source:
+            return self.file_source['ow-flutespots']
+        return None
+
     def get_entrances(self):
         if 'entrances' in self.file_source:
             return self.file_source['entrances']
@@ -206,17 +236,26 @@ class CustomSettings(object):
             return self.file_source['drops']
         return None
 
-    def create_from_world(self, world, race):
+    def create_from_world(self, world, settings):
         self.player_range = range(1, world.players + 1)
         settings_dict, meta_dict = {}, {}
         self.world_rep['meta'] = meta_dict
         meta_dict['players'] = world.players
         meta_dict['algorithm'] = world.algorithm
         meta_dict['seed'] = world.seed
-        meta_dict['race'] = race
+        meta_dict['race'] = settings.race
+        meta_dict['user_notes'] = settings.notes
         self.world_rep['settings'] = settings_dict
         for p in self.player_range:
             settings_dict[p] = {}
+            settings_dict[p]['ow_shuffle'] = world.owShuffle[p]
+            settings_dict[p]['ow_terrain'] = world.owTerrain[p]
+            settings_dict[p]['ow_crossed'] = world.owCrossed[p]
+            settings_dict[p]['ow_keepsimilar'] = world.owKeepSimilar[p]
+            settings_dict[p]['ow_mixed'] = world.owMixed[p]
+            settings_dict[p]['ow_whirlpool'] = world.owWhirlpoolShuffle[p]
+            settings_dict[p]['ow_fluteshuffle'] = world.owFluteShuffle[p]
+            settings_dict[p]['bonk_drops'] = world.shuffle_bonk_drops[p]
             settings_dict[p]['shuffle'] = world.shuffle[p]
             settings_dict[p]['door_shuffle'] = world.doorShuffle[p]
             settings_dict[p]['intensity'] = world.intensity[p]
@@ -224,6 +263,7 @@ class CustomSettings(object):
             settings_dict[p]['trap_door_mode'] = world.trap_door_mode[p]
             settings_dict[p]['key_logic_algorithm'] = world.key_logic_algorithm[p]
             settings_dict[p]['decoupledoors'] = world.decoupledoors[p]
+            settings_dict[p]['door_self_loops'] = world.door_self_loops[p]
             settings_dict[p]['logic'] = world.logic[p]
             settings_dict[p]['mode'] = world.mode[p]
             settings_dict[p]['swords'] = world.swords[p]
@@ -244,6 +284,7 @@ class CustomSettings(object):
             settings_dict[p]['crystals_gt'] = world.crystals_gt_orig[p]
             settings_dict[p]['crystals_ganon'] = world.crystals_ganon_orig[p]
             settings_dict[p]['experimental'] = world.experimental[p]
+            settings_dict[p]['collection_rate'] = world.collection_rate[p]
             settings_dict[p]['openpyramid'] = world.open_pyramid[p]
             settings_dict[p]['bigkeyshuffle'] = world.bigkeyshuffle[p]
             settings_dict[p]['keyshuffle'] = world.keyshuffle[p]
@@ -313,6 +354,23 @@ class CustomSettings(object):
                 else:
                     placements[location.player][location.name] = location.item.name
 
+    def record_overworld(self, world):
+        self.world_rep['ow-tileflips'] = flips = {}
+        for p in self.player_range:
+            if p in world.owswaps and len(world.owswaps[p][0]) > 0:
+                flips[p] = {}
+                flips[p]['force_flip'] = list(HexInt(f) for f in world.owswaps[p][0] if f < 0x40 or f >= 0x80)
+                flips[p]['force_flip'].sort()
+                flips[p]['undefined_chance'] = 0
+        self.world_rep['ow-flutespots'] = flute = {}
+        for p in self.player_range:
+            flute[p] = {}
+            if p in world.owflutespots:
+                flute[p]['force'] = list(HexInt(id) for id in sorted(world.owflutespots[p]))
+            else:
+                flute[p]['force'] = list(HexInt(id) for id in sorted(default_flute_connections))
+            flute[p]['forbid'] = []
+
     def record_entrances(self, world):
         self.world_rep['entrances'] = entrances = {}
         world.custom_entrances = {}
@@ -375,6 +433,7 @@ class CustomSettings(object):
 
     def write_to_file(self, destination):
         yaml.add_representer(defaultdict, Representer.represent_dict)
+        yaml.add_representer(HexInt, hex_representer)
         with open(destination, 'w') as file:
             yaml.dump(self.world_rep, file)
 

@@ -279,6 +279,10 @@ def recovery_placement(item_to_place, locations, world, state, base_state, itemp
                 if spot_to_fill:
                     return spot_to_fill
             return None
+    # explicitly fail these cases
+    elif world.algorithm in ['dungeon_only', 'major_only']:
+        raise FillError(f'Rare placement for {world.algorithm} detected. {item_to_place} unable to be placed.'
+                        f' Try a different seed')
     else:
         other_locations = [x for x in locations if x not in attempted]
         for location in other_locations:
@@ -425,7 +429,7 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
         else:
             max_trash = gt_count
         scaled_trash = math.floor(max_trash * scale_factor)
-        if world.goal[player] in ['triforcehunt', 'trinity', 'z1', 'ganonhunt']:
+        if world.goal[player] in ['triforcehunt', 'trinity', 'z1', 'ganonhunt'] or world.algorithm == 'dungeon_only':
             gftower_trash_count = random.randint(scaled_trash, max_trash)
         else:
             gftower_trash_count = random.randint(0, scaled_trash)
@@ -538,7 +542,7 @@ def ensure_good_pots(world, write_skips=False):
            and (loc.type != LocationType.Pot or loc.item.player != loc.player)):
             loc.item = ItemFactory(invalid_location_replacement[loc.item.name], loc.item.player)
         if (loc.item.name in {'Arrows (5)'}
-           and (loc.type not in [LocationType.Pot, LocationType.Bonk] or loc.item.player != loc.player)):
+           and (loc.type != LocationType.Pot or loc.item.player != loc.player)):
             loc.item = ItemFactory(invalid_location_replacement[loc.item.name], loc.item.player)
         # # can be placed here by multiworld balancing or shop balancing
         # # change it to something normal for the player it got swapped to
@@ -670,9 +674,10 @@ def sell_potions(world, player):
     for potion in ['Green Potion', 'Blue Potion', 'Red Potion', 'Bee']:
         location = random.choice(filter_locations(ItemFactory(potion, player), locations, world, potion=True))
         locations.remove(location)
-        p_item = next(item for item in world.itempool if item.name == potion and item.player == player)
-        world.push_item(location, p_item, collect=False)
-        world.itempool.remove(p_item)
+        p_item = next((item for item in world.itempool if item.name == potion and item.player == player), None)
+        if p_item:
+            world.push_item(location, p_item, collect=False)
+            world.itempool.remove(p_item)
 
 
 def sell_keys(world, player):

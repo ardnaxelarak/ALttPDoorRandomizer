@@ -218,6 +218,7 @@
       "full",
       "lite",
       "lean",
+      "swapped",
       "crossed",
       "insanity",
       "dungeonsfull",
@@ -264,6 +265,10 @@
     ]
   },
   "decoupledoors": {
+    "action": "store_true",
+    "type": "bool"
+  },
+  "door_self_loops": {
     "action": "store_true",
     "type": "bool"
   },
@@ -430,6 +435,7 @@
   "triforce_goal_min": {},
   "triforce_goal_max": {},
   "triforce_min_difference": {},
+  "triforce_max_difference": {},
   "custom": {
     "type": "bool",
     "help": "suppress"
@@ -603,9 +609,6 @@
     ]
   },
   "outputname": {},
-  "code": {},
-  "trolls": {
-    "action": "store_true",
-    "type": "bool"
-  }
+  "notes": {},
+  "code": {}
 }

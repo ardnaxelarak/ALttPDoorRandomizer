@@ -248,27 +248,25 @@ New flute spots are chosen at random with minimum bias.
 
 ## Bonk Drop Shuffle (--bonk_drops)
 
-This adds 41 new item locations to the game. These bonk locations are limited to the ones that drop a static item in the vanilla game.
+This adds 42 new item locations to the game. These bonk locations are limited to the ones that drop a static item in the vanilla game.
 
 - Bonk Locations consist of some trees, rocks, and statues
     - 33 Trees
         - 8 of the tree locations require Agahnim to be defeated to access the item
     - 6 Rocks
         - 1 of the rocks drops 2 items
-    - 1 Statue
+    - 2 Statues
+        - 1 of them is the Cold Fairy Statue next to Ice Rod Cave
 - Bonk locations can be collected by bonking into them with the Pegasus Boots or using the Quake Medallion
 - One of the bonk locations are guaranteed to have a full magic decanter
 - Some of the drops can be farmed repeatedly, but only increments the collection rate once
 - All of the bonk trees have been given an alternate color (and all non-bonk trees are reverted to normal tree color)
     - Some screens are coded to change the "alternate tree color", some of them are strange (just how the vanilla game does it)
     - Rocks and statues are unable to be made to have a different color
-- Since Fairies and Apples are new items that can appear in plain sight, they don't have a proper graphic for them yet. For now, they show up as Power Stars
 
-Here is a map that shows all the [Bonk Locations](https://media.discordapp.net/attachments/783989090017738753/1000880877548609607/unknown.png?width=1399&height=702). FYI, the 2-4 and 2-3-4 refer to the tree numbers that have the items. The 2 by Dark Fortune Teller indicate that there are 2 bonk items there. The stars with a green square are all Bonk Locations that are unlocked after you kill Aga 1.
+Here is a map that shows all the [Bonk Locations](https://cdn.discordapp.com/attachments/1105770688649895968/1105770806769877072/bonkdrops.png?width=1399&height=702). FYI, the numbers indicate how many bonk items there. The stars with a green square are all Bonk Locations that are unlocked after you kill Aga 1.
 
 As far as map trackers, Bonk Locations are supported on `CodeTracker` when the Bonk Drops option is enabled.
-
-Future Note: This does NOT include the Good Bee (Cold Bee) Cave Statue...yet. In the future, this could be an additional item location.
 
 #### Items Added To Pool:
 - 15 Fairies
@@ -276,10 +274,11 @@ Future Note: This does NOT include the Good Bee (Cold Bee) Cave Statue...yet. In
 - 6 Bee Traps
 - 3 Red Rupees
 - 3 Blue Rupees
-- 2 Single Bomb
+- 2 Single Bombs
 - 2 Small Hearts
 - 1 Large Magic Decanter
 - 1 8x Bomb Pack
+- 1 Good Bee
 
 ## New Goal Options (--goal)
 

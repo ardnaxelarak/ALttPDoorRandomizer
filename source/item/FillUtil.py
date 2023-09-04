@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 
 from source.item.District import resolve_districts
-from BaseClasses import PotItem, PotFlags
+from BaseClasses import PotItem, PotFlags, LocationType
 from DoorShuffle import validate_vanilla_reservation
 from Dungeons import dungeon_table
 from Items import item_table, ItemFactory
@@ -82,8 +82,8 @@ def create_item_pool_config(world):
                         if pot.item not in [PotItem.Key, PotItem.Hole, PotItem.Switch]:
                             item = pot_items[pot.item]
                             descriptor = 'Large Block' if pot.flags & PotFlags.Block else f'Pot #{pot_index+1}'
-                            location = f'{pot.room} {descriptor}'
-                            config.static_placement[player][item].append(location)
+                            loc = f'{pot.room} {descriptor}'
+                            config.static_placement[player][item].append(loc)
             if world.shopsanity[player]:
                 for item, locs in shop_vanilla_mapping.items():
                     config.static_placement[player][item].extend(locs)
@@ -151,9 +151,6 @@ def create_item_pool_config(world):
             config.item_pool[player] = determine_major_items(world, player)
             config.location_groups[0].locations = set(groups.locations)
             config.reserved_locations[player].update(groups.locations)
-            backup = (mode_grouping['Heart Pieces'] + mode_grouping['Dungeon Trash'] + mode_grouping['Shops']
-                      + mode_grouping['Overworld Trash'] + mode_grouping['GT Trash'] + mode_grouping['RetroShops'])
-            config.location_groups[1].locations = set(backup)
     elif world.algorithm == 'dungeon_only':
         config.location_groups = [
             LocationGroup('Dungeons'),
@@ -164,12 +161,13 @@ def create_item_pool_config(world):
                        mode_grouping['Heart Containers'] + mode_grouping['GT Trash'] + mode_grouping['Small Keys'] +
                        mode_grouping['Compasses'] + mode_grouping['Maps'] + mode_grouping['Key Drops'] +
                        mode_grouping['Pot Keys'] + mode_grouping['Big Key Drops'])
+        dungeon_set = set(dungeon_set)
+        for loc in world.get_locations():
+            if loc.parent_region.dungeon and loc.type in [LocationType.Pot, LocationType.Drop]:
+                dungeon_set.add(loc.name)
         for player in range(1, world.players + 1):
             config.item_pool[player] = determine_major_items(world, player)
             config.location_groups[0].locations = set(dungeon_set)
-            backup = (mode_grouping['Heart Pieces'] + mode_grouping['Overworld Major']
-                      + mode_grouping['Overworld Trash'] + mode_grouping['Shops'] + mode_grouping['RetroShops'])
-            config.location_groups[1].locations = set(backup)
 
 
 def district_item_pool_config(world):
@@ -217,7 +215,7 @@ def district_item_pool_config(world):
         scale_factors = defaultdict(int)
         scale_total = 0
         for p in range(1, world.players + 1):
-            ent = 'Agahnims Tower' if world.is_atgt_swapped(player) else 'Ganons Tower'
+            ent = 'Agahnims Tower' if world.is_atgt_swapped(p) else 'Ganons Tower'
             dungeon = world.get_entrance(ent, p).connected_region.dungeon
             if dungeon:
                 scale = world.crystals_needed_for_gt[p]
@@ -359,7 +357,7 @@ def determine_major_items(world, player):
         major_item_set.add('Single Arrow')
     if world.keyshuffle[player] == 'universal':
         major_item_set.add('Small Key (Universal)')
-    if world.goal in ['triforcehunt', 'trinity']:
+    if world.goal[player] in ['triforcehunt', 'trinity', 'ganonhunt']:
         major_item_set.add('Triforce Piece')
     if world.bombbag[player]:
         major_item_set.add('Bomb Upgrade (+10)')
@@ -415,14 +413,11 @@ def filter_locations(item_to_place, locations, world, vanilla_skip=False, potion
         if item_to_place.name in config.item_pool[item_to_place.player]:
             restricted = config.location_groups[0].locations
             filtered = [l for l in locations if l.name in restricted]
-            if len(filtered) == 0:
-                restricted = config.location_groups[1].locations
-                filtered = [l for l in locations if l.name in restricted]
-                # bias toward certain location in overflow? (thinking about this for major_bias)
-            return filtered if len(filtered) > 0 else locations
+            return filtered
     if world.algorithm == 'district':
         config = world.item_pool_config
-        if item_to_place == 'Placeholder' or item_to_place.name in config.item_pool[item_to_place.player]:
+        if ((isinstance(item_to_place,str) and item_to_place == 'Placeholder')
+           or item_to_place.name in config.item_pool[item_to_place.player]):
             restricted = config.location_groups[0].locations
             filtered = [l for l in locations if l.name in restricted and l.player in restricted[l.name]]
             return filtered if len(filtered) > 0 else locations
@@ -816,7 +811,7 @@ trash_items = {
     'Nothing': -1,
     'Bee Trap': 0,
     'Rupee (1)': 1, 'Rupees (5)': 1, 'Small Heart': 1, 'Bee': 1, 'Arrows (5)': 1, 'Chicken': 1,  'Single Bomb': 1,
-    'Rupees (20)': 2,  'Small Magic': 2,
+    'Rupees (20)': 2,  'Small Magic': 2, 'Good Bee': 2,
     'Bombs (3)': 3, 'Arrows (10)': 3, 'Bombs (10)': 3, 'Apples': 3,
     'Fairy': 4, 'Big Magic': 4, 'Red Potion': 4, 'Blue Shield': 4, 'Rupees (50)': 4, 'Rupees (100)': 4,
     'Rupees (300)': 5,
@@ -830,9 +825,10 @@ pot_items = {
     PotItem.OneRupee: 'Rupee (1)',
     PotItem.FiveRupees: 'Rupees (5)',
     PotItem.Heart: 'Small Heart',
-    PotItem.BigMagic: 'Big Magic',  # fast fill
+    PotItem.BigMagic: 'Big Magic',
     PotItem.SmallMagic: 'Small Magic',
-    PotItem.Chicken: 'Chicken'   # fast fill
+    PotItem.Chicken: 'Chicken',
+    PotItem.Fairy: 'Fairy'
 }
 
 valid_pot_items = {y: x for x, y in pot_items.items()}

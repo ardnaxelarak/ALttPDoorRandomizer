@@ -1,10 +1,5 @@
 {
-  "topOverworldFrame": {
-    "bonk_drops": {
-      "type": "checkbox",
-      "default": false
-    }
-  },
+  "topOverworldFrame": {},
   "leftOverworldFrame": {
     "overworldshuffle": {
       "type": "selectbox",
@@ -28,11 +23,17 @@
     },
     "mixed": {
       "type": "checkbox",
-      "default": false
+      "default": false,
+      "config": {
+        "padx": [79,0]
+      }
     },
     "whirlpool": {
       "type": "checkbox",
-      "default": false
+      "default": false,
+      "config": {
+        "padx": [79,0]
+      }
     },
     "overworldflute": {
       "type": "selectbox",
@@ -41,17 +42,26 @@
         "vanilla",
         "balanced",
         "random"
-      ]
+      ],
+      "config": {
+        "pady": [20,0]
+      }
     }
   },
   "rightOverworldFrame": {
     "terrain": {
       "type": "checkbox",
-      "default": false
+      "default": false,
+      "config": {
+        "pady": [3,0]
+      }
     },
     "keepsimilar": {
       "type": "checkbox",
-      "default": false
+      "default": false,
+      "config": {
+        "pady": [6,0]
+      }
     }
   }
 }

@@ -14,7 +14,7 @@ ALL_SETTINGS = {
     'mode': ['open', 'standard', 'inverted'],
     'goal': ['ganon', 'pedestal', 'triforcehunt', 'trinity', 'crystals', 'dungeons'],
     'swords': ['random', 'swordless', 'assured'],
-    'shuffle': ['vanilla','simple','restricted','full','dungeonssimple','dungeonsfull','lite','lean','crossed','insanity'],
+    'shuffle': ['vanilla','simple','restricted','full','dungeonssimple','dungeonsfull','lite','lean','swapped','crossed','insanity'],
     'shufflelinks': [True, False],
     'shuffleganon': [True, False],
     'door_shuffle': ['vanilla', 'basic', 'crossed'],
@@ -39,7 +39,7 @@ SETTINGS = {
     'goal': ['ganon'],
     'swords': ['random'],
     'shuffle': ['vanilla', 
-        'dungeonssimple', 'dungeonsfull', 'simple', 'restricted', 'full', 'lite', 'lean', 'crossed', 'insanity'
+        'dungeonssimple', 'dungeonsfull', 'simple', 'restricted', 'full', 'lite', 'lean', 'swapped', 'crossed', 'insanity'
         ],
     'shufflelinks': [True, False],
     'shuffleganon': [True, False],

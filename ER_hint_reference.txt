@@ -98,7 +98,7 @@ Ice Palace: Ice Palace
 Skull Woods Final Section: The back of Skull Woods
 Death Mountain Return Cave (West): The SW DM Foothills Cave
 Mimic Cave: Mimic Ledge
-Dark World Hammer Peg Cave: The rows of pegs
+Hammer Peg Cave: The rows of pegs
 Pyramid Fairy: The crack on the pyramid
 Eastern Palace: Eastern Palace
 Elder House (East): Elder House
@@ -145,7 +145,7 @@ Chicken House: The chicken lady's house
 Tavern North: A backdoor
 Aginahs Cave: The open desert cave
 Sahasrahlas Hut: The house near armos
-Cave Shop (Lake Hylia): The cave NW Lake Hylia
+Lake Hylia Shop: The cave NW Lake Hylia
 Blacksmiths Hut: The old smithery
 Sick Kids House: The central house in Kakariko
 Lost Woods Gamble: A tree trunk door
@@ -188,19 +188,19 @@ Dark World Shop: The hammer sealed building
 Red Shield Shop: The fenced in building
 Mire Shed: The western hut in the mire
 East Dark World Hint: The dark cave near the eastmost portal
-Dark Desert Hint: The cave east of the mire
+Mire Hint: The cave east of the mire
 Spike Cave: The ledge cave on west dark DM
 Palace of Darkness Hint: The building south of Kiki
 Dark Lake Hylia Ledge Spike Cave: The rock SE dark Lake Hylia
-Cave Shop (Dark Death Mountain): The base of east dark DM
-Dark World Potion Shop: The building near the catfish
+Dark Death Mountain Shop: The base of east dark DM
+Dark Potion Shop: The building near the catfish
 Archery Game: The old archery game
-Dark World Lumberjack Shop: The northmost Dark World building
+Dark Lumberjack Shop: The northmost Dark World building
 Hype Cave: The cave south of the old bomb shop
 Brewery: The Village of Outcasts building with no door
 Dark Lake Hylia Ledge Hint: The open cave SE dark Lake Hylia
 Chest Game: The westmost building in the Village of Outcasts
-Dark Desert Fairy: The eastern hut in the mire
+Mire Fairy: The eastern hut in the mire
 Dark Lake Hylia Ledge Fairy: The sealed cave SE dark Lake Hylia
 Fortune Teller (Dark): The building NE the Village of Outcasts
 Sanctuary: Sanctuary

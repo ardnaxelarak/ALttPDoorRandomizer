@@ -1,0 +1,22 @@
+meta:
+  branch: OWR
+  seed_name: Swapkeys
+  seed_notes: Crosskeys but Swapped ER
+settings:
+  1:
+    mode: open
+    logic: noglitches
+    goal: crystals
+    crystals_gt: "7"
+    crystals_ganon: "7"
+    accessibility: locations
+    mapshuffle: 1
+    compassshuffle: 1
+    keyshuffle: wild
+    bigkeyshuffle: 1
+    shuffle: swapped
+    shuffleganon: 1
+    shufflelinks: 0
+    shuffletavern: 1
+    experimental: 0
+    hints: 0

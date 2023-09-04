@@ -737,6 +737,13 @@ class bidict(dict):
         super(bidict, self).__delitem__(key)
 
 
+class HexInt(int): pass
+
+def hex_representer(dumper, data):
+    import yaml
+    return yaml.ScalarNode('tag:yaml.org,2002:int', f"{data:#0{4}x}")
+
+
 if __name__ == '__main__':
     print(make_new_base2current())
     # read_entrance_data(old_rom=sys.argv[1])

@@ -86,7 +86,38 @@ You may define an item, and a list of locations. The locations may be weighted i
 #### NotPlacementGroup
 
 You may define an item and a list of locations that an item should not be placed at. This will apply to all items of that type. The logic is considered for this. If it is otherwise impossible, the item will be considered for the listed locations. This is important for small key layouts mostly, but it will try other locations first. 
- 
+
+### ow-tileflips
+
+This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have `ow_mixed: true` in the `settings` section in order for any values here to take effect. This section has three primary subsections: `force_flip`, `force_no_flip`, and `undefined_chance`.
+
+#### force_flip / force_no_flip
+
+`force_flip` and `force_no_flip` should be used for tiles you want to flip or not flip. These sections are optional but must contain a list of OW Screen IDs. It is common to reference OW Screen IDs in hexadecimal (altho decimal is okay to use, if preferred), which range from:
+  0x00 to 0x3f - Light World
+  0x40 to 0x7f - Dark World
+  0x80 - Pedestal/Hobo
+  0x81 - Zoras Domain
+
+Here is an example which forces Links House and Sanctuary screens to stay in their original worlds. Note: It is unnecessary to supply both worlds' IDs. Links House is 0x2c and Big Bomb Shop is 0x6c.
+```
+force_no_flip:
+  - 0x2c
+  - 0x13
+```
+
+#### undefined_chance
+
+`undefined_chance` should be used to determine how to handle all the remaining tiles that aren't explicitly defined in the earlier step. This represents the percent chance a tile will flip. This value can be set from 0 to 100 (default is 50). A value of 0 means there is a 0% chance it will be flipped.
+
+### ow-flutespots
+
+This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have some form of Flute Shuffle in order for any values here to take effect. This section has two subsections: `force` and `forbid`. Both are lists of OW Screen IDs, please refer to ow-tileflips above for more information.
+
+Everything listed in `force` means that this screen must contain a flute spot.
+
+Everything listed in `forbid` means that this screen must not contain a flute spot.
+
 ### entrances
 
 This must be defined by player. Each player number should be listed with the appropriate sections. This section has three primary subsections: `entrances`, `exits`, and `two-way`.
@@ -110,10 +141,6 @@ This must be defined by player. Each player number should be listed with the app
 `entrances` is used for single entrances caves, houses, shops, etc. and drops. Single entrance caves always exit to where you enter, they cannot be decoupled. Dungeons and connectors which are decoupled can also be listed here.
 
 `Chicken House: Kakariko Shop` if you walk into Chicken House door, you will in the Kakariko Shop.
-
-##### Known Issues
-
-Chris Houlihan and Links House should be specified together or not at all. 
 
 ### doors
 

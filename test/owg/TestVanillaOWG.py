@@ -7,7 +7,7 @@ from EntranceShuffle import link_entrances
 from ItemList import difficulties, generate_itempool
 from Items import ItemFactory
 from OverworldGlitchRules import create_owg_connections
-from Regions import create_regions, create_dungeon_regions, create_shops, mark_dark_world_regions
+from Regions import create_regions, create_dungeon_regions, create_shops, mark_light_dark_world_regions
 from RoomData import create_rooms
 from Rules import set_rules
 from test.TestBase import TestBase
@@ -37,5 +37,5 @@ class TestVanillaOWG(TestBase):
         self.world.get_location('Agahnim 2', 1).item = None
         self.world.precollected_items.clear()
         self.world.itempool.append(ItemFactory('Pegasus Boots', 1))
-        mark_dark_world_regions(self.world, 1)
+        mark_light_dark_world_regions(self.world, 1)
         set_rules(self.world, 1)

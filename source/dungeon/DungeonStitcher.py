@@ -22,7 +22,7 @@ def generate_dungeon(builder, entrance_region_names, split_dungeon, world, playe
     queue = collections.deque(proposed_map.items())
     while len(queue) > 0:
         a, b = queue.popleft()
-        if world.decoupledoors[player]:
+        if a == b or world.decoupledoors[player]:
             connect_doors_one_way(a, b)
         else:
             connect_doors(a, b)
@@ -128,14 +128,14 @@ def create_random_proposal(doors_to_connect, world, player):
         next_hook = random.choice(hooks_left)
         primary_door = random.choice(primary_bucket[next_hook])
         opp_hook, secondary_door = type_map[next_hook], None
-        while (secondary_door is None or secondary_door == primary_door
+        while (secondary_door is None or (secondary_door == primary_door and not world.door_self_loops[player])
                or decouple_check(primary_bucket[next_hook], secondary_bucket[opp_hook],
                                  primary_door, secondary_door, world, player)):
             secondary_door = random.choice(secondary_bucket[opp_hook])
         proposal[primary_door] = secondary_door
         primary_bucket[next_hook].remove(primary_door)
         secondary_bucket[opp_hook].remove(secondary_door)
-        if not world.decoupledoors[player]:
+        if primary_door != secondary_door and not world.decoupledoors[player]:
             proposal[secondary_door] = primary_door
             primary_bucket[opp_hook].remove(secondary_door)
             secondary_bucket[next_hook].remove(primary_door)
@@ -200,11 +200,19 @@ def modify_proposal(proposed_map, explored_state, doors_to_connect, hash_code_se
         unvisted_bucket[opp_hook].sort(key=lambda d: d.name)
         new_door = random.choice(unvisted_bucket[opp_hook])
         old_target = proposed_map[attempt]
-        proposed_map[attempt] = new_door
         if not world.decoupledoors[player]:
             old_attempt = proposed_map[new_door]
         else:
             old_attempt = next(x for x in proposed_map if proposed_map[x] == new_door)
+        # ensure nothing gets messed up when something loops with itself
+        if attempt == old_target and old_attempt == new_door:
+            old_attempt = new_door
+            old_target = attempt
+        elif attempt == old_target:
+            old_target = old_attempt
+        elif old_attempt == new_door:
+            old_attempt = old_target
+        proposed_map[attempt] = new_door
         proposed_map[old_attempt] = old_target
         if not world.decoupledoors[player]:
             proposed_map[old_target] = old_attempt
