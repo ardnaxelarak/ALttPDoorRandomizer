@@ -1240,7 +1240,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     #Set overflow items for progressive equipment
     rom.write_bytes(0x180090,
-                    [difficulty.progressive_sword_limit if world.swords[player] not in ['swordless', 'swordless_hammer', 'bees'] else 0, overflow_replacement,
+                    [difficulty.progressive_sword_limit if world.swords[player] not in ['swordless', 'swordless_b', 'bees'] else 0, overflow_replacement,
                      difficulty.progressive_shield_limit, overflow_replacement,
                      difficulty.progressive_armor_limit, overflow_replacement,
                      difficulty.progressive_bottle_limit, overflow_replacement])
@@ -1248,7 +1248,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     #Work around for json patch ordering issues - write bow limit separately so that it is replaced in the patch
     rom.write_bytes(0x180098, [difficulty.progressive_bow_limit, overflow_replacement])
 
-    if difficulty.progressive_bow_limit < 2 and world.swords[player] in ['swordless', 'swordless_hammer', 'bees', 'pseudo', 'assured_pseudo']:
+    if difficulty.progressive_bow_limit < 2 and world.swords[player] in ['swordless', 'swordless_b', 'bees', 'pseudo', 'assured_pseudo']:
         rom.write_bytes(0x180098, [2, overflow_replacement])
 
     # set up game internal RNG seed
@@ -1318,14 +1318,14 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x180029, 0x01) # Smithy quick item give
 
     # set swordless mode settings
-    if world.swords[player] in ['swordless', 'swordless_hammer']:
+    if world.swords[player] in ['swordless', 'swordless_b']:
         rom.write_byte(0x18003F, 0x01)  # hammer can harm ganon
         rom.initial_sram.set_swordless_curtains()  # open curtains
         rom.write_byte(0x180041, 0x01)  # swordless medallions (on pads)
         rom.write_byte(0x180043, 0xFF)  # starting sword for link
         rom.write_byte(0x180044, 0x01)  # hammer activates tablets
-        if world.swords[player] == 'swordless_hammer':
-            rom.write_byte(0x18002F, 0x07)  # hammer on B
+        if world.swords[player] == 'swordless_b':
+            rom.write_byte(0x18002C, 0xFF)  # items on B
     elif world.swords[player] in ['pseudo', 'assured_pseudo']:
         rom.write_byte(0x18002F, 0x02)  # pseudo-swords
         rom.write_byte(0x18003F, 0x01)  # hammer can harm ganon
@@ -1396,6 +1396,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     elif world.swords[player] in ['byrna', 'somaria', 'cane']:
         rom.initial_sram.set_swordless_curtains()  # open curtains
         rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
+        rom.write_byte(0x18002C, 0xFF)  # any item on B
 
         # remove magic cost of cane(s)
         if world.swords[player] in ['byrna', 'cane']:
@@ -1412,13 +1413,13 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
             rom.write_byte(0x03B0AE, 0x81)
 
         if world.swords[player] == 'byrna':
-            rom.write_byte(0x18002F, 0x83)
+            rom.write_byte(0x18002F, 0x03)
             colr = 0x2C
         elif world.swords[player] == 'somaria':
-            rom.write_byte(0x18002F, 0x84)
+            rom.write_byte(0x18002F, 0x04)
             colr = 0x24
         elif world.swords[player] == 'cane':
-            rom.write_byte(0x18002F, 0x85)
+            rom.write_byte(0x18002F, 0x05)
             colr = 0x28
 
         spritedata = [
@@ -1450,6 +1451,41 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_bytes(0x118188, credits_string_bot("TEMPERED CANE "))
         rom.write_bytes(0x1181A6, credits_string_top("GOLD CANE "))
         rom.write_bytes(0x1181C4, credits_string_bot("GOLD CANE "))
+    elif world.swords[player] in ['bugnet']:
+        rom.initial_sram.set_swordless_curtains()  # open curtains
+        rom.write_byte(0x180041, 0x02)  # swordless medallions (always)
+        rom.write_byte(0x18002C, 0x0E)  # bug net on B
+        rom.write_byte(0x18002F, 0x08)  # bug net mode
+
+        spritedata = [
+            0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20,
+            0x40, 0x3C, 0x41, 0x3C, 0x42, 0x3C, 0x17, 0x3C,
+            0x40, 0x2C, 0x41, 0x2C, 0x42, 0x2C, 0x18, 0x2C,
+            0x40, 0x24, 0x41, 0x24, 0x42, 0x24, 0x19, 0x24,
+            0x40, 0x28, 0x41, 0x28, 0x42, 0x28, 0x1A, 0x28,
+            0x40, 0x28, 0x41, 0x28, 0x42, 0x28, 0x1B, 0x28,
+            0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20, 0xF5, 0x20,
+            0x40, 0x3C, 0x41, 0x3C, 0x42, 0x3C, 0x43, 0x3C,
+            0x40, 0x2C, 0x41, 0x2C, 0x42, 0x2C, 0x43, 0x2C,
+            0x40, 0x24, 0x41, 0x24, 0x42, 0x24, 0x43, 0x24,
+            0x40, 0x28, 0x41, 0x28, 0x42, 0x28, 0x43, 0x28,
+            0x40, 0x28, 0x41, 0x28, 0x42, 0x28, 0x43, 0x28,
+        ];
+        rom.write_bytes(0x06FC51, spritedata)
+
+        # update sword references in credits to cane
+        rom.write_bytes(0x11807A, credits_string_top("FIRST NET  "))
+        rom.write_bytes(0x118098, credits_string_bot("FIRST NET  "))
+        rom.write_bytes(0x1180B6, credits_string_top("NETLESS  "))
+        rom.write_bytes(0x1180D4, credits_string_bot("NETLESS  "))
+        rom.write_bytes(0x1180F2, credits_string_top("FIGHTER'S NET  "))
+        rom.write_bytes(0x118110, credits_string_bot("FIGHTER'S NET  "))
+        rom.write_bytes(0x11812E, credits_string_top("MASTER NET  "))
+        rom.write_bytes(0x11814C, credits_string_bot("MASTER NET  "))
+        rom.write_bytes(0x11816A, credits_string_top("TEMPERED NET  "))
+        rom.write_bytes(0x118188, credits_string_bot("TEMPERED NET  "))
+        rom.write_bytes(0x1181A6, credits_string_top("GOLD NET  "))
+        rom.write_bytes(0x1181C4, credits_string_bot("GOLD NET  "))
 
     # set up clocks for timed modes
     if world.shuffle[player] == 'vanilla':

@@ -95,21 +95,23 @@ class InitialSram:
         elif startingstate.has('Fighter Sword', player):
             equip[0x359] = 1
 
-        if startingstate.has('L5 Bombs', player) or startingstate.has('L5 Cane', player):
+        if startingstate.has('L5 Bombs', player) or startingstate.has('L5 Cane', player) or startingstate.has('L5 Net', player):
             equip[0x38F] = 5
-        elif startingstate.has('L4 Bombs', player) or startingstate.has('L4 Cane', player):
+        elif startingstate.has('L4 Bombs', player) or startingstate.has('L4 Cane', player) or startingstate.has('L4 Net', player):
             equip[0x38F] = 4
-        elif startingstate.has('L3 Bombs', player) or startingstate.has('L3 Cane', player):
+        elif startingstate.has('L3 Bombs', player) or startingstate.has('L3 Cane', player) or startingstate.has('L3 Net', player):
             equip[0x38F] = 3
-        elif startingstate.has('L2 Bombs', player) or startingstate.has('L2 Cane', player):
+        elif startingstate.has('L2 Bombs', player) or startingstate.has('L2 Cane', player) or startingstate.has('L2 Net', player):
             equip[0x38F] = 2
-        elif startingstate.has('L1 Bombs', player) or startingstate.has('L1 Cane', player) or world.swords[player] == 'cane':
+        elif startingstate.has('L1 Bombs', player) or startingstate.has('L1 Cane', player) or world.swords[player] == 'cane' or startingstate.has('L1 Net', player):
             equip[0x38F] = 1
         if startingstate.has('L1 Cane', player) or startingstate.has('L2 Cane', player) or startingstate.has('L3 Cane', player) or startingstate.has('L4 Cane', player) or startingstate.has('L5 Cane', player):
             if world.swords[player] == 'byrna':
                 equip[0x351] = 1
             elif world.swords[player] == 'somaria':
                 equip[0x350] = 1
+        if startingstate.has('L1 Net', player) or startingstate.has('L2 Net', player) or startingstate.has('L3 Net', player) or startingstate.has('L4 Net', player) or startingstate.has('L5 Net', player):
+            equip[0x34D] = 1
 
         if startingstate.has('Mirror Shield', player):
             equip[0x35A] = 3
@@ -139,6 +141,7 @@ class InitialSram:
                              'Golden Sword', 'Tempered Sword', 'Master Sword', 'Fighter Sword', 'Progressive Sword',
                              'L5 Bombs', 'L4 Bombs', 'L3 Bombs', 'L2 Bombs', 'L1 Bombs', 'Progressive Bombs',
                              'L5 Cane', 'L4 Cane', 'L3 Cane', 'L2 Cane', 'L1 Cane', 'Progressive Cane',
+                             'L5 Net', 'L4 Net', 'L3 Net', 'L2 Net', 'L1 Net', 'Progressive Net',
                              'Mirror Shield', 'Red Shield', 'Blue Shield', 'Progressive Shield',
                              'Red Mail', 'Blue Mail', 'Progressive Armor',
                              'Magic Upgrade (1/4)', 'Magic Upgrade (1/2)']:

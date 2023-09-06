@@ -435,6 +435,19 @@ class World(object):
                         ret.prog_items['L2 Cane', item.player] += 1
                     else:
                         ret.prog_items['L1 Cane', item.player] += 1
+                elif 'Net' in item.name:
+                    if ret.has('L5 Net', item.player):
+                        pass
+                    elif ret.has('L4 Net', item.player):
+                        ret.prog_items['L5 Net', item.player] += 1
+                    elif ret.has('L3 Net', item.player):
+                        ret.prog_items['L4 Net', item.player] += 1
+                    elif ret.has('L2 Net', item.player):
+                        ret.prog_items['L3 Net', item.player] += 1
+                    elif ret.has('L1 Net', item.player):
+                        ret.prog_items['L2 Net', item.player] += 1
+                    else:
+                        ret.prog_items['L1 Net', item.player] += 1
                 elif 'Glove' in item.name:
                     if ret.has('Titans Mitts', item.player):
                         pass
@@ -1048,6 +1061,7 @@ class CollectionState(object):
                  'Blue Pendant', 'Red Pendant', 'Crystal 1', 'Crystal 2', 'Crystal 3', 'Crystal 4', 'Crystal 5',
                  'Crystal 6', 'Crystal 7', 'Blue Boomerang', 'Red Boomerang', 'Blue Shield', 'Red Shield',
                  'Mirror Shield', 'Progressive Shield', 'Bug Catching Net', 'Cane of Byrna', 'Ocarina (Activated)',
+                 'Progressive Bombs', 'Progressive Cane', 'Progressive Net',
                  'Boss Heart Container', 'Sanctuary Heart Container', 'Piece of Heart', 'Magic Upgrade (1/2)',
                  'Magic Upgrade (1/4)']
             or item_name.startswith(('Bottle', 'Small Key', 'Big Key'))
@@ -1272,8 +1286,6 @@ class CollectionState(object):
         return (not self.world.bombbag[player] or self.has('Bomb Upgrade (+10)', player) or self.has('Bomb Upgrade (+5)', player, 2)) and (self.world.override_bomb_check or self.can_farm_bombs(player))
 
     def can_kill_with_bombs(self, player):
-        if self.world.swords[player] in ['cane', 'somaria', 'byrna']:
-            return False
         return self.can_use_bombs(player)
 
     def can_hit_crystal(self, player):
@@ -1363,11 +1375,23 @@ class CollectionState(object):
             elif level == 1:
                 return self.has('L5 Cane', player) or self.has('L4 Cane', player) or self.has('L3 Cane', player) or self.has('L2 Cane', player) or self.has('L1 Cane', player)
             return True
+        elif self.world.swords[player] in ['bugnet']:
+            if level == 5:
+                return self.has('L5 Net', player)
+            elif level == 4:
+                return self.has('L5 Net', player) or self.has('L4 Net', player)
+            elif level == 3:
+                return self.has('L5 Net', player) or self.has('L4 Net', player) or self.has('L3 Net', player)
+            elif level == 2:
+                return self.has('L5 Net', player) or self.has('L4 Net', player) or self.has('L3 Net', player) or self.has('L2 Net', player)
+            elif level == 1:
+                return self.has('L5 Net', player) or self.has('L4 Net', player) or self.has('L3 Net', player) or self.has('L2 Net', player) or self.has('L1 Net', player)
+            return True
         else:
             return False
 
     def special_weapon_check(self, player, level):
-        if self.world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane']:
+        if self.world.swords[player] in ['bombs']:
             return self.has_special_weapon_level(player, level)
         else:
             return True
@@ -1413,7 +1437,7 @@ class CollectionState(object):
             return False
 
     def can_use_medallions(self, player):
-        return self.has_sword(player) or self.world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane']
+        return self.has_sword(player) or self.world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane', 'bugnet']
 
     def has_blunt_weapon(self, player):
         return self.has_real_sword(player) or self.has('Hammer', player)
@@ -1545,6 +1569,24 @@ class CollectionState(object):
                 else:
                     self.prog_items['L1 Cane', item.player] += 1
                     changed = True
+            elif 'Net' in item.name:
+                if self.has('L5 Net', item.player):
+                    pass
+                elif self.has('L4 Net', item.player):
+                    self.prog_items['L5 Net', item.player] += 1
+                    changed = True
+                elif self.has('L3 Net', item.player):
+                    self.prog_items['L4 Net', item.player] += 1
+                    changed = True
+                elif self.has('L2 Net', item.player):
+                    self.prog_items['L3 Net', item.player] += 1
+                    changed = True
+                elif self.has('L1 Net', item.player):
+                    self.prog_items['L2 Net', item.player] += 1
+                    changed = True
+                else:
+                    self.prog_items['L1 Net', item.player] += 1
+                    changed = True
             elif 'Glove' in item.name:
                 if self.has('Titans Mitts', item.player):
                     pass
@@ -1648,6 +1690,19 @@ class CollectionState(object):
                         to_remove = 'L2 Cane'
                     elif self.has('L1 Cane', item.player):
                         to_remove = 'L1 Cane'
+                    else:
+                        to_remove = None
+                elif 'Net' in to_remove:
+                    if self.has('L5 Net', item.player):
+                        to_remove = 'L5 Net'
+                    elif self.has('L4 Net', item.player):
+                        to_remove = 'L4 Net'
+                    elif self.has('L3 Net', item.player):
+                        to_remove = 'L3 Net'
+                    elif self.has('L2 Net', item.player):
+                        to_remove = 'L2 Net'
+                    elif self.has('L1 Net', item.player):
+                        to_remove = 'L1 Net'
                     else:
                         to_remove = None
                 elif 'Glove' in item.name:
@@ -3619,7 +3674,7 @@ er_mode = {"vanilla": 0, "simple": 1, "restricted": 2, "full": 3, "crossed": 4, 
 # byte 1: LLLW WSSS (logic, mode, sword)
 logic_mode = {"noglitches": 0, "minorglitches": 1, "nologic": 2, "owglitches": 3, "majorglitches": 4}
 world_mode = {"open": 0, "standard": 1, "inverted": 2}
-sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "swordless_hammer": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 5, "byrna": 6, "somaria": 6, "cane": 6, "bees": 7}
+sword_mode = {"random": 0,  "assured": 1, "swordless": 2, "swordless_b": 2, "vanilla": 3, "bombs": 4, "pseudo": 5, "assured_pseudo": 5, "byrna": 6, "somaria": 6, "cane": 6, "bees": 7, "bugnet": 7}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {'ganon': 0, 'pedestal': 1, 'dungeons': 2, 'triforcehunt': 3, 'crystals': 4, 'trinity': 5, 'z1': 6,

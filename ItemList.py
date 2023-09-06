@@ -37,7 +37,7 @@ normalfinal25extra = ['Rupees (20)'] * 23 + ['Rupees (5)'] * 2
 
 Difficulty = namedtuple('Difficulty',
                         ['baseitems', 'bottles', 'bottle_count', 'same_bottle', 'progressiveshield',
-                         'basicshield', 'progressivearmor', 'basicarmor', 'swordless', 'bombs_only', 'cane_only',
+                         'basicshield', 'progressivearmor', 'basicarmor', 'swordless', 'bombs_only', 'cane_only', 'bugnet_mode',
                          'progressivesword', 'basicsword', 'basicbow', 'timedohko', 'timedother',
                          'retro', 'bombbag',
                          'extras', 'progressive_sword_limit', 'progressive_shield_limit',
@@ -60,6 +60,7 @@ difficulties = {
         swordless = ['Rupees (20)'] * 4,
         bombs_only = ['Progressive Bombs'] * 4,
         cane_only = ['Progressive Cane'] * 3 + ['Rupees (20)'],
+        bugnet_mode = ['Progressive Net'] * 4,
         progressivesword = ['Progressive Sword'] * 4,
         basicsword = ['Fighter Sword', 'Master Sword', 'Tempered Sword', 'Golden Sword'],
         basicbow = ['Bow', 'Silver Arrows'],
@@ -88,6 +89,7 @@ difficulties = {
         swordless =  ['Rupees (20)'] * 4,
         bombs_only = ['Progressive Bombs'] * 4,
         cane_only = ['Progressive Cane'] * 3 + ['Rupees (20)'],
+        bugnet_mode = ['Progressive Net'] * 4,
         progressivesword =  ['Progressive Sword'] * 4,
         basicsword = ['Fighter Sword', 'Master Sword', 'Master Sword', 'Tempered Sword'],
         basicbow = ['Bow'] * 2,
@@ -116,6 +118,7 @@ difficulties = {
         swordless = ['Rupees (20)'] * 4,
         bombs_only = ['Progressive Bombs'] * 4,
         cane_only = ['Progressive Cane'] * 3 + ['Rupees (20)'],
+        bugnet_mode = ['Progressive Net'] * 4,
         progressivesword = ['Progressive Sword'] * 4,
         basicsword = ['Fighter Sword', 'Fighter Sword', 'Master Sword', 'Master Sword'],
         basicbow = ['Bow'] * 2,
@@ -339,27 +342,11 @@ def generate_itempool(world, player):
     for item in precollected_items:
         world.push_precollected(ItemFactory(item, player))
 
-    if world.mode[player] == 'standard' and not (world.state.has_special_weapon_level(player, 1) if world.swords[player] in ['bombs', 'byrna', 'somaria', 'cane'] else world.state.has_blunt_weapon(player)):
+    if world.mode[player] == 'standard' and not (world.state.has_special_weapon_level(player, 1) if world.swords[player] in ['bombs'] else world.state.has_blunt_weapon(player) or world.state.has_special_weapon_level(player, 1)):
         if world.swords[player] == 'bombs' and "Link's Uncle" not in placed_items:
             possible_weapons = []
             for item in pool:
-                if item in ['Progressive Bombs', 'L1 Bombs', 'L2 Bombs', 'L3 Bombs', 'L4 Bombs', 'L5 Bombs']:
-                    possible_weapons.append(item)
-            starting_weapon = random.choice(possible_weapons)
-            placed_items["Link's Uncle"] = starting_weapon
-            pool.remove(starting_weapon)
-        elif world.swords[player] in ['byrna', 'somaria'] and "Link's Uncle" not in placed_items:
-            possible_weapons = []
-            for item in pool:
-                if item in ['Progressive Cane', 'L1 Cane', 'L2 Cane', 'L3 Cane', 'L4 Cane', 'L5 Cane']:
-                    possible_weapons.append(item)
-            starting_weapon = random.choice(possible_weapons)
-            placed_items["Link's Uncle"] = starting_weapon
-            pool.remove(starting_weapon)
-        elif world.swords[player] in ['cane'] and "Link's Uncle" not in placed_items:
-            possible_weapons = []
-            for item in pool:
-                if item in ['Cane of Byrna', 'Cane of Somaria']:
+                if item in ['Progressive Bombs']:
                     possible_weapons.append(item)
             starting_weapon = random.choice(possible_weapons)
             placed_items["Link's Uncle"] = starting_weapon
@@ -372,6 +359,9 @@ def generate_itempool(world, player):
                 if item in ['Progressive Sword', 'Fighter Sword', 'Master Sword', 'Tempered Sword', 'Golden Sword']:
                     if not found_sword and world.swords[player] != 'swordless':
                         found_sword = True
+                        possible_weapons.append(item)
+                if item in ['Progressive Cane', 'Progressive Net']:
+                    if world.swords[player] != 'cane':
                         possible_weapons.append(item)
                 if (item in ['Progressive Bow', 'Bow'] and not found_bow
                    and not world.bow_mode[player].startswith('retro')):
@@ -1167,7 +1157,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
 
     if 'silvers' not in world.bow_mode[player]:
         pool.extend(['Progressive Bow'] * 2)
-    elif swords not in ['swordless', 'pseudo', 'assured_pseudo', 'swordless_hammer']:
+    elif swords not in ['swordless', 'pseudo', 'assured_pseudo', 'swordless_b']:
         pool.extend(diff.basicbow)
     else:
         pool.extend(['Bow', 'Silver Arrows'])
@@ -1184,6 +1174,9 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
         pool.extend(diff.cane_only)
     elif swords == 'cane':
         pool.extend(diff.cane_only)
+    elif swords == 'bugnet':
+        pool = [item.replace('Bug Catching Net', 'Progressive Net') for item in pool]
+        pool.extend(diff.bugnet_mode)
     elif swords == 'vanilla':
         swords_to_use = diff.progressivesword.copy() if want_progressives() else diff.basicsword.copy()
         random.shuffle(swords_to_use)

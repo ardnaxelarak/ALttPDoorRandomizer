@@ -23,12 +23,12 @@ def set_rules(world, player):
     global_rules(world, player)
     ow_inverted_rules(world, player)
 
-    if world.swords[player] in ['swordless', 'swordless_hammer', 'bees']:
+    if world.swords[player] in ['swordless', 'swordless_b', 'bees']:
         swordless_rules(world, player)
     if world.swords[player] == 'bombs':
         bomb_mode_rules(world, player)
-    if world.swords[player] in ['byrna', 'somaria', 'cane']:
-        cane_mode_rules(world, player)
+    if world.swords[player] in ['byrna', 'somaria', 'cane', 'bugnet']:
+        cane_or_net_mode_rules(world, player)
     if world.swords[player] in ['pseudo', 'assured_pseudo']:
         pseudo_sword_mode_rules(world, player)
 
@@ -870,6 +870,7 @@ def global_rules(world, player):
             and state.has_fire_source(player)
             and (state.has_crystals(world.crystals_needed_for_ganon[player], player) or world.goal[player] == 'z1')
             and (state.has_real_sword(player, 3) or
+                state.has_special_weapon_level(player, 3) or
                 state.can_hit_stunned_ganon(player) or
                 state.has_real_sword(player, 2) and
                     (state.has('Lamp', player) or state.can_extend_magic(player, 12))))
@@ -1510,7 +1511,7 @@ def bomb_mode_rules(world, player):
     add_bunny_rule(world.get_entrance('Turtle Rock', player), player)
     add_bunny_rule(world.get_entrance('Misery Mire', player), player)
 
-def cane_mode_rules(world, player):
+def cane_or_net_mode_rules(world, player):
     set_rule(world.get_entrance('Tower Altar NW', player), lambda state: True)
     set_rule(world.get_entrance('Skull Vines NW', player), lambda state: True)
 
