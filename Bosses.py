@@ -225,11 +225,23 @@ def place_bosses(world, player):
             bosses.remove(boss)
 
             place_boss(boss, level, loc, loc_text, world, player)
-    elif world.boss_shuffle[player] == "random": #all bosses chosen at random
+    elif world.boss_shuffle[player] == "random": # all bosses chosen at random
         for [loc, level] in boss_locations:
             loc_text = loc + (' ('+level+')' if level else '')
             try:
                 boss = random.choice([b for b in placeable_bosses if can_place_boss(world, player, b, loc, level)])
+            except IndexError:
+                raise FillError('Could not place boss for location %s' % loc_text)
+
+            place_boss(boss, level, loc, loc_text, world, player)
+    elif world.boss_shuffle[player] == "moldorm": # all bosses Moldorm
+        for [loc, level] in boss_locations:
+            loc_text = loc + (' ('+level+')' if level else '')
+            try:
+                if can_place_boss(world, player, 'Moldorm', loc, level):
+                    boss = 'Moldorm'
+                else:
+                    boss = random.choice([b for b in placeable_bosses if can_place_boss(world, player, b, loc, level)])
             except IndexError:
                 raise FillError('Could not place boss for location %s' % loc_text)
 

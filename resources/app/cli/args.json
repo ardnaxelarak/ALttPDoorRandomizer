@@ -565,7 +565,8 @@
       "simple",
       "unique",
       "full",
-      "random"
+      "random",
+      "moldorm"
     ]
   },
   "shuffleenemies": {

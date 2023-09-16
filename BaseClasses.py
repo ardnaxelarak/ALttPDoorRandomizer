@@ -3711,7 +3711,7 @@ e_dmg = {"default": 0, "shuffled": 1, "random": 2}
 rb_mode = {"none": 0, "mapcompass": 1, "dungeon": 2}
 # algorithm:
 algo_mode = {"balanced": 0, "equitable": 1, "vanilla_fill": 2, "dungeon_only": 3, "district": 4, 'major_only': 5}
-boss_mode = {"none": 0, "simple": 1, "full": 2, "chaos": 3, 'random': 3, 'unique': 4}
+boss_mode = {"none": 0, "simple": 1, "full": 2, "chaos": 3, 'random': 3, 'unique': 4, 'moldorm': 5}
 
 # byte 10: settings_version
 
