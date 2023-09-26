@@ -96,15 +96,15 @@ class InitialSram:
             equip[0x359] = 1
 
         if startingstate.has('L5 Bombs', player) or startingstate.has('L5 Cane', player) or startingstate.has('L5 Net', player):
-            equip[0x3C3] = 5
+            self.set_starting_weapon(5)
         elif startingstate.has('L4 Bombs', player) or startingstate.has('L4 Cane', player) or startingstate.has('L4 Net', player):
-            equip[0x3C3] = 4
+            self.set_starting_weapon(4)
         elif startingstate.has('L3 Bombs', player) or startingstate.has('L3 Cane', player) or startingstate.has('L3 Net', player):
-            equip[0x3C3] = 3
+            self.set_starting_weapon(3)
         elif startingstate.has('L2 Bombs', player) or startingstate.has('L2 Cane', player) or startingstate.has('L2 Net', player):
-            equip[0x3C3] = 2
+            self.set_starting_weapon(2)
         elif startingstate.has('L1 Bombs', player) or startingstate.has('L1 Cane', player) or world.swords[player] == 'cane' or startingstate.has('L1 Net', player):
-            equip[0x3C3] = 1
+            self.set_starting_weapon(1)
         if startingstate.has('L1 Cane', player) or startingstate.has('L2 Cane', player) or startingstate.has('L3 Cane', player) or startingstate.has('L4 Cane', player) or startingstate.has('L5 Cane', player):
             if world.swords[player] == 'byrna':
                 equip[0x351] = 1
@@ -251,6 +251,9 @@ class InitialSram:
             raise ValueError("Starting rupees must be between 0 and 9999")
         self._initial_sram_bytes[0x362] = self._initial_sram_bytes[0x360] = rupees & 0xFF
         self._initial_sram_bytes[0x363] = self._initial_sram_bytes[0x361] = rupees >> 8
+
+    def set_starting_weapon(self, level: int):
+        self._set_value(0x3C3, level)
 
     def set_progress_indicator(self, indicator: int):
         self._set_value(0x3C5, indicator)
