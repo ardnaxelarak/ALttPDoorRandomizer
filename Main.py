@@ -65,7 +65,7 @@ def get_random_ganon_item(swordmode):
       "somaria",
       "byrna",
     ]
-    if swordmode == "swordless":
+    if swordmode in ["swordless", "swordless_b"]:
         options.remove("bombos")
         options.remove("ether")
         options.remove("quake")

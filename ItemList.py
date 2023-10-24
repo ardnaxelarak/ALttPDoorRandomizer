@@ -357,7 +357,7 @@ def generate_itempool(world, player):
             possible_weapons = []
             for item in pool:
                 if item in ['Progressive Sword', 'Fighter Sword', 'Master Sword', 'Tempered Sword', 'Golden Sword']:
-                    if not found_sword and world.swords[player] != 'swordless':
+                    if not found_sword and world.swords[player] not in ['swordless', 'swordless_b']:
                         found_sword = True
                         possible_weapons.append(item)
                 if item in ['Progressive Cane', 'Progressive Net']:
@@ -1162,7 +1162,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     else:
         pool.extend(['Bow', 'Silver Arrows'])
 
-    if swords == 'swordless':
+    if swords in ['swordless', 'swordless_b']:
         pool.extend(diff.swordless)
     elif swords == 'bombs':
         pool.extend(diff.bombs_only)
@@ -1572,7 +1572,7 @@ def make_customizer_pool(world, player):
         if 'Bomb Upgrade (+10)' not in pool:
             missing_items.append('Bomb Upgrade (+10)')
 
-    if world.swords[player] != 'swordless':
+    if world.swords[player] not in ['swordless', 'swordless_b']:
         beam_swords = {'Master Sword', 'Tempered Sword', 'Golden Sword'}
         sword_count = sum(1 for i in pool if i in 'Progressive Sword')
         sword_count = 2 if next((i for i in pool if i in beam_swords), None) is not None else sword_count
