@@ -3,6 +3,7 @@ import collections
 import itertools
 import logging
 import math
+from collections import Counter
 from contextlib import suppress
 
 from BaseClasses import CollectionState, FillError, LocationType
@@ -71,13 +72,13 @@ def fill_dungeons_restrictive(world, shuffled_locations):
 
 def fill_restrictive(world, base_state, locations, itempool, key_pool=None, single_player_placement=False,
                      vanilla=False):
-    def sweep_from_pool(placing_item=None):
+    def sweep_from_pool(placing_items=None):
         new_state = base_state.copy()
         for item in itempool:
             new_state.collect(item, True)
-        new_state.placing_item = placing_item
+        new_state.placing_items = placing_items
         new_state.sweep_for_events()
-        new_state.placing_item = None
+        new_state.placing_items = None
         return new_state
 
     unplaced_items = []
@@ -94,7 +95,7 @@ def fill_restrictive(world, base_state, locations, itempool, key_pool=None, sing
         while any(player_items.values()) and locations:
             items_to_place = [[itempool.remove(items[-1]), items.pop()][-1] for items in player_items.values() if items]
 
-            maximum_exploration_state = sweep_from_pool(placing_item=items_to_place[0])
+            maximum_exploration_state = sweep_from_pool(placing_items=items_to_place)
             has_beaten_game = world.has_beaten_game(maximum_exploration_state)
 
             for item_to_place in items_to_place:
@@ -173,6 +174,9 @@ def valid_key_placement(item, location, key_pool, collection_state, world):
     dungeon = location.parent_region.dungeon
     if dungeon:
         if dungeon.name not in item.name and (dungeon.name != 'Hyrule Castle' or 'Escape' not in item.name):
+            return True
+        # Small key and big key in Swamp and Hera are placed without logic
+        if world.logic[item.player] == 'hybridglitches' and dungeon.name in ['Tower of Hera', 'Swamp Palace'] and dungeon.name in item.name:
             return True
         key_logic = world.key_logic[item.player][dungeon.name]
         unplaced_keys = len([x for x in key_pool if x.name == key_logic.small_key_name and x.player == item.player])
@@ -419,7 +423,7 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
     # fill in gtower locations with trash first
     for player in range(1, world.players + 1):
         if (not gftower_trash or not world.ganonstower_vanilla[player]
-           or world.logic[player] in ['owglitches', 'nologic']):
+           or world.logic[player] in ['owglitches', 'hybridglitches', 'nologic']):
             continue
         gt_count, total_count = calc_trash_locations(world, player)
         scale_factor = .75 * (world.crystals_needed_for_gt[player] / 7)
@@ -734,24 +738,44 @@ def balance_multiworld_progression(world):
     checked_locations = set()
     unchecked_locations = set(world.get_locations())
 
+    total_locations_count = Counter(location.player for location in world.get_locations() if not location.locked and not location.forced_item)
+
     reachable_locations_count = {}
     for player in range(1, world.players + 1):
         reachable_locations_count[player] = 0
+    sphere_num = 1
+    moved_item_count = 0
 
     def get_sphere_locations(sphere_state, locations):
         sphere_state.sweep_for_events(key_only=True, locations=locations)
         return {loc for loc in locations if sphere_state.can_reach(loc) and sphere_state.not_flooding_a_key(sphere_state.world, loc)}
 
+    def item_percentage(player, num):
+        return num / total_locations_count[player]
+
     while True:
         sphere_locations = get_sphere_locations(state, unchecked_locations)
         for location in sphere_locations:
             unchecked_locations.remove(location)
-            reachable_locations_count[location.player] += 1
+            if not location.locked and not location.forced_item:
+                reachable_locations_count[location.player] += 1
+
+        logging.debug(f'Sphere {sphere_num}')
+        logging.debug(f'Reachable locations: {reachable_locations_count}')
+        debug_percentages = {
+            player: round(item_percentage(player, num), 2)
+            for player, num in reachable_locations_count.items()
+        }
+        logging.debug(f'Reachable percentages: {debug_percentages}\n')
+        sphere_num += 1
 
         if checked_locations:
-            threshold = max(reachable_locations_count.values()) - 20
+            max_percentage = max(map(lambda p: item_percentage(p, reachable_locations_count[p]), reachable_locations_count))
+            threshold_percentages = {player: max_percentage * .8 for player in range(1, world.players + 1)}
+            logging.debug(f'Thresholds: {threshold_percentages}')
 
-            balancing_players = {player for player, reachables in reachable_locations_count.items() if reachables < threshold}
+            balancing_players = {player for player, reachables in reachable_locations_count.items()
+                                 if item_percentage(player, reachables) < threshold_percentages[player]}
             if balancing_players:
                 balancing_state = state.copy()
                 balancing_unchecked_locations = unchecked_locations.copy()
@@ -769,7 +793,8 @@ def balance_multiworld_progression(world):
                     for location in balancing_sphere:
                         balancing_unchecked_locations.remove(location)
                         balancing_reachables[location.player] += 1
-                    if world.has_beaten_game(balancing_state) or all(reachables >= threshold for reachables in balancing_reachables.values()):
+                    if world.has_beaten_game(balancing_state) or all(item_percentage(player, reachables) >= threshold_percentages[player]
+                                                                     for player, reachables in balancing_reachables.items()):
                         break
                     elif not balancing_sphere:
                         raise RuntimeError('Not all required items reachable. Something went terribly wrong here.')
@@ -796,7 +821,8 @@ def balance_multiworld_progression(world):
                                 items_to_replace.append(testing)
                         else:
                             reduced_sphere = get_sphere_locations(reducing_state, locations_to_test)
-                            if reachable_locations_count[player] + len(reduced_sphere) < threshold:
+                            p = item_percentage(player, reachable_locations_count[player] + len(reduced_sphere))
+                            if p < threshold_percentages[player]:
                                 items_to_replace.append(testing)
 
                 replaced_items = False
@@ -821,6 +847,7 @@ def balance_multiworld_progression(world):
                             new_location.event, old_location.event = True, False
                             logging.debug(f"Progression balancing moved {new_location.item} to {new_location}, "
                                           f"displacing {old_location.item} into {old_location}")
+                            moved_item_count += 1
                             state.collect(new_location.item, True, new_location)
                             replaced_items = True
                             break
@@ -828,6 +855,7 @@ def balance_multiworld_progression(world):
                         logging.warning(f"Could not Progression Balance {old_location.item}")
 
                 if replaced_items:
+                    logging.debug(f'Moved {moved_item_count} items so far\n')
                     unlocked = {fresh for player in balancing_players for fresh in unlocked_locations[player]}
                     for location in get_sphere_locations(state, unlocked):
                         unchecked_locations.remove(location)
@@ -842,7 +870,8 @@ def balance_multiworld_progression(world):
         if world.has_beaten_game(state):
             break
         elif not sphere_locations:
-            raise RuntimeError('Not all required items reachable. Something went terribly wrong here.')
+            logging.warning('Progression Balancing ran out of paths.')
+            break
 
 
 def check_shop_swap(l, make_item_free=False):
@@ -1007,6 +1036,7 @@ def balance_money_progression(world):
                     logger.debug(f'Money balancing needed: Player {target_player} short {difference}')
                 else:
                     difference = 0
+                    target_player = next(p for p in solvent)
                 while difference > 0:
                     swap_targets = [x for x in unchecked_locations if x not in sphere_locations and x.item.name.startswith('Rupees') and x.item.player == target_player]
                     if len(swap_targets) == 0:

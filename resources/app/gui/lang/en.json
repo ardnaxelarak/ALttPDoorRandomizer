@@ -4,6 +4,8 @@
     "adjust.quickswap": "L/R Quickswapping",
     "adjust.reduce_flashing": "Reduce Flashing",
     "adjust.shuffle_sfx": "Shuffle Sound Effects",
+    "adjust.shuffle_sfxinstruments": "Shuffle Sound Instruments",
+    "adjust.shuffle_songinstruments": "Shuffle Song Instruments",
     "adjust.msu_resume": "MSU Resume",
 
     "adjust.heartcolor": "Heart Color",
@@ -147,8 +149,7 @@
     "randomizer.overworld.crossed.none": "None",
     "randomizer.overworld.crossed.grouped": "Grouped",
     "randomizer.overworld.crossed.polar": "Polar",
-    "randomizer.overworld.crossed.limited": "Limited",
-    "randomizer.overworld.crossed.chaos": "Chaos",
+    "randomizer.overworld.crossed.unrestricted": "Unrestricted",
 
     "randomizer.overworld.keepsimilar": "Keep Similar Edges Together",
     
@@ -180,6 +181,7 @@
     "randomizer.entrance.entranceshuffle.restricted": "Restricted",
     "randomizer.entrance.entranceshuffle.full": "Full",
     "randomizer.entrance.entranceshuffle.lean": "Lean",
+    "randomizer.entrance.entranceshuffle.district": "District",
     "randomizer.entrance.entranceshuffle.swapped": "Swapped",
     "randomizer.entrance.entranceshuffle.crossed": "Crossed",
     "randomizer.entrance.entranceshuffle.insanity": "Insanity",
@@ -190,8 +192,9 @@
     "randomizer.gameoptions.quickswap": "L/R Quickswapping",
     "randomizer.gameoptions.reduce_flashing": "Reduce Flashing",
     "randomizer.gameoptions.shuffle_sfx": "Shuffle Sound Effects",
+    "randomizer.gameoptions.shuffle_sfxinstruments": "Shuffle Sound Instruments",
+    "randomizer.gameoptions.shuffle_songinstruments": "Shuffle Song Instruments",
     "randomizer.gameoptions.msu_resume": "MSU Resume",
-    "randomizer.gameoptions.collection_rate": "Display Collection Rate",
 
     "randomizer.gameoptions.heartcolor": "Heart Color",
     "randomizer.gameoptions.heartcolor.red": "Red",
@@ -235,10 +238,10 @@
     "randomizer.generation.calcplaythrough": "Calculate Playthrough",
     "randomizer.generation.print_custom_yaml": "Print Customizer File",
 
-    "randomizer.generation.saveonexit": "Save Settings on Exit",
-    "randomizer.generation.saveonexit.ask": "Ask Me",
-    "randomizer.generation.saveonexit.always": "Always",
-    "randomizer.generation.saveonexit.never": "Never",
+    "randomizer.generation.settingsonload": "Settings On Load",
+    "randomizer.generation.settingsonload.default": "Default",
+    "randomizer.generation.settingsonload.saved": "Saved",
+    "randomizer.generation.settingsonload.lastused": "Last Used",
 
     "randomizer.generation.rom": "Base Rom: ",
     "randomizer.generation.rom.button": "Select Rom",
@@ -249,6 +252,7 @@
     "randomizer.item.race": "Generate \"Race\" ROM",
     "randomizer.item.retro": "Retro mode",
     "randomizer.item.pseudoboots": "Pseudoboots",
+    "randomizer.item.collection_rate": "Display Collection Rate",
 
     "randomizer.item.worldstate": "World State",
     "randomizer.item.worldstate.standard": "Standard",
@@ -261,6 +265,7 @@
     "randomizer.item.logiclevel.noglitches": "No Glitches",
     "randomizer.item.logiclevel.minorglitches": "Minor Glitches",
     "randomizer.item.logiclevel.owglitches": "Overworld Glitches",
+    "randomizer.item.logiclevel.hybridglitches": "Hybrid Major Glitches",
     "randomizer.item.logiclevel.nologic": "No Logic",
 
     "randomizer.item.goal": "Goal",
@@ -408,11 +413,13 @@
     "bottom.content.names": "Player names",
     "bottom.content.seed": "Seed #",
     "bottom.content.generationcount": "Count",
-    "bottom.content.go": "Generate Patched Rom",
+    "bottom.content.go": "Generate Game",
+    "bottom.content.exportyaml": "Export Yaml",
     "bottom.content.dialog.error": "Error while creating seed",
     "bottom.content.dialog.success": "Success",
     "bottom.content.dialog.success.message": "Rom created successfully.",
-    "bottom.content.outputdir": "Open Output Directory",
+    "bottom.content.savesettings": "Save Settings",
+    "bottom.content.outputdir": "Select Destination",
     "bottom.content.docs": "Open Documentation"
   }
 }

@@ -34,7 +34,9 @@ def parse_cli(argv, no_defaults=False):
     parser.add_argument('--settingsfile', help="input json file of settings", type=str)
     parser.add_argument('--multi', default=defval(settings["multi"]), type=lambda value: min(max(int(value), 1), 255))
     parser.add_argument('--customizer', help='input yaml file for customizations', type=str)
-    parser.add_argument('--print_custom_yaml', help='print example yaml for current settings',
+    parser.add_argument('--print_template_yaml', help='print example yaml for current settings',
+                        default=False, action="store_true")
+    parser.add_argument('--print_custom_yaml', help='print example plando yaml for current settings and placements',
                         default=False, action="store_true")
     parser.add_argument('--mystery', dest="mystery", default=False, action="store_true")
 
@@ -94,6 +96,7 @@ def parse_cli(argv, no_defaults=False):
     parser.add_argument('--teams', default=defval(1), type=lambda value: max(int(value), 1))
     parser.add_argument('--settingsfile', dest="filename", help="input json file of settings", type=str)
     parser.add_argument('--customizer', dest="customizer", help='input yaml file for customizations', type=str)
+    parser.add_argument('--print_template_yaml', dest="print_template_yaml", default=False, action="store_true")
     parser.add_argument('--print_custom_yaml', dest="print_custom_yaml", default=False, action="store_true")
 
     if player_num:
@@ -145,9 +148,9 @@ def parse_cli(argv, no_defaults=False):
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
-                         'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
-                         'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
-                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm', 'door_self_loops']:
+                         'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx', 'shuffle_sfxinstruments',
+                         'shuffle_songinstruments', 'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
+                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm', 'door_self_loops', 'aga_randomness']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -231,13 +234,14 @@ def parse_settings():
         "intensity": 3,
         "door_type_mode": "original",
         "trap_door_mode": "optional",
-        "key_logic_algorithm": "default",
+        "key_logic_algorithm": "partial",
         "decoupledoors": False,
         "door_self_loops": False,
         "experimental": False,
         "dungeon_counters": "default",
         "mixed_travel": "prevent",
         "standardize_palettes": "standardize",
+        'aga_randomness': True,
 
         "triforce_pool": 0,
         "triforce_goal": 0,
@@ -264,6 +268,8 @@ def parse_settings():
         "uw_palettes": "default",
         "reduce_flashing": False,
         "shuffle_sfx": False,
+        "shuffle_sfxinstruments": False,
+        "shuffle_songinstruments": False,
         "msu_resume": False,
         "collection_rate": False,
 
@@ -360,7 +366,7 @@ def parse_settings():
         },
         "randomSprite": False,
         "outputpath": os.path.join("."),
-        "saveonexit": "ask",
+        "settingsonload": "saved",
         "outputname": "",
         "startinventoryarray": {},
         "notes": ""
@@ -372,6 +378,12 @@ def parse_settings():
     # read saved settings file if it exists and set these
     settings_path = os.path.join(".", "resources", "user", "settings.json")
     settings = apply_settings_file(settings, settings_path)
+    if settings["settingsonload"] == "saved":
+        settings_path = os.path.join(".", "resources", "user", "saved.json")
+        settings = apply_settings_file(settings, settings_path)
+    elif settings["settingsonload"] == "lastused":
+        settings_path = os.path.join(".", "resources", "user", "last.json")
+        settings = apply_settings_file(settings, settings_path)
     return settings
 
 # Priority fallback is:

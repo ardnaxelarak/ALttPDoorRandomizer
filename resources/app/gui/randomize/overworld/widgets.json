@@ -17,8 +17,7 @@
         "none",
         "grouped",
         "polar",
-        "limited",
-        "chaos"
+        "unrestricted"
       ]
     },
     "mixed": {

@@ -129,11 +129,11 @@ def create_item_pool_config(world):
             groups = LocationGroup('Major').locs(init_set)
             if world.bigkeyshuffle[player]:
                 groups.locations.extend(mode_grouping['Big Keys'])
-                if world.dropshuffle[player] != 'none':
+                if world.dropshuffle[player]:
                     groups.locations.extend(mode_grouping['Big Key Drops'])
             if world.keyshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Small Keys'])
-                if world.dropshuffle[player] != 'none':
+                if world.dropshuffle[player]:
                     groups.locations.extend(mode_grouping['Key Drops'])
                 if world.pottery[player] not in ['none', 'cave']:
                     groups.locations.extend(mode_grouping['Pot Keys'])

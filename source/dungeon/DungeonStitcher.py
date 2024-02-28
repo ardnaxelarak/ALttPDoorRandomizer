@@ -72,11 +72,13 @@ def generate_dungeon_find_proposal(builder, entrance_region_names, split_dungeon
     entrance_regions = [x for x in entrance_regions if x not in excluded.keys()]
     doors_to_connect, idx = {}, 0
     all_regions = set()
+    bk_special = False
     for sector in builder.sectors:
         for door in sector.outstanding_doors:
             doors_to_connect[door.name] = door, idx
             idx += 1
         all_regions.update(sector.regions)
+        bk_special |= check_for_special(sector.regions)
     finished = False
     # flag if standard and this is hyrule castle
     paths = determine_paths_for_dungeon(world, player, all_regions, name)
@@ -95,9 +97,9 @@ def generate_dungeon_find_proposal(builder, entrance_region_names, split_dungeon
         if hash_code not in hash_code_set:
             hash_code_set.add(hash_code)
             explored_state = explore_proposal(name, entrance_regions, all_regions, proposed_map, doors_to_connect,
-                                              world, player)
+                                              bk_special, world, player)
             if check_valid(name, explored_state, proposed_map, doors_to_connect, all_regions,
-                           paths, entrance_regions, world, player):
+                           paths, entrance_regions, bk_special, world, player):
                 finished = True
             else:
                 proposed_map, hash_code = modify_proposal(proposed_map, explored_state, doors_to_connect,
@@ -229,21 +231,24 @@ def modify_proposal(proposed_map, explored_state, doors_to_connect, hash_code_se
     return proposed_map, hash_code
 
 
-def explore_proposal(name, entrance_regions, all_regions, proposed_map, valid_doors, world, player):
+def explore_proposal(name, entrance_regions, all_regions, proposed_map, valid_doors, bk_special, world, player):
     start = ExplorationState(dungeon=name)
+    bk_relevant = (world.door_type_mode[player] == 'original' and not world.bigkeyshuffle[player]) or bk_special
+    start.big_key_special = bk_special
     original_state = extend_reachable_state_lenient(entrance_regions, start, proposed_map,
-                                                    all_regions, valid_doors, world, player)
+                                                    all_regions, valid_doors, bk_relevant, world, player)
     return original_state
 
 
 def check_valid(name, exploration_state, proposed_map, doors_to_connect, all_regions,
-                paths, entrance_regions, world, player):
+                paths, entrance_regions, bk_special, world, player):
     all_visited = set()
     all_visited.update(exploration_state.visited_blue)
     all_visited.update(exploration_state.visited_orange)
     if len(all_regions.difference(all_visited)) > 0:
         return False
-    if not valid_paths(name, paths, entrance_regions, doors_to_connect, all_regions, proposed_map, world, player):
+    if not valid_paths(name, paths, entrance_regions, doors_to_connect, all_regions, proposed_map,
+                       bk_special, world, player):
         return False
     return True
 
@@ -266,7 +271,7 @@ def check_for_special(regions):
     return False
 
 
-def valid_paths(name, paths, entrance_regions, valid_doors, all_regions, proposed_map, world, player):
+def valid_paths(name, paths, entrance_regions, valid_doors, all_regions, proposed_map, bk_special, world, player):
     for path in paths:
         if type(path) is tuple:
             target = path[1]
@@ -278,12 +283,13 @@ def valid_paths(name, paths, entrance_regions, valid_doors, all_regions, propose
         else:
             target = path
             start_regions = entrance_regions
-        if not valid_path(name, start_regions, target, valid_doors, proposed_map, all_regions, world, player):
+        if not valid_path(name, start_regions, target, valid_doors, proposed_map, all_regions,
+                          bk_special, world, player):
             return False
     return True
 
 
-def valid_path(name, starting_regions, target, valid_doors, proposed_map, all_regions, world, player):
+def valid_path(name, starting_regions, target, valid_doors, proposed_map, all_regions, bk_special, world, player):
     target_regions = set()
     if type(target) is not list:
         for region in all_regions:
@@ -296,8 +302,10 @@ def valid_path(name, starting_regions, target, valid_doors, proposed_map, all_re
                 target_regions.add(region)
 
     start = ExplorationState(dungeon=name)
+    bk_relevant = (world.door_type_mode[player] == 'original' and not world.bigkeyshuffle[player]) or bk_special
+    start.big_key_special = bk_special
     original_state = extend_reachable_state_lenient(starting_regions, start, proposed_map, all_regions,
-                                                    valid_doors, world, player)
+                                                    valid_doors, bk_relevant, world, player)
 
     for exp_door in original_state.unattached_doors:
         if not exp_door.door.blocked or exp_door.door.trapFlag != 0:
@@ -531,7 +539,7 @@ class ExplorationState(object):
         self.crystal = exp_door.crystal
         return exp_door
 
-    def visit_region(self, region, key_region=None, key_checks=False, bk_flag=False):
+    def visit_region(self, region, key_region=None, key_checks=False, bk_relevant=False):
         if region.type != RegionType.Dungeon:
             self.crystal = CrystalBarrier.Orange
         if self.crystal == CrystalBarrier.Either:
@@ -552,8 +560,14 @@ class ExplorationState(object):
                         self.ttl_locations += 1
                 if location not in self.found_locations:
                     self.found_locations.append(location)
-                    if not bk_flag:
-                        self.bk_found.add(location)
+                    if bk_relevant:
+                        if self.big_key_special:
+                            if special_big_key_found(self):
+                                self.bk_found.add(location)
+                                self.re_add_big_key_doors()
+                        else:
+                            self.bk_found.add(location)
+                            self.re_add_big_key_doors()
                 if location.name in dungeon_events and location.name not in self.events:
                     if self.flooded_key_check(location):
                         self.perform_event(location.name, key_region)
@@ -573,6 +587,14 @@ class ExplorationState(object):
             if l.name == location_name:
                 return True
         return False
+
+    def re_add_big_key_doors(self):
+        self.big_key_opened = True
+        queue = collections.deque(self.big_doors)
+        while len(queue) > 0:
+            exp_door = queue.popleft()
+            self.avail_doors.append(exp_door)
+            self.big_doors.remove(exp_door)
 
     def perform_event(self, location_name, key_region):
         self.events.add(location_name)
@@ -640,7 +662,7 @@ class ExplorationState(object):
                     self.append_door_to_list(door, self.avail_doors, flag)
 
     # same as above but traps are ignored, and flag is not used
-    def add_all_doors_check_proposed_2(self, region, proposed_map, valid_doors, world, player):
+    def add_all_doors_check_proposed_2(self, region, proposed_map, valid_doors, bk_relevant, world, player):
         for door in get_doors(world, region, player):
             if door in proposed_map and door.name in valid_doors:
                 self.visited_doors.add(door)
@@ -654,14 +676,18 @@ class ExplorationState(object):
                         other = self.find_door_in_list(door, self.unattached_doors)
                         if self.crystal != other.crystal:
                             other.crystal = CrystalBarrier.Either
-                elif door.req_event is not None and door.req_event not in self.events and not self.in_door_list(door,
-                                                                                                                self.event_doors):
+                elif (door.req_event is not None and door.req_event not in self.events
+                      and not self.in_door_list(door, self.event_doors)):
                     self.append_door_to_list(door, self.event_doors)
+                elif (bk_relevant and (door.bigKey or door.name in get_special_big_key_doors(world, player))
+                                       and not self.big_key_opened):
+                    if not self.in_door_list(door, self.big_doors):
+                        self.append_door_to_list(door, self.big_doors)
                 elif not self.in_door_list(door, self.avail_doors):
                     self.append_door_to_list(door, self.avail_doors)
 
     # same as above but traps are checked for
-    def add_all_doors_check_proposed_3(self, region, proposed_map, valid_doors, world, player):
+    def add_all_doors_check_proposed_3(self, region, proposed_map, valid_doors, bk_relevant, world, player):
         for door in get_doors(world, region, player):
             if door in proposed_map and door.name in valid_doors:
                 self.visited_doors.add(door)
@@ -675,9 +701,13 @@ class ExplorationState(object):
                         other = self.find_door_in_list(door, self.unattached_doors)
                         if self.crystal != other.crystal:
                             other.crystal = CrystalBarrier.Either
-                elif door.req_event is not None and door.req_event not in self.events and not self.in_door_list(door,
-                                                                                                                self.event_doors):
+                elif (door.req_event is not None and door.req_event not in self.events
+                      and not self.in_door_list(door, self.event_doors)):
                     self.append_door_to_list(door, self.event_doors)
+                elif (bk_relevant and (door.bigKey or door.name in get_special_big_key_doors(world, player))
+                      and not self.big_key_opened):
+                    if not self.in_door_list(door, self.big_doors):
+                        self.append_door_to_list(door, self.big_doors)
                 elif not self.in_door_list(door, self.avail_doors):
                     self.append_door_to_list(door, self.avail_doors)
 
@@ -863,16 +893,22 @@ def extend_reachable_state_improved(search_regions, state, proposed_map, all_reg
     return local_state
 
 
-def extend_reachable_state_lenient(search_regions, state, proposed_map, all_regions, valid_doors, world, player):
+# bk_relevant means the big key doors need to be checks
+def extend_reachable_state_lenient(search_regions, state, proposed_map, all_regions, valid_doors, bk_relevant,
+                                   world, player):
     local_state = state.copy()
     for region in search_regions:
-        local_state.visit_region(region)
+        local_state.visit_region(region, bk_relevant=bk_relevant)
         if world.trap_door_mode[player] == 'vanilla':
-            local_state.add_all_doors_check_proposed_3(region, proposed_map, valid_doors, world, player)
+            local_state.add_all_doors_check_proposed_3(region, proposed_map, valid_doors, bk_relevant, world, player)
         else:
-            local_state.add_all_doors_check_proposed_2(region, proposed_map, valid_doors, world, player)
+            local_state.add_all_doors_check_proposed_2(region, proposed_map, valid_doors, bk_relevant, world, player)
     while len(local_state.avail_doors) > 0:
         explorable_door = local_state.next_avail_door()
+        if explorable_door.door.bigKey:
+            if bk_relevant and (not special_big_key_found(local_state) if local_state.big_key_special
+                                else local_state.count_locations_exclude_specials(world, player) == 0):
+                continue
         if explorable_door.door in proposed_map:
             connect_region = world.get_entrance(proposed_map[explorable_door.door].name, player).parent_region
         else:
@@ -880,11 +916,13 @@ def extend_reachable_state_lenient(search_regions, state, proposed_map, all_regi
         if connect_region is not None:
             if (valid_region_to_explore_in_regions(connect_region, all_regions, world, player)
                and not local_state.visited(connect_region)):
-                local_state.visit_region(connect_region)
+                local_state.visit_region(connect_region, bk_relevant=bk_relevant)
                 if world.trap_door_mode[player] == 'vanilla':
-                    local_state.add_all_doors_check_proposed_3(connect_region, proposed_map, valid_doors, world, player)
+                    local_state.add_all_doors_check_proposed_3(connect_region, proposed_map, valid_doors,
+                                                               bk_relevant, world, player)
                 else:
-                    local_state.add_all_doors_check_proposed_2(connect_region, proposed_map, valid_doors, world, player)
+                    local_state.add_all_doors_check_proposed_2(connect_region, proposed_map, valid_doors,
+                                                               bk_relevant, world, player)
     return local_state
 
 

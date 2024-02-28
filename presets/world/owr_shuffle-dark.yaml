@@ -1,0 +1,94 @@
+settings:
+  1:
+    ow_whirlpool: false
+ow-edges:
+  1:
+    two-way:
+      Lost Woods NW: Master Sword Meadow SC
+      Lost Woods EN*: Lumberjack WN*
+      Lost Woods SW*: Lost Woods Pass NW*
+      Lost Woods SC*: Lost Woods Pass NE*
+      Lost Woods SE*: Kakariko Fortune NE*
+      Lumberjack SW*: Mountain Pass NW*
+      West Death Mountain EN*: East Death Mountain WN*
+      West Death Mountain ES*: East Death Mountain WS*
+      East Death Mountain EN*: Death Mountain TR Pegs WN*
+      Mountain Pass SE*: Kakariko Pond NE*
+      Zora Waterfall NE*: Zoras Domain SW*
+      Zora Waterfall SE*: Zora Approach NE*
+      Lost Woods Pass SW*: Kakariko NW*
+      Lost Woods Pass SE*: Kakariko NC*
+      Kakariko Fortune EN*: Kakariko Pond WN*
+      Kakariko Fortune ES*: Kakariko Pond WS*
+      Kakariko Fortune SC*: Kakariko NE*
+      Kakariko Pond EN*: Sanctuary WN*
+      Kakariko Pond ES*: Sanctuary WS*
+      Kakariko Pond SW*: Forgotten Forest NW*
+      Kakariko Pond SE*: Forgotten Forest NE*
+      Sanctuary EC*: Graveyard WC*
+      Graveyard EC*: River Bend WC*
+      River Bend EN*: Potion Shop WN*
+      River Bend EC*: Potion Shop WC*
+      River Bend ES*: Potion Shop WS*
+      River Bend SW*: Wooden Bridge NW*
+      River Bend SC*: Wooden Bridge NC*
+      River Bend SE*: Wooden Bridge NE*
+      Potion Shop EN*: Zora Approach WN*
+      Potion Shop EC*: Zora Approach WC*
+      Kakariko ES*: Blacksmith WS*
+      Kakariko SE*: Kakariko Suburb NE*
+      Forgotten Forest ES: Hyrule Castle WN
+      Hyrule Castle ES*: Sand Dunes WN*
+      Hyrule Castle SW*: Central Bonk Rocks NW*
+      Hyrule Castle SE*: Links House NE*
+      Wooden Bridge SW*: Sand Dunes NW*
+      Eastern Palace SW*: Tree Line NW*
+      Eastern Palace SE*: Eastern Nook NE*
+      Sand Dunes SC*: Stone Bridge NC*
+      Maze Race ES*: Kakariko Suburb WS*
+      Kakariko Suburb ES*: Flute Boy WS*
+      Flute Boy SW*: Flute Boy Approach NW*
+      Flute Boy SC*: Flute Boy Approach NC*
+      Central Bonk Rocks EN*: Links House WN*
+      Central Bonk Rocks EC*: Links House WC*
+      Central Bonk Rocks ES*: Links House WS*
+      Central Bonk Rocks SW*: C Whirlpool NW*
+      Links House SC*: Statues NC*
+      Links House ES*: Stone Bridge WS*
+      Stone Bridge WC: Hobo EC
+      Stone Bridge EN*: Tree Line WN*
+      Stone Bridge EC*: Tree Line WC*
+      Stone Bridge SC*: Lake Hylia NW*
+      Tree Line SC*: Lake Hylia NC*
+      Tree Line SE*: Lake Hylia NE*
+      Desert EC: Desert Pass WC
+      Desert ES: Desert Pass WS
+      Flute Boy Approach EC*: C Whirlpool WC*
+      C Whirlpool EN*: Statues WN*
+      C Whirlpool EC*: Statues WC*
+      C Whirlpool ES*: Statues WS*
+      C Whirlpool SC*: Dam NC*
+      Statues SC*: South Pass NC*
+      Lake Hylia WS*: South Pass ES*
+      Lake Hylia EC*: Octoballoon WC*
+      Lake Hylia ES*: Octoballoon WS*
+      Ice Cave SW*: Octoballoon NW*
+      Ice Cave SE*: Octoballoon NE*
+      Desert Pass EC*: Dam WC*
+      Desert Pass ES*: Dam WS*
+      Dam EC*: South Pass WC*
+ow-whirlpools:
+  1:
+    two-way:
+      Zora Whirlpool: Lake Hylia Whirlpool
+      Kakariko Pond Whirlpool: Octoballoon Whirlpool
+      River Bend Whirlpool: C Whirlpool
+ow-tileflips:
+  1:
+    force_no_flip:
+      - 0x0f
+      - 0x12
+      - 0x15
+      - 0x33
+      - 0x35
+      - 0x3f

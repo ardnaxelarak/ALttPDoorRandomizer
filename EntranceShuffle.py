@@ -814,7 +814,7 @@ def connect_mandatory_exits(world, entrances, caves, must_be_exits, player, must
     # Keeps track of entrances that cannot be used to access each exit / cave
     invalid_cave_connections = defaultdict(set)
 
-    # if world.logic[player] in ['owglitches', 'nologic']:
+    # if world.logic[player] in ['owglitches', 'hybridglitches', 'nologic']:
     #     import OverworldGlitchRules
     #     for entrance in OverworldGlitchRules.get_non_mandatory_exits(world, player):
     #         if entrance in must_be_exits:

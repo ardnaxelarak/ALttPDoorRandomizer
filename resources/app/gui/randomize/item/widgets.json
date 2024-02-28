@@ -2,6 +2,7 @@
   "checkboxes": {
     "hints": { "type": "checkbox" },
     "pseudoboots": { "type": "checkbox" },
+    "collection_rate": {"type":  "checkbox"},
     "race": { "type": "checkbox" }
   },
   "leftItemFrame": {
@@ -20,6 +21,7 @@
         "noglitches",
         "minorglitches",
         "owglitches",
+        "hybridglitches",
         "nologic"
       ]
     },

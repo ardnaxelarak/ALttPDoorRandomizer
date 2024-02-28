@@ -109,6 +109,31 @@ These are now independent of retro mode and have three options: None, Random, an
 
 # Bug Fixes and Notes
 
+* 1.4.0.1v
+  * Key logic: Vanilla key logic fixes. Statically set some HC logic and PoD front door
+* 1.3.0.9v
+  * Ganonhunt: playthrough no longer collects crystals
+  * Vanilla Fill: Uncle weapon is always a sword, medallions for Mire/TR will be vanilla
+  * Customizer: support shufflebosses/shuffleenemies as well as boss_shuffle/enemy_shuffle
+* 1.3.0.8v
+  * No Logic Standard ER: Rain doors aren't blocked if no logic is enabled.
+  * MW Progression Balancing: Change to be percentage based instead of raw count. (80% threshold)
+  * Take anys: Good Bee cave chosen as take any should no longer prevent generation
+  * Money balancing: Fixed generation issue
+  1.2.0.23u
+  * Generation: fix for bunny walk logic taking up too much memory
+  * Key Logic: Partial is now the new default
+* 1.2.0.22u
+  * Flute can't be activated in rain state (except glitched modes) (Thanks codemann!)
+  * ER: Minor fix for Link's House on DM in Insanity (escape cave should not be re-used) 
+  * Logic issues:
+    * Self-locking key not allowed in Sanctuary in standard (typo fixed)
+    * More advanced bunny-walking logic in dungeons (multiple paths considred)
+  * MSU: GTBK song fix for DR (Thanks codemann!)
+* 1.2.0.21u
+  * Fix that should force items needed for leaving Zelda's cell to before the throne room, so S&Q isn't mandatory
+  * Small fix for Tavern Shuffle (thanks Catobat)
+  * Several small generation fixes 
 * 1.2.0.20u
   * New generation feature that allows Spiral Stair to link to themselves (thank Catobat)
   * Added logic for trap doors that could be opened using existing room triggers

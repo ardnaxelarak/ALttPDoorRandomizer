@@ -1,11 +1,11 @@
 {
   "widgets": {
-    "saveonexit": {
+    "settingsonload": {
       "type": "selectbox",
       "options": [
-        "ask",
-        "always",
-        "never"
+        "default",
+        "saved",
+        "lastused"
       ]
     }
   }

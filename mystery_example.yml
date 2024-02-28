@@ -10,8 +10,7 @@
     none: 4
     polar: 1
     grouped: 1
-    limited: 1
-    chaos: 1
+    unrestricted: 1
   overworld_keepsimilar:
     on: 1
     off: 1
@@ -272,5 +271,11 @@
       instant: 0
       half: 0
     shuffle_sfx:
+      on: 1
+      off: 1
+    shuffle_sfxinstruments:
+      on: 1
+      off: 1
+    shuffle_songinstruments:
       on: 1
       off: 1

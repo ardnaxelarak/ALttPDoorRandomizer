@@ -34,22 +34,34 @@ def check_python_version(fish):
     import sys
     version = sys.version_info
     if version.major < 3 or version.minor < 7:
-        messagebox.showinfo("Door Shuffle " + ESVersion, fish.translate("cli","cli","old.python.version") % sys.version)
+        messagebox.showinfo("Overworld Shuffle %s (DR %s)" % (ORVersion, ESVersion), fish.translate("cli","cli","old.python.version") % sys.version)
 
 
+# Save settings to file
+def save_settings(gui, args, filename):
+    user_resources_path = os.path.join(".", "resources", "user")
+    settings_path = os.path.join(user_resources_path)
+    if not os.path.exists(settings_path):
+        os.makedirs(settings_path)
+    output_args = {}
+    settings = ["create_rom", "suppress_rom", "bps", "create_spoiler", "suppress_spoiler",
+                "calc_playthrough", "skip_playthrough", "print_custom_yaml",
+                "settingsonload", "rom", "enemizercli", "outputpath"]
+    if filename == "settings.json":
+        for s in settings:
+            output_args[s] = args[s]
+        for widget in gui.pages["adjust"].content.widgets:
+            output_args["adjust." + widget] = gui.pages["adjust"].content.widgets[widget].storageVar.get()
+    else:
+        for k, v in args.items():
+            if k not in settings and not k.startswith("adjust."):
+                output_args[k] = v
+    with open(os.path.join(settings_path, filename), "w+") as f:
+        f.write(json.dumps(output_args, indent=2))
+    os.chmod(os.path.join(settings_path, filename),0o755)
+
+    
 def guiMain(args=None):
-    # Save settings to file
-    def save_settings(args):
-        user_resources_path = os.path.join(".", "resources", "user")
-        settings_path = os.path.join(user_resources_path)
-        if not os.path.exists(settings_path):
-            os.makedirs(settings_path)
-        for widget in self.pages["adjust"].content.widgets:
-            args["adjust." + widget] = self.pages["adjust"].content.widgets[widget].storageVar.get()
-        with open(os.path.join(settings_path, "settings.json"), "w+") as f:
-            f.write(json.dumps(args, indent=2))
-        os.chmod(os.path.join(settings_path, "settings.json"),0o755)
-
     # Save settings from GUI
     def save_settings_from_gui(confirm):
         gui_args = vars(create_guiargs(self))
@@ -57,23 +69,14 @@ def guiMain(args=None):
             gui_args['sprite'] = 'random'
         elif gui_args['sprite']:
             gui_args['sprite'] = gui_args['sprite'].name
-        save_settings(gui_args)
+        save_settings(self, gui_args, "saved.json")
+        save_settings(self, gui_args, "settings.json")
         if confirm:
             messagebox.showinfo("Overworld Shuffle " + ORVersion, "Settings saved from GUI.")
 
     # routine for exiting the app
     def guiExit():
-        skip_exit = False
-        if self.settings['saveonexit'] == 'ask':
-            dosave = messagebox.askyesnocancel("Overworld Shuffle " + ORVersion, "Save settings before exit?")
-            if dosave:
-                save_settings_from_gui(True)
-            if dosave is None:
-                skip_exit = True
-        elif self.settings['saveonexit'] == 'always':
-            save_settings_from_gui(False)
-        if not skip_exit:
-            sys.exit(0)
+        sys.exit(0)
 
     # make main window
     # add program title & version number
@@ -172,8 +175,8 @@ def guiMain(args=None):
     self.pages["bottom"].pages = {}
     self.pages["bottom"].pages["content"] = bottom_frame(self, self, None)
     ## Save Settings Button
-    savesettingsButton = Button(self.pages["bottom"].pages["content"], text='Save Settings to File', command=lambda: save_settings_from_gui(True))
-    savesettingsButton.pack(side=RIGHT)
+    savesettingsButton = self.pages["bottom"].pages["content"].widgets["savesettings"].pieces["button"]
+    savesettingsButton.configure(command=lambda: save_settings_from_gui(True))
 
     # set bottom frame to main window
     self.pages["bottom"].pages["content"].pack(side=BOTTOM, fill=X, padx=5, pady=5)

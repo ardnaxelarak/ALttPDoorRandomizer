@@ -159,9 +159,9 @@ With OW Layout Shuffle, this allows land and water edges to be connected.
 
 This allows OW connections to be shuffled cross-world. There are 2 main methodologies of Crossed OWR: 
 
-- Grouped and Polar both are guaranteed to result in two separated planes of tiles, similar to that of vanilla. This means you cannot simply walk around and be able to visit all the tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a tile that was previously unreachable
+- `Grouped` and `Polar` both are guaranteed to result in two separated planes of tiles, similar to that of vanilla. This means you cannot simply walk around and be able to visit all the tiles. To navigate to the other plane, you have the following methods: 1) Normal portals 2) Mirroring on DW tiles 3) Fluting to a tile that was previously unreachable
 
-- Limited and Chaos are not bound to follow a two-plane framework. This means that it could be possible to travel on foot to every tile without entering a normal portal.
+- `Unrestricted` is not bound to follow a two-plane framework. This means that it could be possible to travel on foot to every tile without entering a normal portal.
 
 See each option to get more details on the differences.
 
@@ -171,31 +171,23 @@ Transitions will remain same-world.
 
 ### Grouped
 
-This option shuffles connections cross-world in the same manner as Tile Flip (Mixed), the connections coming in and going out of a Tile Group (see `Terminology` section above) are crossed (ie. meaning it is impossible to take a different path to a tile and end up in the opposite world, unlike Limited and Chaos). This is considered the simplest way to play Crossed OWR.
+This option shuffles connections cross-world in the same manner as Tile Flip (Mixed), the connections coming in and going out of a Tile Group (see `Terminology` section above) are crossed (ie. meaning it is impossible to take a different path to a tile and end up in the opposite world, unlike `Unrestricted`). This is considered the simplest way to play Crossed OWR.
 
 ### Polar
 
 Only effective if Tile Flip (Mixed) is enabled. Polar follows the same principle as Grouped, except that it preserves the original/vanilla connections even when tiles are flipped/mixed. This results in a completely vanilla overworld, except that some tiles will transform Link to a Bunny. Even though these tiles give the appearance of your normal LW tile, due to how Tile Flip works, those LW tiles give DW properties (such as bunnying, ability to mirror, and prevents flute usage). This offers an interesting twist on Mixed where you have a pre-conditioned knowledge of the terrain you will encounter, but not necessarily be able to do what you need to do there, due to bunny state. (see `Tile Flip / Mixed` section for more details)
 
-### Limited
+### Unrestricted
 
-Every transition is independently a candidate to be chosen as a cross-world connection, however only 9 total transitions become crossed (to/from each world). This option abides by the `Keep Similar Edges Together` option and will guarantee same effect on all edges in a Similar Edge group if enabled. If a Similar Edge group is chosen from the pool of candidates, it only counts as one portal, not multiple.
+Every transition is independently a candidate to be chosen as a cross-world connection. This option abides by the `Keep Similar Edges Together` option and will guarantee same effect on all edges in a Similar Edge group if enabled. If a Similar Edge group is chosen from the pool of candidates, it only counts as one portal, not multiple. Each transition has an equal 50/50 chance of being a crossed connection.
 
-Note: Only parallel connections (a connection that also exists in the opposite world) are considered for cross-world connections, which means that the same connection in the opposite world will also connect cross-world.
-
-Note: If Whirlpool Shuffle is enabled, those connections can be cross-world but do not count towards the 9 transitions that are crossed.
-
-Motive: Why 9 connections? To imitate the effect of the 9 existing standard portals.
-
-### Chaos
-
-Same as Limited, except that there is no limit to the number of cross-world connections that are made. Each transition has an equal 50/50 chance of being a crossed connection.
+Note: If Whirlpool Shuffle is enabled, those connections can be cross-world.
 
 ## Keep Similar Edges Together (--ow_keepsimilar)
 
 This keeps similar edge transitions together. ie. The 2 west land edges of Potion Shop will be paired to another set of two similar edges, unless Free Terrain is also enabled, in which case these 2 edges together with the west water edge form a group of 3 similar edges. See `Terminology` section above for a more detailed explanation of Similar Edges.
 
-Note: This affects OW Layout Shuffle mostly, but also affects Limited and Chaos modes in Crossed OW.
+Note: This affects OW Layout Shuffle mostly, but also affects `Unrestricted` mode in Crossed OW.
 
 ## Tile Flip / Mixed Overworld (--ow_mixed)
 

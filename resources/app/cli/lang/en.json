@@ -2,7 +2,7 @@
   "cli": {
     "yes": "Yes",
     "no": "No",
-    "app.title": "ALttP Door Randomizer Version %s : --seed %s --code %s",
+    "app.title": "ALttP Overworld Randomizer Version %s : --seed %s --code %s",
     "version": "Version",
     "seed": "Seed",
     "player": "Player",
@@ -56,7 +56,8 @@
     "building.collection.spheres": "Building up collection spheres",
     "building.calculating.spheres": "Calculated sphere %i, containing %i of %i progress items.",
     "building.final.spheres": "Calculated final sphere %i, containing %i of %i progress items.",
-    "old.python.version": "Door Rando may have issues with python versions earlier than 3.7.  Detected version: %s"
+    "old.python.version": "Door Rando may have issues with python versions earlier than 3.7.  Detected version: %s",
+    "hybridglitches.door.shuffle": "Hybrid Major Glitches is not currently compatible with Door Shuffle."
   },
   "help": {
     "lang": [ "App Language, if available, defaults to English" ],
@@ -64,11 +65,13 @@
     "bps": [ "Output BPS patches instead of ROMs"],
     "logic": [
       "Select Enforcement of Item Requirements. (default: %(default)s)",
-      "No Glitches:    No Glitch knowledge required.",
-      "Minor Glitches: May require Fake Flippers, Bunny Revival",
-      "                and Dark Room Navigation.",
-      "No Logic:       Distribute items without regard for",
-      "                item requirements."
+      "No Glitches:           No Glitch knowledge required.",
+      "Minor Glitches:        May require Fake Flippers, Bunny Revival",
+      "                       and Dark Room Navigation.",
+      "Overworld Glitches:    May require overworld clips and teleports.",
+      "Hybrid Major Glitches: May require underworld clips.",
+      "No Logic:              Distribute items without regard for",
+      "                       item requirements."
     ],
     "mode": [
       "Select game mode. (default: %(default)s)",
@@ -209,6 +212,7 @@
       "                item locations are shuffled in separate pools. Non-item",
       "                locations remain vanilla. Connectors are same-world.",
       "Lean:           Same as Lite, except connectors can travel cross worlds.",
+      "District:       Entrances are shuffled within their overworld districts.",
       "Crossed:        Mix cave and dungeon entrances freely while allowing",
       "                caves to cross between worlds.",
       "Swapped:        Same as Crossed, but entrances switch places in pairs.",
@@ -239,9 +243,7 @@
       "                walk around and access the other plane version by walking.",
       "Polar:          Only used when Tile Flip is enabled. This retains original",
       "                connections even when overworld tiles are flipped.",
-      "Limited:        Exactly nine transitions are randomly chosen as",
-      "                cross-world connections (to emulate the nine portals).",
-      "Chaos:          Every transition has a 50/50 chance to become a",
+      "Unrestricted:   Every transition has a 50/50 chance to become a",
       "                crossworld connection."
     ],
     "ow_keepsimilar": [
@@ -377,6 +379,7 @@
       "Random:         Take any caves can replace a random set of un-interesting caves. See documentation for full list",
       "Fixed:          Take any caves will replace certain location. See documentation for full list"
     ],
+    "collection_rate": [ "Display collection rate (default: %(default)s)" ],
     "pseudoboots": [ " Start with pseudo boots that allow dashing but no item checks (default: %(default)s)"],
     "bombbag": ["Start with 0 bomb capacity. Two capacity upgrades (+10) are added to the pool (default: %(default)s)" ],
     "startinventory": [ "Specifies a list of items that will be in your starting inventory (separated by commas). (default: %(default)s)" ],
@@ -426,8 +429,9 @@
     ],
     "reduce_flashing": [ "Reduce some in-game flashing (default: %(default)s)" ],
     "shuffle_sfx": [ "Shuffle sounds effects (default: %(default)s)" ],
+    "shuffle_sfxinstruments": [ "Shuffle sound instruments (default: %(default)s)" ],
+    "shuffle_songinstruments": [ "Shuffle song instruments (default: %(default)s)" ],
     "msu_resume": [ "Enable MSU Resume (default: %(default)s)" ],
-    "collection_rate": [ "Display collection rate (default: %(default)s)" ],
     "create_rom": [ "Create an output rom file. (default: %(default)s)" ],
     "gui": [ "Launch the GUI. (default: %(default)s)" ],
     "jsonout": [

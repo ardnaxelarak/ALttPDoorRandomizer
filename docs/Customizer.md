@@ -6,6 +6,10 @@ This can also be used to roll a mystery or mutli-mystery seed via the GUI. [Exam
 
 The cli includes a couple arguments to help:
 
+`--print_template_yaml` will create a yaml file based on the settings used. This does not contain any seed specific information.
+
+Present on the GUI as `Export Yaml` on the bottom.
+
 `--print_custom_yaml` will create a yaml file based on the seed rolled. Treat it like a spoiler.
 
 `--customizer` takes a file as an argument. 
@@ -44,7 +48,7 @@ Start inventory is not supported here. It has a separate section.
 
 ###### Not Yet Implemented
 
-Rom/Adjust flags like sprite, quickswap are not outputing with the print_custom_yaml settings 
+Rom/Adjust flags like sprite, quickswap are not outputing with the print_template_yaml or print_custom_yaml settings 
 
 ### item_pool
 
@@ -87,9 +91,62 @@ You may define an item, and a list of locations. The locations may be weighted i
 
 You may define an item and a list of locations that an item should not be placed at. This will apply to all items of that type. The logic is considered for this. If it is otherwise impossible, the item will be considered for the listed locations. This is important for small key layouts mostly, but it will try other locations first. 
 
+### ow-edges
+
+This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have either `ow_shuffle` or `ow_crossed` enabled in the `settings` section in order for any values here to take effect. This section has two primary subsections: `two-way` and `groups`.
+
+#### two-way
+
+`two-way` should be used for defining overworld edge transition connections. An asterisk `*` at the end of an edge name can be used on any parallel edge (an edge that exists in the same place in the opposite world), this will swap the defined edge with its parallel edge if the tile is flipped by Tile Flip.
+
+`Links House ES*: Stone Bridge WS*` The edge east of Links House will be vanilla, but if Links House screen gets flipped by Tile Flip, then Big Bomb Shop ES will connect to Stone Bridge.
+
+#### groups
+
+`groups` should be used for defining new pool divisions of overworld edge transitions. Each group must have some unique name with all the edges listed that are desired to exist in the pool. The name of a group can be anything as long as it is valid yaml syntax. These defined groups cannot break up edges that conflict with mode settings, like `Keep Similar Edges Together`. The asterisk `*` notation, described in the `ow-edges/two-way` section, can be used here.
+
+This example puts these 2 edges in their own pool, while the rest of the edges remain in their existing pools:
+```
+someDescription:
+  - Links House ES*
+  - Stone Bridge WS*
+```
+
+### ow-crossed
+
+This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have `ow_crossed` enabled in the `settings` section in order for any values here to take effect. This section has four primary subsections: `force_crossed`, `force_noncrossed`, `limit_crossed`, and `undefined_chance`. There are also 
+
+#### force_crossed / force_noncrossed
+
+`force_crossed` and `force_noncrossed` should be used to define specific overworld edge transitions you wish to be cross-world connected without needing to specify an exact destination. These sections are optional but must contain a list of edge names. The asterisk `*` notation, described in the `ow-edges/two-way` section, can be used here.
+
+#### limit_crossed
+
+`limit_crossed` should be used to limit how many overworld edge transitions end up connecting cross-world. This value can be set to any non-negative integer. A value of 0 means no edges will be cross-world, except for edges that are forced cross-world (either by the previous step or a result of some combination of OWR settings). This option only takes effect in `Unrestricted` Crossed setting.
+
+#### undefined_chance
+
+`undefined_chance` should be used to determine how to handle all the remaining overworld edge transitions that aren't explicitly defined in the earlier steps. This represents the percent chance an edge will be cross-world. This value can be set from 0 to 100 (default is 50). A value of 0 means there is a 0% chance it will be cross-world. This option only takes effect under two mode combinations:
+- 1: `Unrestricted` Crossed with a `Vanilla` OW Layout
+- 2: `Grouped` Crossed
+
+#### (Grouped specific options)
+
+All four options available in the `ow-tileflips` section below are also available for `Grouped`, but must be defined under the `ow-crossed` section. In addition to the previous `undefined_chance`, the three other subsections are: `force_flip`, `force_no_flip`, and `force_together`. For more information about these sections, see the `ow-tileflips` section below.
+
+### ow-whirlpools
+
+This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have `ow_whirlpool: true` in the `settings` section in order for any values here to take effect. This section has one primary subsection: `two-way`.
+
+#### two-way
+
+`two-way` should be used for defining whirlpool connections.
+
+`River Bend Whirlpool: Lake Hylia Whirlpool` The whirlpool west of Potion Shop will be connected to the whirlpool at Lake Hylia.
+
 ### ow-tileflips
 
-This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have `ow_mixed: true` in the `settings` section in order for any values here to take effect. This section has three primary subsections: `force_flip`, `force_no_flip`, and `undefined_chance`.
+This must be defined by player. Each player number should be listed with the appropriate sections and each of these players MUST have `ow_mixed: true` in the `settings` section in order for any values here to take effect. This section has four primary subsections: `force_flip`, `force_no_flip`, `force_together`, and `undefined_chance`.
 
 #### force_flip / force_no_flip
 
@@ -102,6 +159,17 @@ This must be defined by player. Each player number should be listed with the app
 Here is an example which forces Links House and Sanctuary screens to stay in their original worlds. Note: It is unnecessary to supply both worlds' IDs. Links House is 0x2c and Big Bomb Shop is 0x6c.
 ```
 force_no_flip:
+  - 0x2c
+  - 0x13
+```
+
+#### force_together
+
+`force_together` should be used for defining tiles you want to force to flip as a group. Each group must have some unique name with all the OW Screen IDs listed that are desired to be grouped together. The name of a group can be anything as long as it is valid yaml syntax.
+
+Here is an example which forces Links House and Sanctuary screens to flip together:
+```
+someGroup:
   - 0x2c
   - 0x13
 ```

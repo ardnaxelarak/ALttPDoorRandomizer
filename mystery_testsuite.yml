@@ -199,3 +199,9 @@ rom:
   shuffle_sfx:
     on: 1
     off: 1
+  shuffle_sfxinstruments:
+    on: 1
+    off: 1
+  shuffle_songinstruments:
+    on: 1
+    off: 1

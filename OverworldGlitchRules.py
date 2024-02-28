@@ -5,100 +5,84 @@ Helper functions to deliver entrance/exit/region sets to OWG rules.
 from BaseClasses import Entrance
 from OWEdges import OWTileRegions
 
+# Cave regions that superbunny can get through - but only with a sword.
+sword_required_superbunny_mirror_regions = ["Spiral Cave (Top)"]
 
-def get_sword_required_superbunny_mirror_regions():
-    """
-    Cave regions that superbunny can get through - but only with a sword.
-    """
-    yield 'Spiral Cave (Top)'
+# Cave regions that superbunny can get through - but only with boots.
+boots_required_superbunny_mirror_regions = ["Two Brothers House"]
 
-def get_boots_required_superbunny_mirror_regions():
-    """
-    Cave regions that superbunny can get through - but only with boots.
-    """
-    yield 'Two Brothers House'
+# Cave locations that superbunny can access - but only with boots.
+boots_required_superbunny_mirror_locations = [
+    "Sahasrahla's Hut - Left",
+    "Sahasrahla's Hut - Middle",
+    "Sahasrahla's Hut - Right",
+]
 
-def get_boots_required_superbunny_mirror_locations():
-    """
-    Cave locations that superbunny can access - but only with boots.
-    """
-    yield 'Sahasrahla\'s Hut - Left'
-    yield 'Sahasrahla\'s Hut - Middle'
-    yield 'Sahasrahla\'s Hut - Right'
+# Entrances that can't be superbunny-mirrored into.
+invalid_mirror_bunny_entrances = [
+    "Hype Cave",
+    "Bonk Fairy (Dark)",
+    "Thieves Town",
+    "Hammer Peg Cave",
+    "Brewery",
+    "Hookshot Cave",
+    "Dark Lake Hylia Ledge Fairy",
+    "Dark Lake Hylia Ledge Spike Cave",
+    "Palace of Darkness",
+    "Misery Mire",
+    "Turtle Rock",
+    "Bonk Rock Cave",
+    "Bonk Fairy (Light)",
+    "50 Rupee Cave",
+    "20 Rupee Cave",
+    "Checkerboard Cave",
+    "Light Hype Fairy",
+    "Waterfall of Wishing",
+    "Light World Bomb Hut",
+    "Mini Moldorm Cave",
+    "Ice Rod Cave",
+    "Sanctuary Grave",
+    "Kings Grave",
+    "Sanctuary Grave",
+    "Hyrule Castle Secret Entrance Drop",
+    "Skull Woods Second Section Hole",
+    "Skull Woods First Section Hole (North)",
+]
+
+# Interior locations that can be accessed with superbunny state.
+superbunny_accessible_locations = [
+    "Waterfall of Wishing - Left",
+    "Waterfall of Wishing - Right",
+    "King's Tomb",
+    "Floodgate",
+    "Floodgate Chest",
+    "Cave 45",
+    "Bonk Rock Cave",
+    "Brewery",
+    "C-Shaped House",
+    "Chest Game",
+    "Mire Shed - Left",
+    "Mire Shed - Right",
+    "Secret Passage",
+    "Ice Rod Cave",
+    "Pyramid Fairy - Left",
+    "Pyramid Fairy - Right",
+    "Superbunny Cave - Top",
+    "Superbunny Cave - Bottom",
+    "Blind's Hideout - Left",
+    "Blind's Hideout - Right",
+    "Blind's Hideout - Far Left",
+    "Blind's Hideout - Far Right",
+    "Kakariko Well - Left",
+    "Kakariko Well - Middle",
+    "Kakariko Well - Right",
+    "Kakariko Well - Bottom",
+    "Kakariko Tavern",
+    "Library",
+    "Spiral Cave",
+] + boots_required_superbunny_mirror_locations
 
     # TODO: Add pottery locations
-
-
-def get_invalid_mirror_bunny_entrances():
-    """
-    Entrances that can't be superbunny-mirrored into.
-    """
-    yield 'Skull Woods Final Section'
-    yield 'Hype Cave'
-    yield 'Bonk Fairy (Dark)'
-    yield 'Thieves Town'
-    yield 'Hammer Peg Cave'
-    yield 'Brewery'
-    yield 'Hookshot Cave'
-    yield 'Dark Lake Hylia Ledge Fairy'
-    yield 'Dark Lake Hylia Ledge Spike Cave'
-    yield 'Palace of Darkness'
-    yield 'Misery Mire'
-    yield 'Turtle Rock'
-    yield 'Bonk Rock Cave'
-    yield 'Bonk Fairy (Light)'
-    yield '50 Rupee Cave'
-    yield '20 Rupee Cave'
-    yield 'Checkerboard Cave'
-    yield 'Light Hype Fairy'
-    yield 'Waterfall of Wishing'
-    yield 'Light World Bomb Hut'
-    yield 'Mini Moldorm Cave'
-    yield 'Ice Rod Cave'
-    yield 'Sanctuary Grave'
-    yield 'Kings Grave'
-    yield 'Sanctuary Grave'
-    yield 'Hyrule Castle Secret Entrance Drop'
-    yield 'Skull Woods Second Section Hole'
-    yield 'Skull Woods First Section Hole (North)'
-
-
-def get_superbunny_accessible_locations():
-    """
-    Interior locations that can be accessed with superbunny state.
-    """
-
-    yield 'Waterfall of Wishing - Left'
-    yield 'Waterfall of Wishing - Right'
-    yield 'King\'s Tomb'
-    yield 'Floodgate'
-    yield 'Floodgate Chest'
-    yield 'Cave 45'
-    yield 'Bonk Rock Cave'
-    yield 'Brewery'
-    yield 'C-Shaped House'
-    yield 'Chest Game'
-    yield 'Mire Shed - Left'
-    yield 'Mire Shed - Right'
-    yield 'Secret Passage'
-    yield 'Ice Rod Cave'
-    yield 'Pyramid Fairy - Left'
-    yield 'Pyramid Fairy - Right'
-    yield 'Superbunny Cave - Top'
-    yield 'Superbunny Cave - Bottom'
-    yield 'Blind\'s Hideout - Left'
-    yield 'Blind\'s Hideout - Right'
-    yield 'Blind\'s Hideout - Far Left'
-    yield 'Blind\'s Hideout - Far Right'
-    yield 'Kakariko Well - Left'
-    yield 'Kakariko Well - Middle'
-    yield 'Kakariko Well - Right'
-    yield 'Kakariko Well - Bottom'
-    yield 'Kakariko Tavern'
-    yield 'Library'
-    yield 'Spiral Cave'
-    for location in get_boots_required_superbunny_mirror_locations():
-        yield location
 
 
 def get_non_mandatory_exits(world, player):
@@ -295,8 +279,9 @@ def overworld_glitches_rules(world, player):
     #set_owg_rules(player, world, get_glitched_speed_drops_dw(world, player), lambda state: state.can_get_glitched_speed_dw(player))
 
     # Mirror clip spots.
+    # TODO: Should this also require can_boots_clip
     set_owg_rules(player, world, get_mirror_clip_spots(world, player), lambda state: state.has_Mirror(player))
-    
+
     # Mirror offset spots.
     for data in get_mirror_offset_spots(world, player):
         set_owg_rules(player, world, [data[0:3]], lambda state: state.has_Mirror(player) and state.can_boots_clip_lw(player) and state.can_reach(data[3], None, player))
@@ -319,6 +304,18 @@ def overworld_glitches_rules(world, player):
     add_additional_rule(world.get_entrance('Tree Line Water Clip', player), lambda state: state.has('Flippers', player))
     add_additional_rule(world.get_entrance('Dark Tree Line Water Clip', player), lambda state: state.has('Flippers', player))
 
+    # Bunny pocket
+    if not world.is_tile_swapped(0x00, player):
+        add_alternate_rule(world.get_entrance("Skull Woods Final Section", player), lambda state: state.can_bunny_pocket(player) and state.has("Fire Rod", player))
+    if world.is_tile_swapped(0x05, player):
+        add_alternate_rule(world.get_entrance("DM Hammer Bridge (West)", player), lambda state: state.can_bunny_pocket(player) and state.has("Hammer", player))
+        add_alternate_rule(world.get_entrance("DM Hammer Bridge (East)", player), lambda state: state.can_bunny_pocket(player) and state.has("Hammer", player))
+    if not world.is_tile_swapped(0x18, player):
+        add_alternate_rule(world.get_entrance("Bush Yard Pegs (Inner)", player), lambda state: state.can_bunny_pocket(player) and state.has("Hammer", player))
+        add_alternate_rule(world.get_entrance("Bush Yard Pegs (Outer)", player), lambda state: state.can_bunny_pocket(player) and state.has("Hammer", player))
+    if world.is_tile_swapped(0x22, player):
+        add_alternate_rule(world.get_entrance("Blacksmith Ledge Peg (West)", player), lambda state: state.can_bunny_pocket(player) and state.has("Hammer", player))
+
 
 def add_alternate_rule(entrance, rule):
     old_rule = entrance.access_rule
@@ -335,7 +332,7 @@ def create_no_logic_connections(player, world, connections):
         parent = world.get_region(parent_region, player)
         target = world.get_region(target_region, player)
         connection = Entrance(player, entrance, parent)
-        connection.spot_type = 'Ledge'
+        connection.spot_type = 'OWG'
         parent.exits.append(connection)
         connection.connect(target)
 
@@ -387,6 +384,8 @@ boots_clips_local = [ # (name, from_region, to_region)
 
     ('Maze Race Item Get Ledge Clip', 'Maze Race Area', 'Maze Race Prize'),
 
+    #('Hobo Water Clip', 'Stone Bridge South Area', 'Stone Bridge Water'), # TODO: Doesn't work with OW Free Terrain
+    
     ('Tree Line Water Clip', 'Tree Line Area', 'Tree Line Water'), #requires flippers
     ('Dark Tree Line Water Clip', 'Dark Tree Line Area', 'Dark Tree Line Water'), #requires flippers
 

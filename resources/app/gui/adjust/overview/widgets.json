@@ -4,7 +4,9 @@
     "msu_resume":      { "type": "checkbox" },
     "quickswap":  { "type": "checkbox" },
     "reduce_flashing": {"type": "checkbox" },
-    "shuffle_sfx": {"type": "checkbox" }
+    "shuffle_sfx": {"type": "checkbox" },
+    "shuffle_sfxinstruments": {"type": "checkbox" },
+    "shuffle_songinstruments": {"type": "checkbox" }
   },
   "leftAdjustFrame": {
     "heartcolor": {

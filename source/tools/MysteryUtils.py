@@ -46,8 +46,9 @@ def roll_settings(weights):
 
     ret.algorithm = get_choice('algorithm')
 
-    glitch_map = {'none': 'noglitches', 'no_logic': 'nologic', 'owglitches': 'owglitches',
-                  'owg': 'owglitches', 'minorglitches': 'minorglitches'}
+    glitch_map = {'none': 'noglitches', 'minorglitches': 'minorglitches', 'no_logic': 'nologic',
+                  'hmg': 'hybridglitches', 'hybridglitches': 'hybridglitches',
+                  'owg': 'owglitches', 'owglitches': 'owglitches'}
     glitches_required = get_choice('glitches_required')
     if glitches_required is not None:
         if glitches_required not in glitch_map.keys():
@@ -78,9 +79,9 @@ def roll_settings(weights):
     overworld_shuffle = get_choice('overworld_shuffle')
     ret.ow_shuffle = overworld_shuffle if overworld_shuffle != 'none' else 'vanilla'
     ret.ow_terrain = get_choice('overworld_terrain') == 'on'
-    valid_options = {'none', 'polar', 'grouped', 'limited', 'chaos'}
+    valid_options = {'none': 'none', 'polar': 'polar', 'grouped': 'polar', 'chaos': 'unrestricted', 'unrestricted': 'unrestricted'}
     ret.ow_crossed = get_choice('overworld_crossed')
-    ret.ow_crossed = ret.ow_crossed if ret.ow_crossed in valid_options else 'none'
+    ret.ow_crossed = valid_options[ret.ow_crossed] if ret.ow_crossed in valid_options else 'none'
     ret.ow_keepsimilar = get_choice('overworld_keepsimilar') == 'on'
     ret.ow_mixed = get_choice('overworld_swap') == 'on'
     ret.ow_whirlpool = get_choice('whirlpool_shuffle') == 'on'
@@ -114,6 +115,7 @@ def roll_settings(weights):
     ret.pottery = 'keys' if ret.pottery == 'none' and keydropshuffle else ret.pottery
     ret.colorizepots = get_choice_default('colorizepots', default='on') == 'on'
     ret.shufflepots = get_choice('pot_shuffle') == 'on'
+    ret.aga_randomness = get_choice('aga_randomness') == 'on'
     ret.mixed_travel = get_choice('mixed_travel') if 'mixed_travel' in weights else 'prevent'
     ret.standardize_palettes = (get_choice('standardize_palettes') if 'standardize_palettes' in weights
                                 else 'standardize')
@@ -231,6 +233,8 @@ def roll_settings(weights):
         ret.ow_palettes = get_choice('ow_palettes', romweights)
         ret.uw_palettes = get_choice('uw_palettes', romweights)
         ret.shuffle_sfx = get_choice('shuffle_sfx', romweights) == 'on'
+        ret.shuffle_sfxinstruments = get_choice('shuffle_sfxinstruments', romweights) == 'on'
+        ret.shuffle_songinstruments = get_choice('shuffle_songinstruments', romweights) == 'on'
         ret.msu_resume = get_choice('msu_resume', romweights) == 'on'
 
     return ret

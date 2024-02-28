@@ -158,6 +158,22 @@ def loadcliargs(gui, args, settings=None):
         label = fish.translate("gui","gui",mainpage + '.' + subpage + '.' + widget)
         gui.pages[mainpage].pages[subpage].widgets[widget].pieces["button"].configure(text=label)
 
+        # Set Export Yaml button
+        mainpage = "bottom"
+        subpage = "content"
+        widget = "exportyaml"
+        # set textbox/frame label
+        label = fish.translate("gui","gui",mainpage + '.' + subpage + '.' + widget)
+        gui.pages[mainpage].pages[subpage].widgets[widget].pieces["button"].configure(text=label)
+
+        # Set Save Settings button
+        mainpage = "bottom"
+        subpage = "content"
+        widget = "savesettings"
+        # set textbox/frame label
+        label = fish.translate("gui","gui",mainpage + '.' + subpage + '.' + widget)
+        gui.pages[mainpage].pages[subpage].widgets[widget].pieces["button"].configure(text=label)
+
         # Set Output Directory button
         mainpage = "bottom"
         subpage = "content"
@@ -206,7 +222,11 @@ def loadadjustargs(gui, settings):
                 "heartbeep": "adjust.heartbeep",
                 "menuspeed": "adjust.menuspeed",
                 "owpalettes": "adjust.owpalettes",
-                "uwpalettes": "adjust.uwpalettes"
+                "uwpalettes": "adjust.uwpalettes",
+                "reduce_flashing": "adjust.reduce_flashing",
+                "shuffle_sfx": "adjust.shuffle_sfx",
+                "shuffle_sfxinstruments": "adjust.shuffle_sfxinstruments",
+                "shuffle_songinstruments": "adjust.shuffle_songinstruments"
             }
         }
     }

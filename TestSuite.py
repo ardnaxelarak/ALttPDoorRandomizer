@@ -51,6 +51,7 @@ def main(args=None):
     test("Full      ", "--shuffle full")
     test("Lite      ", "--shuffle lite")
     test("Lean      ", "--shuffle lean")
+    test("District  ", "--shuffle district")
     test("Swapped   ", "--shuffle swapped")
     test("Crossed   ", "--shuffle crossed")
     test("Insanity  ", "--shuffle insanity")

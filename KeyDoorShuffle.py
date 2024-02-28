@@ -1800,7 +1800,7 @@ def imp_locations_factory(world, player):
     imp_locations = ['Agahnim 1', 'Agahnim 2', 'Attic Cracked Floor', 'Suspicious Maiden']
     if world.mode[player] == 'standard':
         imp_locations.append('Zelda Pickup')
-        imp_locations.append('Zelda Dropoff')
+        imp_locations.append('Zelda Drop Off')
     return imp_locations
 
 
@@ -2106,6 +2106,22 @@ def validate_key_placement(key_layout, world, player):
         if i.player == player and i.name == smallkey_name:
             keys_outside += 1
 
+    if world.logic[player] == 'hybridglitches':
+        # Swamp keylogic
+        if smallkey_name.endswith('(Swamp Palace)'):
+            swamp_entrance = world.get_location('Swamp Palace - Entrance', player)
+            # Swamp small not vanilla
+            if swamp_entrance.item is None or (swamp_entrance.item.name != smallkey_name or swamp_entrance.item.player != player):
+                mire_keylayout = world.key_layout[player]['Misery Mire']
+                mire_smallkey_name = dungeon_keys[mire_keylayout.sector.name]
+                # Check if any mire keys are in swamp (excluding entrance), if none then add one to keys_outside
+                mire_keys_in_swamp = sum([1 if x.item.name == mire_smallkey_name else 0 for x in key_layout.item_locations if x.item is not None and x != swamp_entrance])
+                if mire_keys_in_swamp == 0:
+                    keys_outside +=1 
+        # Mire keylogic
+        if smallkey_name.endswith('(Tower of Hera)'):
+            # TODO: Make sure that mire medallion isn't in hera basement, or if it is, the small key is available downstairs
+            big_key_outside = True
     for code, counter in key_layout.key_counters.items():
         if len(counter.child_doors) == 0:
             continue

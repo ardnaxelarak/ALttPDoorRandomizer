@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.3.4.2
+- Added Shuffle SFX Instruments as post-gen option
+- Fixed some issues with Swapped ER failing to place Old Man Cave
+- Changed Inverted 2.0 spawn prompt to display Bomb Shop
+- Fixed some minor issues with ER and Vanilla GT
+
+## 0.3.4.1
+- Implemented new District ER mode option
+- Added alternate boss logic when in GT Ice Basement
+- Updated Inverted 2.0 to start in Bomb Shop regardless of ER mode
+- Fixed broken customizer features with OWR Tile Flip
+- Allowing Insanity ER + Standard to decouple standard entrances
+
+## 0.3.4.0
+- \~Merged in DR v1.2.0.23~
+  - Improved bunny-walking algorithm
+  - Improved multiworld balancing
+- \~Merged in some things from DR v1.4.0.0-v~
+- Implemented Hybrid Major Glitches logic (thanks Muffins/Espeon)
+- Added sparkles to Bonk Drop locations for better visibility
+- Some tweaks/improvements to Shuffle Song Instruments
+- Replaced Save Settings on Exit with Settings on Load
+- Added new button in GUI to export a Yaml file based on current settings
+- Allow starting Aga-Defeated and Old-Man-Rescued in inventory
+
+## 0.3.3.2
+- \~Merged in DR v1.2.0.22~
+- Added Shuffle Song Instruments as post-gen option
+- Allow user to change and save output directory within the GUI
+- Fixed issue with Smith not deleting on S+Q when no path is possible
+- Fixed various MSU inaccuracies
+
+## 0.3.3.1
+- \~Merged in DR v1.2.0.21~
+- Fixed issue with Old Man death spawning on Pyramid/Castle
+- Fixed issue with Mixed OWR + Flute Shuffle placing spots on large screens
+- Fixed issue with mirror portals disappearing in Crossed OWR
+- Added more OWR preset yamls + some fixes to the existing ones
+
+## 0.3.3.0
+- Added Customizer support for all remaining OWR options
+- Added several OWR preset yamls (many ideas are thanks to Catobat)
+- Removed Limited Crossed OWR and renamed Chaos Crossed to Unrestricted Crossed
+
 ## 0.3.2.2
 - Added Customizer support for Flute Shuffle (thanks Catobat)
 - Fixed bad Old Man rescue possibility in Swapped ER

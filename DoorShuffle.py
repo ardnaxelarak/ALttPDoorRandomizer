@@ -7,7 +7,7 @@ from typing import DefaultDict, Dict, List
 from itertools import chain
 
 from BaseClasses import RegionType, Region, Door, DoorType, Sector, CrystalBarrier, DungeonInfo, dungeon_keys
-from BaseClasses import PotFlags, LocationType, Direction
+from BaseClasses import PotFlags, LocationType, Direction, KeyRuleType
 from Doors import reset_portals
 from Dungeons import dungeon_regions, region_starts, standard_starts, split_region_starts
 from Dungeons import dungeon_bigs, dungeon_hints
@@ -178,6 +178,7 @@ def create_door_spoiler(world, player):
     queue = deque(world.dungeon_layouts[player].values())
     while len(queue) > 0:
         builder = queue.popleft()
+        std_flag = world.mode[player] == 'standard' and builder.name == 'Hyrule Castle' and world.shuffle[player] == 'vanilla'
         done = set()
         start_regions = set(convert_regions(builder.layout_starts, world, player))  # todo: set all_entrances for basic
         reg_queue = deque(start_regions)
@@ -206,10 +207,14 @@ def create_door_spoiler(world, player):
                                 logger.warning('This is a bug during door spoiler')
                     elif not isinstance(door_b, Region):
                         logger.warning('Door not connected: %s', door_a.name)
-                if connect and connect.type == RegionType.Dungeon and connect not in visited:
+                if valid_connection(connect, std_flag, world, player) and connect not in visited:
                     visited.add(connect)
                     reg_queue.append(connect)
 
+
+def valid_connection(region, std_flag, world, player):
+    return region and (region.type == RegionType.Dungeon or region.name in world.inaccessible_regions[player] or
+                      (std_flag and region.name == 'Hyrule Castle Ledge'))
 
 def vanilla_key_logic(world, player):
     builders = []
@@ -256,8 +261,25 @@ def vanilla_key_logic(world, player):
             world.key_logic[player][builder.name] = key_layout.key_logic
             world.key_layout[player][builder.name] = key_layout
             log_key_logic(builder.name, key_layout.key_logic)
-    # if world.shuffle[player] == 'vanilla' and world.accessibility[player] == 'items' and not world.retro[player] and not world.keydropshuffle[player]:
-    #     validate_vanilla_key_logic(world, player)
+    # special adjustments for vanilla
+    if world.keyshuffle[player] != 'universal':
+        if world.mode[player] != 'standard' and not world.dropshuffle[player]:
+            # adjust hc doors
+            def adjust_hc_door(door_rule):
+                if door_rule.new_rules[KeyRuleType.WorstCase] == 3:
+                    door_rule.new_rules[KeyRuleType.WorstCase] = 2
+                    door_rule.small_key_num = 2
+
+            rules = world.key_logic[player]['Hyrule Castle'].door_rules
+            adjust_hc_door(rules['Sewers Secret Room Key Door S'])
+            adjust_hc_door(rules['Hyrule Dungeon Map Room Key Door S'])
+            adjust_hc_door(rules['Sewers Dark Cross Key Door N'])
+        # adjust pod front door
+        pod_front = world.key_logic[player]['Palace of Darkness'].door_rules['PoD Middle Cage N']
+        if pod_front.new_rules[KeyRuleType.WorstCase] == 6:
+            pod_front.new_rules[KeyRuleType.WorstCase] = 1
+            pod_front.small_key_num = 1
+        # gt logic? I'm unsure it needs adjusting
 
 
 def validate_vanilla_reservation(dungeon, world, player):
@@ -3331,6 +3353,9 @@ def find_inaccessible_regions(world, player):
         ledge = world.get_region('Hyrule Castle Ledge', player)
         if any(x for x in ledge.exits if x.connected_region and x.connected_region.name == 'Agahnims Tower Portal'):
             world.inaccessible_regions[player].append('Hyrule Castle Ledge')
+    # this should be considered as part of the inaccessible regions, dungeonssimple?
+    if world.mode[player] == 'standard' and world.shuffle[player] == 'vanilla':
+        world.inaccessible_regions[player].append('Hyrule Castle Ledge')
     logger = logging.getLogger('')
     #logger.debug('Inaccessible Regions:')
     #for r in world.inaccessible_regions[player]:

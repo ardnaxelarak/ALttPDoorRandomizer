@@ -29,6 +29,9 @@ BCS OWDetectTransitionReturn
 org $02a999
 jsl OWEdgeTransition : nop #4 ;LDA $02A4E3,X : ORA $7EF3CA
 
+org $02aa07
+JSL OWMarkVisited : NOP
+
 org $04e8ae
 JSL OWDetectSpecialTransition
 RTL : NOP
@@ -56,16 +59,17 @@ Link_ResetSwimmingState:
 
 
 ; mirror hooks
-org $02FBAB
-JSL OWMirrorSpriteRestore : NOP
+org $0283DC ; override world check when spawning mirror portal sprite in Crossed OWR
+jsl.l OWLightWorldOrCrossed
 org $05AF75
 Sprite_6C_MirrorPortal:
-jsl OWPreserveMirrorSprite : nop #2 ; LDA $7EF3CA : BNE $05AFDF
+jsl OWMirrorSpriteDisable ; LDA $7EF3CA
+org $05AF88
+jsl OWMirrorSpriteSkipDraw : NOP ; LDA.w $0FC6 : CMP.b #$03
 org $05AFDF
 Sprite_6C_MirrorPortal_missing_mirror:
-JML OWMirrorSpriteDelete : NOP ; STZ $0DD0,X : BRA $05AFF1
-org $0ABFBF
-JSL OWMirrorSpriteOnMap : BRA + : NOP #6 : +
+org $0ABFB6
+jsl OWMirrorSpriteOnMap : NOP ; LDA.w $008A : CMP.b #$40
 
 ; whirlpool shuffle cross world change
 org $02b3bd
@@ -99,10 +103,6 @@ jsl OWOldManSpeed
 ; Dark Bonk Rocks Rain Sequence Guards (allowing Tile Swap on Dark Bonk Rocks)
 ;org $09c957 ; <- 4c957
 ;dw #$cb5f ; matches value on Central Bonk Rocks screen
-
-; override world check when spawning mirror portal sprite in Crossed OWR
-org $0283dc
-jsl.l OWLightWorldOrCrossed
 
 ; override world check when viewing overworld (incl. title screen portion)
 org $0aba6c  ; < ? - Bank0a.asm:474 ()
@@ -161,15 +161,22 @@ jsl.l OWWorldCheck16 : nop
 org $02b16e  ; AND #$3F : ORA 7EF3CA
 and #$7f : eor #$40 : nop #2
 
-org $06AD4C
-jsl.l OWBonkDrops : nop #4
-org $1EDE6F
-jsl.l OWBonkGoodBeeDrop : bra +
+org $09C3C4
+jsl.l OWBonkDropPrepSprite : nop #2
+org $09C801
+jsl.l OWBonkDropPrepSprite : nop #2
+org $06D052
+jsl.l OWBonkDropSparkle
+org $06AD49
+jsl.l OWBonkDropsOverworld : nop
+org $1EDE6A
+jsl.l OWBonkDropSparkle : BNE GoldBee_Dormant_exit
+jsl.l OWBonkDropsUnderworld : bra +
 GoldBee_SpawnSelf_SetProperties:
 phb : lda.b #$1E : pha : plb ; switch to bank 1E
     jsr GoldBee_SpawnSelf+12
 plb : rtl
-nop #3
+nop #2
 +
 
 ;Code
@@ -257,65 +264,41 @@ OWDestroyItemSprites:
     DEX : BPL .nextSprite
     PLX : RTL
 }
+
 OWMirrorSpriteOnMap:
 {
-    lda.w $1ac0,x : bit.b #$f0 : beq .continue
-        lda.b #$00 : rtl
-    .continue
-    ora.w $1ab0,x
-    ora.w $1ad0,x
-    ora.w $1ae0,x
-    rtl
+    JSL OWWorldCheck
+    CMP.b #$40 ; part of what we wrote over
+    RTL
 }
-OWPreserveMirrorSprite:
+OWMirrorSpriteDisable:
 {
-    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .vanilla ; if OW Crossed, skip world check and continue
-        lda.b $10 : cmp.b #$0f : beq .vanilla ; if performing mirror superbunny
-            rtl
+    LDA.b $10 : CMP.b #$0F : BNE +  ; avoid rare freeze during mirror superbunny
+	    PLA : PLA : PLA : JML Sprite_6C_MirrorPortal_missing_mirror
+	+ 
+    
+    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .vanilla
+        lda.l InvertedMode : beq +
+            lda.b #$40
+        + rtl
     
     .vanilla
-    lda.l InvertedMode : beq +
-        lda.l CurrentWorld : beq .deleteMirror
-        rtl
-    + lda.l CurrentWorld : bne .deleteMirror
-        rtl
-
-    .deleteMirror
-    lda.b $10 : cmp.b #$0f : bne +
-        jsr.w OWMirrorSpriteMove ; if performing mirror superbunny
-    + pla : pla : pla : jml Sprite_6C_MirrorPortal_missing_mirror
-}
-OWMirrorSpriteMove:
-{
-    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq +
-        lda.w $1acf : ora.b #$40 : sta.w $1acf
-    + rts
-}
-OWMirrorSpriteBonk:
-{
-    jsr.w OWMirrorSpriteMove
-    lda.b #$2c : jml SetGameModeLikeMirror ; what we wrote over
-}
-OWMirrorSpriteDelete:
-{
-    stz.w $0dd0,x ; what we wrote over
-    jsr.w OWMirrorSpriteMove
-    jml Sprite_6C_MirrorPortal_dont_do_warp
-}
-OWMirrorSpriteRestore:
-{
-    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .return
-        lda.l InvertedMode : beq +
-            lda.l CurrentWorld : beq .return
-            bra .restorePortal
-        + lda.l CurrentWorld : bne .return
-        
-    .restorePortal
-    lda.w $1acf : and.b #$0f : sta.w $1acf
-    
-    .return
-    rep #$30 : lda.w $04AC ; what we wrote over
+    lda.l CurrentWorld ; what we wrote over
     rtl
+}
+OWMirrorSpriteSkipDraw:
+{
+    lda.l OWMode+1 : and.b #!FLAG_OW_CROSSED : beq .vanilla
+        lda.l InvertedMode : beq +
+            lda.l CurrentWorld : eor.b #$40
+            bra ++
+        + lda.l CurrentWorld : ++ beq .vanilla
+            stz.w $0D90,x ; disables collision
+            sec : rtl
+    
+    .vanilla
+    LDA.w $0FC6 : CMP.b #$03 ; what we wrote over
+    RTL
 }
 OWLightWorldOrCrossed:
 {
@@ -366,6 +349,16 @@ OWOldManSpeed:
     .vanilla
     lda #$0c : sta $5e ; what we wrote over
     rtl
+}
+OWMarkVisited:
+{
+    LDX.b $8A : STZ.w $0412 ; what we wrote over
+    LDA.b $10 : CMP.b #$14 : BCS .return
+        LDA.l OverworldEventDataWRAM,X
+        ORA.b #$80 : STA.l OverworldEventDataWRAM,X
+
+    .return
+    RTL
 }
 
 LoadMapDarkOrMixed:
@@ -422,7 +415,66 @@ LoadMapDarkOrMixed:
     dw $0400+$0210 ; bottom right
 }
 
-OWBonkGoodBeeDrop:
+OWBonkDropPrepSprite:
+{
+    LDA.b $1B : BEQ +
+        LDA.w $0FB5 ; what we wrote over
+        PHA
+        BRA .continue
+    +
+    STZ.w $0F20,X : STZ.w $0E30,X ; what we wrote over
+    PHA
+
+    .continue
+    LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BEQ .return
+        + LDA.w $0E20,X : CMP.b #$D9 : BNE +
+            LDA.b #$03 : STA.w $0F20,X
+            BRA .prep
+        + CMP.b #$B2 : BEQ .prep
+        PLA : RTL
+    
+    .prep
+    STZ.w !SPRITE_REDRAW,X
+    PHB : PHK : PLB : PHY
+        TXY : JSR OWBonkDropLookup : BCC .done
+            ; found match ; X = rec + 1
+            INX : LDA.w OWBonkPrizeData,X : PHA
+            JSR OWBonkDropCollected : PLA : BCC .done
+                TYX : LDA.b #$01 : STA.w !SPRITE_REDRAW,X
+    .done
+    TYX : PLY : PLB
+    
+    .return
+    PLA : RTL
+}
+
+OWBonkDropSparkle:
+{
+    LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BEQ .nosparkle
+    LDA.w $0E90,X : BEQ .nosparkle
+    LDA.w !SPRITE_REDRAW,X : BNE .nosparkle
+        JSL Sprite_SpawnSparkleGarnish
+        ; move sparkle down 1 tile
+        PHX : TYX : PLY
+        LDA.l $7FF81E,X : CLC : ADC.b #$10 : STA.l $7FF81E,X
+        LDA.l $7FF85A,X : ADC.b #$00 : STA.l $7FF85A,X
+        PHY : TXY : PLX
+
+    .nosparkle
+    LDA $0E20,X : CMP.b #$D9 : BEQ .greenrupee
+    CMP.b #$B2 : BEQ .goodbee
+    RTL
+
+    .goodbee
+    LDA $0E90,X ; what we wrote over
+    RTL
+
+    .greenrupee
+    JSL Sprite_DrawRippleIfInWater ; what we wrote over
+    RTL
+}
+
+OWBonkDropsUnderworld:
 {
     LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BNE .shuffled
         .vanilla ; what we wrote over
@@ -430,20 +482,63 @@ OWBonkGoodBeeDrop:
         LDA.l BottleContentsOne : ORA.l BottleContentsTwo
             ORA.l BottleContentsThree : ORA.l BottleContentsFour
         RTL
+
     .shuffled
     LDA.w $0DD0,X : BNE +
-        JMP .return+1
+        BRA .return+1
     + PHY : TXY
-    LDA.l RoomDataWRAM[$0120].high : AND.b #$02 : PHA : BNE + ; check if collected
-        LDA.b #$1B : STA $12F ; JSL Sound_SetSfx3PanLong ; seems that when you bonk, there is a pending bonk sfx, so we clear that out and replace with reveal secret sfx
-    +
-    LDA.l OWBonkPrizeTable[42].mw_player : BEQ + ; multiworld item
-        LDA.l OWBonkPrizeTable[42].loot
-        JMP .spawn_item
-    +
+    JSL OWBonkDrops
 
-    .determine_type ; S = Collected
-    LDA.l OWBonkPrizeTable[42].loot ; A = item id
+    .return
+    PLY
+    LDA #$08 ; makes original good bee not spawn
+    RTL
+}
+
+OWBonkDropsOverworld:
+{
+    LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BNE .shuffled
+        BRA .vanilla
+
+    .shuffled
+    LDA.w $0DD0,Y : BNE +
+        BRA .vanilla
+    + LDA.w $0E20,Y : CMP.b #$D9 : BEQ +
+        BRA .vanilla+3
+    +
+    LDA.b #$00 : STA.w $0F20,Y ; restore proper layer
+    JSL OWBonkDrops
+
+    .vanilla
+    LDA.w $0E20,Y : CMP.b #$D8 ; what we wrote over
+    RTL
+}
+
+OWBonkDrops:
+{
+    PHB : PHK : PLB
+    LDA.b $1B : BEQ +
+        LDX.b #((UWBonkPrizeData-OWBonkPrizeData)+1)
+        BRA .found_match
+    +
+    JSR OWBonkDropLookup : BCS .found_match
+        JMP .return+2
+
+    .found_match
+    INX : LDA.w OWBonkPrizeData,X : PHX : PHA ; S = FlagBitmask, X (row + 2)
+    JSR OWBonkDropCollected : PHA : BCS .load_item_and_mw ; S = Collected, FlagBitmask, X (row + 2)
+        LDA.b #$1B : STA $12F ; JSL Sound_SetSfx3PanLong ; seems that when you bonk, there is a pending bonk sfx, so we clear that out and replace with reveal secret sfx
+        ; JSLSpriteSFX_QueueSFX3WithPan
+    
+    .load_item_and_mw
+    LDA 3,S : TAX : INX : LDA.w OWBonkPrizeData,X
+    PHA : INX : LDA.w OWBonkPrizeData,X : BEQ +
+        ; multiworld item
+        DEX : PLA ; A = item id; X = row + 3
+        JMP .spawn_item
+    + DEX : PLA ; A = item id; X = row + 3
+
+    .determine_type ; A = item id; X = row + 3; S = Collected, FlagBitmask, X (row + 2)
     CMP.b #$B0 : BNE +
         LDA.b #$79 : JMP .sprite_transform ; transform to bees
     + CMP.b #$42 : BNE +
@@ -476,139 +571,11 @@ OWBonkGoodBeeDrop:
     + CMP.b #$B2 : BNE +
         LDA.b #$E3 : BRA .sprite_transform ; transform to fairy
     + CMP.b #$B3 : BNE .spawn_item
-        INX : INX : LDA.l OWBonkPrizeTable[42].vert_offset
-        CLC : ADC.b #$08 : PHA
-        LDA.w $0D00,Y : SEC : SBC.b 1,S : STA.w $0D00,Y
-            LDA.w $0D20,Y : SBC.b #$00 : STA.w $0D20,Y : PLX
-        LDA.b #$0B : SEC ; BRA .sprite_transform ; transform to chicken
-    
-    .sprite_transform
-    JSL.l OWBonkSpritePrep
-
-    .mark_collected ; S = Collected
-    PLA : BNE +
-        LDA.l RoomDataWRAM[$0120].high : ORA.b #$02 : STA.l RoomDataWRAM[$0120].high
-        
-        REP #$20
-            LDA.l TotalItemCounter : INC : STA.l TotalItemCounter
-        SEP #$20
-    + BRA .return
-
-    ; spawn itemget item
-    .spawn_item ; A = item id ; Y = bonk sprite slot ; S = Collected
-    PLX : BEQ + : LDA.b #$00 : STA.w $0DD0,Y : BRA .return
-        + PHA
-
-        LDA.b #$01 : STA !FORCE_HEART_SPAWN
-
-        LDA.b #$EB : STA.l $7FFE00
-        JSL Sprite_SpawnDynamically+15 ; +15 to skip finding a new slot, use existing sprite
-
-        LDA.b #$01 : STA.w !SPRITE_REDRAW,Y
-
-        PLA : STA.w $0E80,Y
-
-        ; affects the rate the item moves in the Y/X direction
-        LDA.b #$00 : STA.w $0D40,Y
-        LDA.b #$0A : STA.w $0D50,Y
-
-        LDA.b #$1A : STA.w $0F80,Y ; amount of force (gives height to the arch)
-        LDA.b #$FF : STA.w $0B58,Y ; stun timer
-        LDA.b #$30 : STA.w $0F10,Y ; aux delay timer 4 ?? dunno what that means
-
-        LDA.b #$00 : STA.w $0F20,Y ; layer the sprite is on
-
-        ; sets the tile type that is underneath the sprite, water
-        TYX : LDA.b #$09 : STA.l $7FF9C2,X ; TODO: Figure out how to get the game to set this
-
-        ; sets OW event bitmask flag, uses free RAM
-        LDA.l OWBonkPrizeTable[42].flag : STA.w $0ED0,Y
-
-        ; determines the initial spawn point of item
-        LDA.w $0D00,Y : SEC : SBC.l OWBonkPrizeTable[42].vert_offset : STA.w $0D00,Y
-            LDA.w $0D20,Y : SBC #$00 : STA.w $0D20,Y
-
-    .return
-    PLY
-    LDA #$08 ; makes original good bee not spawn
-    RTL
-}
-
-; Y = sprite slot index of bonk sprite
-OWBonkDrops:
-{
-    CMP.b #$D8 : BEQ +
-        RTL
-    + LDA.l OWFlags+1 : AND.b #!FLAG_OW_BONKDROP : BNE +
-        JSL.l Sprite_TransmuteToBomb : RTL
-    + LDA.w $0DD0,Y : BNE +
-        RTL
-    +
-
-    ; loop thru rando bonk table to find match
-    PHB : PHK : PLB
-    LDA.b $8A
-    LDX.b #(41*6) ; 41 bonk items, 6 bytes each
-    - CMP.w OWBonkPrizeData,X : BNE +
-        INX
-        LDA.w $0D10,Y : LSR A : LSR A : LSR A : LSR A
-        EOR.w $0D00,Y : CMP.w OWBonkPrizeData,X : BNE ++ ; X = row + 1
-            BRA .found_match
-        ++ DEX : LDA.b $8A
-    + CPX.b #$00 : BNE +
-        PLB : RTL
-    + DEX : DEX : DEX : DEX : DEX : DEX : BRA -
-
-    .found_match
-    INX : LDA.w OWBonkPrizeData,X : PHX : PHA ; S = FlagBitmask, X (row + 2)
-    LDX.b $8A : LDA.l OverworldEventDataWRAM,X : AND 1,S : PHA : BNE + ; S = Collected, FlagBitmask, X (row + 2)
-        LDA.b #$1B : STA $12F ; JSL Sound_SetSfx3PanLong ; seems that when you bonk, there is a pending bonk sfx, so we clear that out and replace with reveal secret sfx
-    +
-    LDA 3,S : TAX : INX : LDA.w OWBonkPrizeData,X
-    PHA : INX : LDA.w OWBonkPrizeData,X : BEQ +
-        ; multiworld item
-        DEX : PLA ; X = row + 3
-        JMP .spawn_item
-    + DEX : PLA ; X = row + 3
-
-    .determine_type ; A = item id ; S = Collected, FlagBitmask, X (row + 2)
-    CMP.b #$B0 : BNE +
-        LDA.b #$79 : JMP .sprite_transform ; transform to bees
-    + CMP.b #$42 : BNE +
-        JSL.l Sprite_TransmuteToBomb ; transform a heart to bomb, vanilla behavior
-        JMP .mark_collected
-    + CMP.b #$34 : BNE +
-        LDA.b #$D9 : CLC : JMP .sprite_transform ; transform to single rupee
-    + CMP.b #$35 : BNE +
-        LDA.b #$DA : CLC : JMP .sprite_transform ; transform to blue rupee
-    + CMP.b #$36 : BNE +
-        LDA.b #$DB : CLC : BRA .sprite_transform ; transform to red rupee
-    + CMP.b #$27 : BNE +
-        LDA.b #$DC : CLC : BRA .sprite_transform ; transform to 1 bomb
-    + CMP.b #$28 : BNE +
-        LDA.b #$DD : CLC : BRA .sprite_transform ; transform to 4 bombs
-    + CMP.b #$31 : BNE +
-        LDA.b #$DE : CLC : BRA .sprite_transform ; transform to 8 bombs
-    + CMP.b #$45 : BNE +
-        LDA.b #$DF : CLC : BRA .sprite_transform ; transform to small magic
-    + CMP.b #$B4 : BNE +
-        LDA.b #$E0 : CLC : BRA .sprite_transform ; transform to big magic
-    + CMP.b #$B5 : BNE +
-        LDA.b #$79 : JSL.l OWBonkSpritePrep
-        JSL.l GoldBee_SpawnSelf_SetProperties ; transform to good bee
-        BRA .mark_collected
-    + CMP.b #$44 : BNE +
-        LDA.b #$E2 : CLC : BRA .sprite_transform ; transform to 10 arrows
-    + CMP.b #$B1 : BNE +
-        LDA.b #$AC : BRA .sprite_transform ; transform to apples
-    + CMP.b #$B2 : BNE +
-        LDA.b #$E3 : BRA .sprite_transform ; transform to fairy
-    + CMP.b #$B3 : BNE .spawn_item
         INX : INX : LDA.w OWBonkPrizeData,X ; X = row + 5
         CLC : ADC.b #$08 : PHA
         LDA.w $0D00,Y : SEC : SBC.b 1,S : STA.w $0D00,Y
             LDA.w $0D20,Y : SBC.b #$00 : STA.w $0D20,Y : PLX
-        LDA.b #$0B : SEC ; BRA .sprite_transform ; transform to chicken
+        LDA.b #$0B ; BRA .sprite_transform ; transform to chicken
     
     .sprite_transform
     JSL.l OWBonkSpritePrep
@@ -616,16 +583,22 @@ OWBonkDrops:
     .mark_collected ; S = Collected, FlagBitmask, X (row + 2)
     PLA : BNE + ; S = FlagBitmask, X (row + 2)
     TYX : JSL Sprite_IsOnscreen : BCC +
+        LDA.b $1B : BEQ ++
+            LDA.l RoomDataWRAM[$0120].high : ORA 1,S : STA.l RoomDataWRAM[$0120].high
+            LDA.w $0400 : ORA 1,S : STA.w $0400
+            BRA .increment_collection
+        ++
         LDX.b $8A : LDA.l OverworldEventDataWRAM,X : ORA 1,S : STA.l OverworldEventDataWRAM,X
         
+        .increment_collection
         REP #$20
             LDA.l TotalItemCounter : INC : STA.l TotalItemCounter
         SEP #$20
-    + JMP .return
+    + BRA .return
 
     ; spawn itemget item
-    .spawn_item ; A = item id ; Y = tree sprite slot ; S = Collected, FlagBitmask, X (row + 2)
-    PLX : BEQ + : LDA.b #$00 : STA.w $0DD0,Y : JMP .return ; S = FlagBitmask, X (row + 2)
+    .spawn_item ; A = item id ; Y = bonk sprite slot ; S = Collected, FlagBitmask, X (row + 2)
+    PLX : BEQ + : LDA.b #$00 : STA.w $0DD0,Y : BRA .return ; S = FlagBitmask, X (row + 2)
         + PHA
 
         LDA.b #$01 : STA !FORCE_HEART_SPAWN
@@ -647,18 +620,57 @@ OWBonkDrops:
 
         LDA.b #$00 : STA.w $0F20,Y ; layer the sprite is on
 
-        ; sets OW event bitmask flag, uses free RAM
+        LDA.b $1B : BEQ +
+            ; sets the tile type that is underneath the sprite, water
+            TYX : LDA.b #$09 : STA.l $7FF9C2,X ; TODO: Figure out how to get the game to set this
+        +
+
+        ; sets bitmask flag, uses free RAM
         PLA : STA.w $0ED0,Y ; S = X (row + 2)
 
         ; determines the initial spawn point of item
         PLX : INX : INX : INX
         LDA.w $0D00,Y : SEC : SBC.w OWBonkPrizeData,X : STA.w $0D00,Y
             LDA.w $0D20,Y : SBC #$00 : STA.w $0D20,Y
-
-        PLB : RTL
+        
+        BRA .return+2
 
     .return
-    PLA : PLA : PLB : RTL
+    PLA : PLA : PLB
+    RTL
+}
+
+; Y = sprite slot; returns X = row + 1
+OWBonkDropLookup:
+{
+    ; loop thru rando bonk table to find match
+    LDA.b $8A
+    LDX.b #((UWBonkPrizeData-OWBonkPrizeData)-sizeof(OWBonkPrizeTable)) ; 41 bonk items, 6 bytes each
+    - CMP.w OWBonkPrizeData,X : BNE +
+        INX
+        LDA.w $0D10,Y : LSR A : LSR A : LSR A : LSR A
+        EOR.w $0D00,Y : CMP.w OWBonkPrizeData,X : BNE ++ ; X = row + 1
+            SEC : RTS
+        ++ DEX : LDA.b $8A
+    + CPX.b #$00 : BNE +
+        CLC : RTS
+    + DEX : DEX : DEX : DEX : DEX : DEX : BRA -
+}
+
+; S = FlagBitmask ; returns SEC if collected
+OWBonkDropCollected:
+{
+    ; check if collected
+    CLC
+    LDA.b $1B : BEQ +
+        LDA.l RoomDataWRAM[$0120].high : AND.b 3,S : BEQ .return ; S = Collected, FlagBitmask, X (row + 2)
+            SEC : RTS
+    +
+    LDX.b $8A : LDA.l OverworldEventDataWRAM,X : AND 3,S : BEQ .return ; S = Collected, FlagBitmask, X (row + 2)
+        SEC : RTS
+
+    .return
+    RTS
 }
 
 ; A = SpriteID, Y = Sprite Slot Index, X = free/overwritten
@@ -1731,7 +1743,7 @@ db $18, $a8, $10, $b2, $00, $20
 db $18, $36, $08, $35, $00, $20
 db $1a, $8a, $10, $42, $00, $20
 db $1a, $1d, $08, $b2, $00, $20
-db $ff, $77, $04, $35, $00, $20  ; pre aga ONLY ; hijacked murahdahla bonk tree
+;db $1a, $77, $04, $35, $00, $20  ; pre aga ONLY ; hijacked murahdahla bonk tree
 db $1b, $46, $10, $b1, $00, $10
 db $1d, $6b, $10, $b1, $00, $20
 db $1e, $72, $10, $b2, $00, $20
@@ -1742,6 +1754,7 @@ db $2e, $9c, $10, $b2, $00, $20
 db $2e, $b4, $08, $b0, $00, $20
 db $32, $29, $10, $42, $00, $20
 db $32, $9a, $08, $b2, $00, $20
+;db $34, $xx, $10, $xx, $00, $1c  ; pre aga ONLY
 db $42, $66, $10, $b2, $00, $20
 db $51, $08, $10, $b2, $00, $04
 db $51, $09, $08, $b2, $00, $04
@@ -1757,6 +1770,7 @@ db $6e, $8c, $10, $35, $00, $10
 db $6e, $90, $08, $b0, $00, $10
 db $6e, $a4, $04, $b1, $00, $10
 db $74, $4e, $10, $b1, $00, $1c
+UWBonkPrizeData:
 db $ff, $00, $02, $b5, $00, $08
 
 ; temporary fix - murahdahla replaces one of the bonk tree prizes
