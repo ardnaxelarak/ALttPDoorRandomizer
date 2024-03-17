@@ -543,7 +543,7 @@ def set_starting_inventory(world, args):
     for player in range(1, world.players + 1):
         if args.usestartinventory[player]:
             for tok in filter(None, args.startinventory[player].split(',')):
-                name = tok.strip()
+                name = tok.replace("_", " ").strip()
                 name = name if name != 'Ocarina' or world.flute_mode[player] != 'active' else 'Ocarina (Activated)'
                 item = ItemFactory(name, player)
                 if item:
