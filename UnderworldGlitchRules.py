@@ -103,7 +103,7 @@ def dungeon_reentry_rules(world, player, clip: Entrance, dungeon_region: str, du
             Rules.add_rule(
                 clip,
                 lambda state: state.has("Cape", player)
-                or state.has_beam_sword(player)
+                or state.has_sword(player, 2)
                 or state.has("Beat Agahnim 1", player),
             )
 

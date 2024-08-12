@@ -90,7 +90,7 @@ def IceBlindDefeatRule(state, player):
     return (
             (
                 # weapon
-                state.has_beam_sword(player) or
+                state.has_sword(player, 2) or
                 state.has('Cane of Somaria', player) or
                 (state.has('Cane of Byrna', player) and state.can_extend_magic(player, 16))
             ) and
@@ -136,7 +136,7 @@ def IceKholdstareDefeatRule(state, player):
             )
         ) and
         (
-            state.has_beam_sword(player) or
+            state.has_sword(player, 2) or
             (state.has('Fire Rod', player) and state.can_extend_magic(player, 20)) or
             # FIXME: this actually only works for the vanilla location for swordless
             (
@@ -157,7 +157,7 @@ def VitreousDefeatRule(state, player):
 
 
 def IceVitreousDefeatRule(state, player):
-    return (state.can_shoot_arrows(player) and state.can_use_bombs(player)) or state.has_beam_sword(player)
+    return (state.can_shoot_arrows(player) and state.can_use_bombs(player)) or state.has_sword(player, 2)
 
 
 def TrinexxDefeatRule(state, player):
