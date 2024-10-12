@@ -1,6 +1,8 @@
-from BaseClasses import Entrance
+from BaseClasses import Entrance, DoorType
+from DoorShuffle import connect_simple_door
 import Rules
 from OverworldGlitchRules import create_no_logic_connections
+from Doors import create_door
 
 kikiskip_spots = [
     ("Kiki Skip", "Spectacle Rock Cave (Bottom)", "Palace of Darkness Portal")
@@ -72,6 +74,17 @@ def create_hybridmajor_connections(world, player):
         paradox_spots,
     ]:
         create_no_logic_connections(player, world, spots)
+
+    # Add the new Ice path (back of bomb drop to front) to the world and model it properly
+    clip_door = create_door(player, "Ice Bomb Drop Clip", DoorType.Logical)
+    world.doors += [clip_door]
+    world.initialize_doors([clip_door])
+
+    ice_bomb_top_reg = world.get_region("Ice Bomb Drop - Top", player)
+    ice_bomb_top_reg.exits.append(
+        Entrance(player, "Ice Bomb Drop Clip", ice_bomb_top_reg)
+    )
+    connect_simple_door(world, "Ice Bomb Drop Clip", "Ice Bomb Drop", player)
 
 
 # Turn dungeons into connectors
