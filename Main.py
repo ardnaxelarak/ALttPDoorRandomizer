@@ -27,7 +27,7 @@ from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dunge
 from Fill import dungeon_tracking
 from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items
-from UnderworldGlitchRules import create_hybridmajor_connections, create_hybridmajor_connectors
+from UnderworldGlitchRules import create_hybridmajor_connections, create_hybridmajor_connectors, get_hybridmajor_connector_entrances
 from Utils import output_path, parse_player_names
 
 from source.item.FillUtil import create_item_pool_config, massage_item_pool, district_item_pool_config, verify_item_pool_config
@@ -557,6 +557,8 @@ def copy_world(world):
 
     # connect copied world
     copied_locations = {(loc.name, loc.player): loc for loc in ret.get_locations()}  # caches all locations
+    hmg_entrances = get_hybridmajor_connector_entrances()
+
     for region in world.regions:
         copied_region = ret.get_region(region.name, region.player)
         copied_region.is_light_world = region.is_light_world
@@ -566,6 +568,8 @@ def copy_world(world):
         for location in copied_region.locations:
             location.parent_region = copied_region
         for entrance in region.entrances:
+            if entrance.name in hmg_entrances:
+                continue
             ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
 
     # fill locations
