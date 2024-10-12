@@ -1,0 +1,49 @@
+meta:
+  players: 1
+settings:
+  1:
+    logic: hybridglitches
+    shuffle: vanilla
+start_inventory:
+  1:
+    - Pegasus Boots
+    - Flippers
+    - Fire Rod
+    - Book of Mudora
+    - Progressive Sword
+    - Lamp
+    - Hammer
+    - Ether
+    - Quake
+    - Bombos
+    - Bombs (10)
+placements:
+  1:
+    # Put mirror in PF so we can't DMD
+    Pyramid Fairy - Right: Magic Mirror
+    # Lock all swords and cape behind pearl so we can't do aga 1 for pyramid access
+    Thieves' Town - Big Chest: Progressive Sword
+    Thieves' Town - Attic: Progressive Sword
+    Thieves' Town - Blind's Cell: Progressive Sword
+    Thieves' Town - Map Chest: Cape
+advanced_placements:
+  1:
+    - type: Verification
+      item: Moon Pearl
+      locations:
+        Palace of Darkness - Shooter Room: True
+        Palace of Darkness - The Arena - Bridge: True
+        Palace of Darkness - Stalfos Basement: True
+        Palace of Darkness - Big Key Chest: True
+        Palace of Darkness - The Arena - Ledge: True
+        Palace of Darkness - Map Chest: True
+        Palace of Darkness - Compass Chest: True
+        Palace of Darkness - Dark Basement - Left: True
+        Palace of Darkness - Dark Basement - Right: True
+        Palace of Darkness - Dark Maze - Top: True
+        Palace of Darkness - Dark Maze - Bottom: True
+        Palace of Darkness - Big Chest: True
+        Palace of Darkness - Harmless Hellway: True
+        Palace of Darkness - Boss: True
+        Pyramid Fairy - Left: False
+        Pyramid: False

@@ -5,7 +5,6 @@ settings:
     logic: hybridglitches
     mode: inverted
     shuffle: crossed
-
 start_inventory:
   1:
     - Pegasus Boots

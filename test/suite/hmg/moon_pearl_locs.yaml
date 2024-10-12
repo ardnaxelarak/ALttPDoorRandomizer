@@ -3,6 +3,7 @@ meta:
 settings:
   1:
     logic: hybridglitches
+    shuffle: vanilla
 start_inventory:
   1:
     - Pegasus Boots
@@ -10,9 +11,8 @@ start_inventory:
     - Fire Rod
     - Book of Mudora
     - Progressive Sword
-    - Progressive Sword
     - Lamp
-    - Magic Mirror
+    - Hammer
     - Ether
     - Quake
     - Bombos
