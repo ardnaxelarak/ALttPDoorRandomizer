@@ -15,6 +15,9 @@ def link_overworld(world, player):
         for exitname, regionname in inverted_mandatory_connections:
             connect_simple(world, exitname, regionname, player)
 
+    if world.logic[player] in ['hybridglitches', 'nologic'] and not world.fix_palaceofdarkness_exit[player]:
+        connect_two_way(world, 'Palace of Darkness HMG Exit', 'Palace of Darkness HMG Entrance', player)
+
     for forward_edge, back_edge in default_connections:
         connect_two_way(world, forward_edge, back_edge, player)
 
