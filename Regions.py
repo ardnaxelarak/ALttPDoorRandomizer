@@ -1161,7 +1161,7 @@ def create_shops(world, player):
     world.shops[player] = []
     for region_name, (room_id, type, shopkeeper, custom, locked, inventory, sram) in shop_table.items():
         if world.mode[player] == 'inverted':
-            if (not world.is_tile_swapped(0x35, player) and region_name == 'Dark Lake Hylia Shop') \
+            if (world.is_tile_swapped(0x35, player) and region_name == 'Dark Lake Hylia Shop') \
                     or (not world.is_tile_swapped(0x35, player) and region_name == 'Lake Hylia Shop'):
                 locked = True
                 inventory = [('Blue Potion', 160), ('Blue Shield', 50), ('Bombs (10)', 50)]
