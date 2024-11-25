@@ -64,10 +64,6 @@ def start():
                              Pedestal:      Places the Triforce at the Master Sword Pedestal.
                              All Dungeons:  Collect all crystals, pendants, beat both
                                             Agahnim fights and then defeat Ganon.
-                             Triforce Hunt: Places 30 Triforce Pieces in the world, collect
-                                            20 of them to beat the game.
-                             Ganonhunt:     Places 30 Triforce Pieces in the world, collect
-                                            20 of them to beat Ganon.
                              All Items:     Requires collecting 216 items to defeat Ganon.
                              Completionist:  Same as above, plus All Dungeons
                              ''')
@@ -85,64 +81,22 @@ def start():
                              Hard:            Reduced functionality.
                              Expert:          Greatly reduced functionality.
                                   ''')
-    parser.add_argument('--timer', default='none', const='normal', nargs='?', choices=['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown'],
+    parser.add_argument('--timer', default='none', const='none', nargs='?', choices=['none', 'ohko'],
                         help='''\
-                             Select game timer setting. Affects available itempool. (default: %(default)s)
+                             Select One-Hit KO (OHKO) game setting. (default: %(default)s)
                              None:            No timer.
-                             Display:         Displays a timer but does not affect
-                                              the itempool.
-                             Timed:           Starts with clock at zero. Green Clocks
-                                              subtract 4 minutes (Total: 20), Blue Clocks
-                                              subtract 2 minutes (Total: 10), Red Clocks add
-                                              2 minutes (Total: 10). Winner is player with
-                                              lowest time at the end.
-                             Timed OHKO:      Starts clock at 10 minutes. Green Clocks add
-                                              5 minutes (Total: 25). As long as clock is at 0,
-                                              Link will die in one hit.
-                             OHKO:            Like Timed OHKO, but no clock items are present
-                                              and the clock is permenantly at zero.
-                             Timed Countdown: Starts with clock at 40 minutes. Same clocks as
-                                              Timed mode. If time runs out, you lose (but can
-                                              still keep playing).
+                             OHKO:            Link will always die in one hit.
                              ''')
-    parser.add_argument('--progressive', default='on', const='normal', nargs='?', choices=['on', 'off', 'random'],
+    parser.add_argument('--progressive', default='on', const='on', nargs='?', choices=['on', 'off', 'random'],
                         help='''\
-                             Select progressive equipment setting. Affects available itempool. (default: %(default)s)
-                             On:              Swords, Shields, Armor, and Gloves will
-                                              all be progressive equipment. Each subsequent
-                                              item of the same type the player finds will
-                                              upgrade that piece of equipment by one stage.
-                             Off:             Swords, Shields, Armor, and Gloves will not
-                                              be progressive equipment. Higher level items may
-                                              be found at any time. Downgrades are not possible.
-                             Random:          Swords, Shields, Armor, and Gloves will, per
-                                              category, be randomly progressive or not.
-                                              Link will die in one hit.
+                             Select progressive bow setting. Affects available itempool. (default: %(default)s)
+                             On:              The first bow you find will give you access
+                                              to the bow item. The second will give you
+                                              Silver Arrows.
+                             Off:             Bow and Silver Arrows are separate items.
+                             Random:          Bows will randomly be progressive or not.
                              ''')
-    parser.add_argument('--algorithm', default='balanced', const='balanced', nargs='?', choices=['freshness', 'flood', 'vt21', 'vt22', 'vt25', 'vt26', 'balanced'],
-                        help='''\
-                             Select item filling algorithm. (default: %(default)s
-                             balanced:    vt26 derivitive that aims to strike a balance between
-                                          the overworld heavy vt25 and the dungeon heavy vt26
-                                          algorithm.
-                             vt26:        Shuffle items and place them in a random location
-                                          that it is not impossible to be in. This includes
-                                          dungeon keys and items.
-                             vt25:        Shuffle items and place them in a random location
-                                          that it is not impossible to be in.
-                             vt21:        Unbiased in its selection, but has tendency to put
-                                          Ice Rod in Turtle Rock.
-                             vt22:        Drops off stale locations after 1/3 of progress
-                                          items were placed to try to circumvent vt21\'s
-                                          shortcomings.
-                             Freshness:   Keep track of stale locations (ones that cannot be
-                                          reached yet) and decrease likeliness of selecting
-                                          them the more often they were found unreachable.
-                             Flood:       Push out items starting from Link\'s House and
-                                          slightly biased to placing progression items with
-                                          less restrictions.
-                             ''')
-    parser.add_argument('--shuffle', default='full', const='full', nargs='?', choices=['vanilla', 'simple', 'restricted', 'full', 'crossed', 'insanity', 'restricted_legacy', 'full_legacy', 'madness_legacy', 'insanity_legacy', 'dungeonsfull', 'dungeonssimple'],
+    parser.add_argument('--shuffle', default='vanilla', const='vanilla', nargs='?', choices=['vanilla', 'simple', 'restricted', 'full', 'crossed', 'dungeonsfull', 'dungeonssimple'],
                         help='''\
                              Select Entrance Shuffling Algorithm. (default: %(default)s)
                              Full:       Mix cave and dungeon entrances freely while limiting
@@ -155,14 +109,8 @@ def start():
                                          connect remaining entrances.
                              Crossed:    Mix cave and dungeon entrances freely while allowing
                                          caves to cross between worlds.
-                             Insanity:   Decouple entrances and exits from each other and
-                                         shuffle them freely. Caves that used to be single
-                                         entrance will still exit to the same location from
-                                         which they are entered.
                              Vanilla:    All entrances are in the same locations they were
                                          in the base game.
-                             Legacy shuffles preserve behavior from older versions of the
-                             entrance randomizer including significant technical limitations.
                              The dungeon variants only mix up dungeons and keep the rest of
                              the overworld vanilla.
                              ''')
@@ -208,8 +156,6 @@ def start():
                              Keys are universal, shooting arrows costs rupees,
                              and a few other little things make this more like Zelda-1.
                              ''', action='store_true')
-    parser.add_argument('--custom', default=False, help='Not supported.')
-    parser.add_argument('--customitemarray', default=False, help='Not supported.')
     parser.add_argument('--nodungeonitems', help='''\
                              Remove Maps and Compasses from Itempool, replacing them by
                              empty slots.

@@ -10,7 +10,7 @@ from Utils import int16_as_bytes
 
 class World(object):
 
-    def __init__(self, players, shuffle, logic, mode, swords, difficulty, difficulty_adjustments, timer, progressive, goal, algorithm, place_dungeon_items, accessibility, shuffle_ganon, quickswap, fastmenu, disable_music, keysanity, retro, custom, customitemarray, boss_shuffle, hints):
+    def __init__(self, players, shuffle, logic, mode, swords, difficulty, difficulty_adjustments, timer, progressive, goal, place_dungeon_items, accessibility, shuffle_ganon, quickswap, fastmenu, disable_music, keysanity, retro, boss_shuffle, hints):
         self.players = players
         self.shuffle = shuffle
         self.logic = logic
@@ -21,7 +21,6 @@ class World(object):
         self.timer = timer
         self.progressive = progressive
         self.goal = goal
-        self.algorithm = algorithm
         self.dungeons = []
         self.regions = []
         self.shops = []
@@ -70,8 +69,6 @@ class World(object):
         self.disable_music = disable_music
         self.keysanity = keysanity
         self.retro = retro
-        self.custom = custom
-        self.customitemarray = customitemarray
         self.can_take_damage = True
         self.difficulty_requirements = None
         self.fix_fake_world = True
@@ -1066,7 +1063,6 @@ class Spoiler(object):
             outfile.write('Difficulty:                      %s\n' % self.metadata['item_pool'])
             outfile.write('Item Functionality:              %s\n' % self.metadata['item_functionality'])
             outfile.write('Entrance Shuffle:                %s\n' % self.metadata['shuffle'])
-            outfile.write('Filling Algorithm:               %s\n' % self.world.algorithm)
             outfile.write('Accessibility:                   %s\n' % self.metadata['accessibility'])
             outfile.write('Maps and Compasses in Dungeons:  %s\n' % ('Yes' if self.world.place_dungeon_items else 'No'))
             outfile.write('L\\R Quickswap enabled:           %s\n' % ('Yes' if self.world.quickswap else 'No'))

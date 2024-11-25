@@ -118,3 +118,6 @@ def make_new_base2current(old_rom='Zelda no Densetsu - Kamigami no Triforce (Jap
     basemd5 = hashlib.md5()
     basemd5.update(new_rom_data)
     return "New Rom Hash: " + basemd5.hexdigest()
+
+if __name__ == '__main__':
+    print(make_new_base2current(new_rom="../working.sfc"))

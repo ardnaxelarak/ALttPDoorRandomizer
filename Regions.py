@@ -383,8 +383,8 @@ shop_table = {
 # slot, item, price, max=0, replacement=None, replacement_price=0
 # item = (item, price)
 
-_basic_shop_defaults = [('Red Potion', 150), ('Small Heart', 10), ('Bombs (10)', 50)]
-_dark_world_shop_defaults = [('Red Potion', 150), ('Blue Shield', 50), ('Bombs (10)', 50)]
+_basic_shop_defaults = [('Red Potion', 150), ('IFrames (10)', 50), ('Bombs (10)', 50)]
+_dark_world_shop_defaults = [('Red Potion', 150), ('IFrames (10)', 50), ('Bombs (10)', 50)]
 default_shop_contents = {
     'Cave Shop (Dark Death Mountain)': _basic_shop_defaults,
     'Red Shield Shop': [('Red Shield', 500), ('Bee', 10), ('Arrows (10)', 30)],

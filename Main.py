@@ -27,7 +27,7 @@ def main(args, seed=None):
         random.use_secure()
 
     # initialize the world
-    world = World(args.multi, args.shuffle, args.logic, args.mode, args.swords, args.difficulty, args.item_functionality, args.timer, args.progressive, args.goal, args.algorithm, not args.nodungeonitems, args.accessibility, args.shuffleganon, args.quickswap, args.fastmenu, args.disablemusic, args.keysanity, args.retro, args.custom, args.customitemarray, args.shufflebosses, args.hints)
+    world = World(args.multi, args.shuffle, args.logic, args.mode, args.swords, args.difficulty, args.item_functionality, args.timer, args.progressive, args.goal, not args.nodungeonitems, args.accessibility, args.shuffleganon, args.quickswap, args.fastmenu, args.disablemusic, args.keysanity, args.retro, args.shufflebosses, args.hints)
     logger = logging.getLogger('')
     if seed is None:
         random.seed(None)
@@ -92,31 +92,13 @@ def main(args, seed=None):
 
     logger.info('Placing Dungeon Items.')
 
-    shuffled_locations = None
-    if args.algorithm in ['balanced', 'vt26'] or args.keysanity:
-        shuffled_locations = world.get_unfilled_locations()
-        random.shuffle(shuffled_locations)
-        fill_dungeons_restrictive(world, shuffled_locations)
-    else:
-        fill_dungeons(world)
+    shuffled_locations = world.get_unfilled_locations()
+    random.shuffle(shuffled_locations)
+    fill_dungeons_restrictive(world, shuffled_locations)
 
     logger.info('Fill the world.')
 
-    if args.algorithm == 'flood':
-        flood_items(world)  # different algo, biased towards early game progress items
-    elif args.algorithm == 'vt21':
-        distribute_items_cutoff(world, 1)
-    elif args.algorithm == 'vt22':
-        distribute_items_cutoff(world, 0.66)
-    elif args.algorithm == 'freshness':
-        distribute_items_staleness(world)
-    elif args.algorithm == 'vt25':
-        distribute_items_restrictive(world, 0)
-    elif args.algorithm == 'vt26':
-
-        distribute_items_restrictive(world, gt_filler(world), shuffled_locations)
-    elif args.algorithm == 'balanced':
-        distribute_items_restrictive(world, gt_filler(world))
+    distribute_items_restrictive(world, gt_filler(world))
 
     if world.players > 1:
         logger.info('Balancing multiworld progression.')
@@ -132,7 +114,7 @@ def main(args, seed=None):
     else:
         sprite = None
 
-    outfilebase = 'ER_%s_%s-%s-%s-%s%s_%s-%s%s%s%s%s_%s' % (world.logic, world.difficulty, world.difficulty_adjustments, world.mode, world.goal, "" if world.timer in ['none', 'display'] else "-" + world.timer, world.shuffle, world.algorithm, "-keysanity" if world.keysanity else "", "-retro" if world.retro else "", "-prog_" + world.progressive if world.progressive in ['off', 'random'] else "", "-nohints" if not world.hints else "", world.seed)
+    outfilebase = 'ER_%s_%s-%s-%s-%s%s_%s%s%s%s%s_%s' % (world.logic, world.difficulty, world.difficulty_adjustments, world.mode, world.goal, "" if world.timer in ['none', 'display'] else "-" + world.timer, world.shuffle, "-keysanity" if world.keysanity else "", "-retro" if world.retro else "", "-prog_" + world.progressive if world.progressive in ['off', 'random'] else "", "-nohints" if not world.hints else "", world.seed)
 
     use_enemizer = args.enemizercli and (args.shufflebosses != 'none' or args.shuffleenemies or args.enemy_health != 'default' or args.enemy_health != 'default' or args.enemy_damage or args.shufflepalette or args.shufflepots)
 
@@ -195,7 +177,7 @@ def gt_filler(world):
 
 def copy_world(world):
     # ToDo: Not good yet
-    ret = World(world.players, world.shuffle, world.logic, world.mode, world.swords, world.difficulty, world.difficulty_adjustments, world.timer, world.progressive, world.goal, world.algorithm, world.place_dungeon_items, world.accessibility, world.shuffle_ganon, world.quickswap, world.fastmenu, world.disable_music, world.keysanity, world.retro, world.custom, world.customitemarray, world.boss_shuffle, world.hints)
+    ret = World(world.players, world.shuffle, world.logic, world.mode, world.swords, world.difficulty, world.difficulty_adjustments, world.timer, world.progressive, world.goal, world.place_dungeon_items, world.accessibility, world.shuffle_ganon, world.quickswap, world.fastmenu, world.disable_music, world.keysanity, world.retro, world.boss_shuffle, world.hints)
     ret.required_medallions = world.required_medallions.copy()
     ret.swamp_patch_required = world.swamp_patch_required.copy()
     ret.ganon_at_pyramid = world.ganon_at_pyramid.copy()
