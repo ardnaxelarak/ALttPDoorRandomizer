@@ -3119,9 +3119,9 @@ class Spoiler(object):
             self.bosses[str(player)] = OrderedDict()
             self.bosses[str(player)]["Eastern Palace"] = self.world.get_dungeon("Eastern Palace", player).boss.name
             self.bosses[str(player)]["Desert Palace"] = self.world.get_dungeon("Desert Palace", player).boss.name
-            self.bosses[str(player)]["Tower Of Hera"] = self.world.get_dungeon("Tower of Hera", player).boss.name
+            self.bosses[str(player)]["Tower of Hera"] = self.world.get_dungeon("Tower of Hera", player).boss.name
             self.bosses[str(player)]["Hyrule Castle"] = "Agahnim"
-            self.bosses[str(player)]["Palace Of Darkness"] = self.world.get_dungeon("Palace of Darkness", player).boss.name
+            self.bosses[str(player)]["Palace of Darkness"] = self.world.get_dungeon("Palace of Darkness", player).boss.name
             self.bosses[str(player)]["Swamp Palace"] = self.world.get_dungeon("Swamp Palace", player).boss.name
             self.bosses[str(player)]["Skull Woods"] = self.world.get_dungeon("Skull Woods", player).boss.name
             self.bosses[str(player)]["Thieves Town"] = self.world.get_dungeon("Thieves Town", player).boss.name
