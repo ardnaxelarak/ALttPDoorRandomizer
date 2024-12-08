@@ -272,16 +272,16 @@ def underworld_glitches_rules(world, player):
                 )
             ),
         }
-        inverted = world.mode[player] == "inverted"
+        inverted_dm = (world.mode[player] == "inverted") != world.is_tile_swapped(0x03, player)
 
         def hera_rule(state):
-            return (state.has("Moon Pearl", player) or not inverted) and rule_map.get(
+            return (state.has("Moon Pearl", player) or not inverted_dm) and rule_map.get(
                 world.get_entrance("Tower of Hera", player).connected_region.name,
                 lambda state: False,
             )(state)
 
         def gt_rule(state):
-            return (state.has("Moon Pearl", player) or inverted) and rule_map.get(
+            return (state.has("Moon Pearl", player) or inverted_dm) and rule_map.get(
                 world.get_entrance(("Ganons Tower"), player).connected_region.name,
                 lambda state: False,
             )(state)
