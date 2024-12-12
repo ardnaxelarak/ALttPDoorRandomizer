@@ -426,6 +426,10 @@ def main(args, seed=None, fish=None):
         if 'debug' in world.spoiler.settings:
             world.spoiler.extras(output_path(f'{outfilebase}_Spoiler.txt'))
 
+    player_logics = set(world.logic.values())
+    if len(player_logics) == 1 and 'nologic' in player_logics:
+        args.skip_playthrough = True
+
     if not args.skip_playthrough:
         logger.info(world.fish.translate("cli","cli","calc.playthrough"))
         create_playthrough(world)
