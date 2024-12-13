@@ -98,7 +98,8 @@ def set_rules(world, player):
 
     # These rules go here because they overwrite/add to some of the above rules
     if world.logic[player] == 'hybridglitches':
-        underworld_glitches_rules(world, player)
+        if not world.is_copied_world:
+            underworld_glitches_rules(world, player)
 
 def mirrorless_path_to_location(world, startName, targetName, player):
     # If Agahnim is defeated then the courtyard needs to be accessible without using the mirror for the mirror offset glitch.
