@@ -6,12 +6,11 @@ kikiskip_spots = [
     ("Kiki Skip", "Spectacle Rock Cave (Bottom)", "Palace of Darkness Portal")
 ]
 
-mireheraswamp_spots = [
-    ("Mire to Hera Clip", "Mire Torches Top", "Hera Portal"),
-    ("Hera to Swamp Clip", "Mire Torches Top", "Swamp Portal"),
-]
+mirehera_spots = [("Mire to Hera Clip", "Mire Torches Top", "Hera Portal")]
 
-icepalace_spots = [("Ice Lobby Clip", "Ice Portal", "Ice Bomb Drop")]
+heraswamp_spots = [("Hera to Swamp Clip", "Mire Torches Top", "Swamp Portal")]
+
+icepalace_spots = [("Ice Lobby Clip", "Ice Portal", "Ice Bomb Drop - Top")]
 
 thievesdesert_spots = [
     ("Thieves to Desert West Clip", "Thieves Attic", "Desert West Portal"),
@@ -34,12 +33,12 @@ kikiskip_connectors = [
 ]
 
 
-mireheraswamp_connectors = [
-    ("Mire to Hera Connector", "Mire Torches Top", "Tower of Hera Exit"),
-    ("Mire to Swamp Connector", "Mire Torches Top", "Swamp Palace Exit"),
+mirehera_connectors = [
+    ("Mire to Hera Connector", "Mire Torches Top", "Tower of Hera Exit")
 ]
-
-
+heraswamp_connectors = [
+    ("Mire to Swamp Connector", "Mire Torches Top", "Swamp Palace Exit")
+]
 thievesdesert_connectors = [
     ("Thieves to Desert West Connector", "Thieves Attic", "Desert Palace Exit (West)"),
     (
@@ -49,7 +48,6 @@ thievesdesert_connectors = [
     ),
     ("Thieves to Desert East Connector", "Thieves Attic", "Desert Palace Exit (East)"),
 ]
-
 specrock_connectors = [
     (
         "Spec Rock Top Connector",
@@ -68,7 +66,8 @@ specrock_connectors = [
 def create_hybridmajor_connections(world, player):
     for spots in [
         kikiskip_spots,
-        mireheraswamp_spots,
+        mirehera_spots,
+        heraswamp_spots,
         icepalace_spots,
         thievesdesert_spots,
         specrock_spots,
@@ -81,7 +80,8 @@ def create_hybridmajor_connections(world, player):
 def create_hybridmajor_connectors(world, player):
     for connectors in [
         kikiskip_connectors,
-        mireheraswamp_connectors,
+        mirehera_connectors,
+        heraswamp_connectors,
         thievesdesert_connectors,
         specrock_connectors,
     ]:
@@ -95,6 +95,19 @@ def create_hybridmajor_connectors(world, player):
         ]
         new_connectors = [c for c in new_connectors if c[2] is not None]
         create_no_logic_connections(player, world, new_connectors)
+
+
+def get_hybridmajor_connector_entrances():
+    connectors = []
+    for connector in (
+        kikiskip_connectors
+        + mirehera_connectors
+        + heraswamp_connectors
+        + thievesdesert_connectors
+        + specrock_connectors
+    ):
+        connectors.append(connector[0])
+    return set(connectors)
 
 
 # For some entrances, we need to fake having pearl, because we're in fake DW/LW.
