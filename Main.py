@@ -27,7 +27,7 @@ from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dunge
 from Fill import dungeon_tracking
 from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items
-from UnderworldGlitchRules import create_hybridmajor_connections, create_hybridmajor_connectors, get_hybridmajor_connector_entrances
+from UnderworldGlitchRules import create_hybridmajor_connections, get_hybridmajor_connection_entrances
 from Utils import output_path, parse_player_names
 
 from source.item.FillUtil import create_item_pool_config, massage_item_pool, district_item_pool_config, verify_item_pool_config
@@ -222,8 +222,6 @@ def main(args, seed=None, fish=None):
         world.data_tables[player] = init_data_tables(world, player)
         place_bosses(world, player)
         randomize_enemies(world, player)
-        if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connections(world, player)
         adjust_locations(world, player)
 
     if world.customizer and world.customizer.get_start_inventory():
@@ -264,8 +262,6 @@ def main(args, seed=None, fish=None):
         link_overworld(world, player)
         create_dynamic_exits(world, player)
         link_entrances_new(world, player)
-        if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connectors(world, player)
 
     logger.info(world.fish.translate("cli", "cli", "shuffling.prep"))
     for player in range(1, world.players + 1):
@@ -285,6 +281,8 @@ def main(args, seed=None, fish=None):
     logger.info(world.fish.translate("cli", "cli", "generating.itempool"))
 
     for player in range(1, world.players + 1):
+        if world.logic[player] in ('nologic', 'hybridglitches'):
+            create_hybridmajor_connections(world, player)
         generate_itempool(world, player)
 
     verify_item_pool_config(world)
@@ -533,8 +531,6 @@ def copy_world(world):
         create_dungeons(ret, player)
         if world.logic[player] in ('owglitches', 'hybridglitches', 'nologic'):
             create_owg_connections(ret, player)
-        if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connections(ret, player)
 
 
     # there are region references here they must be migrated to preserve integrity
@@ -561,7 +557,10 @@ def copy_world(world):
 
     # connect copied world
     copied_locations = {(loc.name, loc.player): loc for loc in ret.get_locations()}  # caches all locations
-    hmg_entrances = get_hybridmajor_connector_entrances()
+
+    # We have to skip these for now. They require both the rest of the entrances _and_ the dungeon portals to be copied first
+    # We will connect them later
+    hmg_entrances = get_hybridmajor_connection_entrances()
 
     for region in world.regions:
         copied_region = ret.get_region(region.name, region.player)
@@ -621,7 +620,22 @@ def copy_world(world):
 
     for player in range(1, world.players + 1):
         if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connectors(ret, player)
+            create_hybridmajor_connections(ret, player)
+
+    for region in world.regions:
+        copied_region = ret.get_region(region.name, region.player)
+        copied_region.is_light_world = region.is_light_world
+        copied_region.is_dark_world = region.is_dark_world
+        copied_region.dungeon = region.dungeon
+        copied_region.locations = [copied_locations[(location.name, location.player)] for location in region.locations]
+        for location in copied_region.locations:
+            location.parent_region = copied_region
+        for entrance in region.entrances:
+            if entrance.name not in hmg_entrances:
+                continue
+            ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
+            
+    for player in range(1, world.players + 1):
         set_rules(ret, player)
 
     return ret

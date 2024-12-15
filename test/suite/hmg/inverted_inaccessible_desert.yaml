@@ -14,6 +14,8 @@ start_inventory:
 placements:
   1:
     Desert Palace - Boss: Moon Pearl
+    Desert Palace - Prize: Green Pendant
+    Sahasrahla: Magic Mirror
 entrances:
   1:
     two-way:
@@ -22,4 +24,6 @@ entrances:
       Thieves Town: Thieves Town Exit
       Hyrule Castle Entrance (East): Desert Palace Exit (South)
       Hyrule Castle Entrance (West): Desert Palace Exit (North)
+    entrances:
+      Agahnims Tower: Pyramid Fairy
 

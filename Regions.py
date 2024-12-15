@@ -191,19 +191,8 @@ def create_regions(world, player):
         create_dw_region(player, 'Broken Bridge Area', None, ['Broken Bridge Hammer Rock (South)', 'Broken Bridge Water Drop', 'Broken Bridge SW']),
         create_dw_region(player, 'Broken Bridge Northeast', None, ['Broken Bridge Hammer Rock (North)', 'Broken Bridge Hookshot Gap', 'Broken Bridge Northeast Water Drop', 'Broken Bridge NE']),
         create_dw_region(player, 'Broken Bridge West', None, ['Broken Bridge West Water Drop', 'Broken Bridge NW']),
-        create_dw_region(player, 'Broken Bridge Water', None, ['Broken Bridge NC'], 'Dark World', Terrain.Water)
-    ]
-    if world.logic[player] in ['hybridglitches', 'nologic'] and not world.fix_palaceofdarkness_exit[player]:
-        world.regions += [
-            create_dw_region(player, 'Palace of Darkness HMG Area', None, ['Palace of Darkness', 'Palace of Darkness HMG Exit']),
-            create_dw_region(player, 'Palace of Darkness Area', None, ['Palace of Darkness Hint', 'Palace of Darkness SW', 'Palace of Darkness SE', 'Palace of Darkness HMG Entrance'])
-        ]
-    else:
-        world.regions += [
-            create_dw_region(player, 'Palace of Darkness Area', None, ['Palace of Darkness Hint', 'Palace of Darkness', 'Palace of Darkness SW', 'Palace of Darkness SE'])
-        ]
-
-    world.regions += [
+        create_dw_region(player, 'Broken Bridge Water', None, ['Broken Bridge NC'], 'Dark World', Terrain.Water),
+        create_dw_region(player, 'Palace of Darkness Area', None, ['Palace of Darkness Hint', 'Palace of Darkness', 'Palace of Darkness SW', 'Palace of Darkness SE']),
         create_dw_region(player, 'Hammer Pegs Area', ['Dark Blacksmith Ruins'], ['Hammer Peg Cave', 'Peg Area Rocks (East)']),
         create_dw_region(player, 'Hammer Pegs Entry', None, ['Peg Area Rocks (West)', 'Hammer Pegs WS']),
         create_dw_region(player, 'Dark Dunes Area', None, ['Dark Dunes NW', 'Dark Dunes WN', 'Dark Dunes SC']),
