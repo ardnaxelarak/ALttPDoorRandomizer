@@ -28,7 +28,7 @@ from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dunge
 from Fill import dungeon_tracking
 from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items, create_farm_locations
-from UnderworldGlitchRules import create_hybridmajor_connections, create_hybridmajor_connectors, get_hybridmajor_connector_entrances
+from UnderworldGlitchRules import create_hybridmajor_connections, get_hybridmajor_connection_entrances
 from Utils import output_path, parse_player_names
 
 from source.item.District import init_districts
@@ -176,8 +176,6 @@ def main(args, seed=None, fish=None):
         world.data_tables[player] = init_data_tables(world, player)
         place_bosses(world, player)
         randomize_enemies(world, player)
-        if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connections(world, player)
         adjust_locations(world, player)
 
     if any(world.potshuffle.values()):
@@ -204,8 +202,6 @@ def main(args, seed=None, fish=None):
 
     for player in range(1, world.players + 1):
         link_entrances_new(world, player)
-        if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connectors(world, player)
 
     logger.info(world.fish.translate("cli", "cli", "shuffling.prep"))
 
@@ -227,6 +223,8 @@ def main(args, seed=None, fish=None):
         create_farm_locations(world, player)
 
     for player in range(1, world.players + 1):
+        if world.logic[player] in ('nologic', 'hybridglitches'):
+            create_hybridmajor_connections(world, player)
         generate_itempool(world, player)
 
     verify_item_pool_config(world)
@@ -628,8 +626,6 @@ def copy_world(world):
             create_owg_connections(ret, player)
         create_dynamic_exits(ret, player)
         create_dungeon_regions(ret, player)
-        if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connections(ret, player)
         create_owedges(ret, player)
         create_shops(ret, player)
         #create_doors(ret, player)
@@ -660,7 +656,11 @@ def copy_world(world):
 
     # connect copied world
     copied_locations = {(loc.name, loc.player): loc for loc in ret.get_locations()}  # caches all locations
-    hmg_entrances = get_hybridmajor_connector_entrances()
+
+    # We have to skip these for now. They require both the rest of the entrances _and_ the dungeon portals to be copied first
+    # We will connect them later
+    hmg_entrances = get_hybridmajor_connection_entrances()
+
     for region in world.regions:
         copied_region = ret.get_region(region.name, region.player)
         copied_region.is_light_world = region.is_light_world
@@ -739,7 +739,16 @@ def copy_world(world):
         categorize_world_regions(ret, player)
         create_farm_locations(ret, player)
         if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connectors(ret, player)
+            create_hybridmajor_connections(ret, player)
+        
+    for region in world.regions: 
+        copied_region = ret.get_region(region.name, region.player)
+        for entrance in region.entrances:
+            if entrance.name not in hmg_entrances:
+                continue
+            ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
+
+    for player in range(1, world.players + 1):   
         set_rules(ret, player)
 
     return ret
@@ -830,8 +839,6 @@ def copy_world_premature(world, player):
         create_owg_connections(ret, player)
     create_dynamic_exits(ret, player)
     create_dungeon_regions(ret, player)
-    if world.logic[player] in ('nologic', 'hybridglitches'):
-        create_hybridmajor_connections(ret, player)
     create_owedges(ret, player)
     create_shops(ret, player)
     create_doors(ret, player)
@@ -891,7 +898,7 @@ def copy_world_premature(world, player):
         connect_portal(portal, ret, player)
 
     if world.logic[player] in ('nologic', 'hybridglitches'):
-        create_hybridmajor_connectors(ret, player)
+        create_hybridmajor_connections(ret, player)
 
     set_rules(ret, player)
 

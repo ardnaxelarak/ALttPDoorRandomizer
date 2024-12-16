@@ -15,6 +15,9 @@ start_inventory:
     - Ether
     - Quake
     - Bombos
+    - Big Key (Tower of Hera)
+    - Big Key (Desert Palace)
+    - Big Key (Eastern Palace)
 advanced_placements:
   1:
     - type: Verification
