@@ -1,6 +1,9 @@
-from BaseClasses import Entrance
+import functools
+from BaseClasses import Entrance, DoorType
+from DoorShuffle import connect_simple_door
 import Rules
 from OverworldGlitchRules import create_no_logic_connections
+from Doors import create_door
 
 kikiskip_spots = [
     ("Kiki Skip", "Spectacle Rock Cave (Bottom)", "Palace of Darkness Portal")
@@ -26,44 +29,10 @@ paradox_spots = [
     ("Paradox Front Teleport", "Paradox Cave Front", "Paradox Cave Chest Area")
 ]
 
-
-# We need to make connectors at a separate time from the connections, because of how dungeons are linked to regions
-kikiskip_connectors = [
-    ("Kiki Skip Connector", "Spectacle Rock Cave (Bottom)", "Palace of Darkness Exit")
-]
-
-
-mirehera_connectors = [
-    ("Mire to Hera Connector", "Mire Torches Top", "Tower of Hera Exit")
-]
-heraswamp_connectors = [
-    ("Mire to Swamp Connector", "Mire Torches Top", "Swamp Palace Exit")
-]
-thievesdesert_connectors = [
-    ("Thieves to Desert West Connector", "Thieves Attic", "Desert Palace Exit (West)"),
-    (
-        "Thieves to Desert South Connector",
-        "Thieves Attic",
-        "Desert Palace Exit (South)",
-    ),
-    ("Thieves to Desert East Connector", "Thieves Attic", "Desert Palace Exit (East)"),
-]
-specrock_connectors = [
-    (
-        "Spec Rock Top Connector",
-        "Spectacle Rock Cave (Peak)",
-        "Spectacle Rock Cave Exit (Top)",
-    ),
-    (
-        "Spec Rock Exit Connector",
-        "Spectacle Rock Cave (Peak)",
-        "Spectacle Rock Cave Exit",
-    ),
-]
-
-
 # Create connections between dungeons/locations
 def create_hybridmajor_connections(world, player):
+    fix_fake_worlds = world.fix_fake_world[player]
+
     for spots in [
         kikiskip_spots,
         mirehera_spots,
@@ -73,41 +42,33 @@ def create_hybridmajor_connections(world, player):
         specrock_spots,
         paradox_spots,
     ]:
-        create_no_logic_connections(player, world, spots)
+        create_no_logic_connections(player, world, spots, connect_external=fix_fake_worlds)
 
+    # Add the new Ice path (back of bomb drop to front) to the world and model it properly
+    clip_door = create_door(player, "Ice Bomb Drop Clip", DoorType.Logical)
+    world.doors += [clip_door]
+    world.initialize_doors([clip_door])
 
-# Turn dungeons into connectors
-def create_hybridmajor_connectors(world, player):
-    for connectors in [
-        kikiskip_connectors,
-        mirehera_connectors,
-        heraswamp_connectors,
-        thievesdesert_connectors,
-        specrock_connectors,
-    ]:
-        new_connectors = [
-            (
-                connector[0],
-                connector[1],
-                world.get_entrance(connector[2], player).connected_region,
-            )
-            for connector in connectors
-        ]
-        new_connectors = [c for c in new_connectors if c[2] is not None]
-        create_no_logic_connections(player, world, new_connectors)
+    ice_bomb_top_reg = world.get_region("Ice Bomb Drop - Top", player)
+    ice_bomb_top_reg.exits.append(
+        Entrance(player, "Ice Bomb Drop Clip", ice_bomb_top_reg)
+    )
+    connect_simple_door(world, "Ice Bomb Drop Clip", "Ice Bomb Drop", player)
 
-
-def get_hybridmajor_connector_entrances():
-    connectors = []
+def get_hybridmajor_connection_entrances():
+    connections = []
     for connector in (
-        kikiskip_connectors
-        + mirehera_connectors
-        + heraswamp_connectors
-        + thievesdesert_connectors
-        + specrock_connectors
-    ):
-        connectors.append(connector[0])
-    return set(connectors)
+        kikiskip_spots
+        + mirehera_spots
+        + heraswamp_spots
+        + icepalace_spots
+        + thievesdesert_spots
+        + specrock_spots
+        + paradox_spots
+        ):
+        connections.append(connector[0])
+    connections.append('Ice Bomb Drop Clip')
+    return set(connections)
 
 
 # For some entrances, we need to fake having pearl, because we're in fake DW/LW.
@@ -123,19 +84,40 @@ def fake_pearl_state(state, player):
 # Sets the rules on where we can actually go using this clip.
 # Behavior differs based on what type of ER shuffle we're playing.
 def dungeon_reentry_rules(
-    world, player, clip: Entrance, dungeon_region: str, dungeon_exit: str
+    world,
+    player,
+    clip: Entrance,
+    dungeon_region: str,
 ):
     fix_dungeon_exits = world.fix_palaceofdarkness_exit[player]
     fix_fake_worlds = world.fix_fake_world[player]
 
+    all_clips = [
+        x[0]
+        for x in kikiskip_spots
+        + mirehera_spots
+        + heraswamp_spots
+        + icepalace_spots
+        + thievesdesert_spots
+        + specrock_spots
+        + paradox_spots
+    ]
+
     dungeon_entrance = [
         r
         for r in world.get_region(dungeon_region, player).entrances
-        if r.name != clip.name
+        if r.name not in all_clips
     ][0]
-    if (
-        not fix_dungeon_exits
-    ):  # vanilla, simple, restricted, dungeonssimple; should never have fake worlds fix
+
+    dungeon_exit = [
+        r
+        for r in world.get_region(dungeon_region, player).exits
+        if r.name not in all_clips
+    ][0]
+
+
+    if not fix_dungeon_exits:
+        # vanilla, simple, restricted, dungeonssimple; should never have fake worlds fix
         # Dungeons are only shuffled among themselves. We need to check SW, MM, and AT because they can't be reentered trivially.
 
         # entrance doesn't exist until you fire rod it from the other side
@@ -186,32 +168,66 @@ def dungeon_reentry_rules(
 
 
 def underworld_glitches_rules(world, player):
-    # Ice Palace Entrance Clip, needs bombs or cane of somaria to exit bomb drop room
-    Rules.add_rule(
-        world.get_entrance("Ice Bomb Drop SE", player),
-        lambda state: state.can_dash_clip(world.get_region("Ice Lobby", player), player)
-        and (state.can_use_bombs(player) or state.has("Cane of Somaria", player)),
-        combine="or",
-    )
-
-    # Kiki Skip
-    kks = world.get_entrance("Kiki Skip", player)
-    Rules.set_rule(kks, lambda state: state.can_bomb_clip(kks.parent_region, player))
-    dungeon_reentry_rules(
-        world, player, kks, "Palace of Darkness Portal", "Palace of Darkness Exit"
-    )
-
-    # Mire -> Hera -> Swamp
     def mire_clip(state):
-        return state.can_reach(
-            "Mire Torches Top", "Region", player
-        ) and state.can_dash_clip(world.get_region("Mire Torches Top", player), player)
-
-    def hera_clip(state):
-        return state.can_reach("Hera 4F", "Region", player) and state.can_dash_clip(
-            world.get_region("Hera 4F", player), player
+        torches = world.get_region("Mire Torches Top", player)
+        return state.can_dash_clip(torches, player) or (
+            state.can_bomb_clip(torches, player) and state.has_fire_source(player)
         )
 
+    def hera_clip(state):
+        hera = world.get_region("Hera 4F", player)
+        return state.can_bomb_clip(hera, player) or state.can_dash_clip(hera, player)
+
+    # We use these plus functool.partial because lambdas don't work in loops properly.
+    def bomb_clip(state, region, player):
+        return state.can_bomb_clip(region, player)
+
+    def dash_clip(state, region, player):
+        return state.can_dash_clip(region, player)
+    # Bomb clips
+    for clip in (
+        kikiskip_spots
+        + icepalace_spots
+        + thievesdesert_spots
+        + specrock_spots
+    ):
+        region = world.get_region(clip[1], player)
+        Rules.set_rule(
+            world.get_entrance(clip[0], player),
+            functools.partial(bomb_clip, region=region, player=player),
+        )
+    # Dash clips
+    for clip in icepalace_spots:
+        region = world.get_region(clip[1], player)
+        Rules.add_rule(
+            world.get_entrance(clip[0], player),
+            functools.partial(dash_clip, region=region, player=player),
+            combine="or",
+        )
+
+    for spot in kikiskip_spots + thievesdesert_spots:
+        dungeon_reentry_rules(
+            world,
+            player,
+            world.get_entrance(spot[0], player),
+            spot[2],
+        )
+
+    for clip in mirehera_spots:
+        Rules.set_rule(
+            world.get_entrance(clip[0], player),
+            lambda state: mire_clip(state),
+        )
+
+    # Need to be able to escape by hitting the switch from the back
+    Rules.set_rule(
+        world.get_entrance("Ice Bomb Drop Clip", player),
+        lambda state: (
+            state.can_use_bombs(player) or state.has("Cane of Somaria", player)
+        ),
+    )
+
+    # Allow mire big key to be used in Hera
     Rules.add_rule(
         world.get_entrance("Hera Startile Corner NW", player),
         lambda state: mire_clip(state) and state.has("Big Key (Misery Mire)", player),
@@ -222,20 +238,10 @@ def underworld_glitches_rules(world, player):
         lambda state: mire_clip(state) and state.has("Big Key (Misery Mire)", player),
         combine="or",
     )
-
-    mire_to_hera = world.get_entrance("Mire to Hera Clip", player)
-    mire_to_swamp = world.get_entrance("Hera to Swamp Clip", player)
-    Rules.set_rule(mire_to_hera, mire_clip)
+    # This uses the mire clip because it's always expected to come from mire
     Rules.set_rule(
-        mire_to_swamp, lambda state: mire_clip(state) and state.has("Flippers", player)
-    )
-
-    # Using the entrances for various ER types. Hera -> Swamp never matters because you can only logically traverse with the mire keys
-    dungeon_reentry_rules(
-        world, player, mire_to_hera, "Hera Lobby", "Tower of Hera Exit"
-    )
-    dungeon_reentry_rules(
-        world, player, mire_to_swamp, "Swamp Lobby", "Swamp Palace Exit"
+        world.get_entrance("Hera to Swamp Clip", player),
+        lambda state: mire_clip(state) and state.has("Flippers", player),
     )
     # We need to set _all_ swamp doors to be openable with mire keys, otherwise the small key can't be behind them - 6 keys because of Pots
     # Flippers required for all of these doors to prevent locks when flooding
@@ -259,7 +265,6 @@ def underworld_glitches_rules(world, player):
             and state.has("Flippers", player),
             combine="or",
         )
-        # Rules.add_rule(world.get_entrance(door, player), lambda state: mire_clip(state) and state.has('Flippers', player), combine="or")
 
     Rules.add_rule(
         world.get_location("Trench 1 Switch", player),
@@ -312,21 +317,16 @@ def underworld_glitches_rules(world, player):
             lambda state: mirrorless_moat_rule(state),
             combine="or",
         )
+    desert_exits = ["West", "South", "East"]
 
-    for desert_exit in ["East", "South", "West"]:
+    for desert_exit in desert_exits:
         Rules.add_rule(
-            world.get_entrance(f"Thieves to Desert {desert_exit} Connector", player),
+            world.get_entrance(f"Thieves to Desert {desert_exit} Clip", player),
             lambda state: state.can_dash_clip(
                 world.get_region("Thieves Attic", player), player
             ),
         )
-        dungeon_reentry_rules(
-            world,
-            player,
-            world.get_entrance(f"Thieves to Desert {desert_exit} Connector", player),
-            f"Desert {desert_exit} Portal",
-            f"Desert Palace Exit ({desert_exit})",
-        )
+
 
     # Collecting left chests in Paradox Cave using a dash clip -> dash citrus, 1f right, teleport up
     paradox_left_chests = [
