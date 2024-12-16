@@ -520,8 +520,8 @@ def set_up_take_anys(world, player, skip_adjustments=False):
     world.regions.append(old_man_take_any)
     world.dynamic_regions.append(old_man_take_any)
 
-    reg = regions.pop()
-    entrance = world.get_region(reg, player).entrances[0]
+    reg = world.get_region(regions.pop(), player)
+    entrance = next((e for e in reg.entrances if e.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld]))
     connect_entrance(world, entrance, old_man_take_any, player)
     entrance.target = 0x58
     old_man_take_any.shop = Shop(old_man_take_any, 0x0112, ShopType.TakeAny, 0xE2, True, not world.shopsanity[player], 32)
