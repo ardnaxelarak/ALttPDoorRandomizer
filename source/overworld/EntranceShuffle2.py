@@ -1917,8 +1917,8 @@ def connect_exit(exit_name, entrancename, avail):
         exit.connected_region.entrances.remove(exit)
 
     dest_region = entrance.parent_region
-    if dest_region.name == 'Pyramid Crack':
-        # Needs to logically exit into greater Pyramid Area
+    if dest_region.name in ['Pyramid Crack', 'GT Stairs']:
+        # Needs to logically exit into greater OW area
         dest_region = entrance.parent_region.entrances[0].parent_region
 
     exit.connect(dest_region, door_addresses[entrance.name][1], exit_ids[exit.name][1])
