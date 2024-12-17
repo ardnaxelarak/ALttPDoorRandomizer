@@ -1658,14 +1658,15 @@ class Entrance(object):
                                  'Missing Smith':    ('Frog',                  True,    False,     True,    True),
                                  'Middle Aged Man':  ('Dark Blacksmith Ruins', True,    False,     True,    True),
                                  'Old Man Drop Off': ('Lost Old Man',          True,    False,     False,   False),
-                                 #'Revealing Light':  ('Suspicious Maiden',     False,   False,     False,   False) }
+                                 'Revealing Light':  ('Suspicious Maiden',     False,   False,     False,   False)
         }
 
         if self.name in multi_step_locations:
             if self not in state.path:
                 world = self.parent_region.world
-                step_location = world.get_location(multi_step_locations[self.name][0], self.player)
-                if step_location.can_reach(state) and self.can_reach_thru(state, step_location, multi_step_locations[self.name][1], multi_step_locations[self.name][2], multi_step_locations[self.name][3], multi_step_locations[self.name][4]) and self.access_rule(state):
+                multi_step_loc = multi_step_locations[self.name]
+                step_location = world.get_location(multi_step_loc[0], self.player)
+                if step_location.can_reach(state) and self.can_reach_thru(state, step_location, multi_step_loc[1], multi_step_loc[2], multi_step_loc[3], multi_step_loc[4]) and self.access_rule(state):
                     if not self in state.path:
                         path = state.path.get(step_location.parent_region, (step_location.parent_region.name, None))
                         item_name = step_location.item.name if step_location.item else 'Pick Up Item'

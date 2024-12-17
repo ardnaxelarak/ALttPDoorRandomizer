@@ -139,7 +139,8 @@ thieves_regions = [
     'Thieves Attic', 'Thieves Attic Hint', 'Thieves Attic Switch', 'Thieves Cricket Hall Left',
     'Thieves Cricket Hall Right', 'Thieves Attic Window', 'Thieves Basement Block', 'Thieves Blocked Entry',
     'Thieves Lonely Zazak', "Thieves Blind's Cell", "Thieves Blind's Cell Interior", 'Thieves Conveyor Bridge',
-    'Thieves Conveyor Block', 'Thieves Big Chest Room', 'Thieves Trap', 'Thieves Boss Spoils', 'Thieves Town Portal'
+    'Thieves Conveyor Block', 'Thieves Big Chest Room', 'Thieves Trap', 'Thieves Revealing Light',
+    'Thieves Boss Spoils', 'Thieves Town Portal'
 ]
 
 ice_regions = [
