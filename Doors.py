@@ -727,6 +727,7 @@ def create_doors(world, player):
         create_door(player, 'Thieves Big Chest Room ES', Intr).dir(Ea, 0x44, Bot, High).small_key().pos(1),
         create_door(player, 'Thieves Conveyor Block WN', Intr).dir(We, 0x44, Top, High).pos(0),
         create_door(player, 'Thieves Trap EN', Intr).dir(Ea, 0x44, Left, Top).pos(0),
+        create_door(player, 'Revealing Light', Lgcl),
         create_door(player, 'Thieves Town Boss', Lgcl),
 
         create_door(player, 'Ice Lobby SE', Nrml).dir(So, 0x0e, Right, High).pos(2).portal(X, 0x00),

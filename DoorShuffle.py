@@ -3792,7 +3792,7 @@ logical_connections = [
     ('Thieves Conveyor Block Path', 'Thieves Conveyor Bridge'),
     ("Thieves Blind's Cell Door", "Thieves Blind's Cell Interior"),
     ("Thieves Blind's Cell Exit", "Thieves Blind's Cell"),
-    ('Revealing Light', 'Thieves Revealing Light'),
+    ('Revealing Light', 'Revealing Light'),
     ('Thieves Town Boss', 'Thieves Boss Spoils'),
 
     ('Ice Cross Bottom Push Block Left', 'Ice Floor Switch'),
