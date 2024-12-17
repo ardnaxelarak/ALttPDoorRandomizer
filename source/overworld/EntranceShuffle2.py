@@ -1631,7 +1631,8 @@ def do_mandatory_connections(avail, entrances, cave_options, must_exit):
             cave_entrances = []
             for cave_exit in rnd_cave[:-1]:
                 if avail.swapped and cave_exit not in avail.exits:
-                    entrance = avail.world.get_entrance(cave_exit, avail.player).parent_region.entrances[0].name
+                    entrance = avail.world.get_entrance(cave_exit, avail.player)
+                    entrance = next((e for e in entrance.parent_region.entrances if e.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld])).name
                     cave_entrances.append(entrance)
                 else:
                     entrance = next(e for e in entrances[::-1] if e not in invalid_connections[exit] and e not in must_exit
