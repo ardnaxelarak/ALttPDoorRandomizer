@@ -863,7 +863,9 @@ def copy_world_premature(world, player):
             for location in copied_region.locations:
                 location.parent_region = copied_region
             for entrance in region.entrances:
-                copied_region.entrances.append(ret.get_entrance(entrance.name, entrance.player))
+                ent = ret.get_entrance(entrance.name, entrance.player)
+                if ent not in copied_region.entrances:
+                    copied_region.entrances.append(ent)
             for exit in region.exits:
                 if exit.connected_region:
                     dest_region = ret.get_region(exit.connected_region.name, region.player)

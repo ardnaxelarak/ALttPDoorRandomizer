@@ -1843,7 +1843,8 @@ class Entrance(object):
         self.target = target
         self.addresses = addresses
         self.vanilla = vanilla
-        region.entrances.append(self)
+        if self not in region.entrances:
+            region.entrances.append(self)
 
     def __str__(self):
         return str(self.__unicode__())
