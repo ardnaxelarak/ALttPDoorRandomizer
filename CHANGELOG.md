@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0.6
+- New improved Pseudoboots behavior
+- Fixed issue with missing Blue Potion in Dark Lake Shop in Inverted
+- Various generation and logic fixes for HMG/NL
+- Fixed error with prize plando
+- Fixed error with District ER
+- Added TT Maiden pathing to spoiler log
+- Corrected and improved some pathing logic
+
 ## 0.5.0.5
 - Fixed issue with vanilla HCBK acting like a small key
 

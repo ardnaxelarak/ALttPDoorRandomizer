@@ -520,8 +520,8 @@ def set_up_take_anys(world, player, skip_adjustments=False):
     world.regions.append(old_man_take_any)
     world.dynamic_regions.append(old_man_take_any)
 
-    reg = regions.pop()
-    entrance = world.get_region(reg, player).entrances[0]
+    reg = world.get_region(regions.pop(), player)
+    entrance = next((e for e in reg.entrances if e.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld]))
     connect_entrance(world, entrance, old_man_take_any, player)
     entrance.target = 0x58
     old_man_take_any.shop = Shop(old_man_take_any, 0x0112, ShopType.TakeAny, 0xE2, True, not world.shopsanity[player], 32)
@@ -1669,15 +1669,15 @@ def get_item_and_event_flag(item, world, player, dungeon_pool, prize_set, prize_
     item_player = player if len(item_parts) < 2 else int(item_parts[1])
     item_name = item_parts[0]
     event_flag = False
-    if is_dungeon_item(item_name, world, item_player):
-        item_to_place = next(x for x in dungeon_pool
-                             if x.name == item_name and x.player == item_player)
-        dungeon_pool.remove(item_to_place)
-        event_flag = True
-    elif item_name in prize_set:
+    if item_name in prize_set:
         item_player = player  # prizes must be for that player
         item_to_place = ItemFactory(item_name, item_player)
         prize_pool.remove(item_name)
+        event_flag = True
+    elif is_dungeon_item(item_name, world, item_player):
+        item_to_place = next(x for x in dungeon_pool
+                            if x.name == item_name and x.player == item_player)
+        dungeon_pool.remove(item_to_place)
         event_flag = True
     else:
         matcher = lambda x: x.name == item_name and x.player == item_player

@@ -718,7 +718,8 @@ def create_dungeon_regions(world, player):
         create_dungeon_region(player, 'Thieves Compass Room', 'Thieves\' Town', ['Thieves\' Town - Compass Chest'], ['Thieves Compass Room NW Edge', 'Thieves Compass Room N Edge', 'Thieves Compass Room WS Edge', 'Thieves Compass Room W']),
         create_dungeon_region(player, 'Thieves Big Chest Nook', 'Thieves\' Town', ['Thieves\' Town - Big Key Chest'], ['Thieves Big Chest Nook ES Edge']),
         create_dungeon_region(player, 'Thieves Hallway', 'Thieves\' Town', ['Thieves\' Town - Hallway Pot Key'], ['Thieves Hallway SE', 'Thieves Hallway NE', 'Thieves Hallway WN', 'Thieves Hallway WS']),
-        create_dungeon_region(player, 'Thieves Boss', 'Thieves\' Town', ['Revealing Light'], ['Thieves Boss SE', 'Thieves Town Boss']),
+        create_dungeon_region(player, 'Thieves Boss', 'Thieves\' Town', None, ['Thieves Boss SE', 'Revealing Light']),
+        create_dungeon_region(player, 'Revealing Light', 'Thieves\' Town', ['Revealing Light'], ['Thieves Town Boss']),
         create_dungeon_region(player, 'Thieves Boss Spoils', 'Thieves\' Town', ['Thieves\' Town - Boss', 'Thieves\' Town - Prize', 'Thieves\' Town - Boss Kill']),
         create_dungeon_region(player, 'Thieves Pot Alcove Mid', 'Thieves\' Town', None, ['Thieves Pot Alcove Mid ES', 'Thieves Pot Alcove Mid WS']),
         create_dungeon_region(player, 'Thieves Pot Alcove Bottom', 'Thieves\' Town', None, ['Thieves Pot Alcove Bottom SW']),
@@ -1161,7 +1162,7 @@ def create_shops(world, player):
     world.shops[player] = []
     for region_name, (room_id, type, shopkeeper, custom, locked, inventory, sram) in shop_table.items():
         if world.mode[player] == 'inverted':
-            if (not world.is_tile_swapped(0x35, player) and region_name == 'Dark Lake Hylia Shop') \
+            if (world.is_tile_swapped(0x35, player) and region_name == 'Dark Lake Hylia Shop') \
                     or (not world.is_tile_swapped(0x35, player) and region_name == 'Lake Hylia Shop'):
                 locked = True
                 inventory = [('Blue Potion', 160), ('Blue Shield', 50), ('Bombs (10)', 50)]

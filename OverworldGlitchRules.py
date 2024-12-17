@@ -2,7 +2,7 @@
 Helper functions to deliver entrance/exit/region sets to OWG rules.
 """
 
-from BaseClasses import Entrance
+from BaseClasses import Entrance, Region
 from OWEdges import OWTileRegions
 
 # Cave regions that superbunny can get through - but only with a sword.
@@ -327,10 +327,18 @@ def add_additional_rule(entrance, rule):
     entrance.access_rule = lambda state: old_rule(state) and rule(state)
 
 
-def create_no_logic_connections(player, world, connections):
+def create_no_logic_connections(player, world, connections, connect_external=False):
     for entrance, parent_region, target_region, *_ in connections:
         parent = world.get_region(parent_region, player)
-        target = world.get_region(target_region, player)
+
+        if isinstance(target_region, Region):
+            target_region = target_region.name
+            
+        if connect_external and target_region.endswith(" Portal"):
+            target = world.get_portal(target_region[:-7], player).find_portal_entrance().parent_region
+        else:
+            target = world.get_region(target_region, player)
+
         connection = Entrance(player, entrance, parent)
         connection.spot_type = 'OWG'
         parent.exits.append(connection)

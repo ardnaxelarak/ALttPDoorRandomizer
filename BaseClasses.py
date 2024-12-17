@@ -1658,14 +1658,15 @@ class Entrance(object):
                                  'Missing Smith':    ('Frog',                  True,    False,     True,    True),
                                  'Middle Aged Man':  ('Dark Blacksmith Ruins', True,    False,     True,    True),
                                  'Old Man Drop Off': ('Lost Old Man',          True,    False,     False,   False),
-                                 #'Revealing Light':  ('Suspicious Maiden',     False,   False,     False,   False) }
+                                 'Revealing Light':  ('Suspicious Maiden',     False,   False,     False,   False)
         }
 
         if self.name in multi_step_locations:
             if self not in state.path:
                 world = self.parent_region.world
-                step_location = world.get_location(multi_step_locations[self.name][0], self.player)
-                if step_location.can_reach(state) and self.can_reach_thru(state, step_location, multi_step_locations[self.name][1], multi_step_locations[self.name][2], multi_step_locations[self.name][3], multi_step_locations[self.name][4]) and self.access_rule(state):
+                multi_step_loc = multi_step_locations[self.name]
+                step_location = world.get_location(multi_step_loc[0], self.player)
+                if step_location.can_reach(state) and self.can_reach_thru(state, step_location, multi_step_loc[1], multi_step_loc[2], multi_step_loc[3], multi_step_loc[4]) and self.access_rule(state):
                     if not self in state.path:
                         path = state.path.get(step_location.parent_region, (step_location.parent_region.name, None))
                         item_name = step_location.item.name if step_location.item else 'Pick Up Item'
@@ -1729,7 +1730,8 @@ class Entrance(object):
             # this is checked first as this often the shortest path
             follower_region = start_region
             if follower_region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
-                follower_region = [i for i in start_region.entrances if i.parent_region.name != 'Menu'][0].parent_region
+                ent_list = [e for e in start_region.entrances if e.parent_region.type != RegionType.Menu]
+                follower_region = ent_list[0].parent_region
             if (follower_region.world.mode[self.player] != 'inverted') == (follower_region.type == RegionType.LightWorld):
                 from OverworldShuffle import get_mirror_edges
                 mirror_map = get_mirror_edges(follower_region.world, follower_region, self.player)
@@ -1747,7 +1749,8 @@ class Entrance(object):
                     path = (follower_region.name, (mirror_exit, path))
                     item_name = step_location.item.name if step_location.item else 'Pick Up Item'
                     if start_region.name != follower_region.name:
-                        path = (start_region.name, (start_region.entrances[0].name, path))
+                        ent_list = [e for e in start_region.entrances if e.parent_region.type != RegionType.Menu]
+                        path = (start_region.name, (ent_list[0].name, path))
                         path = (f'{step_location.parent_region.name} Exit', ('Leave Item Area', (item_name, path)))
                     else:
                         path = (item_name, path)
@@ -1758,25 +1761,36 @@ class Entrance(object):
                     path = (self.parent_region.name, path)
                     state.path[self] = (self.name, path)
         
-        if not found:
-            # check normal paths
-            traverse_paths(start_region.entrances[0].parent_region, self.parent_region)
+        for ent in start_region.entrances:
+            if not found:
+                # check normal paths
+                if ent.parent_region.type != RegionType.Menu and (ent.parent_region.type == start_region.type or \
+                        ent.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld] or not ignore_underworld):
+                    traverse_paths(ent.parent_region, self.parent_region)
 
         if not found and allow_save_quit:
             # check paths involving save and quit
             exit = self.parent_region.world.get_entrance('Links House S&Q', self.player)
             traverse_paths(exit.connected_region, self.parent_region, [exit])
+            if not found:
+                world = self.parent_region.world
+                exit = world.get_entrance('Sanctuary S&Q', self.player)
+                # only allow save and quit at Sanc if the lobby is guaranteed vanilla
+                if exit.connected_region != 'Sanctuary' or world.mode[self.player] == 'standard' \
+                        or world.doorShuffle[self.player] == 'vanilla' or world.intensity[self.player] < 3:
+                    traverse_paths(exit.connected_region, self.parent_region, [exit])
         
         if not found and allow_mirror_reentry and state.has_Mirror(self.player):
             # check for paths using mirror portal re-entry at location of final destination
             # this is checked last as this is the most complicated/exhaustive check
             follower_region = start_region
             if follower_region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
-                follower_region = start_region.entrances[0].parent_region
+                ent_list = [e for e in start_region.entrances if e.parent_region.type != RegionType.Menu]
+                follower_region = ent_list[0].parent_region
             if (follower_region.world.mode[self.player] != 'inverted') == (follower_region.type == RegionType.LightWorld):
                 dest_region = self.parent_region
                 if dest_region.type not in [RegionType.LightWorld, RegionType.DarkWorld]:
-                    dest_region = start_region.entrances[0].parent_region
+                    dest_region = dest_region.entrances[0].parent_region
                 if (dest_region.world.mode[self.player] != 'inverted') != (dest_region.type == RegionType.LightWorld):
                     # loop thru potential places to leave a mirror portal
                     from OverworldShuffle import get_mirror_edges
@@ -1829,7 +1843,8 @@ class Entrance(object):
         self.target = target
         self.addresses = addresses
         self.vanilla = vanilla
-        region.entrances.append(self)
+        if self not in region.entrances:
+            region.entrances.append(self)
 
     def __str__(self):
         return str(self.__unicode__())
@@ -3119,9 +3134,9 @@ class Spoiler(object):
             self.bosses[str(player)] = OrderedDict()
             self.bosses[str(player)]["Eastern Palace"] = self.world.get_dungeon("Eastern Palace", player).boss.name
             self.bosses[str(player)]["Desert Palace"] = self.world.get_dungeon("Desert Palace", player).boss.name
-            self.bosses[str(player)]["Tower Of Hera"] = self.world.get_dungeon("Tower of Hera", player).boss.name
+            self.bosses[str(player)]["Tower of Hera"] = self.world.get_dungeon("Tower of Hera", player).boss.name
             self.bosses[str(player)]["Hyrule Castle"] = "Agahnim"
-            self.bosses[str(player)]["Palace Of Darkness"] = self.world.get_dungeon("Palace of Darkness", player).boss.name
+            self.bosses[str(player)]["Palace of Darkness"] = self.world.get_dungeon("Palace of Darkness", player).boss.name
             self.bosses[str(player)]["Swamp Palace"] = self.world.get_dungeon("Swamp Palace", player).boss.name
             self.bosses[str(player)]["Skull Woods"] = self.world.get_dungeon("Skull Woods", player).boss.name
             self.bosses[str(player)]["Thieves Town"] = self.world.get_dungeon("Thieves Town", player).boss.name

@@ -9,6 +9,7 @@ start_inventory:
     - Flippers
     - Pegasus Boots
     - Progressive Sword
+    - Progressive Sword
     - Hammer
     - Progressive Glove
     - Progressive Glove
@@ -17,9 +18,16 @@ start_inventory:
     - Bottle
     - Magic Mirror
     - Lamp
+    - Beat Agahnim 1
+    - Cane of Somaria
+    - Hookshot
+    - Quake
+    - Ether
+    - Bombos
 advanced_placements:
   1:
     - type: Verification
       item: Moon Pearl
       locations:
         Skull Woods - Bridge Room: True
+        Skull Woods - Boss: True

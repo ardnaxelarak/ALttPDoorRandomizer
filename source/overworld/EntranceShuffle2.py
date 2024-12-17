@@ -907,7 +907,7 @@ def figure_out_connectors(exits, avail, cross_world=True):
     cave_list = list(Connector_List)
     if avail.assumed_loose_caves or (not avail.skull_handled and (cross_world or not avail.world.is_tile_swapped(0x00, avail.player))):
         skull_connector = [x for x in ['Skull Woods Second Section Exit (West)', 'Skull Woods Second Section Exit (East)'] if x in exits]
-        cave_list.extend(skull_connector)
+        cave_list.extend([skull_connector])
     if avail.assumed_loose_caves or not avail.keep_drops_together:
         cave_list.extend([[entrance_map[e]] for e in linked_drop_map.values() if 'Inverted ' not in e and 'Skull Woods ' not in e])
 
@@ -1631,7 +1631,8 @@ def do_mandatory_connections(avail, entrances, cave_options, must_exit):
             cave_entrances = []
             for cave_exit in rnd_cave[:-1]:
                 if avail.swapped and cave_exit not in avail.exits:
-                    entrance = avail.world.get_entrance(cave_exit, avail.player).parent_region.entrances[0].name
+                    entrance = avail.world.get_entrance(cave_exit, avail.player)
+                    entrance = next((e for e in entrance.parent_region.entrances if e.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld])).name
                     cave_entrances.append(entrance)
                 else:
                     entrance = next(e for e in entrances[::-1] if e not in invalid_connections[exit] and e not in must_exit
@@ -1917,8 +1918,8 @@ def connect_exit(exit_name, entrancename, avail):
         exit.connected_region.entrances.remove(exit)
 
     dest_region = entrance.parent_region
-    if dest_region.name == 'Pyramid Crack':
-        # Needs to logically exit into greater Pyramid Area
+    if dest_region.name in ['Pyramid Crack', 'GT Stairs']:
+        # Needs to logically exit into greater OW area
         dest_region = entrance.parent_region.entrances[0].parent_region
 
     exit.connect(dest_region, door_addresses[entrance.name][1], exit_ids[exit.name][1])

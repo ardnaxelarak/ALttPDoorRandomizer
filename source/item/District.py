@@ -111,7 +111,7 @@ def resolve_districts(world):
                     visited = set()
                     while len(queue) > 0:
                         region = queue.pop()
-                        if not region:
+                        if region is None:
                             RuntimeError(f'No region connected to entrance: {ent.name} Likely a missing entry in OWExitTypes')
                         visited.add(region)
                         if region.type == RegionType.Cave:

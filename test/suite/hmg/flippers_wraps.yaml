@@ -19,8 +19,6 @@ advanced_placements:
       locations:
         Link's House: True
         Magic Bat: False
-advanced_placements:
-  1:
     - type: Verification
       item: Progressive Glove
       locations:
