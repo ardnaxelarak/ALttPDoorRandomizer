@@ -71,7 +71,6 @@ class World(object):
         self.fix_palaceofdarkness_exit = {}
         self.fix_trock_exit = {}
         self.shuffle_ganon = shuffle_ganon
-        self.fix_gtower_exit = self.shuffle_ganon
         self.custom = custom
         self.customitemarray = customitemarray
         self.can_take_damage = True
@@ -133,6 +132,7 @@ class World(object):
             set_player_attr('fix_skullwoods_exit', self.shuffle[player] not in ['vanilla', 'simple', 'restricted', 'dungeonssimple'] or self.doorShuffle[player] not in ['vanilla'])
             set_player_attr('fix_palaceofdarkness_exit', self.shuffle[player] not in ['vanilla', 'simple', 'restricted', 'dungeonssimple'])
             set_player_attr('fix_trock_exit', self.shuffle[player] not in ['vanilla', 'simple', 'restricted', 'dungeonssimple'])
+            set_player_attr('fix_gtower_exit', self.shuffle_ganon[player] > 0)
             set_player_attr('can_access_trock_eyebridge', None)
             set_player_attr('can_access_trock_front', None)
             set_player_attr('can_access_trock_big_chest', None)
