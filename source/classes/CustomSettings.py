@@ -147,11 +147,14 @@ class CustomSettings(object):
                 args.compassshuffle[p] = get_setting(settings['compassshuffle'], args.compassshuffle[p])
 
                 if get_setting(settings['keysanity'], args.keysanity):
-                    args.bigkeyshuffle[p] = True
+                    if args.bigkeyshuffle[p] == 'none':
+                        args.bigkeyshuffle[p] = 'wild'
                     if args.keyshuffle[p] == 'none':
                         args.keyshuffle[p] = 'wild'
-                    args.mapshuffle[p] = True
-                    args.compassshuffle[p] = True
+                    if args.mapshuffle[p] == 'none':
+                        args.mapshuffle[p] = 'wild'
+                    if args.compassshuffle[p] == 'none':
+                        args.compassshuffle[p] = 'wild'
 
                 args.shufflebosses[p] = get_setting(settings['boss_shuffle'], get_setting(settings['shufflebosses'], args.shufflebosses[p]))
                 args.shuffleenemies[p] = get_setting(settings['enemy_shuffle'], get_setting(settings['shuffleenemies'], args.shuffleenemies[p]))

@@ -139,10 +139,10 @@ class World(object):
             set_player_attr('can_access_trock_middle', None)
             set_player_attr('fix_fake_world', logic[player] not in ['owglitches', 'hybridglitches', 'nologic']
                             or shuffle[player] in ['lean', 'swapped', 'crossed', 'insanity'])
-            set_player_attr('mapshuffle', False)
-            set_player_attr('compassshuffle', False)
+            set_player_attr('mapshuffle', 'none')
+            set_player_attr('compassshuffle', 'none')
             set_player_attr('keyshuffle', 'none')
-            set_player_attr('bigkeyshuffle', False)
+            set_player_attr('bigkeyshuffle', 'none')
             set_player_attr('prizeshuffle', 'none')
             set_player_attr('restrict_boss_items', 'none')
             set_player_attr('bombbag', False)
@@ -477,7 +477,7 @@ class World(object):
         item.world = self
         if ((item.prize and self.prizeshuffle[item.player] != 'none')
                 or (item.smallkey and self.keyshuffle[item.player] != 'none')
-                or (item.bigkey and self.bigkeyshuffle[item.player])):
+                or (item.bigkey and self.bigkeyshuffle[item.player] != 'none')):
             item.advancement = True
         self.precollected_items.append(item)
         self.state.collect(item, True)
@@ -1100,7 +1100,7 @@ class CollectionState(object):
         new_locations = True
         while new_locations:
             reachable_events = [location for location in locations if location.event and
-                                (not key_only or (self.world.keyshuffle[location.item.player] == 'none' and location.item.smallkey) or (not self.world.bigkeyshuffle[location.item.player] and location.item.bigkey))
+                                (not key_only or (self.world.keyshuffle[location.item.player] in ['none', 'district'] and location.item.smallkey) or (self.world.bigkeyshuffle[location.item.player] in ['none', 'district'] and location.item.bigkey))
                                 and location.can_reach(self)]
             reachable_events = self._do_not_flood_the_keys(reachable_events)
             new_locations = False
@@ -1577,6 +1577,7 @@ class Region(object):
         self.exits = []
         self.locations = []
         self.dungeon = None
+        self.districts = []
         self.shop = None
         self.world = None
         self.is_light_world = False  # will be set aftermaking connections.
@@ -1607,10 +1608,16 @@ class Region(object):
         return False
 
     def can_fill(self, item):
+        if item.is_near_dungeon_item(self.world):
+            item_dungeon = self.world.get_dungeon(item.dungeon, self.player) if item.dungeon else item.dungeon_object
+            ret = (self.dungeon and self.dungeon.is_dungeon_item(item))
+            ret = ret or (len(self.districts) and item_dungeon and len([d for d in self.districts if d in item_dungeon.districts]))
+            return ret and item.player == self.player
+
         inside_dungeon_item = ((item.smallkey and self.world.keyshuffle[item.player] == 'none')
-                               or (item.bigkey and not self.world.bigkeyshuffle[item.player])
-                               or (item.map and not self.world.mapshuffle[item.player])
-                               or (item.compass and not self.world.compassshuffle[item.player])
+                               or (item.bigkey and self.world.bigkeyshuffle[item.player] == 'none')
+                               or (item.map and self.world.mapshuffle[item.player] == 'none')
+                               or (item.compass and self.world.compassshuffle[item.player] == 'none')
                                or (item.prize and self.world.prizeshuffle[item.player] == 'dungeon'))
         # not all small keys to escape must be in escape
         # sewer_hack = self.world.mode[item.player] == 'standard' and item.name == 'Small Key (Escape)'
@@ -1859,6 +1866,7 @@ class Dungeon(object):
     def __init__(self, name, regions, big_key, small_keys, dungeon_items, player, dungeon_id):
         self.name = name
         self.regions = regions
+        self.districts = []
         self.prize = None
         self.big_key = big_key
         self.small_keys = small_keys
@@ -1887,8 +1895,8 @@ class Dungeon(object):
         return self.dungeon_items + self.keys + ([self.prize] if self.prize else [])
 
     def is_dungeon_item(self, item):
-        if item.prize:
-            return item.player == self.player and self.prize is None and self.name not in ['Hyrule Castle', 'Agahnims Tower', 'Ganons Tower']
+        if item.prize and item.dungeon is None:
+            return item.player == self.player and self.name not in ['Hyrule Castle', 'Agahnims Tower', 'Ganons Tower']
         else:
             return item.player == self.player and item.name in [dungeon_item.name for dungeon_item in self.all_items]
 
@@ -2757,6 +2765,7 @@ class Item(object):
         self.code = code
         self.price = price
         self.location = None
+        self.dungeon_object = None
         self.world = None
         self.player = player
 
@@ -2792,9 +2801,16 @@ class Item(object):
     def is_inside_dungeon_item(self, world):
         return ((self.prize and world.prizeshuffle[self.player] in ['none', 'dungeon'])
                 or (self.smallkey and world.keyshuffle[self.player] == 'none')
-                or (self.bigkey and not world.bigkeyshuffle[self.player])
-                or (self.compass and not world.compassshuffle[self.player])
-                or (self.map and not world.mapshuffle[self.player]))
+                or (self.bigkey and world.bigkeyshuffle[self.player] == 'none')
+                or (self.compass and world.compassshuffle[self.player] == 'none')
+                or (self.map and world.mapshuffle[self.player] == 'none'))
+
+    def is_near_dungeon_item(self, world):
+        return ((self.prize and world.prizeshuffle[self.player] == 'district')
+                or (self.smallkey and world.keyshuffle[self.player] == 'district')
+                or (self.bigkey and world.bigkeyshuffle[self.player] == 'district')
+                or (self.compass and world.compassshuffle[self.player] == 'district')
+                or (self.map and world.mapshuffle[self.player] == 'district'))
 
     def get_map_location(self):
         if self.location:
@@ -3266,10 +3282,10 @@ class Spoiler(object):
                     outfile.write('Pyramid Hole Pre-opened:'.ljust(line_width) + '%s\n' % self.metadata['open_pyramid'][player])
                     outfile.write('Overworld Map:'.ljust(line_width) + '%s\n' % self.metadata['overworld_map'][player])
                     outfile.write('\n')
-                    outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['mapshuffle'][player]))
-                    outfile.write('Compass Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['compassshuffle'][player]))
+                    outfile.write('Map Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['mapshuffle'][player])
+                    outfile.write('Compass Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['compassshuffle'][player])
                     outfile.write('Small Key Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['keyshuffle'][player])
-                    outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % yn(self.metadata['bigkeyshuffle'][player]))
+                    outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['bigkeyshuffle'][player])
                     outfile.write('Prize Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['prizeshuffle'][player])
                     outfile.write('Key Logic Algorithm:'.ljust(line_width) + '%s\n' % self.metadata['key_logic'][player])
                     outfile.write('\n')
@@ -3627,9 +3643,11 @@ counter_mode = {"default": 0, "off": 1, "on": 2, "pickup": 3}
 # byte 6: LCCC CPAA (shuffle links, crystals ganon, pyramid, access
 access_mode = {"items": 0, "locations": 1, "none": 2}
 
-# byte 7: B?MC DDPP (big, ?, maps, compass, door_type, prize shuffle)
-door_type_mode = {'original': 0, 'big': 1, 'all': 2, 'chaos': 3}
-prizeshuffle_mode = {'none': 0, 'dungeon': 1, 'wild': 3}
+# byte 7: MMCC SSBB (maps, compass, small, big)
+mapshuffle_mode = {'none': 0, 'off': 0, 'district': 2, 'wild': 3, 'on': 3}
+compassshuffle_mode = {'none': 0, 'off': 0, 'district': 2, 'wild': 3, 'on': 3}
+keyshuffle_mode = {'none': 0, 'off': 0, 'universal': 1, 'district': 2, 'wild': 3, 'on': 3}
+bigkeyshuffle_mode = {'none': 0, 'off': 0, 'district': 2, 'wild': 3, 'on': 3}
 
 # byte 8: HHHD DPEE (enemy_health, enemy_dmg, potshuffle, enemies)
 e_health = {"default": 0, "easy": 1, "normal": 2, "hard": 3, "expert": 4}
@@ -3651,11 +3669,11 @@ orcrossed_mode = {"none": 0, "polar": 1, "grouped": 2, "unrestricted": 4}
 # byte 12: KMB? FF?? (keep similar, mixed/tile flip, bonk drops, flute spots)
 flutespot_mode = {"vanilla": 0, "balanced": 1, "random": 2}
 
-# byte 13: FBBB TTSS (flute_mode, bow_mode, take_any, small_key_mode)
+# byte 13: FBBB TTPP (flute_mode, bow_mode, take_any, prize shuffle)
 flute_mode = {'normal': 0, 'active': 1}
 bow_mode = {'progressive': 0, 'silvers': 1, 'retro': 2, 'retro_silvers': 3}  # reserved 8 modes?
 take_any_mode = {'none': 0, 'random': 1, 'fixed': 2}
-keyshuffle_mode = {'none': 0, 'off': 0, 'wild': 1, 'on': 1, 'universal': 2}
+prizeshuffle_mode = {'none': 0, 'dungeon': 1, 'district': 2, 'wild': 3}
 
 # additions
 # byte 14: POOT TKKK (pseudoboots, overworld_map, trap_door_mode, key_logic_algo)
@@ -3663,9 +3681,10 @@ overworld_map_mode = {'default': 0, 'compass': 1, 'map': 2}
 trap_door_mode = {'vanilla': 0, 'optional': 1, 'boss': 2, 'oneway': 3}
 key_logic_algo = {'dangerous': 0, 'partial': 1, 'strict': 2}
 
-# byte 15: SSDD ???? (skullwoods, linked_drops, 4 free bytes)
+# byte 15: SSLL ??DD (skullwoods, linked_drops, 2 free bytes, door_type)
 skullwoods_mode = {'original': 0, 'restricted': 1, 'loose': 2, 'followlinked': 3}
 linked_drops_mode = {'unset': 0, 'linked': 1, 'independent': 2}
+door_type_mode = {'original': 0, 'big': 1, 'all': 2, 'chaos': 3}
 
 # sfx_shuffle and other adjust items does not affect settings code
 
@@ -3700,9 +3719,8 @@ class Settings(object):
             (0x80 if w.shufflelinks[p] else 0) | ((8 if w.crystals_ganon_orig[p] == "random" else int(w.crystals_ganon_orig[p])) << 3)
             | (0x4 if w.is_pyramid_open(p) else 0) | access_mode[w.accessibility[p]],
 
-            (0x80 if w.bigkeyshuffle[p] else 0)
-            | (0x20 if w.mapshuffle[p] else 0) | (0x10 if w.compassshuffle[p] else 0)
-            | (door_type_mode[w.door_type_mode[p]] << 2) | prizeshuffle_mode[w.prizeshuffle[p]],
+            (mapshuffle_mode[w.mapshuffle[p]] << 6) | (compassshuffle_mode[w.compassshuffle[p]] << 4)
+            | (keyshuffle_mode[w.keyshuffle[p]] << 2) | (bigkeyshuffle_mode[w.bigkeyshuffle[p]]),
 
             (e_health[w.enemy_health[p]] << 5) | (e_dmg[w.enemy_damage[p]] << 3)
             | (0x4 if w.potshuffle[p] else 0) | (enemy_mode[w.enemy_shuffle[p]]),
@@ -3718,12 +3736,13 @@ class Settings(object):
             | (0x20 if w.shuffle_bonk_drops[p] else 0) | (flutespot_mode[w.owFluteShuffle[p]] << 4),
 
             (flute_mode[w.flute_mode[p]] << 7 | bow_mode[w.bow_mode[p]] << 4
-             | take_any_mode[w.take_any[p]] << 2 | keyshuffle_mode[w.keyshuffle[p]]),
+             | take_any_mode[w.take_any[p]] << 2 | prizeshuffle_mode[w.prizeshuffle[p]]),
 
             ((0x80 if w.pseudoboots[p] else 0) | overworld_map_mode[w.overworld_map[p]] << 5
              | trap_door_mode[w.trap_door_mode[p]] << 3 | key_logic_algo[w.key_logic_algorithm[p]]),
 
-            (skullwoods_mode[w.skullwoods[p]] << 6 | linked_drops_mode[w.linked_drops[p]] << 4),
+            (skullwoods_mode[w.skullwoods[p]] << 6 | linked_drops_mode[w.linked_drops[p]] << 4
+             | door_type_mode[w.door_type_mode[p]]),
         ])
         return base64.b64encode(code, "+-".encode()).decode()
 
@@ -3776,11 +3795,10 @@ class Settings(object):
         args.crystals_ganon[p] = "random" if cgan == 8 else cgan
         args.openpyramid[p] = True if settings[6] & 0x4 else False
 
-        args.bigkeyshuffle[p] = True if settings[7] & 0x80 else False
-        args.mapshuffle[p] = True if settings[7] & 0x20 else False
-        args.compassshuffle[p] = True if settings[7] & 0x10 else False
-        args.door_type_mode[p] = r(door_type_mode)[(settings[7] & 0xc) >> 2]
-        args.prizeshuffle[p] = r(prizeshuffle_mode)[settings[7] & 0x3]
+        args.mapshuffle[p] = r(mapshuffle_mode)[(settings[7] & 0xC0) >> 6]
+        args.compassshuffle[p] = r(compassshuffle_mode)[(settings[7] & 0x30) >> 4]
+        args.keyshuffle[p] = r(keyshuffle_mode)[(settings[7] & 0xC) >> 2]
+        args.bigkeyshuffle[p] = r(bigkeyshuffle_mode)[settings[7] & 0x3]
 
         args.enemy_health[p] = r(e_health)[(settings[8] & 0xE0) >> 5]
         args.enemy_damage[p] = r(e_dmg)[(settings[8] & 0x18) >> 3]
@@ -3806,7 +3824,7 @@ class Settings(object):
             args.flute_mode[p] = r(flute_mode)[(settings[13] & 0x80) >> 7]
             args.bow_mode[p] = r(bow_mode)[(settings[13] & 0x70) >> 4]
             args.take_any[p] = r(take_any_mode)[(settings[13] & 0xC) >> 2]
-            args.keyshuffle[p] = r(keyshuffle_mode)[settings[13] & 0x3]
+            args.prizeshuffle[p] = r(prizeshuffle_mode)[settings[13] & 0x3]
 
         if len(settings) > 14:
             args.pseudoboots[p] = True if settings[14] & 0x80 else False
@@ -3817,6 +3835,7 @@ class Settings(object):
         if len(settings) > 15:
             args.skullwoods[p] = r(skullwoods_mode)[(settings[15] & 0xc0) >> 6]
             args.linked_drops[p] = r(linked_drops_mode)[(settings[15] & 0x30) >> 4]
+            args.door_type_mode[p] = r(door_type_mode)[(settings[15] & 0x3)]
 
 
 class KeyRuleType(FastEnum):

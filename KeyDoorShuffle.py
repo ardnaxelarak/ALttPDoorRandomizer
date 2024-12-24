@@ -1303,7 +1303,7 @@ def check_rules_deep(original_counter, key_layout, world, player):
         big_avail = counter.big_key_opened or bk_drop
         big_maybe_not_found = not counter.big_key_opened and not bk_drop  # better named as big_missing?
         if not key_layout.big_key_special and not big_avail:
-            if world.bigkeyshuffle[player]:
+            if world.bigkeyshuffle[player] != 'none':
                 big_avail = True
             else:
                 for location in counter.free_locations:
@@ -1430,7 +1430,7 @@ def prize_relevance_sig2(start_regions, d_name, dungeon_entrance, is_atgt_swappe
 
 def validate_bk_layout(proposal, builder, start_regions, world, player):
     bk_special = check_bk_special(builder.master_sector.regions, world, player)
-    if world.bigkeyshuffle[player] and (world.dropshuffle[player] != 'none' or not bk_special):
+    if world.bigkeyshuffle[player] != 'none' and (world.dropshuffle[player] != 'none' or not bk_special):
         return True
     flat_proposal = flatten_pair_list(proposal)
     state = ExplorationState(dungeon=builder.name)
@@ -1438,7 +1438,7 @@ def validate_bk_layout(proposal, builder, start_regions, world, player):
     for region in start_regions:
         dungeon_entrance, portal_door = find_outside_connection(region)
         prize_relevant_flag = prize_relevance_sig2(start_regions, builder.name, dungeon_entrance, world.is_atgt_swapped(player))
-        if prize_relevant_flag and world.prizeshuffle[player] == 'none':
+        if prize_relevant_flag and world.prizeshuffle[player] in ['none', 'dungeon']:
             state.append_door_to_list(portal_door, state.prize_doors)
             state.prize_door_set[portal_door] = dungeon_entrance
             # key_layout.prize_relevant = prize_relevant_flag
@@ -1469,7 +1469,7 @@ def validate_key_layout(key_layout, world, player):
     for region in key_layout.start_regions:
         dungeon_entrance, portal_door = find_outside_connection(region)
         prize_relevant_flag = prize_relevance(key_layout, dungeon_entrance, world.is_atgt_swapped(player))
-        if prize_relevant_flag and world.prizeshuffle[player] == 'none':
+        if prize_relevant_flag and world.prizeshuffle[player] in ['none', 'dungeon']:
             state.append_door_to_list(portal_door, state.prize_doors)
             state.prize_door_set[portal_door] = dungeon_entrance
             key_layout.prize_relevant = prize_relevant_flag
@@ -1606,7 +1606,7 @@ def determine_prize_lock(key_layout, world, player):
     for region in key_layout.start_regions:
         dungeon_entrance, portal_door = find_outside_connection(region)
         prize_relevant_flag = prize_relevance(key_layout, dungeon_entrance, world.is_atgt_swapped(player))
-        if prize_relevant_flag and world.prizeshuffle[player] == 'none':
+        if prize_relevant_flag and world.prizeshuffle[player] in ['none', 'dungeon']:
             state.append_door_to_list(portal_door, state.prize_doors)
             state.prize_door_set[portal_door] = dungeon_entrance
             key_layout.prize_relevant = prize_relevant_flag
@@ -1650,13 +1650,13 @@ def cnt_avail_small_locations_by_ctr(free_locations, counter, layout, world, pla
 
 
 def cnt_avail_big_locations(ttl_locations, state, world, player):
-    if not world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] == 'none':
         return max(0, ttl_locations - state.used_locations) if not state.big_key_special else 0
     return 1 if not state.big_key_special else 0
 
 
 def cnt_avail_big_locations_by_ctr(ttl_locations, counter, layout, world, player):
-    if not world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] == 'none':
         bk_adj = 1 if counter.big_key_opened and not layout.big_key_special else 0
         used_locations = max(0, counter.used_keys - len(counter.key_only_locations)) + bk_adj
         return max(0, ttl_locations - used_locations) if not layout.big_key_special else 0
@@ -1683,7 +1683,7 @@ def create_key_counters(key_layout, world, player):
     for region in key_layout.start_regions:
         dungeon_entrance, portal_door = find_outside_connection(region)
         prize_relevant_flag = prize_relevance(key_layout, dungeon_entrance, world.is_atgt_swapped(player))
-        if prize_relevant_flag and world.prizeshuffle[player] == 'none':
+        if prize_relevant_flag and world.prizeshuffle[player] in ['none', 'dungeon']:
             state.append_door_to_list(portal_door, state.prize_doors)
             state.prize_door_set[portal_door] = dungeon_entrance
             key_layout.prize_relevant = prize_relevant_flag
@@ -2096,7 +2096,7 @@ def validate_key_placement(key_layout, world, player):
     bigkey_name = dungeon_bigs[key_layout.sector.name]
     if world.keyshuffle[player] != 'none':
         keys_outside = key_layout.max_chests - sum(1 for i in max_counter.free_locations if i.item is not None and i.item.name == smallkey_name and i.item.player == player)
-    if world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] != 'none':
         max_counter = find_max_counter(key_layout)
         big_key_outside = bigkey_name not in (l.item.name for l in max_counter.free_locations if l.item)
     for i in world.precollected_items:

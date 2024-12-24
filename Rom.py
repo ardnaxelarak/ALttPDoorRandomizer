@@ -480,14 +480,14 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                 rom.write_byte(address, value)
 
             # patch music
-            if world.mapshuffle[player]:
+            if world.mapshuffle[player] != 'none':
                 music = random.choice([0x11, 0x16])
             else:
                 music = 0x11 if 'Pendant' in dungeon.prize.name else 0x16
             for music_address in dungeon_music_addresses[dungeon.name]:
                 rom.write_byte(music_address, music)
 
-    if world.mapshuffle[player]:
+    if world.mapshuffle[player] != 'none':
         rom.write_byte(0x155C9, random.choice([0x11, 0x16]))  # Randomize GT music too with map shuffle
 
     if world.doorShuffle[player] != 'vanilla':
@@ -1131,7 +1131,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         ERtimeincrease = 10
     else:
         ERtimeincrease = 20
-    if world.keyshuffle[player] != 'none' or world.bigkeyshuffle[player] or world.mapshuffle[player]:
+    if world.keyshuffle[player] != 'none' or world.bigkeyshuffle[player] != 'none' or world.mapshuffle[player] != 'none':
         ERtimeincrease = ERtimeincrease + 15
     if world.clock_mode == 'none':
         rom.write_bytes(0x180190, [0x00, 0x00, 0x00])  # turn off clock mode
@@ -1268,34 +1268,36 @@ def patch_rom(world, rom, player, team, is_mystery=False):
 
     # Bitfield - enable text box to show with free roaming items
     #
-    # --po bmcs
+    # -tpo bmcs
+    # t - suppress "this dungeon" textboxes (temporary fix)
     # p - enabled for non-prize crystals
-    # o - enabled for outside dungeon items
+    # o - enabled for outside dungeon items (unused currently?)
     # b - enabled for inside big keys
     # m - enabled for inside maps
     # c - enabled for inside compasses
     # s - enabled for inside small keys
-    rom.write_byte(0x18016A, 0x10 | ((0x20 if world.prizeshuffle[player] == 'wild' else 0x00)
-                                     | (0x01 if world.keyshuffle[player] == 'wild' else 0x00)
-                                     | (0x02 if world.compassshuffle[player] else 0x00)
-                                     | (0x04 if world.mapshuffle[player] else 0x00)
-                                     | (0x08 if world.bigkeyshuffle[player] else 0x00)))  # free roaming item text boxes
-    rom.write_byte(0x18003B, 0x01 if world.mapshuffle[player] else 0x00)  # maps showing crystals on overworld
+    free_item_text = 0x40 if 'district' in [world.mapshuffle[player], world.compassshuffle[player], world.keyshuffle[player], world.bigkeyshuffle[player]] else 0x00
+    rom.write_byte(0x18016A, free_item_text | 0x10 | ((0x20 if world.prizeshuffle[player] not in ['none', 'dungeon'] else 0x00)
+                                     | (0x01 if world.keyshuffle[player] not in ['none', 'universal'] else 0x00)
+                                     | (0x02 if world.compassshuffle[player] != 'none' else 0x00)
+                                     | (0x04 if world.mapshuffle[player] != 'none' else 0x00)
+                                     | (0x08 if world.bigkeyshuffle[player] != 'none' else 0x00)))  # free roaming item text boxes
+    rom.write_byte(0x18003B, 0x01 if world.mapshuffle[player] not in ['none', 'district'] else 0x00)  # maps showing crystals on overworld
 
     # compasses showing dungeon count
-    compass_mode = 0x80 if world.compassshuffle[player] else 0x00
+    compass_mode = 0x80 if world.compassshuffle[player] not in ['none', 'district'] else 0x00
     if world.clock_mode != 'none' or world.dungeon_counters[player] == 'off':
         pass
     elif world.dungeon_counters[player] == 'on':
         compass_mode |= 0x02  # always on
-    elif (world.compassshuffle[player] or world.doorShuffle[player] != 'vanilla' or world.dropshuffle[player] != 'none'
+    elif (world.compassshuffle[player] not in ['none', 'district'] or world.doorShuffle[player] != 'vanilla' or world.dropshuffle[player] != 'none'
           or world.dungeon_counters[player] == 'pickup' or world.pottery[player] not in ['none', 'cave']):
         compass_mode |= 0x01  # show on pickup
     if world.overworld_map[player] == 'map':
         compass_mode |= 0x10  # show icon if map is collected
     elif world.overworld_map[player] == 'compass':
         compass_mode |= 0x20  # show icon if compass is collected
-    if world.prizeshuffle[player] == 'wild':
+    if world.prizeshuffle[player] not in ['none', 'dungeon', 'district']:
         compass_mode |= 0x40  # show icon if boss is defeated, hide if collected
     rom.write_byte(0x18003C, compass_mode)
 
@@ -1331,7 +1333,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         map_index = max(0, dungeon_index - 2)
 
         # write out dislocated coords
-        if map_index >= 0x02 and map_index < 0x18 and (world.overworld_map[player] != 'default' or world.prizeshuffle[player] == 'wild'):
+        if map_index >= 0x02 and map_index < 0x18 and (world.overworld_map[player] != 'default' or world.prizeshuffle[player] not in ['none', 'dungeon', 'district']):
             owid_map =               [0x1E,   0x30,   0xFF,   0x7B,   0x5E,   0x70,   0x40,   0x75,   0x03,   0x58,   0x47]
             x_map_position_generic = [0x03c0, 0x0740, 0xff00, 0x03c0, 0x01c0, 0x0bc0, 0x05c0, 0x09c0, 0x0ac0, 0x07c0, 0x0dc0]
             y_map_position_generic = [0xff00, 0xff00, 0xff00, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0xff00, 0x0fc0, 0x0fc0]
@@ -1345,7 +1347,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                 write_int16(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+6, y_map_position_generic[idx])
 
         # write out icon coord data
-        if world.prizeshuffle[player] == 'wild' and dungeon_table[dungeon].prize:
+        if world.prizeshuffle[player] not in ['none', 'dungeon', 'district'] and dungeon_table[dungeon].prize:
             dungeon_obj = world.get_dungeon(dungeon, player)
             entrance = dungeon_obj.prize.get_map_location()
             coords = get_entrance_coords(entrance)
@@ -1385,7 +1387,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         
         # figure out compass entrances and what world (light/dark)
         write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6), coords)
-        if world.prizeshuffle[player] != 'wild' and dungeon_table[dungeon].prize:
+        if world.prizeshuffle[player] in ['none', 'dungeon', 'district'] and dungeon_table[dungeon].prize:
             # prize location
             write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+8, coords)
 
@@ -1424,11 +1426,11 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     # b - Big Key
     # a - Small Key
     #
-    enable_menu_map_check = (world.overworld_map[player] != 'default' and world.shuffle[player] != 'vanilla') or world.prizeshuffle[player] == 'wild'
-    rom.write_byte(0x180045, ((0x01 if world.keyshuffle[player] == 'wild' else 0x00)
-                              | (0x02 if world.bigkeyshuffle[player] else 0x00)
-                              | (0x04 if world.mapshuffle[player] or enable_menu_map_check else 0x00)
-                              | (0x08 if world.compassshuffle[player] else 0x00)  # free roaming items in menu
+    enable_menu_map_check = (world.overworld_map[player] != 'default' and world.shuffle[player] != 'vanilla') or world.prizeshuffle[player] not in ['none', 'dungeon', 'district']
+    rom.write_byte(0x180045, ((0x01 if world.keyshuffle[player] not in ['none', 'universal'] else 0x00)
+                              | (0x02 if world.bigkeyshuffle[player] != 'none' else 0x00)
+                              | (0x04 if world.mapshuffle[player] != 'none' or enable_menu_map_check else 0x00)
+                              | (0x08 if world.compassshuffle[player] != 'none' else 0x00)  # free roaming items in menu
                               | (0x10 if world.logic[player] == 'nologic' else 0)))  # boss icon
 
     def get_reveal_bytes(itemName):
@@ -2203,11 +2205,11 @@ def write_strings(rom, world, player, team):
                 this_hint = this_hint[0].upper() + this_hint[1:]
                 tt[hint_locations.pop(0)] = this_hint
             items_to_hint.remove(flute_item)
-        if world.keyshuffle[player] == 'wild':
+        if world.keyshuffle[player] not in ['none', 'universal']:
             items_to_hint.extend(SmallKeys)
-        if world.bigkeyshuffle[player]:
+        if world.bigkeyshuffle[player] != 'none':
             items_to_hint.extend(BigKeys)
-        if world.prizeshuffle[player] == 'wild':
+        if world.prizeshuffle[player] not in ['none', 'dungeon']:
             items_to_hint.extend(Prizes)
         random.shuffle(items_to_hint)
         hint_count = 5 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'district', 'swapped'] else 8
@@ -2323,10 +2325,14 @@ def write_strings(rom, world, player, team):
     crystal5 = world.find_items('Crystal 5', player)[0]
     crystal6 = world.find_items('Crystal 6', player)[0]
     greenpendant = world.find_items('Green Pendant', player)[0]
-    if world.prizeshuffle[player] == 'none':
+    if world.prizeshuffle[player] in ['none', 'dungeon']:
         (crystal5, crystal6, greenpendant) = tuple([x.parent_region.dungeon.name for x in [crystal5, crystal6, greenpendant]])
         tt['bomb_shop'] = 'Big Bomb?\nMy supply is blocked until you clear %s and %s.' % (crystal5, crystal6)
         tt['sahasrahla_bring_courage'] = 'I lost my family heirloom in %s' % greenpendant
+    elif world.prizeshuffle[player] == 'district':
+        (crystal5, crystal6, greenpendant) = tuple([x.item.dungeon_object.name for x in [crystal5, crystal6, greenpendant]])
+        tt['bomb_shop'] = 'Big Bomb?\nThe crystals can be found near %s and %s.' % (crystal5, crystal6)
+        tt['sahasrahla_bring_courage'] = 'I lost my family heirloom near %s' % greenpendant
     else:
         tt['bomb_shop'] = 'Big Bomb?\nThe crystals can be found %s and %s.' % (crystal5.hint_text, crystal6.hint_text)
         tt['sahasrahla_bring_courage'] = 'My family heirloom can be found %s' % greenpendant.hint_text

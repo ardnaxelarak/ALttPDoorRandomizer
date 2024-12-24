@@ -477,7 +477,7 @@ def choose_portals(world, player):
         allowed = {name: set(group[0]) for group in world.dungeon_pool[player] for name in group[0]}
 
         # key drops allow the big key in the right place in Desert Tiles 2
-        bk_shuffle = world.bigkeyshuffle[player] or world.pottery[player] not in ['none', 'cave']
+        bk_shuffle = world.bigkeyshuffle[player] != 'none' or world.pottery[player] not in ['none', 'cave']
         std_flag = world.mode[player] == 'standard'
         # roast incognito doors
         world.get_room(0x60, player).delete(5)
@@ -2689,12 +2689,12 @@ def calc_used_dungeon_items(builder, world, player):
     basic_flag = world.doorShuffle[player] == 'basic'
     base = 0 if basic_flag else 2  # at least 2 items per dungeon, except in basic
     base = max(count_reserved_locations(world, player, builder.location_set), base)
-    if not world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] == 'none':
         if builder.bk_required and not builder.bk_provided:
             base += 1
-    if not world.compassshuffle[player] and (builder.name not in ['Hyrule Castle', 'Agahnims Tower'] or not basic_flag):
+    if world.compassshuffle[player] == 'none' and (builder.name not in ['Hyrule Castle', 'Agahnims Tower'] or not basic_flag):
         base += 1
-    if not world.mapshuffle[player] and (builder.name != 'Agahnims Tower' or not basic_flag):
+    if world.mapshuffle[player] == 'none' and (builder.name != 'Agahnims Tower' or not basic_flag):
         base += 1
     if world.prizeshuffle[player] == 'dungeon' and builder.name not in ['Hyrule Castle', 'Agahnims Tower', 'Ganons Tower']:
         base += 1

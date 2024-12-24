@@ -348,11 +348,11 @@ def generate_itempool(world, player):
         world.treasure_hunt_icon[player] = 'Triforce Piece'
 
     world.itempool.extend([item for item in get_dungeon_item_pool(world) if item.player == player
-                           and ((item.prize and world.prizeshuffle[player] == 'wild')
-                                or (item.smallkey and world.keyshuffle[player] != 'none')
-                                or (item.bigkey and world.bigkeyshuffle[player])
-                                or (item.map and world.mapshuffle[player])
-                                or (item.compass and world.compassshuffle[player]))])
+                           and ((item.prize and world.prizeshuffle[player] not in ['none', 'dungeon', 'district'])
+                                or (item.smallkey and world.keyshuffle[player] not in ['none', 'district'])
+                                or (item.bigkey and world.bigkeyshuffle[player] not in ['none', 'district'])
+                                or (item.map and world.mapshuffle[player] not in ['none', 'district'])
+                                or (item.compass and world.compassshuffle[player] not in ['none', 'district']))])
     
     if world.logic[player] == 'hybridglitches' and world.pottery[player] not in ['none', 'cave']:
         keys_to_remove = 2
@@ -753,6 +753,7 @@ def fill_prizes(world, attempts=15):
                 fill_restrictive(world, all_state, prize_locs, prizepool, single_player_placement=True)
                 for prize_loc in crystal_locations:
                     prize_loc.parent_region.dungeon.prize = prize_loc.item
+                    prize_loc.item.dungeon_object = prize_loc.parent_region.dungeon
             except FillError as e:
                 logging.getLogger('').info("Failed to place dungeon prizes (%s). Will retry %s more times", e, attempts - attempt - 1)
                 for location in empty_crystal_locations:
@@ -1434,9 +1435,9 @@ def make_customizer_pool(world, player):
                     or item_name.startswith('Crystal') or item_name.endswith('Pendant')):
                 d_item = ItemFactory(item_name, player)
                 if ((d_item.prize and world.prizeshuffle[player] in ['none', 'dungeon'])
-                   or (d_item.bigkey and not world.bigkeyshuffle[player])
-                   or (d_item.compass and not world.compassshuffle[player])
-                   or (d_item.map and not world.mapshuffle[player])):
+                   or (d_item.bigkey and world.bigkeyshuffle[player] == 'none')
+                   or (d_item.compass and world.compassshuffle[player] == 'none')
+                   or (d_item.map and world.mapshuffle[player] == 'none')):
                     d_name = d_item.dungeon
                     dungeon = world.get_dungeon(d_name, player)
                     current_amount = 1 if dungeon.big_key and (d_item == dungeon.big_key or d_item in dungeon.dungeon_items) else 0
@@ -1694,7 +1695,7 @@ def get_item_and_event_flag(item, world, player, dungeon_pool, prize_set, prize_
 def is_dungeon_item(item, world, player):
     return (((item.startswith('Crystal') or item.endswith('Pendant')) and world.prizeshuffle[player] in ['none', 'dungeon'])
             or (item.startswith('Small Key') and world.keyshuffle[player] == 'none')
-            or (item.startswith('Big Key') and not world.bigkeyshuffle[player])
-            or (item.startswith('Compass') and not world.compassshuffle[player])
-            or (item.startswith('Map') and not world.mapshuffle[player]))
+            or (item.startswith('Big Key') and world.bigkeyshuffle[player] == 'none')
+            or (item.startswith('Compass') and world.compassshuffle[player] == 'none')
+            or (item.startswith('Map') and world.mapshuffle[player] == 'none'))
 

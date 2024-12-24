@@ -2029,7 +2029,7 @@ def add_hmg_key_logic_rules(world, player):
 def add_key_logic_rules(world, player):
     key_logic = world.key_logic[player]
     eval_func = eval_small_key_door
-    if world.key_logic_algorithm[player] == 'strict' and world.keyshuffle[player] == 'wild':
+    if world.key_logic_algorithm[player] == 'strict' and world.keyshuffle[player] not in ['none', 'universal']:
         eval_func = eval_small_key_door_strict
     elif world.key_logic_algorithm[player] != 'dangerous':
         eval_func = eval_small_key_door_partial

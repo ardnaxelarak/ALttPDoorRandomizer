@@ -369,12 +369,18 @@
     "type": "bool"
   },
   "mapshuffle": {
-    "action": "store_true",
-    "type": "bool"
+    "choices": [
+      "none",
+      "district",
+      "wild"
+    ]
   },
   "compassshuffle": {
-    "action": "store_true",
-    "type": "bool"
+    "choices": [
+      "none",
+      "district",
+      "wild"
+    ]
   },
   "keyshuffle": {
     "choices": [
@@ -384,13 +390,17 @@
     ]
   },
   "bigkeyshuffle": {
-    "action": "store_true",
-    "type": "bool"
+    "choices": [
+      "none",
+      "district",
+      "wild"
+    ]
   },
   "prizeshuffle": {
     "choices": [
       "none",
       "dungeon",
+      "district",
       "wild"
     ]
   },

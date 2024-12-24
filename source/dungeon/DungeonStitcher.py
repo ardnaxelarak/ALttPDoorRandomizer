@@ -233,7 +233,7 @@ def modify_proposal(proposed_map, explored_state, doors_to_connect, hash_code_se
 
 def explore_proposal(name, entrance_regions, all_regions, proposed_map, valid_doors, bk_special, world, player):
     start = ExplorationState(dungeon=name)
-    bk_relevant = (world.door_type_mode[player] == 'original' and not world.bigkeyshuffle[player]) or bk_special
+    bk_relevant = (world.door_type_mode[player] == 'original' and world.bigkeyshuffle[player] == 'none') or bk_special
     start.big_key_special = bk_special
     original_state = extend_reachable_state_lenient(entrance_regions, start, proposed_map,
                                                     all_regions, valid_doors, bk_relevant, world, player)
@@ -302,7 +302,7 @@ def valid_path(name, starting_regions, target, valid_doors, proposed_map, all_re
                 target_regions.add(region)
 
     start = ExplorationState(dungeon=name)
-    bk_relevant = (world.door_type_mode[player] == 'original' and not world.bigkeyshuffle[player]) or bk_special
+    bk_relevant = (world.door_type_mode[player] == 'original' and world.bigkeyshuffle[player] == 'none') or bk_special
     start.big_key_special = bk_special
     original_state = extend_reachable_state_lenient(starting_regions, start, proposed_map, all_regions,
                                                     valid_doors, bk_relevant, world, player)

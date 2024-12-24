@@ -106,8 +106,7 @@ def parse_cli(argv, no_defaults=False):
     ret = parser.parse_args(argv)
 
     if ret.keysanity:
-        ret.mapshuffle, ret.compassshuffle, ret.bigkeyshuffle = [True] * 3
-        ret.keyshuffle = 'wild'
+        ret.mapshuffle, ret.compassshuffle, ret.keyshuffle, ret.bigkeyshuffle = 'wild' * 4
 
     if ret.keydropshuffle:
         ret.dropshuffle = 'keys' if ret.dropshuffle == 'none' else ret.dropshuffle
@@ -222,10 +221,10 @@ def parse_settings():
         "pottery": "none",
         "colorizepots": True,
         "shufflepots": False,
-        "mapshuffle": False,
-        "compassshuffle": False,
+        "mapshuffle": "none",
+        "compassshuffle": "none",
         "keyshuffle": "none",
-        "bigkeyshuffle": False,
+        "bigkeyshuffle": "none",
         "prizeshuffle": "none",
         "keysanity": False,
         "door_shuffle": "vanilla",

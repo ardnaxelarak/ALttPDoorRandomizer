@@ -45,12 +45,12 @@ def fill_dungeons_restrictive(world, shuffled_locations):
     for item in world.get_items():
         if ((item.prize and world.prizeshuffle[item.player] != 'none')
            or (item.smallkey and world.keyshuffle[item.player] != 'none')
-           or (item.bigkey and world.bigkeyshuffle[item.player])):
+           or (item.bigkey and world.bigkeyshuffle[item.player] != 'none')):
             item.advancement = True
-        elif (item.map and world.mapshuffle[item.player]) or (item.compass and world.compassshuffle[item.player]):
+        elif (item.map and world.mapshuffle[item.player] not in ['none', 'district']) or (item.compass and world.compassshuffle[item.player] not in ['none', 'district']):
             item.priority = True
 
-    dungeon_items = [item for item in get_dungeon_item_pool(world) if item.is_inside_dungeon_item(world)]
+    dungeon_items = [item for item in get_dungeon_item_pool(world) if item.is_inside_dungeon_item(world) or item.is_near_dungeon_item(world)]
     bigs, smalls, prizes, others = [], [], [], []
     for i in dungeon_items:
         (bigs if i.bigkey else smalls if i.smallkey else prizes if i.prize else others).append(i)
@@ -76,6 +76,19 @@ def fill_dungeons_restrictive(world, shuffled_locations):
     prizes_copy = prizes.copy()
     for attempt in range(15):
         try:
+            for player in range(1, world.players + 1):
+                if world.prizeshuffle[player] == 'district':
+                    dungeon_pool = []
+                    for dungeon in world.dungeons:
+                        from Dungeons import dungeon_table
+                        if dungeon.player == player and dungeon_table[dungeon.name].prize:
+                            dungeon_pool.append(dungeon)
+                    random.shuffle(dungeon_pool)
+                    for item in prizes:
+                        if item.player == player:
+                            dungeon = dungeon_pool.pop()
+                            dungeon.prize = item
+                            item.dungeon_object = dungeon
             random.shuffle(prizes)
             random.shuffle(shuffled_locations)
             prize_state_base = all_state_base.copy()
@@ -86,8 +99,7 @@ def fill_dungeons_restrictive(world, shuffled_locations):
             logging.getLogger('').info("Failed to place dungeon prizes (%s). Will retry %s more times", e, 14 - attempt)
             prizes = prizes_copy.copy()
             for dungeon in world.dungeons:
-                if world.prizeshuffle[dungeon.player] == 'dungeon':
-                    dungeon.prize = None
+                dungeon.prize = None
             for prize in prizes:
                 if prize.location:
                     prize.location.item = None
@@ -186,7 +198,8 @@ def verify_spot_to_fill(location, item_to_place, max_exp_state, single_player_pl
         test_state.sweep_for_events()
         if location.can_fill(test_state, item_to_place, perform_access_check):
             if valid_key_placement(item_to_place, location, key_pool, test_state, world):
-                if item_to_place.prize or valid_dungeon_placement(item_to_place, location, world):
+                if (item_to_place.prize and world.prizeshuffle[item_to_place.player] == 'none') \
+                        or valid_dungeon_placement(item_to_place, location, world):
                     return location
     if item_to_place.smallkey or item_to_place.bigkey or item_to_place.prize:
         location.item = None
@@ -203,6 +216,10 @@ def valid_key_placement(item, location, key_pool, collection_state, world):
        or world.keyshuffle[item.player] == 'universal' or world.logic[item.player] == 'nologic'):
         return True
     dungeon = location.parent_region.dungeon
+    if not dungeon and item.is_near_dungeon_item(world):
+        check_dungeon = world.get_dungeon(item.dungeon, item.player) if item.dungeon else item.dungeon_object
+        if len([d for d in location.parent_region.districts if d in check_dungeon.districts]):
+            dungeon = check_dungeon
     if dungeon:
         if dungeon.name not in item.name and (dungeon.name != 'Hyrule Castle' or 'Escape' not in item.name):
             return True
@@ -236,13 +253,22 @@ def valid_reserved_placement(item, location, world):
 
 
 def valid_dungeon_placement(item, location, world):
-    if location.parent_region.dungeon:
-        layout = world.dungeon_layouts[location.player][location.parent_region.dungeon.name]
+    dungeon = location.parent_region.dungeon
+    if not dungeon and item.is_near_dungeon_item(world):
+        check_dungeon = world.get_dungeon(item.dungeon, item.player) if item.dungeon else item.dungeon_object
+        if len([d for d in location.parent_region.districts if d in check_dungeon.districts]):
+            dungeon = check_dungeon
+    if dungeon:
+        layout = world.dungeon_layouts[location.player][dungeon.name]
         if not is_dungeon_item(item, world) or item.player != location.player:
+            if item.prize and item.is_near_dungeon_item(world):
+                return item.dungeon_object == dungeon and layout.free_items > 0
             return layout.free_items > 0
+        elif item.prize:
+            return not dungeon.prize and layout.dungeon_items > 0
         else:
             # the second half probably doesn't matter much - should always return true
-            return item.dungeon == location.parent_region.dungeon.name and layout.dungeon_items > 0
+            return item.dungeon == dungeon.name and layout.dungeon_items > 0
     return not is_dungeon_item(item, world)
 
 
@@ -267,14 +293,15 @@ def track_dungeon_items(item, location, world):
             layout.free_items -= 1
         if item.prize:
             location.parent_region.dungeon.prize = item
+            item.dungeon_object = location.parent_region.dungeon
 
 
 def is_dungeon_item(item, world):
     return ((item.prize and world.prizeshuffle[item.player] in ['none', 'dungeon'])
             or (item.smallkey and world.keyshuffle[item.player] == 'none')
-            or (item.bigkey and not world.bigkeyshuffle[item.player])
-            or (item.compass and not world.compassshuffle[item.player])
-            or (item.map and not world.mapshuffle[item.player]))
+            or (item.bigkey and world.bigkeyshuffle[item.player] == 'none')
+            or (item.compass and world.compassshuffle[item.player] == 'none')
+            or (item.map and world.mapshuffle[item.player] == 'none'))
 
 
 def recovery_placement(item_to_place, locations, world, state, base_state, itempool, perform_access_check, attempted,
@@ -816,7 +843,8 @@ def balance_multiworld_progression(world):
                 candidate_items = collections.defaultdict(set)
                 while True:
                     for location in balancing_sphere:
-                        if location.event and (world.keyshuffle[location.item.player] != 'none' or not location.item.smallkey) and (world.bigkeyshuffle[location.item.player] or not location.item.bigkey):
+                        if location.event and (world.keyshuffle[location.item.player] != 'none' or not location.item.smallkey) \
+                                and (world.bigkeyshuffle[location.item.player] != 'none' or not location.item.bigkey):
                             balancing_state.collect(location.item, True, location)
                             player = location.item.player
                             if player in balancing_players and not location.locked and location.player != player:
@@ -895,7 +923,8 @@ def balance_multiworld_progression(world):
                         sphere_locations.add(location)
 
         for location in sphere_locations:
-            if location.event and (world.keyshuffle[location.item.player] != 'none' or not location.item.smallkey) and (world.bigkeyshuffle[location.item.player] or not location.item.bigkey):
+            if location.event and (world.keyshuffle[location.item.player] != 'none' or not location.item.smallkey) \
+                    and (world.bigkeyshuffle[location.item.player] != 'none' or not location.item.bigkey):
                 state.collect(location.item, True, location)
         checked_locations |= sphere_locations
 

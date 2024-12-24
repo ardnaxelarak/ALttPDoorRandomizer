@@ -134,7 +134,7 @@ def create_item_pool_config(world):
             groups = LocationGroup('Major').locs(init_set)
             if world.prizeshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Prizes'])
-            if world.bigkeyshuffle[player]:
+            if world.bigkeyshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Big Keys'])
                 if world.dropshuffle[player] != 'none':
                     groups.locations.extend(mode_grouping['Big Key Drops'])
@@ -144,9 +144,9 @@ def create_item_pool_config(world):
                     groups.locations.extend(mode_grouping['Key Drops'])
                 if world.pottery[player] not in ['none', 'cave']:
                     groups.locations.extend(mode_grouping['Pot Keys'])
-            if world.compassshuffle[player]:
+            if world.compassshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Compasses'])
-            if world.mapshuffle[player]:
+            if world.mapshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Maps'])
             if world.shopsanity[player]:
                 groups.locations.append('Capacity Upgrade - Left')
@@ -259,12 +259,12 @@ def location_prefilled(location, world, player):
 
 def previously_reserved(location, world, player):
     if '- Boss' in location.name or '- Prize' in location.name:
-        if world.restrict_boss_items[player] == 'mapcompass' and (not world.compassshuffle[player]
-                                                                  or not world.mapshuffle[player]):
+        if world.restrict_boss_items[player] == 'mapcompass' and (world.compassshuffle[player] == 'none'
+                                                                  or world.mapshuffle[player] == 'none'):
             return True
-        if world.restrict_boss_items[player] == 'dungeon' and (not world.compassshuffle[player]
-                                                               or not world.mapshuffle[player]
-                                                               or not world.bigkeyshuffle[player]
+        if world.restrict_boss_items[player] == 'dungeon' and (world.compassshuffle[player] == 'none'
+                                                               or world.mapshuffle[player] == 'none'
+                                                               or world.bigkeyshuffle[player] == 'none'
                                                                or world.keyshuffle[player] == 'none'
                                                                or world.prizeshuffle[player] in ['none', 'dungeon']):
             return True
@@ -303,6 +303,7 @@ def massage_item_pool(world):
         if item.prize:
             dungeon = dungeon_pool[item.player].pop()
             dungeon.prize = item
+            item.dungeon_object = dungeon
         player_pool[item.player].append(item)
     for dungeon in world.dungeons:
         for item in dungeon.all_items:
@@ -381,13 +382,13 @@ def determine_major_items(world, player):
         pass  # now what?
     if world.prizeshuffle[player] not in ['none', 'dungeon']:
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'Prize'})
-    if world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] != 'none':
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'BigKey'})
     if world.keyshuffle[player] != 'none':
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'SmallKey'})
-    if world.compassshuffle[player]:
+    if world.compassshuffle[player] != 'none':
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'Compass'})
-    if world.mapshuffle[player]:
+    if world.mapshuffle[player] != 'none':
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'Map'})
     if world.shopsanity[player]:
         major_item_set.add('Bomb Upgrade (+5)')
