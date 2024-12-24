@@ -154,7 +154,7 @@ class World(object):
             set_player_attr('enemy_health', 'default')
             set_player_attr('enemy_damage', 'default')
             set_player_attr('any_enemy_logic', 'allow_all')
-            set_player_attr('beemizer', 0)
+            set_player_attr('beemizer', '0')
             set_player_attr('escape_assist', [])
             set_player_attr('crystals_needed_for_ganon', 7)
             set_player_attr('crystals_needed_for_gt', 7)
@@ -2826,7 +2826,7 @@ class Item(object):
     def __eq__(self, other):
         if type(other) is str:
             return self.name == other
-        return self.name == other.name and self.player == other.player
+        return other is not None and self.name == other.name and self.player == other.player
 
 
 # have 6 address that need to be filled

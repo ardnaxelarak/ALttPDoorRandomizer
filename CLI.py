@@ -137,7 +137,7 @@ def parse_cli(argv, no_defaults=False):
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'prizeshuffle', 'startinventory',
                          'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items',
-                         'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max', 'triforce_max_difference',
+                         'triforce_max_difference', 'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
                          'skullwoods', 'linked_drops',
                          'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
@@ -285,7 +285,7 @@ def parse_settings():
         "seed": "",
         "count": 1,
         "startinventory": "",
-        "beemizer": 0,
+        'beemizer': '0',
         "remote_items": False,
         "race": False,
         "customitemarray": {

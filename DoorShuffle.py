@@ -2322,7 +2322,7 @@ def validate_trap_layout(proposal, builder, start_regions, paths, world, player)
     if bk_special_loc:
         if not state.found_forced_bk():
             return False
-    if world.accessibility[player] != 'beatable':
+    if world.accessibility[player] != 'none':
         all_locations = [l for r in builder.master_sector.region_set() for l in world.get_region(r, player).locations]
         if any(l not in state.found_locations for l in all_locations):
             return False

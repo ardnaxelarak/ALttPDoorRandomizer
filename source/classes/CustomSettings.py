@@ -65,6 +65,8 @@ class CustomSettings(object):
             args.outputname = get_setting(meta['name'], args.outputname)
             args.bps = get_setting(meta['bps'], args.bps)
             args.suppress_rom = get_setting(meta['suppress_rom'], args.suppress_rom)
+            args.skip_playthrough = get_setting(meta['skip_playthrough'], args.skip_playthrough)
+            args.spoiler = get_setting(meta['spoiler'], args.spoiler)
             args.names = get_setting(meta['names'], args.names)
             args.race = get_setting(meta['race'], args.race)
             args.notes = get_setting(meta['user_notes'], args.notes)

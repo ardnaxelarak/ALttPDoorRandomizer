@@ -1614,16 +1614,28 @@ def standard_rules(world, player):
     add_rule(world.get_location('Secret Passage', player), lambda state: standard_escape_rule(state))
 
     escape_builder = world.dungeon_layouts[player]['Hyrule Castle']
+    room_map = world.data_tables[player].uw_enemy_table.room_map
+    stats = world.data_tables[player].enemy_stats
     for region in escape_builder.master_sector.regions:
-        for loc in region.locations:
-            add_rule(loc, lambda state: standard_escape_rule(state))
         if region.name in std_kill_rooms:
-            for ent in std_kill_rooms[region.name][0]:
-                add_rule(world.get_entrance(ent, player), lambda state: standard_escape_rule(state))
-            for ent in std_kill_rooms[region.name][1]:
+            entrances, trap_ables, room_id, enemy_list = std_kill_rooms[region.name]
+            rule = get_challenge_rule(world, player, room_map, stats, room_id, enemy_list, region)
+            for ent in entrances:
                 entrance = world.get_entrance(ent, player)
-                if entrance.door.trapped:
-                    add_rule(entrance, lambda state: standard_escape_rule(state))
+                if not entrance.door or not entrance.door.entranceFlag:
+                    add_rule_new(entrance, rule)
+            for ent in trap_ables:
+                entrance = world.get_entrance(ent, player)
+                if entrance.door.trapped and not entrance.door.entranceFlag:
+                    add_rule_new(entrance, rule)
+        else:
+            for loc in region.locations:
+                if loc.name in kill_chests:
+                    locations, room_id, enemy_list = kill_chests[loc.name]
+                    rule = get_challenge_rule(world, player, room_map, stats, room_id, enemy_list, region)
+                    add_rule_new(world.get_location(loc, player), rule)
+                else:
+                    add_rule(loc, lambda state: standard_escape_rule(state))
 
     set_rule(world.get_location('Zelda Pickup', player), lambda state: state.has('Big Key (Escape)', player))
     set_rule(world.get_entrance('Hyrule Castle Tapestry Backwards', player), lambda state: state.has('Zelda Herself', player))

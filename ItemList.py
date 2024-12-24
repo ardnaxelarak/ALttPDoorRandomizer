@@ -462,7 +462,7 @@ def generate_itempool(world, player):
                   '3': {'trap': 50, 'bee': 50},
                   '4': {'trap': 100}}
     def beemizer(item):
-        if world.beemizer[item.player] and not item.advancement and not item.priority and not item.type:
+        if world.beemizer[item.player] != '0' and not item.advancement and not item.priority and not item.type:
             choice = random.choices(list(beeweights[world.beemizer[item.player]].keys()), weights=list(beeweights[world.beemizer[item.player]].values()))[0]
             return item if not choice else ItemFactory("Bee Trap", player) if choice == 'trap' else ItemFactory("Bee", player)
         return item
@@ -1439,7 +1439,7 @@ def make_customizer_pool(world, player):
                    or (d_item.map and not world.mapshuffle[player])):
                     d_name = d_item.dungeon
                     dungeon = world.get_dungeon(d_name, player)
-                    current_amount = 1 if d_item == dungeon.big_key or d_item in dungeon.dungeon_items else 0
+                    current_amount = 1 if dungeon.big_key and (d_item == dungeon.big_key or d_item in dungeon.dungeon_items) else 0
                     additional_amount = amount - current_amount
                     possible_fit = min(additional_amount, len(dungeon_locations[d_name])-dungeon_count[d_name])
                     if possible_fit > 0:
@@ -1450,7 +1450,7 @@ def make_customizer_pool(world, player):
                         pool.extend([item_name] * amount)
                 else:
                     dungeon = world.get_dungeon(d_item.dungeon, player)
-                    current_amount = 1 if d_item == dungeon.big_key or d_item in dungeon.dungeon_items else 0
+                    current_amount = 1 if dungeon.big_key and (d_item == dungeon.big_key or d_item in dungeon.dungeon_items) else 0
                     additional_amount = amount - current_amount
                     dungeon.dungeon_items.extend([d_item] * additional_amount)
             else:
