@@ -14,6 +14,8 @@ def dungeon_page(parent):
     self.frames = {}
     self.frames["keysanity"] = Frame(self)
     self.frames["keysanity"].pack(anchor=W)
+    self.frames["keysanity2"] = Frame(self)
+    self.frames["keysanity2"].pack(anchor=W)
 
     ## Dungeon Item Shuffle
     mscbLabel = Label(self.frames["keysanity"], text="Dungeon Items: ")
@@ -23,9 +25,15 @@ def dungeon_page(parent):
     # Defns include frame name, widget type, widget options, widget placement attributes
     # This first set goes in the Keysanity frame
     with open(os.path.join("resources","app","gui","randomize","dungeon","keysanity.json")) as keysanityItems:
-        myDict = json.load(keysanityItems)
-        myDict = myDict["keysanity"]
-        dictWidgets = widgets.make_widgets_from_dict(self, myDict, self.frames["keysanity"])
+        myDictFile = json.load(keysanityItems)
+        myDict = myDictFile["keysanity"]
+        myDict1, myDict2 = dict(), dict()
+        count = 2
+        for key in myDict.keys():
+            (myDict1 if count > 0 else myDict2)[key] = myDict[key]
+            count -= 1
+        dictWidgets = {**widgets.make_widgets_from_dict(self, myDict1, self.frames["keysanity"]), \
+                      **widgets.make_widgets_from_dict(self, myDict2, self.frames["keysanity2"])}
         for key in dictWidgets:
             self.widgets[key] = dictWidgets[key]
             packAttrs = {"side":LEFT}

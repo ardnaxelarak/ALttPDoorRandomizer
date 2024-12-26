@@ -8,7 +8,7 @@ from OWEdges import OWTileRegions, OWEdgeGroups, OWEdgeGroupsTerrain, OWExitType
 from OverworldGlitchRules import create_owg_connections
 from Utils import bidict
 
-version_number = '0.5.0.6'
+version_number = '0.5.1.0'
 # branch indicator is intentionally different across branches
 version_branch = ''
 
@@ -1404,6 +1404,9 @@ def can_reach_smith(world, player):
     if world.logic[player] in ['noglitches', 'minorglitches'] and not world.is_tile_swapped(0x29, player):
         blank_state.collect(ItemFactory('Titans Mitts', player), True)
         blank_state.collect(ItemFactory('Moon Pearl', player), True)
+    if not world.bombbag[player]:
+        blank_state.collect(ItemFactory('Farmable Bombs', player), True)
+    blank_state.collect(ItemFactory('Farmable Rupees', player), True)
     
     found = False
     explored_regions = list()

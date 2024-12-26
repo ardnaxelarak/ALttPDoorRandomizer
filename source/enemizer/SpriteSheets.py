@@ -21,6 +21,7 @@ class SpriteRequirement:
         self.uw_valid = True
         self.can_randomize = True
         self.water_phobic = False
+        self.bush_valid = True
 
         self.groups = []
         self.sub_groups = defaultdict(list)
@@ -92,6 +93,10 @@ class SpriteRequirement:
 
     def uw_skip(self):
         self.uw_valid = False
+        return self
+
+    def no_bush(self):
+        self.bush_valid = False
         return self
 
     def good_for_uw_water(self):
@@ -237,7 +242,7 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.ArmosKnight).exalt().sub_group(3, 0x1d),
         SpriteRequirement(EnemySprite.Lanmolas).exalt().sub_group(3, 0x31),
         SpriteRequirement(EnemySprite.FireballZora).immerse().no_drop().sub_group(2, [0xc, 0x18]),  # .uw_skip() test
-        SpriteRequirement(EnemySprite.Zora).sub_group(2, 0xc).sub_group(3, 0x44),  # .uw_skip() test
+        SpriteRequirement(EnemySprite.Zora).sub_group(2, 0xc).sub_group(3, 0x44).uw_skip(),
         SpriteRequirement(EnemySprite.DesertStatue).affix().sub_group(2, 0x12),
         SpriteRequirement(EnemySprite.Crab).sub_group(2, 0xc),
         SpriteRequirement(EnemySprite.LostWoodsBird).affix().sub_group(2, 0x37).sub_group(3, 0x36),
@@ -366,8 +371,8 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.MagicShopAssistant).affix().sub_group(0, 0x4b).sub_group(3, 0x5a),
         SpriteRequirement(EnemySprite.SomariaPlatform).affix().sub_group(2, 0x27),
         SpriteRequirement(EnemySprite.CastleMantle).affix().sub_group(0, 0x5d),
-        SpriteRequirement(EnemySprite.GreenMimic).sub_group(1, 0x2c),
-        SpriteRequirement(EnemySprite.RedMimic).sub_group(1, 0x2c),
+        SpriteRequirement(EnemySprite.GreenMimic).sub_group(1, 0x2c).no_bush(),
+        SpriteRequirement(EnemySprite.RedMimic).sub_group(1, 0x2c).no_bush(),
         SpriteRequirement(EnemySprite.MedallionTablet).affix().sub_group(2, 0x12),
 
         # overlord requirements - encapsulated mostly in the required sheets

@@ -268,6 +268,10 @@ As far as map trackers, Bonk Locations are supported on `CodeTracker` when the B
 - 1 8x Bomb Pack
 - 1 Good Bee
 
+## Nearby Dungeon Items
+
+This is a new option in addition to the traditional wild vs non-wild (keysanity/non-keysanity) options for all the dungeon item types (maps, compasses, small keys, big keys, prizes). This new option shuffles dungeon items into locations somewhere either within the dungeon that it is assigned to or within the surrounding district of that dungeon.
+
 ## Prize Shuffle
 
 A new option has been added to shuffle the 10 dungeon prizes in ways that they haven't been shuffled before. This means that dungeon prizes can be found in other item locations, such as chests or free-standing item locations. This also means that bosses are able to drop a 2nd item in place of the shuffled prize.
@@ -279,6 +283,10 @@ This is the normal prize behavior that has been a part of rando up until now. Th
 ### In Dungeon
 
 This option shuffles the prize into a location somewhere within the dungeon that it is assigned to.
+
+### Nearby
+
+This option shuffles the prize into a location somewhere either within the dungeon that it is assigned to or within the surrounding district of that dungeon.
 
 ### Randomized
 

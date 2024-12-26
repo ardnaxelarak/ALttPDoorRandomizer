@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1.0
+- New "Nearby" Dungeon Item Shuffle option
+- Fixed issue with smith follower getting deleted incorrectly on s+q
+- Various generation and logic fixes for HMG/NL
+- \~Merged in DR v1.4.6.2~
+
 ## 0.5.0.6
 - New improved Pseudoboots behavior
 - Fixed issue with missing Blue Potion in Dark Lake Shop in Inverted

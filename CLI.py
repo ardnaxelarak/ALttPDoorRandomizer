@@ -106,8 +106,7 @@ def parse_cli(argv, no_defaults=False):
     ret = parser.parse_args(argv)
 
     if ret.keysanity:
-        ret.mapshuffle, ret.compassshuffle, ret.bigkeyshuffle = [True] * 3
-        ret.keyshuffle = 'wild'
+        ret.mapshuffle, ret.compassshuffle, ret.keyshuffle, ret.bigkeyshuffle = 'wild' * 4
 
     if ret.keydropshuffle:
         ret.dropshuffle = 'keys' if ret.dropshuffle == 'none' else ret.dropshuffle
@@ -137,7 +136,7 @@ def parse_cli(argv, no_defaults=False):
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'prizeshuffle', 'startinventory',
                          'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items',
-                         'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max', 'triforce_max_difference',
+                         'triforce_max_difference', 'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
                          'skullwoods', 'linked_drops',
                          'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
@@ -222,10 +221,10 @@ def parse_settings():
         "pottery": "none",
         "colorizepots": True,
         "shufflepots": False,
-        "mapshuffle": False,
-        "compassshuffle": False,
+        "mapshuffle": "none",
+        "compassshuffle": "none",
         "keyshuffle": "none",
-        "bigkeyshuffle": False,
+        "bigkeyshuffle": "none",
         "prizeshuffle": "none",
         "keysanity": False,
         "door_shuffle": "vanilla",
@@ -285,7 +284,7 @@ def parse_settings():
         "seed": "",
         "count": 1,
         "startinventory": "",
-        "beemizer": 0,
+        'beemizer': '0',
         "remote_items": False,
         "race": False,
         "customitemarray": {

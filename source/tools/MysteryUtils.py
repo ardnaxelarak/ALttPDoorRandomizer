@@ -96,8 +96,14 @@ def roll_settings(weights):
     dungeon_items = get_choice('dungeon_items')
     dungeon_items = '' if dungeon_items == 'standard' or dungeon_items is None else dungeon_items
     dungeon_items = 'mcsb' if dungeon_items == 'full' else dungeon_items
-    ret.mapshuffle = get_choice_bool('map_shuffle') if 'map_shuffle' in weights else 'm' in dungeon_items
-    ret.compassshuffle = get_choice_bool('compass_shuffle') if 'compass_shuffle' in weights else 'c' in dungeon_items
+    if 'map_shuffle' in weights:
+        ret.mapshuffle = get_choice('map_shuffle')
+    elif 'm' in dungeon_items:
+        ret.mapshuffle = 'wild'
+    if 'compass_shuffle' in weights:
+        ret.compassshuffle = get_choice('compass_shuffle')
+    elif 'c' in dungeon_items:
+        ret.compassshuffle = 'wild'
     if 'smallkey_shuffle' in weights:
         ret.keyshuffle = get_choice('smallkey_shuffle')
     else:
@@ -105,7 +111,10 @@ def roll_settings(weights):
             ret.keyshuffle = 'wild'
         if 'u' in dungeon_items:
             ret.keyshuffle = 'universal'
-    ret.bigkeyshuffle = get_choice_bool('bigkey_shuffle') if 'bigkey_shuffle' in weights else 'b' in dungeon_items
+    if 'bigkey_shuffle' in weights:
+        ret.bigkeyshuffle = get_choice('bigkey_shuffle')
+    elif 'b' in dungeon_items:
+        ret.bigkeyshuffle = 'wild'
     ret.prizeshuffle = get_choice('prize_shuffle')
 
     ret.accessibility = get_choice('accessibility')
@@ -140,7 +149,7 @@ def roll_settings(weights):
 
     ret.dungeon_counters = get_choice_non_bool('dungeon_counters') if 'dungeon_counters' in weights else 'default'
     if ret.dungeon_counters == 'default':
-        ret.dungeon_counters = 'pickup' if ret.door_shuffle != 'vanilla' or ret.compassshuffle == 'on' else 'off'
+        ret.dungeon_counters = 'pickup' if ret.door_shuffle != 'vanilla' or ret.compassshuffle != 'none' else 'off'
 
     ret.pseudoboots = get_choice_bool('pseudoboots')
     ret.shopsanity = get_choice_bool('shopsanity')

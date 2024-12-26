@@ -1,9 +1,7 @@
 import functools
-from BaseClasses import Entrance, DoorType
+from BaseClasses import Entrance, DoorType, Door
 from DoorShuffle import connect_simple_door
 import Rules
-from OverworldGlitchRules import create_no_logic_connections
-from Doors import create_door
 
 kikiskip_spots = [
     ("Kiki Skip", "Spectacle Rock Cave (Bottom)", "Palace of Darkness Portal")
@@ -13,7 +11,7 @@ mirehera_spots = [("Mire to Hera Clip", "Mire Torches Top", "Hera Portal")]
 
 heraswamp_spots = [("Hera to Swamp Clip", "Mire Torches Top", "Swamp Portal")]
 
-icepalace_spots = [("Ice Lobby Clip", "Ice Portal", "Ice Bomb Drop - Top")]
+icepalace_spots = [("Ice Lobby Clip", "Ice Lobby", "Ice Bomb Drop - Top")]
 
 thievesdesert_spots = [
     ("Thieves to Desert West Clip", "Thieves Attic", "Desert West Portal"),
@@ -29,10 +27,7 @@ paradox_spots = [
     ("Paradox Front Teleport", "Paradox Cave Front", "Paradox Cave Chest Area")
 ]
 
-# Create connections between dungeons/locations
-def create_hybridmajor_connections(world, player):
-    fix_fake_worlds = world.fix_fake_world[player]
-
+def create_hmg_entrances_regions(world, player):
     for spots in [
         kikiskip_spots,
         mirehera_spots,
@@ -42,34 +37,42 @@ def create_hybridmajor_connections(world, player):
         specrock_spots,
         paradox_spots,
     ]:
-        create_no_logic_connections(player, world, spots, connect_external=fix_fake_worlds)
+        for entrance, parent_region, _, *_ in spots:
+            parent = world.get_region(parent_region, player)
+            connection = Entrance(player, entrance, parent)
+            connection.spot_type = 'HMG'
+            if connection not in parent.exits:
+                parent.exits.append(connection)
+
+    ip_bomb_top_reg = world.get_region("Ice Bomb Drop - Top", player)
+    ip_clip_entrance = Entrance(player, "Ice Bomb Drop Clip", ip_bomb_top_reg)
+    ip_bomb_top_reg.exits.append(ip_clip_entrance)
+
+def connect_hmg_entrances_regions(world, player):
+    for spots in [
+        kikiskip_spots,
+        mirehera_spots,
+        heraswamp_spots,
+        icepalace_spots,
+        thievesdesert_spots,
+        specrock_spots,
+        paradox_spots,
+    ]:
+        for entrance, _, target_region, *_ in spots:
+            connection = world.get_entrance(entrance, player)
+            if world.fix_fake_world[player] and target_region.endswith(" Portal"):
+                target = world.get_portal(target_region[:-7], player).find_portal_entrance().parent_region
+            else:
+                target = world.get_region(target_region, player)
+            connection.connect(target)
 
     # Add the new Ice path (back of bomb drop to front) to the world and model it properly
-    clip_door = create_door(player, "Ice Bomb Drop Clip", DoorType.Logical)
+    ip_clip_entrance = world.get_entrance('Ice Bomb Drop Clip', 1)
+    clip_door = Door(player, "Ice Bomb Drop Clip", DoorType.Logical, ip_clip_entrance)
     world.doors += [clip_door]
     world.initialize_doors([clip_door])
 
-    ice_bomb_top_reg = world.get_region("Ice Bomb Drop - Top", player)
-    ice_bomb_top_reg.exits.append(
-        Entrance(player, "Ice Bomb Drop Clip", ice_bomb_top_reg)
-    )
     connect_simple_door(world, "Ice Bomb Drop Clip", "Ice Bomb Drop", player)
-
-def get_hybridmajor_connection_entrances():
-    connections = []
-    for connector in (
-        kikiskip_spots
-        + mirehera_spots
-        + heraswamp_spots
-        + icepalace_spots
-        + thievesdesert_spots
-        + specrock_spots
-        + paradox_spots
-        ):
-        connections.append(connector[0])
-    connections.append('Ice Bomb Drop Clip')
-    return set(connections)
-
 
 # For some entrances, we need to fake having pearl, because we're in fake DW/LW.
 # This creates a copy of the input state that has Moon Pearl.

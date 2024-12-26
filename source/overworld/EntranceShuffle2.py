@@ -504,7 +504,7 @@ def remove_from_list(t_list, removals):
 def do_holes_and_linked_drops(entrances, exits, avail, cross_world):
     holes_to_shuffle = [x for x in entrances if x in drop_map]
 
-    if not avail.world.shuffle_ganon:
+    if not avail.world.shuffle_ganon[avail.player]:
         if avail.world.is_tile_swapped(0x1b, avail.player) and 'Inverted Pyramid Hole' in holes_to_shuffle:
             connect_entrance('Inverted Pyramid Hole', 'Pyramid', avail)
             connect_two_way('Pyramid Entrance', 'Pyramid Exit', avail)

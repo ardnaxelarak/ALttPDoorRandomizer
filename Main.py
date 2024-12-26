@@ -28,7 +28,7 @@ from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dunge
 from Fill import dungeon_tracking
 from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items, create_farm_locations
-from UnderworldGlitchRules import create_hybridmajor_connections, get_hybridmajor_connection_entrances
+from UnderworldGlitchRules import connect_hmg_entrances_regions, create_hmg_entrances_regions
 from Utils import output_path, parse_player_names
 
 from source.item.District import init_districts
@@ -40,7 +40,7 @@ from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
 from source.rom.DataTables import init_data_tables
 
-version_number = '1.4.6'
+version_number = '1.4.7.2'
 version_branch = '-u'
 __version__ = f'{version_number}{version_branch}'
 
@@ -224,7 +224,8 @@ def main(args, seed=None, fish=None):
 
     for player in range(1, world.players + 1):
         if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connections(world, player)
+            create_hmg_entrances_regions(world, player)
+            connect_hmg_entrances_regions(world, player)
         generate_itempool(world, player)
 
     verify_item_pool_config(world)
@@ -479,7 +480,7 @@ def init_world(args, fish):
     world.enemy_health = args.enemy_health.copy()
     world.enemy_damage = args.enemy_damage.copy()
     world.any_enemy_logic = args.any_enemy_logic.copy()
-    world.beemizer = args.beemizer.copy()
+    world.beemizer = {player: str(args.beemizer[player]) for player in range(1, world.players + 1)}
     world.intensity = {player: 'random' if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
     world.door_type_mode = args.door_type_mode.copy()
     world.trap_door_mode = args.trap_door_mode.copy()
@@ -643,6 +644,10 @@ def copy_world(world):
             connection = Entrance(player, 'Uncle S&Q', parent)
             parent.exits.append(connection)
             connection.connect(target)
+        # This makes the regions for HMG only
+        # we'll connect them later after all other connections are made (OW <=> UW, Portals)
+        if world.logic[player] in ('nologic', 'hybridglitches'):
+            create_hmg_entrances_regions(ret, player)
 
     # copy bosses
     for dungeon in world.dungeons:
@@ -659,7 +664,6 @@ def copy_world(world):
 
     # We have to skip these for now. They require both the rest of the entrances _and_ the dungeon portals to be copied first
     # We will connect them later
-    hmg_entrances = get_hybridmajor_connection_entrances()
 
     for region in world.regions:
         copied_region = ret.get_region(region.name, region.player)
@@ -670,8 +674,6 @@ def copy_world(world):
         for location in copied_region.locations:
             location.parent_region = copied_region
         for entrance in region.entrances:
-            if entrance.name in hmg_entrances:
-                continue
             ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
         for exit in region.exits:
             if exit.connected_region:
@@ -739,16 +741,16 @@ def copy_world(world):
         categorize_world_regions(ret, player)
         create_farm_locations(ret, player)
         if world.logic[player] in ('nologic', 'hybridglitches'):
-            create_hybridmajor_connections(ret, player)
-        
-    for region in world.regions: 
+            connect_hmg_entrances_regions(ret, player)
+
+    for region in world.regions:
         copied_region = ret.get_region(region.name, region.player)
         for entrance in region.entrances:
-            if entrance.name not in hmg_entrances:
-                continue
-            ret.get_entrance(entrance.name, entrance.player).connect(copied_region)
+            ent = ret.get_entrance(entrance.name, entrance.player)
+            if (ent.connected_region != copied_region):
+                ent.connect(copied_region)
 
-    for player in range(1, world.players + 1):   
+    for player in range(1, world.players + 1):
         set_rules(ret, player)
 
     return ret
@@ -898,9 +900,6 @@ def copy_world_premature(world, player):
                 copied_door.entrance = copied_entrance
     for portal in world.dungeon_portals[player]:
         connect_portal(portal, ret, player)
-
-    if world.logic[player] in ('nologic', 'hybridglitches'):
-        create_hybridmajor_connections(ret, player)
 
     set_rules(ret, player)
 

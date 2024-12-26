@@ -141,12 +141,20 @@ These are now independent of retro mode and have three options: None, Random, an
 
 # Patch Notes
 
-1.4.6
-
-- Restores original Sanc & Quit behavior, if Aga1 is not dead, then no quick pyramid warp
-- Fixed problem with Lite/Lean shuffling some fairy caves unnecessarily
-- The 300 Rupees item is now marked as priority, so it will not be used as GT junk fill (this matches a change in the VT randomizer)
-- Murahdahla is now logically accessible in inverted mode as a bunny. May affect some beatable-only TFH seeds by allowing Moon Pearl to be inaccessible.
-- Fixed an issue around PreferredLocationGroups in customizer which would not work with pre-activated Ocraina or priority items.
-- Minor fix on triforce text
-- Enemy bans for poor placements
+* 1.4.7.2
+  - Fixed an issue with shuffle_ganon/fix_gtower_exit causing a generation failure
+  - More HMG fixes by Muffins
+* 1.4.7.1
+  - Fixed an issue with the repaired "beemizer" setting not being backwards compatible
+* 1.4.7
+  - Fixed generation error with Big Key in starting inventory (thanks Cody!)
+  - HMG/NL logic fixes by Muffins
+  - Enemizer: Disabled Walking Zora in the UW due to crash with Swamola (they ignore a lot of collison anyway)
+  - Enemizer: Fixed an issue with enemizer bush sprites
+  - Enemizer: Banned new Mimics from being the randomized bush sprite due to crash
+  - "Beatable" or "accessibility: none" can now use randomized trap doors to seal off entire parts of dungeons (was intended, bug prevented the logic skip)
+  - Logic error with enemizer and standard should use new enemy logic rules
+  - Fixed a bug with the inconsistent treatment of the beemizer setting
+  - Fixed an issue with returning Blacksmith in Simple shuffle (when blacksmith is at Link's House)
+  - Fixed an issue with dark sanctuary spawn at tavern north door (thanks Codemann!)
+  - Various enemy bans for the last few months

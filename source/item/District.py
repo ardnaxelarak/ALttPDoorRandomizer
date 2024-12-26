@@ -96,12 +96,15 @@ def resolve_districts(world):
         
         for name, district in world.districts[player].items():
             if district.dungeon:
+                dungeon = world.get_dungeon(district.dungeon, player)
+                dungeon.districts = [district] + dungeon.districts
                 layout = world.dungeon_layouts[player][district.dungeon]
                 district.locations.update([l.name for r in layout.master_sector.regions
                                            for l in r.locations if not l.item and l.real])
             else:
                 for region_name in district.regions:
                     region = world.get_region(region_name, player)
+                    region.districts.append(district)
                     for location in region.locations:
                         if not location.item and location.real:
                             district.locations.add(location.name)
@@ -115,6 +118,7 @@ def resolve_districts(world):
                             RuntimeError(f'No region connected to entrance: {ent.name} Likely a missing entry in OWExitTypes')
                         visited.add(region)
                         if region.type == RegionType.Cave:
+                            region.districts.append(district)
                             for location in region.locations:
                                 if not location.item and location.real:
                                     district.locations.add(location.name)
@@ -123,6 +127,8 @@ def resolve_districts(world):
                                     queue.appendleft(ext.connected_region)
                         elif region.type == RegionType.Dungeon and region.dungeon:
                             district.dungeons.add(region.dungeon.name)
+                            if district not in region.dungeon.districts:
+                                region.dungeon.districts.append(district)
                         elif region.name in inaccessible:
                             district.access_points.add(region)
 

@@ -231,7 +231,7 @@ def gen_dungeon_info(name, available_sectors, entrance_regions, all_regions, pro
     start = ExplorationState(dungeon=name)
     start.big_key_special = bk_special
     group_flags, door_map = find_bk_groups(name, available_sectors, proposed_map, bk_special)
-    bk_flag = False if world.bigkeyshuffle[player] and not bk_special else bk_needed
+    bk_flag = False if world.bigkeyshuffle[player] != 'none' and not bk_special else bk_needed
 
     def exception(d):
         return name == 'Skull Woods 2' and d.name == 'Skull Pinball WS'
@@ -436,7 +436,7 @@ def check_valid(name, dungeon, hangers, hooks, proposed_map, doors_to_connect, a
     if len(dungeon.keys()) <= 1 and len(proposed_map.keys()) < len(doors_to_connect):
         return False
     # origin has no more hooks, but not all doors have been proposed
-    if not world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] == 'none':
         possible_bks = len(dungeon['Origin'].possible_bk_locations)
         if bk_special and check_for_special(dungeon['Origin'].visited_regions):
             possible_bks = 1
@@ -470,7 +470,7 @@ def check_valid(name, dungeon, hangers, hooks, proposed_map, doors_to_connect, a
         if len(outstanding_doors[key]) > 0 and len(hangers[key]) == 0 and len(hooks[opp_key]) == 0:
             return False
     all_visited = set()
-    bk_possible = not bk_needed or (world.bigkeyshuffle[player] and not bk_special)
+    bk_possible = not bk_needed or (world.bigkeyshuffle[player] != 'none' and not bk_special)
     for piece in dungeon.values():
         all_visited.update(piece.visited_regions)
         if ((not bk_possible and len(piece.possible_bk_locations) > 0) or
@@ -544,7 +544,7 @@ def valid_path(name, starting_regions, target, valid_doors, proposed_map, all_re
 
     start = ExplorationState(dungeon=name)
     start.big_key_special = bk_special
-    bk_flag = False if world.bigkeyshuffle[player] and not bk_special else bk_needed
+    bk_flag = False if world.bigkeyshuffle[player] != 'none' and not bk_special else bk_needed
 
     def exception(d):
         return name == 'Skull Woods 2' and d.name == 'Skull Pinball WS'
@@ -1775,11 +1775,11 @@ def requested_dungeon_items(world, player):
     num = 0
     if world.prizeshuffle[player] == 'dungeon':
         num += 1
-    if not world.bigkeyshuffle[player]:
+    if world.bigkeyshuffle[player] == 'none':
         num += 1
-    if not world.compassshuffle[player]:
+    if world.compassshuffle[player] == 'none':
         num += 1
-    if not world.mapshuffle[player]:
+    if world.mapshuffle[player] == 'none':
         num += 1
     return num
 

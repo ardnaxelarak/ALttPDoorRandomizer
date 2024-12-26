@@ -65,6 +65,8 @@ class CustomSettings(object):
             args.outputname = get_setting(meta['name'], args.outputname)
             args.bps = get_setting(meta['bps'], args.bps)
             args.suppress_rom = get_setting(meta['suppress_rom'], args.suppress_rom)
+            args.skip_playthrough = get_setting(meta['skip_playthrough'], args.skip_playthrough)
+            args.spoiler = get_setting(meta['spoiler'], args.spoiler)
             args.names = get_setting(meta['names'], args.names)
             args.race = get_setting(meta['race'], args.race)
             args.notes = get_setting(meta['user_notes'], args.notes)
@@ -145,11 +147,14 @@ class CustomSettings(object):
                 args.compassshuffle[p] = get_setting(settings['compassshuffle'], args.compassshuffle[p])
 
                 if get_setting(settings['keysanity'], args.keysanity):
-                    args.bigkeyshuffle[p] = True
+                    if args.bigkeyshuffle[p] == 'none':
+                        args.bigkeyshuffle[p] = 'wild'
                     if args.keyshuffle[p] == 'none':
                         args.keyshuffle[p] = 'wild'
-                    args.mapshuffle[p] = True
-                    args.compassshuffle[p] = True
+                    if args.mapshuffle[p] == 'none':
+                        args.mapshuffle[p] = 'wild'
+                    if args.compassshuffle[p] == 'none':
+                        args.compassshuffle[p] = 'wild'
 
                 args.shufflebosses[p] = get_setting(settings['boss_shuffle'], get_setting(settings['shufflebosses'], args.shufflebosses[p]))
                 args.shuffleenemies[p] = get_setting(settings['enemy_shuffle'], get_setting(settings['shuffleenemies'], args.shuffleenemies[p]))

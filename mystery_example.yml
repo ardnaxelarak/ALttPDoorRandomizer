@@ -151,6 +151,7 @@
   prize_shuffle:
     none: 1
     dungeon: 1
+    district: 1
     wild: 1
   dungeon_items:
     standard: 10
@@ -160,18 +161,22 @@
     mcu: 1  # map, compass, universal smalls
   # for use when you aren't using the dungeon_items above
   # map_shuffle:
-  #   on: 1
-  #   off: 1
+  #   none: 1
+  #   district: 1
+  #   wild: 1
   # compass_shuffle:
-  #   on: 1
-  #   off: 1
+  #   none: 1
+  #   district: 1
+  #   wild: 1
   # smallkey_shuffle:
   #   none: 5
+  #   district: 1
   #   wild: 1
   #   universal: 1
   # bigkey_shuffle:
-  #   on: 1
-  #   off: 1
+  #   none: 1
+  #   district: 1
+  #   wild: 1
   dungeon_counters:
     on: 5
     off: 0
