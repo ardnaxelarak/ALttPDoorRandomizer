@@ -77,17 +77,17 @@ You may list each location for a player and the item you wish to place there. A 
 
 This must be defined by player. Each player number should be listed with the appropriate section. Each section is a list of placement rules. Each placement rule has a specific type.
 
-Supported Types: PlacementGroup, NotPlacmentGroup, PreferredLocationGroup
+Supported Types: LocationGroup, NotLocationGroup, PreferredLocationGroup
 
-#### PlacementGroup
+#### LocationGroup
 
 You may define an item, and a list of locations. The locations may be weighted if desired. The item will be placed at one of the listed locations - this currently ignores logic. The item will be placed there. The special location 'Random' indicates that the item should be placed randomly, without any other consideration. This may be repeated for placement of multiple items like multiple bows or swords.
 
-#### NotPlacementGroup
+#### NotLocationGroup
 
 You may define an item and a list of locations that an item should not be placed at. This will apply to all items of that type. The logic is considered for this. If it is otherwise impossible, the item will be considered for the listed locations. This is important for small key layouts mostly, but it will try other locations first.
 
-#### PreferredPlacementGroup
+#### PreferredLocationGroup
 
 You may define a list of items and a list of locations. Those items will be considered first for placements and the logic will attempt to place those items in those locations first. If there are more item than locations or vice versa, the leftover items or location will be treated normally. (Although, the leftover items will be placed earlier by the algorithm than those not listed)
  
