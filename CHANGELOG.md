@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.1.0
+## 0.5.1.0 (+ Hotfix 0.5.1.1)
 - New "Nearby" Dungeon Item Shuffle option
 - Fixed issue with smith follower getting deleted incorrectly on s+q
 - Various generation and logic fixes for HMG/NL
