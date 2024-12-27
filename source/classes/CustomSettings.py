@@ -146,14 +146,23 @@ class CustomSettings(object):
                 args.mapshuffle[p] = get_setting(settings['mapshuffle'], args.mapshuffle[p])
                 args.compassshuffle[p] = get_setting(settings['compassshuffle'], args.compassshuffle[p])
 
+                dungeon_item_map = { 0: 'none',
+                                     1: 'wild' }
+                if args.mapshuffle[p] in dungeon_item_map:
+                    args.mapshuffle[p] = dungeon_item_map[args.mapshuffle[p]]
+                if args.compassshuffle[p] in dungeon_item_map:
+                    args.compassshuffle[p] = dungeon_item_map[args.compassshuffle[p]]
+                if args.bigkeyshuffle[p] in dungeon_item_map:
+                    args.bigkeyshuffle[p] = dungeon_item_map[args.bigkeyshuffle[p]]
+                
                 if get_setting(settings['keysanity'], args.keysanity):
-                    if args.bigkeyshuffle[p] == 'none':
+                    if args.bigkeyshuffle[p] in ['none', 0]:
                         args.bigkeyshuffle[p] = 'wild'
                     if args.keyshuffle[p] == 'none':
                         args.keyshuffle[p] = 'wild'
-                    if args.mapshuffle[p] == 'none':
+                    if args.mapshuffle[p] in ['none', 0]:
                         args.mapshuffle[p] = 'wild'
-                    if args.compassshuffle[p] == 'none':
+                    if args.compassshuffle[p] in ['none', 0]:
                         args.compassshuffle[p] = 'wild'
 
                 args.shufflebosses[p] = get_setting(settings['boss_shuffle'], get_setting(settings['shufflebosses'], args.shufflebosses[p]))
