@@ -545,7 +545,11 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         patch_shuffled_dark_sanc(world, rom, player)
 
     # setup dr option flags based on experimental, etc.
-    dr_flags = DROptions.Eternal_Mini_Bosses if world.doorShuffle[player] == 'vanilla' else DROptions.Town_Portal
+    dr_flags = DROptions.NoOptions
+    if world.mirrorscroll[player]:
+        dr_flags = DROptions.Town_Portal
+    if world.doorShuffle[player] == 'vanilla':
+        dr_flags |= DROptions.Eternal_Mini_Bosses 
     if world.doorShuffle[player] not in  ['vanilla', 'basic']:
         dr_flags |= DROptions.Map_Info
     if ((world.collection_rate[player] or world.goal[player] == 'completionist')

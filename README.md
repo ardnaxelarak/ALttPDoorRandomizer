@@ -300,6 +300,12 @@ Dashing is allowed without the boots item however doors and certain rocks remain
 
 CLI `--pseudoboots`
 
+#### Mirror Scroll
+
+Mirror is usable inside dungeons. Locations that require the mirror are still unattainable.
+
+CLI `--mirrorscroll`
+
 #### Flute Mode
 
 Normal mode for flute means you need to activate it at the village statue after finding it like usual. Activated flute mode mean you can use it immediately upon finding it. The flute SFX plays to let you know this is the case. 

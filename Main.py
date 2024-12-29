@@ -138,6 +138,7 @@ def main(args, seed=None, fish=None):
     world.skullwoods = args.skullwoods.copy()
     world.linked_drops = args.linked_drops.copy()
     world.pseudoboots = args.pseudoboots.copy()
+    world.mirrorscroll = args.mirrorscroll.copy()
     world.overworld_map = args.overworld_map.copy()
     world.take_any = args.take_any.copy()
     world.restrict_boss_items = args.restrict_boss_items.copy()

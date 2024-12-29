@@ -150,6 +150,7 @@ class CustomSettings(object):
                 args.restrict_boss_items[p] = get_setting(settings['restrict_boss_items'], args.restrict_boss_items[p])
                 args.overworld_map[p] = get_setting(settings['overworld_map'], args.overworld_map[p])
                 args.pseudoboots[p] = get_setting(settings['pseudoboots'], args.pseudoboots[p])
+                args.mirrorscroll[p] = get_setting(settings['mirrorscroll'], args.mirrorscroll[p])
                 args.triforce_goal[p] = get_setting(settings['triforce_goal'], args.triforce_goal[p])
                 args.triforce_pool[p] = get_setting(settings['triforce_pool'], args.triforce_pool[p])
                 args.triforce_goal_min[p] = get_setting(settings['triforce_goal_min'], args.triforce_goal_min[p])
@@ -287,6 +288,7 @@ class CustomSettings(object):
             settings_dict[p]['linked_drops'] = world.linked_drops[p]
             settings_dict[p]['overworld_map'] = world.overworld_map[p]
             settings_dict[p]['pseudoboots'] = world.pseudoboots[p]
+            settings_dict[p]['mirrorscroll'] = world.mirrorscroll[p]
             settings_dict[p]['triforce_goal'] = world.treasure_hunt_count[p]
             settings_dict[p]['triforce_pool'] = world.treasure_hunt_total[p]
             settings_dict[p]['beemizer'] = world.beemizer[p]

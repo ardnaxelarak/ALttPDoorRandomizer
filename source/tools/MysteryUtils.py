@@ -134,6 +134,7 @@ def roll_settings(weights):
     ret.skullwoods = get_choice('skullwoods')
     ret.linked_drops = get_choice('linked_drops')
     ret.pseudoboots = get_choice_bool('pseudoboots')
+    ret.mirrorscroll = get_choice_bool('mirrorscroll')
     ret.shopsanity = get_choice_bool('shopsanity')
     keydropshuffle = get_choice_bool('keydropshuffle')
     ret.dropshuffle = get_choice('dropshuffle') if 'dropshuffle' in weights else 'none'
