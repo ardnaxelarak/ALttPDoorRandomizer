@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '1fde4fa24bc9d3efe450c3bc30e4cf2c'
+RANDOMIZERBASEHASH = 'e2e7241bfb0085ab7ba12167565e814a'
 
 
 class JsonRom(object):
@@ -439,6 +439,8 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                 location.pot.item = valid_pot_items[location.item.name]
             else:
                 code = itemid
+                if world.pottery[player] == 'none' or location.locked:
+                    code = handle_native_dungeon(location, itemid)
                 standing_item_flag = 0x80
                 if location.item.player != player:
                     standing_item_flag |= 0x40
