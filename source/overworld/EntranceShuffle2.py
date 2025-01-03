@@ -878,6 +878,8 @@ def get_accessible_entrances(start_region, avail, assumed_inventory=[], cross_wo
     blank_state = CollectionState(base_world)
     if base_world.mode[avail.player] == 'standard':
         blank_state.collect(ItemFactory('Zelda Delivered', avail.player), True)
+    if base_world.logic[avail.player] in ['owglitches', 'hybridglitches', 'nologic']:
+        blank_state.collect(ItemFactory('Pegasus Boots', avail.player), True)
     for item in assumed_inventory:
         blank_state.collect(ItemFactory(item, avail.player), True)
 

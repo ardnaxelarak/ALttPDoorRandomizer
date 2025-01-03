@@ -1384,11 +1384,10 @@ def can_reach_smith(world, player):
                 region = world.get_region(region_name, player)
             for exit in region.exits:
                 if not found and exit.connected_region is not None:
-                    if exit.spot_type == 'Flute':
-                        if any(map(lambda i: i.name == 'Ocarina (Activated)' and i.player == player, world.precollected_items)):
-                            for flutespot in exit.connected_region.exits:
-                                if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
-                                    explore_region(flutespot.connected_region.name, flutespot.connected_region)
+                    if starting_flute and exit.spot_type == 'Flute':
+                        for flutespot in exit.connected_region.exits:
+                            if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
+                                explore_region(flutespot.connected_region.name, flutespot.connected_region)
                     elif exit.connected_region.name == 'Blacksmiths Hut' and exit.access_rule(blank_state):
                         found = True
                         return
@@ -1410,6 +1409,7 @@ def can_reach_smith(world, player):
     
     found = False
     explored_regions = list()
+    starting_flute = any(map(lambda i: i.name == 'Ocarina (Activated)' and i.player == player, world.precollected_items))
     if not world.is_bombshop_start(player):
         start_region = 'Links House'
     else:
@@ -1494,7 +1494,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
             region = base_world.get_region(region_name, player)
         for exit in region.exits:
             if exit.connected_region is not None:
-                if any(map(lambda i: i.name == 'Ocarina (Activated)' and i.player == player, base_world.precollected_items)) and exit.spot_type == 'Flute':
+                if starting_flute and exit.spot_type == 'Flute':
                     fluteregion = exit.connected_region
                     for flutespot in fluteregion.exits:
                         if flutespot.connected_region and flutespot.connected_region.name not in explored_regions:
@@ -1504,7 +1504,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
                             or (cross_world and exit.name in (OWExitTypes['Portal'] + OWExitTypes['Mirror']))) \
                         and (not region_rules or exit.access_rule(blank_state)) \
                         and (not restrictive_follower or exit.spot_type != 'OWG') \
-                        and (not ignore_ledges or exit.name not in (OWExitTypes['Ledge'] + OWExitTypes['OWG'])):
+                        and (not ignore_ledges or not (exit.spot_type == 'OWG' or exit.name in OWExitTypes['Ledge'])):
                     explore_region(exit.connected_region.name, exit.connected_region)
     
     if build_copy_world:
@@ -1520,6 +1520,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
     if base_world.mode[player] == 'standard':
         blank_state.collect(ItemFactory('Zelda Delivered', player), True)
     explored_regions = list()
+    starting_flute = any(map(lambda i: i.name == 'Ocarina (Activated)' and i.player == player, base_world.precollected_items))
     explore_region(start_region)
 
     return explored_regions

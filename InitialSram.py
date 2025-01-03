@@ -115,8 +115,7 @@ class InitialSram:
             starting_magic = 0x80
 
         if world.mode[player] == 'standard' and world.logic[player] not in ['noglitches', 'minorglitches']:
-            if (startingstate.has('Ocarina', player) and world.flute_mode[player] == 'active') \
-                    or startingstate.has('Ocarina (Activated)', player):
+            if startingstate.has('Ocarina (Activated)', player):
                 self.pre_set_overworld_flag(0x18, 0x20)
 
         if startingstate.has('Return Old Man', player):
