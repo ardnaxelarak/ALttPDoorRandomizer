@@ -405,7 +405,7 @@ def do_old_man_cave_exit(entrances, exits, avail, cross_world):
             region_name = 'West Death Mountain (Top)'
         else:
             region_name = 'West Dark Death Mountain (Top)'
-        om_cave_options = list(get_accessible_entrances(region_name, avail, [], cross_world, True, True, True))
+        om_cave_options = list(get_accessible_entrances(region_name, avail, [], cross_world, True, True, True, True))
         om_cave_options = [e for e in om_cave_options if e in entrances and e != 'Old Man House (Bottom)']
         if avail.swapped:
             om_cave_options = [e for e in om_cave_options if e not in Forbidden_Swap_Entrances]
@@ -863,7 +863,7 @@ def get_nearby_entrances(avail, start_region):
     return candidates
 
 
-def get_accessible_entrances(start_region, avail, assumed_inventory=[], cross_world=False, region_rules=True, exit_rules=True, include_one_ways=False):
+def get_accessible_entrances(start_region, avail, assumed_inventory=[], cross_world=False, region_rules=True, exit_rules=True, include_one_ways=False, restrictive_follower=False):
     from Main import copy_world_premature
     from BaseClasses import CollectionState
     from Items import ItemFactory
@@ -881,7 +881,7 @@ def get_accessible_entrances(start_region, avail, assumed_inventory=[], cross_wo
     for item in assumed_inventory:
         blank_state.collect(ItemFactory(item, avail.player), True)
 
-    explored_regions = list(build_accessible_region_list(base_world, start_region, avail.player, False, cross_world, region_rules, False))
+    explored_regions = list(build_accessible_region_list(base_world, start_region, avail.player, False, cross_world, region_rules, False, restrictive_follower))
 
     if include_one_ways:
         new_regions = list()
