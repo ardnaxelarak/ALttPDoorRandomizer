@@ -2820,7 +2820,7 @@ class Item(object):
                 def explore_region(region):
                     explored_regions.append(region.name)
                     for ent in region.entrances:
-                        if ent.parent_region is not None and ent.spot_type != 'OWG':
+                        if ent.parent_region is not None and ent.spot_type not in ['OWG', 'HMG']:
                             if ent.parent_region.type in [RegionType.LightWorld, RegionType.DarkWorld]:
                                 return ent
                             elif ent.parent_region.name not in explored_regions:
