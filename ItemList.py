@@ -348,11 +348,11 @@ def generate_itempool(world, player):
         world.treasure_hunt_icon[player] = 'Triforce Piece'
 
     world.itempool.extend([item for item in get_dungeon_item_pool(world) if item.player == player
-                           and ((item.prize and world.prizeshuffle[player] not in ['none', 'dungeon', 'district'])
-                                or (item.smallkey and world.keyshuffle[player] not in ['none', 'district'])
-                                or (item.bigkey and world.bigkeyshuffle[player] not in ['none', 'district'])
-                                or (item.map and world.mapshuffle[player] not in ['none', 'district'])
-                                or (item.compass and world.compassshuffle[player] not in ['none', 'district']))])
+                           and ((item.prize and world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby'])
+                                or (item.smallkey and world.keyshuffle[player] not in ['none', 'nearby'])
+                                or (item.bigkey and world.bigkeyshuffle[player] not in ['none', 'nearby'])
+                                or (item.map and world.mapshuffle[player] not in ['none', 'nearby'])
+                                or (item.compass and world.compassshuffle[player] not in ['none', 'nearby']))])
     
     if world.logic[player] == 'hybridglitches' and world.pottery[player] not in ['none', 'cave']:
         keys_to_remove = 2

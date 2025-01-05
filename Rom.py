@@ -1278,28 +1278,28 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     # m - enabled for inside maps
     # c - enabled for inside compasses
     # s - enabled for inside small keys
-    free_item_text = 0x40 if 'district' in [world.mapshuffle[player], world.compassshuffle[player], world.keyshuffle[player], world.bigkeyshuffle[player]] else 0x00
+    free_item_text = 0x40 if 'nearby' in [world.mapshuffle[player], world.compassshuffle[player], world.keyshuffle[player], world.bigkeyshuffle[player]] else 0x00
     rom.write_byte(0x18016A, free_item_text | 0x10 | ((0x20 if world.prizeshuffle[player] not in ['none', 'dungeon'] else 0x00)
                                      | (0x01 if world.keyshuffle[player] not in ['none', 'universal'] else 0x00)
                                      | (0x02 if world.compassshuffle[player] != 'none' else 0x00)
                                      | (0x04 if world.mapshuffle[player] != 'none' else 0x00)
                                      | (0x08 if world.bigkeyshuffle[player] != 'none' else 0x00)))  # free roaming item text boxes
-    rom.write_byte(0x18003B, 0x01 if world.mapshuffle[player] not in ['none', 'district'] else 0x00)  # maps showing crystals on overworld
+    rom.write_byte(0x18003B, 0x01 if world.mapshuffle[player] not in ['none', 'nearby'] else 0x00)  # maps showing crystals on overworld
 
     # compasses showing dungeon count
-    compass_mode = 0x80 if world.compassshuffle[player] not in ['none', 'district'] else 0x00
+    compass_mode = 0x80 if world.compassshuffle[player] not in ['none', 'nearby'] else 0x00
     if world.clock_mode != 'none' or world.dungeon_counters[player] == 'off':
         pass
     elif world.dungeon_counters[player] == 'on':
         compass_mode |= 0x02  # always on
-    elif (world.compassshuffle[player] not in ['none', 'district'] or world.doorShuffle[player] != 'vanilla' or world.dropshuffle[player] != 'none'
+    elif (world.compassshuffle[player] not in ['none', 'nearby'] or world.doorShuffle[player] != 'vanilla' or world.dropshuffle[player] != 'none'
           or world.dungeon_counters[player] == 'pickup' or world.pottery[player] not in ['none', 'cave']):
         compass_mode |= 0x01  # show on pickup
     if world.overworld_map[player] == 'map':
         compass_mode |= 0x10  # show icon if map is collected
     elif world.overworld_map[player] == 'compass':
         compass_mode |= 0x20  # show icon if compass is collected
-    if world.prizeshuffle[player] not in ['none', 'dungeon', 'district']:
+    if world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby']:
         compass_mode |= 0x40  # show icon if boss is defeated, hide if collected
     rom.write_byte(0x18003C, compass_mode)
 
@@ -1335,7 +1335,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         map_index = max(0, dungeon_index - 2)
 
         # write out dislocated coords
-        if map_index >= 0x02 and map_index < 0x18 and (world.overworld_map[player] != 'default' or world.prizeshuffle[player] not in ['none', 'dungeon', 'district']):
+        if map_index >= 0x02 and map_index < 0x18 and (world.overworld_map[player] != 'default' or world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby']):
             owid_map =               [0x1E,   0x30,   0xFF,   0x7B,   0x5E,   0x70,   0x40,   0x75,   0x03,   0x58,   0x47]
             x_map_position_generic = [0x03c0, 0x0740, 0xff00, 0x03c0, 0x01c0, 0x0bc0, 0x05c0, 0x09c0, 0x0ac0, 0x07c0, 0x0dc0]
             y_map_position_generic = [0xff00, 0xff00, 0xff00, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0xff00, 0x0fc0, 0x0fc0]
@@ -1349,7 +1349,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                 write_int16(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+6, y_map_position_generic[idx])
 
         # write out icon coord data
-        if world.prizeshuffle[player] not in ['none', 'dungeon', 'district'] and dungeon_table[dungeon].prize:
+        if world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby'] and dungeon_table[dungeon].prize:
             dungeon_obj = world.get_dungeon(dungeon, player)
             entrance = dungeon_obj.prize.get_map_location()
             coords = get_entrance_coords(entrance)
@@ -1389,7 +1389,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         
         # figure out compass entrances and what world (light/dark)
         write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6), coords)
-        if world.prizeshuffle[player] in ['none', 'dungeon', 'district'] and dungeon_table[dungeon].prize:
+        if world.prizeshuffle[player] in ['none', 'dungeon', 'nearby'] and dungeon_table[dungeon].prize:
             # prize location
             write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+8, coords)
 
@@ -1428,7 +1428,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     # b - Big Key
     # a - Small Key
     #
-    enable_menu_map_check = (world.overworld_map[player] != 'default' and world.shuffle[player] != 'vanilla') or world.prizeshuffle[player] not in ['none', 'dungeon', 'district']
+    enable_menu_map_check = (world.overworld_map[player] != 'default' and world.shuffle[player] != 'vanilla') or world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby']
     rom.write_byte(0x180045, ((0x01 if world.keyshuffle[player] not in ['none', 'universal'] else 0x00)
                               | (0x02 if world.bigkeyshuffle[player] != 'none' else 0x00)
                               | (0x04 if world.mapshuffle[player] != 'none' or enable_menu_map_check else 0x00)
@@ -2331,7 +2331,7 @@ def write_strings(rom, world, player, team):
         (crystal5, crystal6, greenpendant) = tuple([x.parent_region.dungeon.name for x in [crystal5, crystal6, greenpendant]])
         tt['bomb_shop'] = 'Big Bomb?\nMy supply is blocked until you clear %s and %s.' % (crystal5, crystal6)
         tt['sahasrahla_bring_courage'] = 'I lost my family heirloom in %s' % greenpendant
-    elif world.prizeshuffle[player] == 'district':
+    elif world.prizeshuffle[player] == 'nearby':
         (crystal5, crystal6, greenpendant) = tuple([x.item.dungeon_object.name for x in [crystal5, crystal6, greenpendant]])
         tt['bomb_shop'] = 'Big Bomb?\nThe crystals can be found near %s and %s.' % (crystal5, crystal6)
         tt['sahasrahla_bring_courage'] = 'I lost my family heirloom near %s' % greenpendant

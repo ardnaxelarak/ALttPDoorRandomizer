@@ -151,7 +151,7 @@
   prize_shuffle:
     none: 1
     dungeon: 1
-    district: 1
+    nearby: 1
     wild: 1
   dungeon_items:
     standard: 10
@@ -162,20 +162,20 @@
   # for use when you aren't using the dungeon_items above
   # map_shuffle:
   #   none: 1
-  #   district: 1
+  #   nearby: 1
   #   wild: 1
   # compass_shuffle:
   #   none: 1
-  #   district: 1
+  #   nearby: 1
   #   wild: 1
   # smallkey_shuffle:
   #   none: 5
-  #   district: 1
+  #   nearby: 1
   #   wild: 1
   #   universal: 1
   # bigkey_shuffle:
   #   none: 1
-  #   district: 1
+  #   nearby: 1
   #   wild: 1
   dungeon_counters:
     on: 5

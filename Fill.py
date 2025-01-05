@@ -36,7 +36,7 @@ def dungeon_tracking(world):
     for dungeon in world.dungeons:
         layout = world.dungeon_layouts[dungeon.player][dungeon.name]
         layout.dungeon_items = len([i for i in dungeon.all_items if i.is_inside_dungeon_item(world)])
-        if world.prizeshuffle[dungeon.player] in ['dungeon', 'district'] and not dungeon.prize:
+        if world.prizeshuffle[dungeon.player] in ['dungeon', 'nearby'] and not dungeon.prize:
             from Dungeons import dungeon_table
             if dungeon_table[dungeon.name].prize:
                 layout.dungeon_items += 1
@@ -51,7 +51,7 @@ def fill_dungeons_restrictive(world, shuffled_locations):
            or (item.smallkey and world.keyshuffle[item.player] != 'none')
            or (item.bigkey and world.bigkeyshuffle[item.player] != 'none')):
             item.advancement = True
-        elif (item.map and world.mapshuffle[item.player] not in ['none', 'district']) or (item.compass and world.compassshuffle[item.player] not in ['none', 'district']):
+        elif (item.map and world.mapshuffle[item.player] not in ['none', 'nearby']) or (item.compass and world.compassshuffle[item.player] not in ['none', 'nearby']):
             item.priority = True
 
     dungeon_items = [item for item in get_dungeon_item_pool(world) if item.is_inside_dungeon_item(world) or item.is_near_dungeon_item(world)]
@@ -81,7 +81,7 @@ def fill_dungeons_restrictive(world, shuffled_locations):
     for attempt in range(15):
         try:
             for player in range(1, world.players + 1):
-                if world.prizeshuffle[player] == 'district':
+                if world.prizeshuffle[player] == 'nearby':
                     dungeon_pool = []
                     for dungeon in world.dungeons:
                         from Dungeons import dungeon_table

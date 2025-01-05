@@ -1100,7 +1100,7 @@ class CollectionState(object):
         new_locations = True
         while new_locations:
             reachable_events = [location for location in locations if location.event and
-                                (not key_only or (self.world.keyshuffle[location.item.player] in ['none', 'district'] and location.item.smallkey) or (self.world.bigkeyshuffle[location.item.player] in ['none', 'district'] and location.item.bigkey))
+                                (not key_only or (self.world.keyshuffle[location.item.player] in ['none', 'nearby'] and location.item.smallkey) or (self.world.bigkeyshuffle[location.item.player] in ['none', 'nearby'] and location.item.bigkey))
                                 and location.can_reach(self)]
             reachable_events = self._do_not_flood_the_keys(reachable_events)
             new_locations = False
@@ -2806,11 +2806,11 @@ class Item(object):
                 or (self.map and world.mapshuffle[self.player] == 'none'))
 
     def is_near_dungeon_item(self, world):
-        return ((self.prize and world.prizeshuffle[self.player] == 'district')
-                or (self.smallkey and world.keyshuffle[self.player] == 'district')
-                or (self.bigkey and world.bigkeyshuffle[self.player] == 'district')
-                or (self.compass and world.compassshuffle[self.player] == 'district')
-                or (self.map and world.mapshuffle[self.player] == 'district'))
+        return ((self.prize and world.prizeshuffle[self.player] == 'nearby')
+                or (self.smallkey and world.keyshuffle[self.player] == 'nearby')
+                or (self.bigkey and world.bigkeyshuffle[self.player] == 'nearby')
+                or (self.compass and world.compassshuffle[self.player] == 'nearby')
+                or (self.map and world.mapshuffle[self.player] == 'nearby'))
 
     def get_map_location(self):
         if self.location:
@@ -3644,10 +3644,10 @@ counter_mode = {"default": 0, "off": 1, "on": 2, "pickup": 3}
 access_mode = {"items": 0, "locations": 1, "none": 2}
 
 # byte 7: MMCC SSBB (maps, compass, small, big)
-mapshuffle_mode = {'none': 0, 'off': 0, 'district': 2, 'wild': 3, 'on': 3}
-compassshuffle_mode = {'none': 0, 'off': 0, 'district': 2, 'wild': 3, 'on': 3}
-keyshuffle_mode = {'none': 0, 'off': 0, 'universal': 1, 'district': 2, 'wild': 3, 'on': 3}
-bigkeyshuffle_mode = {'none': 0, 'off': 0, 'district': 2, 'wild': 3, 'on': 3}
+mapshuffle_mode = {'none': 0, 'off': 0, 'nearby': 2, 'wild': 3, 'on': 3}
+compassshuffle_mode = {'none': 0, 'off': 0, 'nearby': 2, 'wild': 3, 'on': 3}
+keyshuffle_mode = {'none': 0, 'off': 0, 'universal': 1, 'nearby': 2, 'wild': 3, 'on': 3}
+bigkeyshuffle_mode = {'none': 0, 'off': 0, 'nearby': 2, 'wild': 3, 'on': 3}
 
 # byte 8: HHHD DPEE (enemy_health, enemy_dmg, potshuffle, enemies)
 e_health = {"default": 0, "easy": 1, "normal": 2, "hard": 3, "expert": 4}
@@ -3673,7 +3673,7 @@ flutespot_mode = {"vanilla": 0, "balanced": 1, "random": 2}
 flute_mode = {'normal': 0, 'active': 1}
 bow_mode = {'progressive': 0, 'silvers': 1, 'retro': 2, 'retro_silvers': 3}  # reserved 8 modes?
 take_any_mode = {'none': 0, 'random': 1, 'fixed': 2}
-prizeshuffle_mode = {'none': 0, 'dungeon': 1, 'district': 2, 'wild': 3}
+prizeshuffle_mode = {'none': 0, 'dungeon': 1, 'nearby': 2, 'wild': 3}
 
 # additions
 # byte 14: POOT TKKK (pseudoboots, overworld_map, trap_door_mode, key_logic_algo)
