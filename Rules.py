@@ -1306,7 +1306,7 @@ def ow_terrain_rules(world, player):
             ent = world.get_entrance(edge.name, player)
             if edge.terrain == Terrain.Land:
                 set_rule(ent, lambda state: state.has('Flippers', player))
-            if ent.parent_region.is_light_world == (world.mode[player] != 'inverted') and ent.connected_region.is_dark_world == (world.mode[player] != 'inverted'):
+            if ent.connected_region.is_dark_world == (world.mode[player] != 'inverted'):
                 add_rule(ent, lambda state: state.has_Pearl(player))
 
     for whirlpool_name in OWExitTypes['Whirlpool']:

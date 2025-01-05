@@ -619,6 +619,7 @@ def copy_world(world):
     ret.inaccessible_regions = world.inaccessible_regions.copy()
     ret.damage_table = world.damage_table
     ret.data_tables = world.data_tables  # can be changed...
+    ret.settings = world.settings
 
     for player in range(1, world.players + 1):
         create_regions(ret, player)
@@ -832,6 +833,7 @@ def copy_world_premature(world, player):
     ret.damage_table = world.damage_table
     ret.data_tables = world.data_tables  # can be changed...
     ret.key_logic = world.key_logic.copy()
+    ret.settings = world.settings
 
     ret.is_copied_world = True
 

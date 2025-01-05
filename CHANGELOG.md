@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1.2
+- Many fixes to HMG logic, generation, key collection issues
+- Fixed issue with In-Dungeon Prizes getting placed in the same dungeon
+- Fixed issue with Old Man getting placed outside of DM in glitched modes
+- Fixed issue with Free Terrain water transitions not checking for Pearl requirement
+
 ## 0.5.1.0 (+ Hotfix 0.5.1.1)
 - New "Nearby" Dungeon Item Shuffle option
 - Fixed issue with smith follower getting deleted incorrectly on s+q

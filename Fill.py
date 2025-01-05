@@ -36,18 +36,21 @@ def dungeon_tracking(world):
     for dungeon in world.dungeons:
         layout = world.dungeon_layouts[dungeon.player][dungeon.name]
         layout.dungeon_items = len([i for i in dungeon.all_items if i.is_inside_dungeon_item(world)])
+        if world.prizeshuffle[dungeon.player] in ['dungeon', 'nearby'] and not dungeon.prize:
+            from Dungeons import dungeon_table
+            if dungeon_table[dungeon.name].prize:
+                layout.dungeon_items += 1
         layout.free_items = layout.location_cnt - layout.dungeon_items
 
 
 def fill_dungeons_restrictive(world, shuffled_locations):
-
     # with shuffled dungeon items they are distributed as part of the normal item pool
     for item in world.get_items():
         if ((item.prize and world.prizeshuffle[item.player] != 'none')
            or (item.smallkey and world.keyshuffle[item.player] != 'none')
            or (item.bigkey and world.bigkeyshuffle[item.player] != 'none')):
             item.advancement = True
-        elif (item.map and world.mapshuffle[item.player] not in ['none', 'district']) or (item.compass and world.compassshuffle[item.player] not in ['none', 'district']):
+        elif (item.map and world.mapshuffle[item.player] not in ['none', 'nearby']) or (item.compass and world.compassshuffle[item.player] not in ['none', 'nearby']):
             item.priority = True
 
     dungeon_items = [item for item in get_dungeon_item_pool(world) if item.is_inside_dungeon_item(world) or item.is_near_dungeon_item(world)]
@@ -56,13 +59,46 @@ def fill_dungeons_restrictive(world, shuffled_locations):
         (bigs if i.bigkey else smalls if i.smallkey else prizes if i.prize else others).append(i)
     unplaced_smalls = list(smalls)
     for i in world.itempool:
-        if i.smallkey and world.keyshuffle[i.player] != 'none':
+        if i.smallkey and world.keyshuffle[i.player] not in ['none', 'nearby']:
             unplaced_smalls.append(i)
 
     def fill(base_state, items, locations, key_pool=None):
         fill_restrictive(world, base_state, locations, items, key_pool, True)
 
     all_state_base = world.get_all_state()
+    for player in range(1, world.players + 1):
+        if world.logic[player] == 'hybridglitches' and world.keyshuffle[i.player] in ['none', 'nearby'] \
+                and world.pottery[player] not in ['none', 'cave']:
+            # remove 2 keys from main pool
+            count_to_remove = 2
+            to_remove = []
+            for wix, wi in enumerate(smalls):
+                if wi.name == 'Small Key (Swamp Palace)' and wi.player == player:
+                    to_remove.append(wix)
+                if count_to_remove == len(to_remove):
+                    break
+            for wix in reversed(to_remove):
+                del smalls[wix]
+
+            # remove 2 swamp locations from pool
+            hybrid_locations = []
+            to_remove = []
+            for i, loc in enumerate(shuffled_locations):
+                if loc.name in ['Swamp Palace - Trench 1 Pot Key', 'Swamp Palace - Pot Row Pot Key'] and loc.player == player:
+                    to_remove.append(i)
+                    hybrid_locations.append(loc)
+                if count_to_remove == len(to_remove):
+                    break
+            for i in reversed(to_remove):
+                shuffled_locations.pop(i)
+
+            # place 2 HMG keys
+            hybrid_state_base = all_state_base.copy()
+            for x in bigs + smalls + prizes + others:
+                hybrid_state_base.collect(x, True)
+            hybrid_smalls = [ItemFactory('Small Key (Swamp Palace)', player)] * 2
+            fill(hybrid_state_base, hybrid_smalls, hybrid_locations, unplaced_smalls)
+
     big_state_base = all_state_base.copy()
     for x in smalls + prizes + others:
         big_state_base.collect(x, True)
@@ -77,7 +113,7 @@ def fill_dungeons_restrictive(world, shuffled_locations):
     for attempt in range(15):
         try:
             for player in range(1, world.players + 1):
-                if world.prizeshuffle[player] == 'district':
+                if world.prizeshuffle[player] == 'nearby':
                     dungeon_pool = []
                     for dungeon in world.dungeons:
                         from Dungeons import dungeon_table
