@@ -48,7 +48,6 @@ def create_hmg_entrances_regions(world, player):
     ip_clip_entrance = Entrance(player, "Ice Bomb Drop Clip", ip_bomb_top_reg)
     ip_bomb_top_reg.exits.append(ip_clip_entrance)
 
-
 def connect_hmg_entrances_regions(world, player):
     for spots in [
         kikiskip_spots,
@@ -174,23 +173,21 @@ def dungeon_reentry_rules(
 def underworld_glitches_rules(world, player):
     def mire_clip(state):
         torches = world.get_region("Mire Torches Top", player)
-        return state.can_reach(torches, player) and (
-            state.can_dash_clip(torches, player)
+        return (state.can_dash_clip(torches, player)
             or (state.can_bomb_clip(torches, player) and state.has_fire_source(player))
-        )
+        ) and state.can_reach(torches, player)
 
     def hera_clip(state):
         hera = world.get_region("Hera 4F", player)
-        return state.can_reach(hera) and (
-            state.can_bomb_clip(hera, player) or state.can_dash_clip(hera, player)
-        )
+        return (state.can_bomb_clip(hera, player) or state.can_dash_clip(hera, player)) \
+                and state.has("Flippers", player) and state.can_reach(hera) and mire_clip(state)
 
     # We use these plus functool.partial because lambdas don't work in loops properly.
     def bomb_clip(state, region, player):
-        return state.can_reach(region, player) and state.can_bomb_clip(region, player)
+        return state.can_bomb_clip(region, player) and state.can_reach(region, player)
 
     def dash_clip(state, region, player):
-        return state.can_reach(region, player) and state.can_dash_clip(region, player)
+        return state.can_dash_clip(region, player) and state.can_reach(region, player)
     # Bomb clips
     for clip in (
         kikiskip_spots
@@ -237,18 +234,24 @@ def underworld_glitches_rules(world, player):
     # Allow mire big key to be used in Hera
     Rules.add_rule(
         world.get_entrance("Hera Startile Corner NW", player),
-        lambda state: mire_clip(state) and state.has("Big Key (Misery Mire)", player),
+        lambda state: state.has("Big Key (Misery Mire)", player) and mire_clip(state),
         combine="or",
     )
     Rules.add_rule(
         world.get_location("Tower of Hera - Big Chest", player),
-        lambda state: mire_clip(state) and state.has("Big Key (Misery Mire)", player),
+        lambda state: state.has("Big Key (Misery Mire)", player) and mire_clip(state),
         combine="or",
     )
     # This uses the mire clip because it's always expected to come from mire
     Rules.set_rule(
         world.get_entrance("Hera to Swamp Clip", player),
-        lambda state: mire_clip(state) and state.has("Flippers", player),
+        lambda state: state.has("Flippers", player) and mire_clip(state),
+    )
+    Rules.add_rule(
+        world.get_location("Swamp Palace - Big Chest", player),
+        lambda state: (state.has("Big Key (Misery Mire)", player) or state.has("Big Key (Tower of Hera)", player)) \
+                and state.has("Flippers", player) and mire_clip(state),
+        combine="or",
     )
     # We need to set _all_ swamp doors to be openable with mire keys, otherwise the small key can't be behind them - 6 keys because of Pots
     # Flippers required for all of these doors to prevent locks when flooding
@@ -267,9 +270,9 @@ def underworld_glitches_rules(world, player):
     ]:
         Rules.add_rule(
             world.get_entrance(door, player),
-            lambda state: mire_clip(state)
+            lambda state: state.has("Flippers", player)
             and state.has("Small Key (Misery Mire)", player, count=6)
-            and state.has("Flippers", player),
+            and mire_clip(state),
             combine="or",
         )
 
@@ -297,16 +300,16 @@ def underworld_glitches_rules(world, player):
                 )
             ),
         }
-        inverted = world.mode[player] == "inverted"
+        inverted_dm = world.mode[player] == "inverted"
 
         def hera_rule(state):
-            return (state.has("Moon Pearl", player) or not inverted) and rule_map.get(
+            return (state.has("Moon Pearl", player) or not inverted_dm) and rule_map.get(
                 world.get_entrance("Tower of Hera", player).connected_region.name,
                 lambda state: False,
             )(state)
 
         def gt_rule(state):
-            return (state.has("Moon Pearl", player) or inverted) and rule_map.get(
+            return (state.has("Moon Pearl", player) or inverted_dm) and rule_map.get(
                 world.get_entrance(("Ganons Tower"), player).connected_region.name,
                 lambda state: False,
             )(state)
@@ -315,8 +318,8 @@ def underworld_glitches_rules(world, player):
             return (
                 state.can_reach("Old Man S&Q", "Entrance", player)
                 and state.has("Flippers", player)
-                and mire_clip(state)
                 and (hera_rule(state) or gt_rule(state))
+                and mire_clip(state)
             )
 
         Rules.add_rule(
