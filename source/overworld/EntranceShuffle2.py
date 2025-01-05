@@ -1286,8 +1286,9 @@ def handle_skull_woods_drops(avail, pool, mode_cfg):
         keep_together = mode_cfg['keep_drops_together'] == 'on' if 'keep_drops_together' in mode_cfg else True
         if keep_together:
             for drop in ['Skull Woods First Section Hole (East)', 'Skull Woods First Section Hole (West)']:
-                target = drop_map[drop]
-                connect_entrance(drop, target, avail)
+                if drop in avail.entrances:
+                    target = drop_map[drop]
+                    connect_entrance(drop, target, avail)
 
 
 def handle_skull_woods_entrances(avail, pool):
