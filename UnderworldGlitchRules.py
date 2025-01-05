@@ -174,20 +174,23 @@ def dungeon_reentry_rules(
 def underworld_glitches_rules(world, player):
     def mire_clip(state):
         torches = world.get_region("Mire Torches Top", player)
-        return state.can_dash_clip(torches, player) or (
-            state.can_bomb_clip(torches, player) and state.has_fire_source(player)
+        return state.can_reach(torches, player) and (
+            state.can_dash_clip(torches, player)
+            or (state.can_bomb_clip(torches, player) and state.has_fire_source(player))
         )
 
     def hera_clip(state):
         hera = world.get_region("Hera 4F", player)
-        return state.can_bomb_clip(hera, player) or state.can_dash_clip(hera, player)
+        return state.can_reach(hera) and (
+            state.can_bomb_clip(hera, player) or state.can_dash_clip(hera, player)
+        )
 
     # We use these plus functool.partial because lambdas don't work in loops properly.
     def bomb_clip(state, region, player):
-        return state.can_bomb_clip(region, player)
+        return state.can_reach(region, player) and state.can_bomb_clip(region, player)
 
     def dash_clip(state, region, player):
-        return state.can_dash_clip(region, player)
+        return state.can_reach(region, player) and state.can_dash_clip(region, player)
     # Bomb clips
     for clip in (
         kikiskip_spots
