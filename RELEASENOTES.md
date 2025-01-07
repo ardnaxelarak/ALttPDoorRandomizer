@@ -1,19 +1,4 @@
 # Patch Notes
 
-* 1.4.7.2
-  - Fixed an issue with shuffle_ganon/fix_gtower_exit causing a generation failure
-  - More HMG fixes by Muffins
-* 1.4.7.1
-  - Fixed an issue with the repaired "beemizer" setting not being backwards compatible
-* 1.4.7
-  - Fixed generation error with Big Key in starting inventory (thanks Cody!)
-  - HMG/NL logic fixes by Muffins
-  - Enemizer: Disabled Walking Zora in the UW due to crash with Swamola (they ignore a lot of collison anyway)
-  - Enemizer: Fixed an issue with enemizer bush sprites
-  - Enemizer: Banned new Mimics from being the randomized bush sprite due to crash
-  - "Beatable" or "accessibility: none" can now use randomized trap doors to seal off entire parts of dungeons (was intended, bug prevented the logic skip)
-  - Logic error with enemizer and standard should use new enemy logic rules
-  - Fixed a bug with the inconsistent treatment of the beemizer setting
-  - Fixed an issue with returning Blacksmith in Simple shuffle (when blacksmith is at Link's House)
-  - Fixed an issue with dark sanctuary spawn at tavern north door (thanks Codemann!)
-  - Various enemy bans for the last few months
+* 1.4.8
+  - Fixed a key logic bug with decoupled doors when a big key door leads to a small key door (the small key door was missing appropriate logic)
