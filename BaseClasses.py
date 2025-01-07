@@ -3123,12 +3123,12 @@ take_any_mode = {'none': 0, 'random': 1, 'fixed': 2}
 bow_mode = {'progressive': 0, 'silvers': 1, 'retro': 2, 'retro_silvers': 3}
 
 # additions
-# byte 12: POOT TKKK (mirrorscroll, pseudoboots, overworld_map, trap_door_mode, key_logic_algo)
+# byte 12: POOT TKKK (pseudoboots, overworld_map, trap_door_mode, key_logic_algo)
 overworld_map_mode = {'default': 0, 'compass': 1, 'map': 2}
 trap_door_mode = {'vanilla': 0, 'optional': 1, 'boss': 2, 'oneway': 3}
 key_logic_algo = {'dangerous': 0, 'partial': 1, 'strict': 2}
 
-# byte 13: SSDD ???? (skullwoods, linked_drops, 4 free bytes)
+# byte 13: SSDD M??? (skullwoods, linked_drops, mirrorscroll, ??? = 3 free bytes)
 skullwoods_mode = {'original': 0, 'restricted': 1, 'loose': 2, 'followlinked': 3}
 linked_drops_mode = {'unset': 0, 'linked': 1, 'independent': 2}
 
@@ -3179,10 +3179,11 @@ class Settings(object):
             (flute_mode[w.flute_mode[p]] << 7 | bow_mode[w.bow_mode[p]] << 4
              | take_any_mode[w.take_any[p]] << 2 | keyshuffle_mode[w.keyshuffle[p]]),
 
-            ((0xF0 if w.mirrorscroll[p] else 0) | (0x80 if w.pseudoboots[p] else 0) | overworld_map_mode[w.overworld_map[p]] << 5
+            ((0x80 if w.pseudoboots[p] else 0) | overworld_map_mode[w.overworld_map[p]] << 5
              | trap_door_mode[w.trap_door_mode[p]] << 3 | key_logic_algo[w.key_logic_algorithm[p]]),
 
-            (skullwoods_mode[w.skullwoods[p]] << 6 | linked_drops_mode[w.linked_drops[p]] << 4),
+            (skullwoods_mode[w.skullwoods[p]] << 6 | linked_drops_mode[w.linked_drops[p]] << 4
+             | (0x8 if w.mirrorscroll[p] else 0)),
         ])
         return base64.b64encode(code, "+-".encode()).decode()
 
@@ -3252,7 +3253,6 @@ class Settings(object):
             args.take_any[p] = r(take_any_mode)[(settings[11] & 0xC) >> 2]
             args.keyshuffle[p] = r(keyshuffle_mode)[settings[11] & 0x3]
         if len(settings) > 12:
-            args.mirrorscroll[p] = True if settings[12] & 0xF0 else False
             args.pseudoboots[p] = True if settings[12] & 0x80 else False
             args.overworld_map[p] = r(overworld_map_mode)[(settings[12] & 0x60) >> 5]
             args.trap_door_mode[p] = r(trap_door_mode)[(settings[12] & 0x18) >> 3]
@@ -3260,6 +3260,7 @@ class Settings(object):
         if len(settings) > 13:
             args.skullwoods[p] = r(skullwoods_mode)[(settings[13] & 0xc0) >> 6]
             args.linked_drops[p] = r(linked_drops_mode)[(settings[13] & 0x30) >> 4]
+            args.mirrorscroll[p] = True if settings[13] & 0x8 else False
 
 
 class KeyRuleType(FastEnum):

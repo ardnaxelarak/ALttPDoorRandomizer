@@ -546,7 +546,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
 
     # setup dr option flags based on experimental, etc.
     dr_flags = DROptions.NoOptions
-    if world.mirrorscroll[player]:
+    if world.mirrorscroll[player] or world.doorShuffle[player] != 'vanilla':
         dr_flags |= DROptions.Town_Portal
     if world.doorShuffle[player] == 'vanilla':
         dr_flags |= DROptions.Eternal_Mini_Bosses 
