@@ -817,7 +817,8 @@ def find_next_counter(new_door, old_counter, key_layout, prize_flag=None):
     prop_doors = next((item_or_tuple for item_or_tuple in key_layout.proposal
                        if new_door == item_or_tuple or (isinstance(item_or_tuple, tuple) and new_door in item_or_tuple)), None)
     if prop_doors:
-        proposed_doors = {**old_counter.open_doors, **dict.fromkeys([prop_doors])}
+        prop_doors = list(prop_doors) if isinstance(prop_doors, tuple) else [prop_doors]
+        proposed_doors = {**old_counter.open_doors, **dict.fromkeys(prop_doors)}
     else:
         proposed_doors = {**old_counter.open_doors}
     bk_open = old_counter.big_key_opened or new_door.bigKey
