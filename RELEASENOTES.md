@@ -6,4 +6,5 @@
   - Fixed an ER bug where Bonk Fairy could be used for a mandatory connector in standard mode (boots could allow escape to be skipped)
   - Fixed an issue with flute activation in rain mode. (thanks Codemann!)
   - Fixed an issue with multi-player HMG
+  - Fixed an issue limiting number of items specified in the item pool on the GUI
   - Minor documentation fixes (thanks Codemann!)

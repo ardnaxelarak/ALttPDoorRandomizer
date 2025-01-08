@@ -1121,31 +1121,10 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
         assert loc not in placed_items
         placed_items[loc] = item
 
-    # Correct for insanely oversized item counts and take initial steps to handle undersized pools.
-    # Bow to Silver Arrows Upgrade, including Generic Keys & Rupoors
-    for x in [*range(0, 66 + 1), 68, 69]:
-        key = CONST.CUSTOMITEMS[x]
-        if customitemarray[key] > total_items_to_place:
-            customitemarray[key] = total_items_to_place
-
-    # Triforce
-    if customitemarray["triforce"] > total_items_to_place:
-        customitemarray["triforce"] = total_items_to_place
-
     # Triforce Pieces
     if goal in ['triforcehunt', 'trinity', 'ganonhunt']:
         g, t = set_default_triforce(goal, customitemarray["triforcepiecesgoal"], customitemarray["triforcepieces"])
         customitemarray["triforcepiecesgoal"], customitemarray["triforcepieces"] = g, t
-
-    itemtotal = 0
-    # Bow to Silver Arrows Upgrade, including Generic Keys & Rupoors
-    for x in [*range(0, 66 + 1), 68, 69]:
-        key = CONST.CUSTOMITEMS[x]
-        itemtotal = itemtotal + customitemarray[key]
-    # Triforce
-    itemtotal = itemtotal + customitemarray["triforce"]
-    # Generic Keys
-    itemtotal = itemtotal + customitemarray["generickeys"]
 
     customitems = [
       "Bow", "Silver Arrows", "Blue Boomerang", "Red Boomerang", "Hookshot", "Mushroom", "Magic Powder", "Fire Rod", "Ice Rod", "Bombos", "Ether", "Quake", "Lamp", "Hammer", "Shovel", "Ocarina", "Bug Catching Net", "Book of Mudora", "Cane of Somaria", "Cane of Byrna", "Cape", "Pegasus Boots", "Power Glove", "Titans Mitts", "Progressive Glove", "Flippers", "Piece of Heart", "Boss Heart Container", "Sanctuary Heart Container", "Master Sword", "Tempered Sword", "Golden Sword", "Blue Shield", "Red Shield", "Mirror Shield", "Progressive Shield", "Blue Mail", "Red Mail", "Progressive Armor", "Magic Upgrade (1/2)", "Magic Upgrade (1/4)", "Bomb Upgrade (+5)", "Bomb Upgrade (+10)", "Arrow Upgrade (+5)", "Arrow Upgrade (+10)", "Single Arrow", "Arrows (10)", "Single Bomb", "Bombs (3)", "Rupee (1)", "Rupees (5)", "Rupees (20)", "Rupees (50)", "Rupees (100)", "Rupees (300)", "Rupoor", "Blue Clock", "Green Clock", "Red Clock", "Progressive Bow", "Bombs (10)", "Triforce Piece", "Triforce"
@@ -1175,7 +1154,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
            and (goal in ['triforcehunt', 'trinity', 'ganonhunt']) and (customitemarray["triforce"] == 0)):
             extrapieces = treasure_hunt_count - customitemarray["triforcepieces"]
             pool.extend(['Triforce Piece'] * extrapieces)
-            itemtotal = itemtotal + extrapieces
 
     if timer in ['display', 'timed', 'timed-countdown']:
         clock_mode = 'countdown' if timer == 'timed-countdown' else 'stopwatch'
@@ -1186,7 +1164,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     if goal in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
-        itemtotal = itemtotal + 1
 
     if mode == 'standard':
         if world.keyshuffle[player] == 'universal':
@@ -1202,13 +1179,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
     pool.extend(['Progressive Sword'] * customitemarray["progressivesword"])
     pool.extend(['Magic Mirror'] * customitemarray["mirror"])
     pool.extend(['Moon Pearl'] * customitemarray["pearl"])
-
-    if world.keyshuffle[player] == 'universal':
-        itemtotal = itemtotal - 28 # Corrects for small keys not being in item pool in Retro Mode
-    if itemtotal < total_items_to_place:
-        nothings = total_items_to_place - itemtotal
-#        print("Placing " + str(nothings) + " Nothings")
-        pool.extend(['Nothing'] * nothings)
 
     start_inventory = [x for x in world.precollected_items if x.player == player]
     if world.logic[player] in ['owglitches', 'hybridglitches', 'nologic'] and all(x.name != 'Pegasus Boots' for x in start_inventory):
