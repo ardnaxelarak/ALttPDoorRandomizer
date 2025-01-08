@@ -260,7 +260,7 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
         rem_entrances.update(lw_entrances)
         rem_entrances.update(dw_entrances)
     else:
-        # cross world mandantory
+        # cross world mandatory
         entrance_list = list(entrances)
         if avail.swapped:
             ban_list = Forbidden_Swap_Entrances_Inv if avail.inverted else Forbidden_Swap_Entrances
@@ -314,13 +314,11 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
             avail.decoupled_exits.remove(bomb_shop)
         rem_exits.remove(bomb_shop)
 
-    def bonk_fairy_exception(x):  # (Bonk Fairy not eligible in standard)
-        return not avail.is_standard() or x != 'Bonk Fairy (Light)'
     if not cross_world:
         # OM Cave entrance in lw/dw if cross_world off
         if 'Old Man Cave Exit (West)' in rem_exits:
             world_limiter = DW_Entrances if avail.inverted else LW_Entrances
-            om_cave_options = sorted([x for x in rem_entrances if x in world_limiter and bonk_fairy_exception(x)])
+            om_cave_options = sorted([x for x in rem_entrances if x in world_limiter and bonk_fairy_exception(avail, x)])
             om_cave_choice = random.choice(om_cave_options)
             if not avail.coupled:
                 connect_exit('Old Man Cave Exit (West)', om_cave_choice, avail)
@@ -334,7 +332,7 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
         if not avail.inverted:  # we don't really care where this ends up in inverted?
             for ext in om_house:
                 if ext in rem_exits:
-                    om_house_options = [x for x in rem_entrances if x in LW_Entrances and bonk_fairy_exception(x)]
+                    om_house_options = [x for x in rem_entrances if x in LW_Entrances and bonk_fairy_exception(avail, x)]
                     om_house_choice = random.choice(om_house_options)
                     if not avail.coupled:
                         connect_exit(ext, om_house_choice, avail)
@@ -351,7 +349,7 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
         lw_entrances, dw_entrances = [], []
         left = sorted(rem_entrances)
         for x in left:
-            if bonk_fairy_exception(x):
+            if bonk_fairy_exception(avail, x):
                 lw_entrances.append(x) if x in LW_Entrances else dw_entrances.append(x)
         do_same_world_connectors(lw_entrances, dw_entrances, multi_exit_caves, avail)
         if avail.world.doorShuffle[avail.player] != 'vanilla':
@@ -361,7 +359,7 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
         unused_entrances.update(lw_entrances)
         unused_entrances.update(dw_entrances)
     else:
-        entrance_list = sorted([x for x in rem_entrances if bonk_fairy_exception(x)])
+        entrance_list = sorted([x for x in rem_entrances if bonk_fairy_exception(avail, x)])
         do_cross_world_connectors(entrance_list, multi_exit_caves, avail)
         unused_entrances.update(entrance_list)
 
@@ -1081,6 +1079,8 @@ def do_vanilla_connect(pool_def, avail):
                 avail.entrances.remove(entrance)
                 avail.exits.remove(target)
 
+def bonk_fairy_exception(avail, x):  # (Bonk Fairy not eligible in standard)
+    return not avail.is_standard() or x != 'Bonk Fairy (Light)'
 
 def do_mandatory_connections(avail, entrances, cave_options, must_exit):
     if len(must_exit) == 0:
@@ -1171,7 +1171,8 @@ def do_mandatory_connections(avail, entrances, cave_options, must_exit):
         if len(cave) == 2:
             entrance = next(e for e in entrances[::-1] if e not in invalid_connections[exit]
                             and e not in invalid_cave_connections[tuple(cave)] and e not in must_exit
-                            and (not avail.swapped or rnd_cave[0] != avail.combine_map[e]))
+                            and (not avail.swapped or rnd_cave[0] != avail.combine_map[e])
+                            and bonk_fairy_exception(avail, e))
             entrances.remove(entrance)
             connect_two_way(entrance, rnd_cave[0], avail)
             if avail.swapped and avail.combine_map[entrance] != rnd_cave[0]:
@@ -1191,7 +1192,7 @@ def do_mandatory_connections(avail, entrances, cave_options, must_exit):
                     cave_entrances.append(entrance)
                 else:
                     entrance = next(e for e in entrances[::-1] if e not in invalid_connections[exit] and e not in must_exit
-                                    and (not avail.swapped or cave_exit != avail.combine_map[e]))
+                                    and (not avail.swapped or cave_exit != avail.combine_map[e]) and bonk_fairy_exception(avail, e))
                     cave_entrances.append(entrance)
                     entrances.remove(entrance)
                     connect_two_way(entrance, cave_exit, avail)
@@ -1222,7 +1223,7 @@ def do_mandatory_connections(avail, entrances, cave_options, must_exit):
                     continue
                 else:
                     entrance = next(e for e in entrances[::-1] if e not in invalid_cave_connections[tuple(cave)]
-                                    and (not avail.swapped or cave_exit != avail.combine_map[e]))
+                                    and (not avail.swapped or cave_exit != avail.combine_map[e]) and bonk_fairy_exception(avail, e))
                     invalid_cave_connections[tuple(cave)] = set()
                     entrances.remove(entrance)
                     connect_two_way(entrance, cave_exit, avail)
