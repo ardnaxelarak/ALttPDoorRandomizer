@@ -4,7 +4,7 @@
       "type": "selectbox",
       "options": [
         "none",
-        "district",
+        "nearby",
         "wild"
       ],
       "config": {
@@ -15,7 +15,7 @@
       "type": "selectbox",
       "options": [
         "none",
-        "district",
+        "nearby",
         "wild"
       ],
       "config": {
@@ -26,7 +26,7 @@
       "type": "selectbox",
       "options": [
         "none",
-        "district",
+        "nearby",
         "wild",
         "universal"
       ],
@@ -38,7 +38,7 @@
       "type": "selectbox",
       "options": [
         "none",
-        "district",
+        "nearby",
         "wild"
       ],
       "config": {

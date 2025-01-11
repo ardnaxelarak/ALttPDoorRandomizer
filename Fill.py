@@ -67,7 +67,7 @@ def fill_dungeons_restrictive(world, shuffled_locations):
 
     all_state_base = world.get_all_state()
     for player in range(1, world.players + 1):
-        if world.logic[player] == 'hybridglitches' and world.keyshuffle[i.player] in ['none', 'nearby'] \
+        if world.logic[player] == 'hybridglitches' and world.keyshuffle[player] in ['none', 'nearby'] \
                 and world.pottery[player] not in ['none', 'cave']:
             # remove 2 keys from main pool
             count_to_remove = 2

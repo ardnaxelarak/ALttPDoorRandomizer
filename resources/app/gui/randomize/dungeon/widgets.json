@@ -6,7 +6,7 @@
       "options": [
         "none",
         "dungeon",
-        "district",
+        "nearby",
         "wild"
       ],
       "config": {
