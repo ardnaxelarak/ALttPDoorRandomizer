@@ -371,20 +371,21 @@
   "mapshuffle": {
     "choices": [
       "none",
-      "district",
+      "nearby",
       "wild"
     ]
   },
   "compassshuffle": {
     "choices": [
       "none",
-      "district",
+      "nearby",
       "wild"
     ]
   },
   "keyshuffle": {
     "choices": [
       "none",
+      "nearby",
       "wild",
       "universal"
     ]
@@ -392,7 +393,7 @@
   "bigkeyshuffle": {
     "choices": [
       "none",
-      "district",
+      "nearby",
       "wild"
     ]
   },
@@ -400,7 +401,7 @@
     "choices": [
       "none",
       "dungeon",
-      "district",
+      "nearby",
       "wild"
     ]
   },
