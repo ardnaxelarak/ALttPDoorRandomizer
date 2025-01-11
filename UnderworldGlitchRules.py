@@ -67,7 +67,7 @@ def connect_hmg_entrances_regions(world, player):
             connection.connect(target)
 
     # Add the new Ice path (back of bomb drop to front) to the world and model it properly
-    ip_clip_entrance = world.get_entrance('Ice Bomb Drop Clip', 1)
+    ip_clip_entrance = world.get_entrance('Ice Bomb Drop Clip', player)
     clip_door = Door(player, "Ice Bomb Drop Clip", DoorType.Logical, ip_clip_entrance)
     world.doors += [clip_door]
     world.initialize_doors([clip_door])
