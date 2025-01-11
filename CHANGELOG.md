@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1.3
+- Fixed some minor issues with mystery multiworld
+- Corrected some generation issues with Nearby dungeon item shuffles
+
 ## 0.5.1.2
 - Many fixes to HMG logic, generation, key collection issues
 - Fixed issue with In-Dungeon Prizes getting placed in the same dungeon
