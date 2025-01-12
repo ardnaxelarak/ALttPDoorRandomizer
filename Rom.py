@@ -434,7 +434,9 @@ def patch_rom(world, rom, player, team, is_mystery=False):
             if location.item.name in valid_pot_items and location.item.player == player:
                 location.pot.item = valid_pot_items[location.item.name]
             else:
-                code = handle_native_dungeon(location, itemid)
+                code = itemid
+                if world.pottery[player] == 'none' or location.locked:
+                    code = handle_native_dungeon(location, itemid)
                 standing_item_flag = 0x80
                 if location.item.player != player:
                     standing_item_flag |= 0x40
@@ -452,8 +454,6 @@ def patch_rom(world, rom, player, team, is_mystery=False):
 
         if not location.crystal:
             if location.item is not None:
-                # Keys in their native dungeon should use the original item code for keys
-                itemid = handle_native_dungeon(location, itemid)
                 if world.remote_items[player]:
                     itemid = list(location_table.keys()).index(location.name) + 1
                     assert itemid < 0x100

@@ -557,7 +557,9 @@ class Sprite(object):
             item_id = self.location.item.code if self.location.item is not None else 0x5A
             code = 0xF9 if self.location.item.player != self.location.player else 0xF8
             if code == 0xF8:
-                item_id = handle_native_dungeon(self.location, item_id)
+                world = self.location.parent_region.world
+                if world.dropshuffle[self.location.player] == 'none' or self.location.locked:
+                    item_id = handle_native_dungeon(self.location, item_id)
             data.append(item_id)
             data.append(0 if code == 0xF8 else self.location.item.player)
             data.append(code)
