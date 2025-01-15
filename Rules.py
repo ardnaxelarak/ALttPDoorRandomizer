@@ -561,10 +561,11 @@ def global_rules(world, player):
                  lambda state: state.has('Cane of Somaria', player) and state.has('Fire Rod', player))
     set_rule(world.get_entrance('TR Big Chest Entrance Gap', player), lambda state: state.has('Cane of Somaria', player) or state.has('Hookshot', player))
     set_rule(world.get_entrance('TR Big Chest Gap', player), lambda state: state.has('Cane of Somaria', player) or state.has_Boots(player))
-    set_rule(world.get_entrance('TR Dark Ride Up Stairs', player), lambda state: state.has('Cane of Somaria', player))
-    set_rule(world.get_entrance('TR Dark Ride SW', player), lambda state: state.has('Cane of Somaria', player))
-    set_rule(world.get_entrance('TR Dark Ride Path', player), lambda state: state.has('Cane of Somaria', player))
-    set_rule(world.get_entrance('TR Dark Ride Ledges Path', player), lambda state: state.has('Cane of Somaria', player))
+    set_rule(world.get_entrance('TR Dark Ride SW', player), lambda state: state.has('Cane of Somaria', player))  # due to needing the switch
+    set_rule(world.get_entrance('TR Dark Ride Normal Path', player), lambda state: state.has('Cane of Somaria', player))
+    set_rule(world.get_entrance('TR Dark Ride Backward Path', player), lambda state: state.has('Cane of Somaria', player))
+    set_rule(world.get_entrance('TR Dark Ride Return Path', player), lambda state: state.has('Cane of Somaria', player))
+    set_rule(world.get_entrance('TR Dark Ride Ledge Path', player), lambda state: state.has('Cane of Somaria', player))
     for location in world.get_region('TR Dark Ride Ledges', player).locations:
         set_rule(location, lambda state: state.has('Cane of Somaria', player))
     set_rule(world.get_entrance('TR Final Abyss Balcony Path', player), lambda state: state.has('Cane of Somaria', player))
@@ -1305,8 +1306,9 @@ def add_conditional_lamps(world, player):
         add_lamp_requirement(spot, player)
 
     dark_rooms = {
-        'TR Dark Ride': {'sewer': False, 'entrances': ['TR Dark Ride Up Stairs', 'TR Dark Ride SW', 'TR Dark Ride Path'], 'locations': []},
-        'TR Dark Ride Ledges': {'sewer': False, 'entrances': ['TR Dark Ride Ledges Path'], 'locations': []},
+        'TR Dark Ride North Platform': {'sewer': False, 'entrances': ['TR Dark Ride Up Stairs', 'TR Dark Ride Normal Path', 'TR Dark Ride Ledge Path'], 'locations': []},
+        'TR Dark Ride South Platform': {'sewer': False, 'entrances': ['TR Dark Ride SW', 'TR Dark Ride Backward Path'], 'locations': []},
+        'TR Dark Ride Ledges': {'sewer': False, 'entrances': ['TR Dark Ride Return Path'], 'locations': []},
         'Mire Dark Shooters': {'sewer': False, 'entrances': ['Mire Dark Shooters Up Stairs', 'Mire Dark Shooters SW', 'Mire Dark Shooters SE'], 'locations': []},
         'Mire Key Rupees': {'sewer': False, 'entrances': ['Mire Key Rupees NE'], 'locations': []},
         'Mire Block X': {'sewer': False, 'entrances': ['Mire Block X NW', 'Mire Block X WS'], 'locations': []},
@@ -2230,7 +2232,7 @@ bunny_revivable_entrances = {
     "Ice Many Pots", "Mire South Fish", "Mire Right Bridge", "Mire Left Bridge",
     "TR Boss", "Eastern Hint Tile Blocked Path", "Thieves Spike Switch",
     "Thieves Boss", "Mire Spike Barrier", "Mire Cross", "Mire Hidden Shooters",
-    "Mire Spikes", "TR Final Abyss Balcony", "TR Dark Ride", "TR Pokey 1", "TR Tile Room",
+    "Mire Spikes", "TR Final Abyss Balcony", "TR Dark Ride South Platform", "TR Pokey 1", "TR Tile Room",
     "TR Roller Room", "Eastern Cannonball", "Thieves Hallway", "Ice Switch Room",
     "Mire Tile Room", "Mire Conveyor Crystal", "Mire Hub", "TR Dash Bridge",
     "TR Hub", "Eastern Boss", "Eastern Lobby", "Thieves Ambush",
@@ -2298,8 +2300,8 @@ bunny_impassible_doors = {
     'TR Lobby Ledge Gap', 'TR Hub SW', 'TR Hub SE', 'TR Hub ES', 'TR Hub EN', 'TR Hub NW', 'TR Hub NE', 'TR Hub Path',
     'TR Hub Ledges Path', 'TR Torches NW', 'TR Pokey 2 Bottom to Top Barrier - Blue',
     'TR Pokey 2 Top to Bottom Barrier - Blue', 'TR Twin Pokeys SW', 'TR Twin Pokeys EN', 'TR Big Chest Gap',
-    'TR Big Chest Entrance Gap', 'TR Lazy Eyes ES', 'TR Tongue Pull WS', 'TR Tongue Pull NE', 'TR Dark Ride Up Stairs',
-    'TR Dark Ride SW', 'TR Dark Ride Path', 'TR Dark Ride Ledges Path',
+    'TR Big Chest Entrance Gap', 'TR Lazy Eyes ES', 'TR Tongue Pull WS', 'TR Tongue Pull NE', 'TR Dark Ride SW',  # due to needing the switch
+    'TR Dark Ride Normal Path', 'TR Dark Ride Ledge Path', 'TR Dark Ride Backward Path', 'TR Dark Ride Return Path',
     'TR Crystal Maze Start to Interior Barrier - Blue', 'TR Crystal Maze End to Interior Barrier - Blue',
     'TR Final Abyss Balcony Path', 'TR Final Abyss Ledge Path', 'GT Hope Room EN', 'GT Blocked Stairs Block Path',
     'GT Bob\'s Room Hole', 'GT Speed Torch SE', 'GT Speed Torch South Path', 'GT Speed Torch North Path',
