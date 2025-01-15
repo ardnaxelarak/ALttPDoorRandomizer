@@ -145,6 +145,7 @@ def main(args, seed=None, fish=None):
     world.collection_rate = args.collection_rate.copy()
     world.colorizepots = args.colorizepots.copy()
     world.aga_randomness = args.aga_randomness.copy()
+    world.money_balance = args.money_balance.copy()
 
     world.treasure_hunt_count = {}
     world.treasure_hunt_total = {}
@@ -513,6 +514,7 @@ def copy_world(world):
     ret.trap_door_mode = world.trap_door_mode.copy()
     ret.key_logic_algorithm = world.key_logic_algorithm.copy()
     ret.aga_randomness = world.aga_randomness.copy()
+    ret.money_balance = world.money_balance.copy()
     ret.experimental = world.experimental.copy()
     ret.shopsanity = world.shopsanity.copy()
     ret.dropshuffle = world.dropshuffle.copy()

@@ -704,7 +704,8 @@ def customize_shops(world, player):
                 if retro_bow and item.name == 'Single Arrow':
                     price = 80
             # randomize price
-            shop.add_inventory(idx, item.name, randomize_price(price), max_repeat, player=item.player)
+            price = final_price(loc, price, world, player)
+            shop.add_inventory(idx, item.name, price, max_repeat, player=item.player)
             if item.name in cap_replacements and shop_name not in retro_shops and item.player == player:
                 possible_replacements.append((shop, idx, location, item))
         # randomize shopkeeper
@@ -721,8 +722,10 @@ def customize_shops(world, player):
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
                 upgrade = ItemFactory('Bomb Upgrade (+5)', player)
-                shop.add_inventory(idx, upgrade.name, randomize_price(upgrade.price), 6,
-                                   item.name, randomize_price(item.price), player=item.player)
+                up_price = final_price(loc, upgrade.price, world, player)
+                rep_price = final_price(loc, item.price, world, player)
+                shop.add_inventory(idx, upgrade.name, up_price, 6,
+                                   item.name, rep_price, player=item.player)
                 loc.item = upgrade
                 upgrade.location = loc
         if not found_arrow_upgrade and len(possible_replacements) > 0:
@@ -733,13 +736,24 @@ def customize_shops(world, player):
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
                 upgrade = ItemFactory('Arrow Upgrade (+5)', player)
-                shop.add_inventory(idx, upgrade.name, randomize_price(upgrade.price), 6,
-                                   item.name, randomize_price(item.price), player=item.player)
+                up_price = final_price(loc, upgrade.price, world, player)
+                rep_price = final_price(loc, item.price, world, player)
+                shop.add_inventory(idx, upgrade.name, up_price, 6,
+                                   item.name, rep_price, player=item.player)
                 loc.item = upgrade
                 upgrade.location = loc
     change_shop_items_to_rupees(world, player, shops_to_customize)
     balance_prices(world, player)
     check_hints(world, player)
+
+
+def final_price(location, price, world, player):
+    if world.customizer and world.customizer.get_prices(player):
+        custom_prices = world.customizer.get_prices(player)
+        if location in custom_prices:
+            # todo: validate valid price
+            return custom_prices[location]
+    return randomize_price(price)
 
 
 def randomize_price(price):
@@ -781,6 +795,9 @@ def balance_prices(world, player):
     shop_locations = []
     for shop, loc_list in shop_to_location_table.items():
         for loc in loc_list:
+            if world.customizer and world.customizer.get_prices(player) and loc in world.customizer.get_prices(player):
+                needed_money += world.customizer.get_prices(player)[loc]
+                continue  # considered a fixed price and shouldn't be altered
             loc = world.get_location(loc, player)
             shop_locations.append(loc)
             slot = shop_to_location_table[loc.parent_region.name].index(loc.name)

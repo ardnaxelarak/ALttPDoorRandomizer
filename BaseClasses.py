@@ -153,6 +153,7 @@ class World(object):
             set_player_attr('trap_door_mode', 'optional')
             set_player_attr('key_logic_algorithm', 'partial')
             set_player_attr('aga_randomness', True)
+            set_player_attr('money_balance', 100)
 
             set_player_attr('shopsanity', False)
             set_player_attr('mixed_travel', 'prevent')

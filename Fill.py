@@ -1020,14 +1020,16 @@ def balance_money_progression(world):
             solvent = set()
             insolvent = set()
             for player in range(1, world.players+1):
-                if wallet[player] >= sphere_costs[player] >= 0:
+                modifier = world.money_balance[player]/100
+                if wallet[player] >= sphere_costs[player] * modifier >= 0:
                     solvent.add(player)
-                if sphere_costs[player] > 0 and sphere_costs[player] > wallet[player]:
+                if sphere_costs[player] > 0 and sphere_costs[player] * modifier > wallet[player]:
                     insolvent.add(player)
             if len([p for p in solvent if len(locked_by_money[p]) > 0]) == 0:
                 if len(insolvent) > 0:
                     target_player = min(insolvent, key=lambda p: sphere_costs[p]-wallet[p])
-                    difference = sphere_costs[target_player]-wallet[target_player]
+                    target_modifier = world.money_balance[target_player]/100
+                    difference = sphere_costs[target_player] * target_modifier - wallet[target_player]
                     logger.debug(f'Money balancing needed: Player {target_player} short {difference}')
                 else:
                     difference = 0
@@ -1066,7 +1068,8 @@ def balance_money_progression(world):
                 solvent.add(target_player)
             # apply solvency
             for player in solvent:
-                wallet[player] -= sphere_costs[player]
+                modifier = world.money_balance[player]/100
+                wallet[player] -= sphere_costs[player] * modifier
                 for location in locked_by_money[player]:
                     if isinstance(location, str) and location == 'Kiki':
                         kiki_paid[player] = True

@@ -19,11 +19,20 @@ class CustomSettings(object):
         self.relative_dir = None
         self.world_rep = {}
         self.player_range = None
+        self.player_map = {}  # player number to name
 
     def load_yaml(self, file):
         self.file_source = load_yaml(file)
         head, filename = os.path.split(file)
         self.relative_dir = head
+        if 'version' in self.file_source and self.file_source['version'].startswith('2'):
+            player_number = 1
+            for key in self.file_source.keys():
+                if key in ['meta', 'version']:
+                    continue
+                else:
+                    self.player_map[player_number] = key
+                    player_number += 1
 
     def determine_seed(self, default_seed):
         if 'meta' in self.file_source:
@@ -161,6 +170,7 @@ class CustomSettings(object):
                 args.triforce_max_difference[p] = get_setting(settings['triforce_max_difference'], args.triforce_max_difference[p])
                 args.beemizer[p] = get_setting(settings['beemizer'], args.beemizer[p])
                 args.aga_randomness[p] = get_setting(settings['aga_randomness'], args.aga_randomness[p])
+                args.money_balance[p] = get_setting(settings['money_balance'], args.money_balance[p])
 
                 # mystery usage
                 args.usestartinventory[p] = get_setting(settings['usestartinventory'], args.usestartinventory[p])
@@ -188,6 +198,9 @@ class CustomSettings(object):
         if 'placements' in self.file_source:
             return self.file_source['placements']
         return None
+
+    def get_prices(self, player):
+        return self.get_attribute_by_player_composite('prices', player)
 
     def get_advanced_placements(self):
         if 'advanced_placements' in self.file_source:
@@ -227,6 +240,34 @@ class CustomSettings(object):
     def get_enemies(self):
         if 'enemies' in self.file_source:
             return self.file_source['enemies']
+        return None
+
+
+    def get_attribute_by_player_composite(self, attribute, player):
+        attempt = self.get_attribute_by_player_new(attribute, player)
+        if attempt is not None:
+            return attempt
+        attempt = self.get_attribute_by_player(attribute, player)
+        return attempt
+
+    def get_attribute_by_player(self, attribute, player):
+        if attribute in self.file_source:
+            if player in self.file_source[attribute]:
+                return self.file_source[attribute][player]
+        return None
+
+    def get_attribute_by_player_new(self, attribute, player):
+        player_id = self.get_player_id(player)
+        if player_id is not None:
+            if attribute in self.file_source[player_id]:
+                return self.file_source[player_id][attribute]
+        return None
+
+    def get_player_id(self, player):
+        if player in self.file_source:
+            return player
+        if player in self.player_map and self.player_map[player] in self.file_source:
+            return self.player_map[player]
         return None
 
     def create_from_world(self, world, settings):
@@ -293,6 +334,7 @@ class CustomSettings(object):
             settings_dict[p]['triforce_pool'] = world.treasure_hunt_total[p]
             settings_dict[p]['beemizer'] = world.beemizer[p]
             settings_dict[p]['aga_randomness'] = world.aga_randomness[p]
+            settings_dict[p]['money_balance'] = world.money_balance[p]
 
             # rom adjust stuff
             # settings_dict[p]['sprite'] = world.sprite[p]

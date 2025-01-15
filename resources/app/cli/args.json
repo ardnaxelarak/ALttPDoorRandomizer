@@ -539,6 +539,7 @@
     "action": "store_false",
     "type": "bool"
   },
+  "money_balance": {},
   "saveonexit": {
     "choices": [
       "ask",

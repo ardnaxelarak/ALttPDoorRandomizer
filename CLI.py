@@ -142,7 +142,8 @@ def parse_cli(argv, no_defaults=False):
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
                          'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
                          'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
-                         'trap_door_mode', 'key_logic_algorithm', 'door_self_loops', 'any_enemy_logic', 'aga_randomness']:
+                         'trap_door_mode', 'key_logic_algorithm', 'door_self_loops', 'any_enemy_logic', 'aga_randomness',
+                         'money_balance']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -228,6 +229,7 @@ def parse_settings():
         'mixed_travel': 'prevent',
         'standardize_palettes': 'standardize',
         'aga_randomness': True,
+        'money_balance': 100,
 
         "triforce_pool": 0,
         "triforce_goal": 0,
