@@ -168,6 +168,7 @@ class World(object):
             set_player_attr('potshuffle', False)
             set_player_attr('pot_contents', None)
             set_player_attr('pseudoboots', False)
+            set_player_attr('mirrorscroll', False)
             set_player_attr('collection_rate', False)
             set_player_attr('colorizepots', True)
             set_player_attr('pot_pool', {})
@@ -177,6 +178,7 @@ class World(object):
             set_player_attr('trap_door_mode', 'optional')
             set_player_attr('key_logic_algorithm', 'partial')
             set_player_attr('aga_randomness', True)
+            set_player_attr('money_balance', 100)
 
             set_player_attr('shopsanity', False)
             set_player_attr('mixed_travel', 'prevent')
@@ -3059,6 +3061,7 @@ class Spoiler(object):
                          'potshuffle': self.world.potshuffle,
                          'shopsanity': self.world.shopsanity,
                          'pseudoboots': self.world.pseudoboots,
+                         'mirrorscroll': self.world.mirrorscroll,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
                          'race': self.world.settings.world_rep['meta']['race'],
@@ -3307,6 +3310,7 @@ class Spoiler(object):
                         outfile.write('Enemy Logic:'.ljust(line_width) + '%s\n' % self.metadata['any_enemy_logic'][player])
                     outfile.write('\n')
                     outfile.write('Pseudoboots:'.ljust(line_width) + '%s\n' % yn(self.metadata['pseudoboots'][player]))
+                    outfile.write('Mirror Scroll:'.ljust(line_width) + '%s\n' % yn(self.metadata['mirrorscroll'][player]))
                     outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
                     outfile.write('Race:'.ljust(line_width) + '%s\n' % yn(self.world.settings.world_rep['meta']['race']))
             
@@ -3681,7 +3685,7 @@ overworld_map_mode = {'default': 0, 'compass': 1, 'map': 2}
 trap_door_mode = {'vanilla': 0, 'optional': 1, 'boss': 2, 'oneway': 3}
 key_logic_algo = {'dangerous': 0, 'partial': 1, 'strict': 2}
 
-# byte 15: SSLL ??DD (skullwoods, linked_drops, 2 free bytes, door_type)
+# byte 15: SSLL M?DD (skullwoods, linked_drops, mirrorscroll, 1 free byte, door_type)
 skullwoods_mode = {'original': 0, 'restricted': 1, 'loose': 2, 'followlinked': 3}
 linked_drops_mode = {'unset': 0, 'linked': 1, 'independent': 2}
 door_type_mode = {'original': 0, 'big': 1, 'all': 2, 'chaos': 3}
@@ -3742,7 +3746,7 @@ class Settings(object):
              | trap_door_mode[w.trap_door_mode[p]] << 3 | key_logic_algo[w.key_logic_algorithm[p]]),
 
             (skullwoods_mode[w.skullwoods[p]] << 6 | linked_drops_mode[w.linked_drops[p]] << 4
-             | door_type_mode[w.door_type_mode[p]]),
+             | (0x8 if w.mirrorscroll[p] else 0) | door_type_mode[w.door_type_mode[p]]),
         ])
         return base64.b64encode(code, "+-".encode()).decode()
 
@@ -3835,6 +3839,7 @@ class Settings(object):
         if len(settings) > 15:
             args.skullwoods[p] = r(skullwoods_mode)[(settings[15] & 0xc0) >> 6]
             args.linked_drops[p] = r(linked_drops_mode)[(settings[15] & 0x30) >> 4]
+            args.mirrorscroll[p] = True if settings[15] & 0x8 else False
             args.door_type_mode[p] = r(door_type_mode)[(settings[15] & 0x3)]
 
 
