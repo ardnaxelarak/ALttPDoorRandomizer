@@ -58,6 +58,7 @@ SETTINGSTOPROCESS = {
       "hints": "hints",
       "pseudoboots": "pseudoboots",
       'collection_rate': 'collection_rate',
+      "mirrorscroll": "mirrorscroll",
       "race": "race",
 
       "worldstate": "mode",

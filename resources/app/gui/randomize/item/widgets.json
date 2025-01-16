@@ -3,6 +3,7 @@
     "hints": { "type": "checkbox" },
     "pseudoboots": { "type": "checkbox" },
     "collection_rate": {"type":  "checkbox"},
+    "mirrorscroll": { "type": "checkbox" },
     "race": { "type": "checkbox" }
   },
   "leftItemFrame": {

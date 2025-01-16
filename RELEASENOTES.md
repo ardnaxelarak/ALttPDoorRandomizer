@@ -141,20 +141,14 @@ These are now independent of retro mode and have three options: None, Random, an
 
 # Patch Notes
 
-* 1.4.7.2
-  - Fixed an issue with shuffle_ganon/fix_gtower_exit causing a generation failure
+* 1.4.8
+  - New option: Mirror Scroll - to add the item to the starting inventory in non-doors modes (Thanks Telethar!)
+  - Customizer: Ability to customize shop prices and control money balancing. `money_balance` is a percentage betwen 0 and 100 that attempts to ensure you have that much percentage of money available for purchases. (100 is default, 0 essentially ignores money considerations) 
+  - Fixed a key logic bug with decoupled doors when a big key door leads to a small key door (the small key door was missing appropriate logic)
+  - Fixed an ER bug where Bonk Fairy could be used for a mandatory connector in standard mode (boots could allow escape to be skipped)
+  - Fixed an issue with flute activation in rain mode. (thanks Codemann!)
+  - Fixed an issue with enemies in TR Dark Ride room not requiring Somaria. (Refactored the room for decoupled logic better)
   - More HMG fixes by Muffins
-* 1.4.7.1
-  - Fixed an issue with the repaired "beemizer" setting not being backwards compatible
-* 1.4.7
-  - Fixed generation error with Big Key in starting inventory (thanks Cody!)
-  - HMG/NL logic fixes by Muffins
-  - Enemizer: Disabled Walking Zora in the UW due to crash with Swamola (they ignore a lot of collison anyway)
-  - Enemizer: Fixed an issue with enemizer bush sprites
-  - Enemizer: Banned new Mimics from being the randomized bush sprite due to crash
-  - "Beatable" or "accessibility: none" can now use randomized trap doors to seal off entire parts of dungeons (was intended, bug prevented the logic skip)
-  - Logic error with enemizer and standard should use new enemy logic rules
-  - Fixed a bug with the inconsistent treatment of the beemizer setting
-  - Fixed an issue with returning Blacksmith in Simple shuffle (when blacksmith is at Link's House)
-  - Fixed an issue with dark sanctuary spawn at tavern north door (thanks Codemann!)
-  - Various enemy bans for the last few months
+  - Fixed an issue with multi-player HMG
+  - Fixed an issue limiting number of items specified in the item pool on the GUI
+  - Minor documentation fixes (thanks Codemann!)

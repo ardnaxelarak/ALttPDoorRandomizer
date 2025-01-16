@@ -553,6 +553,10 @@
     "action": "store_true",
     "type": "bool"
   },
+  "mirrorscroll": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "calc_playthrough": {
     "action": "store_false",
     "type": "bool"
@@ -623,6 +627,7 @@
     "action": "store_false",
     "type": "bool"
   },
+  "money_balance": {},
   "settingsonload": {
     "choices": [
       "default",
