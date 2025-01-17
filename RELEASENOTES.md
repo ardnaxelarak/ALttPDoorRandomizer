@@ -2,6 +2,8 @@
 
 * 1.4.8.1
   - Fixed broken doors generation
+  - Fixed bomb/arrow upgrade ignoring custom pricing
+  - Extended `money_balance` to apply to price balancing for non-custom shops.
 * 1.4.8
   - New option: Mirror Scroll - to add the item to the starting inventory in non-doors modes (Thanks Telethar!)
   - Customizer: Ability to customize shop prices and control money balancing. `money_balance` is a percentage betwen 0 and 100 that attempts to ensure you have that much percentage of money available for purchases. (100 is default, 0 essentially ignores money considerations) 

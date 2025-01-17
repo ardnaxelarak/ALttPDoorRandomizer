@@ -106,6 +106,10 @@ bosses:
     Palace of Darkness: Arrghus
     Thieves Town: Blind
     Ganons Tower (top): Vitreous
+prices:
+  1:
+    Capacity Upgrade - Left: 5
+    Capacity Upgrade - Right: 216
 start_inventory:
   1:
     - Pegasus Boots

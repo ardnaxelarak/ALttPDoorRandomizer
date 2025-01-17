@@ -722,8 +722,8 @@ def customize_shops(world, player):
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
                 upgrade = ItemFactory('Bomb Upgrade (+5)', player)
-                up_price = final_price(loc, upgrade.price, world, player)
-                rep_price = final_price(loc, item.price, world, player)
+                up_price = final_price(loc.name, upgrade.price, world, player)
+                rep_price = final_price(loc.name, item.price, world, player)
                 shop.add_inventory(idx, upgrade.name, up_price, 6,
                                    item.name, rep_price, player=item.player)
                 loc.item = upgrade
@@ -736,8 +736,8 @@ def customize_shops(world, player):
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
                 upgrade = ItemFactory('Arrow Upgrade (+5)', player)
-                up_price = final_price(loc, upgrade.price, world, player)
-                rep_price = final_price(loc, item.price, world, player)
+                up_price = final_price(loc.name, upgrade.price, world, player)
+                rep_price = final_price(loc.name, item.price, world, player)
                 shop.add_inventory(idx, upgrade.name, up_price, 6,
                                    item.name, rep_price, player=item.player)
                 loc.item = upgrade
@@ -803,7 +803,8 @@ def balance_prices(world, player):
             slot = shop_to_location_table[loc.parent_region.name].index(loc.name)
             needed_money += loc.parent_region.shop.inventory[slot]['price']
 
-    target = available_money - needed_money
+    modifier = world.money_balance[player]/100
+    target = available_money - needed_money * modifier
     # remove the first set of shops from consideration (or used them for discounting)
     state, done = CollectionState(world), False
     unchecked_locations = world.get_locations().copy()
