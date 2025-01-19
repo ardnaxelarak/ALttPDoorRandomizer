@@ -46,6 +46,13 @@ Player 1's settings will be determined by rolling the mystery weights and player
 
 Start inventory is not supported here. It has a separate section.
 
+#### Extra Settings
+
+Some settings are intended to only be accessed using the customizer:
+
+* `aga_randomness` setting this to false, turns off blue balls and ganon warp randomness
+* `money_balance` this is a percent (0-100). For numbers less than 100, both price balancing and money balancing will only attempt to ensure the player has access to only a percentage of the required funds. When 0, this should effectively disable money balancing. Grinding for rupees may be necessary whenever this is less than 100. 
+
 ###### Not Yet Implemented
 
 Rom/Adjust flags like sprite, quickswap are not outputing with the print_template_yaml or print_custom_yaml settings 
@@ -310,3 +317,18 @@ drops:
 ```
 
 Prize packs expect a list of eight items each (anything not specified will be whatever randomization would have normally occurred). The special drops expect a single item. Packs 1 through 7 are supported. Prize pack 0 is not customizable.
+
+## prices
+
+This must be defined by player. You may have the prices of items in shops defined using the following
+
+```
+prices:
+  1:
+    Capacity Upgrade - Left: 100
+    Capacity Upgrade - Right: 200
+    Dark Death Mountain Shop - Left: 100
+    Dark Death Mountain Shop - Middle: 150
+    Dark Death Mountain Shop - Right: 300
+    Dark Lake Hylia Shop - Left: 200
+```
