@@ -394,6 +394,7 @@
     ],
     "collection_rate": [ "Display collection rate (default: %(default)s)" ],
     "pseudoboots": [ " Start with pseudo boots that allow dashing but no item checks (default: %(default)s)"],
+    "mirrorscroll": [ " Players starts with mirror scroll that allows mirror in dungeons but not overworld (default: %(default)s"],
     "bombbag": ["Start with 0 bomb capacity. Two capacity upgrades (+10) are added to the pool (default: %(default)s)" ],
     "any_enemy_logic": [
       "How to handle potential traversal between dungeon in Crossed door shuffle",

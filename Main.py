@@ -40,7 +40,7 @@ from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
 from source.rom.DataTables import init_data_tables
 
-version_number = '1.4.7.2'
+version_number = '1.4.8.1'
 version_branch = '-u'
 __version__ = f'{version_number}{version_branch}'
 
@@ -501,12 +501,14 @@ def init_world(args, fish):
     world.skullwoods = args.skullwoods.copy()
     world.linked_drops = args.linked_drops.copy()
     world.pseudoboots = args.pseudoboots.copy()
+    world.mirrorscroll = args.mirrorscroll.copy()
     world.overworld_map = args.overworld_map.copy()
     world.take_any = args.take_any.copy()
     world.restrict_boss_items = args.restrict_boss_items.copy()
     world.collection_rate = args.collection_rate.copy()
     world.colorizepots = args.colorizepots.copy()
     world.aga_randomness = args.aga_randomness.copy()
+    world.money_balance = args.money_balance.copy()
 
     
     return world
@@ -589,7 +591,13 @@ def copy_world(world):
     ret.shuffle_bonk_drops = world.shuffle_bonk_drops.copy()
     ret.open_pyramid = world.open_pyramid.copy()
     ret.shufflelinks = world.shufflelinks.copy()
+    ret.shuffletavern = world.shuffletavern.copy()
     ret.shuffle_ganon = world.shuffle_ganon.copy()
+    ret.skullwoods = world.skullwoods.copy()
+    ret.linked_drops = world.linked_drops.copy()
+    ret.pseudoboots = world.pseudoboots.copy()
+    ret.mirrorscroll = world.mirrorscroll.copy()
+    ret.overworld_map = world.overworld_map.copy()
     ret.take_any = world.take_any.copy()
     ret.boss_shuffle = world.boss_shuffle.copy()
     ret.enemy_shuffle = world.enemy_shuffle.copy()
@@ -604,6 +612,7 @@ def copy_world(world):
     ret.trap_door_mode = world.trap_door_mode.copy()
     ret.key_logic_algorithm = world.key_logic_algorithm.copy()
     ret.aga_randomness = world.aga_randomness.copy()
+    ret.money_balance = world.money_balance.copy()
     ret.experimental = world.experimental.copy()
     ret.shopsanity = world.shopsanity.copy()
     ret.dropshuffle = world.dropshuffle.copy()
@@ -802,7 +811,13 @@ def copy_world_premature(world, player):
     ret.shuffle_bonk_drops = world.shuffle_bonk_drops.copy()
     ret.open_pyramid = world.open_pyramid.copy()
     ret.shufflelinks = world.shufflelinks.copy()
+    ret.shuffletavern = world.shuffletavern.copy()
     ret.shuffle_ganon = world.shuffle_ganon.copy()
+    ret.skullwoods = world.skullwoods.copy()
+    ret.linked_drops = world.linked_drops.copy()
+    ret.pseudoboots = world.pseudoboots.copy()
+    ret.mirrorscroll = world.mirrorscroll.copy()
+    ret.overworld_map = world.overworld_map.copy()
     ret.take_any = world.take_any.copy()
     ret.boss_shuffle = world.boss_shuffle.copy()
     ret.enemy_shuffle = world.enemy_shuffle.copy()
@@ -817,6 +832,7 @@ def copy_world_premature(world, player):
     ret.trap_door_mode = world.trap_door_mode.copy()
     ret.key_logic_algorithm = world.key_logic_algorithm.copy()
     ret.aga_randomness = world.aga_randomness.copy()
+    ret.money_balance = world.money_balance.copy()
     ret.experimental = world.experimental.copy()
     ret.shopsanity = world.shopsanity.copy()
     ret.dropshuffle = world.dropshuffle.copy()

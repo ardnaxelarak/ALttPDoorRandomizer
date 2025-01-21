@@ -152,6 +152,7 @@ def roll_settings(weights):
         ret.dungeon_counters = 'pickup' if ret.door_shuffle != 'vanilla' or ret.compassshuffle != 'none' else 'off'
 
     ret.pseudoboots = get_choice_bool('pseudoboots')
+    ret.mirrorscroll = get_choice_bool('mirrorscroll')
     ret.shopsanity = get_choice_bool('shopsanity')
     keydropshuffle = get_choice_bool('keydropshuffle')
     ret.dropshuffle = get_choice('dropshuffle') if 'dropshuffle' in weights else 'none'

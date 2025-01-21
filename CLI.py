@@ -139,13 +139,14 @@ def parse_cli(argv, no_defaults=False):
                          'triforce_max_difference', 'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
                          'skullwoods', 'linked_drops',
-                         'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
+                         'pseudoboots', 'mirrorscroll', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
                          'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx', 'shuffle_sfxinstruments',
                          'shuffle_songinstruments', 'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
-                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm', 'door_self_loops', 'any_enemy_logic', 'aga_randomness']:
+                         'bonk_drops', 'trap_door_mode', 'key_logic_algorithm', 'door_self_loops', 'any_enemy_logic', 'aga_randomness',
+                         'money_balance']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -208,6 +209,7 @@ def parse_settings():
         "overworld_map": "default",
         "take_any": "none",
         "pseudoboots": False,
+        "mirrorscroll": False,
 
         "shuffleenemies": "none",
         "shufflebosses": "none",
@@ -239,6 +241,7 @@ def parse_settings():
         "mixed_travel": "prevent",
         "standardize_palettes": "standardize",
         'aga_randomness': True,
+        'money_balance': 100,
 
         "triforce_pool": 0,
         "triforce_goal": 0,

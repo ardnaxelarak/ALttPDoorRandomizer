@@ -837,7 +837,8 @@ def customize_shops(world, player):
                 if retro_bow and item.name == 'Single Arrow':
                     price = 80
             # randomize price
-            shop.add_inventory(idx, item.name, randomize_price(price), max_repeat, player=item.player)
+            price = final_price(loc, price, world, player)
+            shop.add_inventory(idx, item.name, price, max_repeat, player=item.player)
             if item.name in cap_replacements and shop_name not in retro_shops and item.player == player:
                 possible_replacements.append((shop, idx, location, item))
         # randomize shopkeeper
@@ -854,8 +855,10 @@ def customize_shops(world, player):
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
                 upgrade = ItemFactory('Bomb Upgrade (+5)', player)
-                shop.add_inventory(idx, upgrade.name, randomize_price(upgrade.price), 6,
-                                   item.name, randomize_price(item.price), player=item.player)
+                up_price = final_price(loc.name, upgrade.price, world, player)
+                rep_price = final_price(loc.name, item.price, world, player)
+                shop.add_inventory(idx, upgrade.name, up_price, 6,
+                                   item.name, rep_price, player=item.player)
                 loc.item = upgrade
                 upgrade.location = loc
         if not found_arrow_upgrade and len(possible_replacements) > 0:
@@ -866,13 +869,24 @@ def customize_shops(world, player):
             if len(choices) > 0:
                 shop, idx, loc, item = random.choice(choices)
                 upgrade = ItemFactory('Arrow Upgrade (+5)', player)
-                shop.add_inventory(idx, upgrade.name, randomize_price(upgrade.price), 6,
-                                   item.name, randomize_price(item.price), player=item.player)
+                up_price = final_price(loc.name, upgrade.price, world, player)
+                rep_price = final_price(loc.name, item.price, world, player)
+                shop.add_inventory(idx, upgrade.name, up_price, 6,
+                                   item.name, rep_price, player=item.player)
                 loc.item = upgrade
                 upgrade.location = loc
     change_shop_items_to_rupees(world, player, shops_to_customize)
     balance_prices(world, player)
     check_hints(world, player)
+
+
+def final_price(location, price, world, player):
+    if world.customizer and world.customizer.get_prices(player):
+        custom_prices = world.customizer.get_prices(player)
+        if location in custom_prices:
+            # todo: validate valid price
+            return custom_prices[location]
+    return randomize_price(price)
 
 
 def randomize_price(price):
@@ -914,12 +928,16 @@ def balance_prices(world, player):
     shop_locations = []
     for shop, loc_list in shop_to_location_table.items():
         for loc in loc_list:
+            if world.customizer and world.customizer.get_prices(player) and loc in world.customizer.get_prices(player):
+                needed_money += world.customizer.get_prices(player)[loc]
+                continue  # considered a fixed price and shouldn't be altered
             loc = world.get_location(loc, player)
             shop_locations.append(loc)
             slot = shop_to_location_table[loc.parent_region.name].index(loc.name)
             needed_money += loc.parent_region.shop.inventory[slot]['price']
 
-    target = available_money - needed_money
+    modifier = world.money_balance[player]/100
+    target = available_money - needed_money * modifier
     # remove the first set of shops from consideration (or used them for discounting)
     state, done = CollectionState(world), False
     unchecked_locations = world.get_locations().copy()
@@ -1255,31 +1273,10 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
         assert loc not in placed_items
         placed_items[loc] = item
 
-    # Correct for insanely oversized item counts and take initial steps to handle undersized pools.
-    # Bow to Silver Arrows Upgrade, including Generic Keys & Rupoors
-    for x in [*range(0, 69)]:
-        key = CONST.CUSTOMITEMS[x]
-        if customitemarray[key] > total_items_to_place:
-            customitemarray[key] = total_items_to_place
-    
-    # Triforce
-    if customitemarray["triforce"] > total_items_to_place:
-        customitemarray["triforce"] = total_items_to_place
-
     # Triforce Pieces
     if goal in ['triforcehunt', 'trinity', 'ganonhunt']:
         g, t = set_default_triforce(goal, customitemarray["triforcepiecesgoal"], customitemarray["triforcepieces"])
         customitemarray["triforcepiecesgoal"], customitemarray["triforcepieces"] = g, t
-
-    itemtotal = 0
-    # Bow to Silver Arrows Upgrade, including Generic Keys & Rupoors
-    for x in [*range(0, 66 + 1), 68, 69]:
-        key = CONST.CUSTOMITEMS[x]
-        itemtotal = itemtotal + customitemarray[key]
-    # Triforce
-    itemtotal = itemtotal + customitemarray["triforce"]
-    # Generic Keys
-    itemtotal = itemtotal + customitemarray["generickeys"]
 
     customitems = [
       "Bow", "Silver Arrows", "Blue Boomerang", "Red Boomerang", "Hookshot", "Mushroom", "Magic Powder",
@@ -1322,7 +1319,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
            and (goal in ['triforcehunt', 'trinity', 'ganonhunt']) and (customitemarray["triforce"] == 0)):
             extrapieces = treasure_hunt_count - customitemarray["triforcepieces"]
             pool.extend(['Triforce Piece'] * extrapieces)
-            itemtotal = itemtotal + extrapieces
 
     if timer in ['display', 'timed', 'timed-countdown']:
         clock_mode = 'countdown' if timer == 'timed-countdown' else 'stopwatch'
@@ -1333,7 +1329,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     if goal in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
-        itemtotal = itemtotal + 1
 
     if mode == 'standard':
         if world.keyshuffle[player] == 'universal':
@@ -1349,13 +1344,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
     pool.extend(['Progressive Sword'] * customitemarray["progressivesword"])
     pool.extend(['Magic Mirror'] * customitemarray["mirror"])
     pool.extend(['Moon Pearl'] * customitemarray["pearl"])
-
-    if world.keyshuffle[player] == 'universal':
-        itemtotal = itemtotal - 28 # Corrects for small keys not being in item pool in Retro Mode
-    if itemtotal < total_items_to_place:
-        nothings = total_items_to_place - itemtotal
-#        print("Placing " + str(nothings) + " Nothings")
-        pool.extend(['Nothing'] * nothings)
 
     start_inventory = [x for x in world.precollected_items if x.player == player]
     if world.logic[player] in ['owglitches', 'hybridglitches', 'nologic'] and all(x.name != 'Pegasus Boots' for x in start_inventory):

@@ -124,7 +124,7 @@ class InitialSram:
         if startingstate.has('Beat Agahnim 1', player):
             self.pre_open_lumberjack()
             if world.mode[player] == 'standard':
-                self.set_progress_indicator(0x80)
+                self.set_progress_indicator(0x80)  # todo: probably missing some code rom side for this
             else:
                 self.set_progress_indicator(0x03)
 
