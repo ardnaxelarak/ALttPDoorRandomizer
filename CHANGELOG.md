@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1.4
+- Fixed incorrect ganon silvers hint
+- \~Merged in DR v1.4.8.1~
+
 ## 0.5.1.3
 - Fixed some minor issues with mystery multiworld
 - Corrected some generation issues with Nearby dungeon item shuffles
