@@ -969,7 +969,7 @@ def balance_prices(world, player):
                 target -= flex
             elif adjustment <= 0:
                 old_price = inventory['price']
-                new_price = max(0, inventory['price'] + adjustment)
+                new_price = max(0, int(inventory['price'] + adjustment))
                 inventory['price'] = new_price
                 target += (old_price - new_price)
             else:
@@ -978,7 +978,7 @@ def balance_prices(world, player):
             for loc in shop_locations:
                 slot = shop_to_location_table[loc.parent_region.name].index(loc.name)
                 inventory = loc.parent_region.shop.inventory[slot]
-                new_price = inventory['price'] + adjustment
+                new_price = int(inventory['price'] + adjustment)
                 new_price = min(500, max(0, new_price))  # cap prices between 0--twice base price
                 inventory['price'] = new_price
                 target -= adjustment
