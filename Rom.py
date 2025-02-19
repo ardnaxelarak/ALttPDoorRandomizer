@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'b439d99c7f41914eedb9f4097ecc8cc7'
+RANDOMIZERBASEHASH = '80e0a4f8bd5cc6f83ac9f7f46c01bf4f'
 
 
 class JsonRom(object):
@@ -2211,11 +2211,11 @@ def write_strings(rom, world, player, team):
                 this_hint = this_hint[0].upper() + this_hint[1:]
                 tt[hint_locations.pop(0)] = this_hint
             items_to_hint.remove(flute_item)
-        if world.keyshuffle[player] not in ['none', 'universal']:
+        if world.keyshuffle[player] not in ['none', 'nearby', 'universal']:
             items_to_hint.extend(SmallKeys)
-        if world.bigkeyshuffle[player] != 'none':
+        if world.bigkeyshuffle[player] not in ['none', 'nearby']:
             items_to_hint.extend(BigKeys)
-        if world.prizeshuffle[player] not in ['none', 'dungeon']:
+        if world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby']:
             items_to_hint.extend(Prizes)
         random.shuffle(items_to_hint)
         hint_count = 5 if world.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'district', 'swapped'] else 8

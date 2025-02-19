@@ -906,7 +906,8 @@ def figure_out_connectors(exits, avail, cross_world=True):
     cave_list = list(Connector_List)
     if avail.assumed_loose_caves or (not avail.skull_handled and (cross_world or not avail.world.is_tile_swapped(0x00, avail.player))):
         skull_connector = [x for x in ['Skull Woods Second Section Exit (West)', 'Skull Woods Second Section Exit (East)'] if x in exits]
-        cave_list.extend([skull_connector])
+        if len(skull_connector):
+            cave_list.extend([skull_connector])
     if avail.assumed_loose_caves or not avail.keep_drops_together:
         cave_list.extend([[entrance_map[e]] for e in linked_drop_map.values() if 'Inverted ' not in e and 'Skull Woods ' not in e])
 
