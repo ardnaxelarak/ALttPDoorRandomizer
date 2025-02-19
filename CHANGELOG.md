@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1.5
+- Fixed rare overworld map check VRAM crash
+- Fixed cavestate dark room hidden item issue
+- Removed dungeon items from hint pool for nearby dungeon items
+- Fixed generation error with shopsanity
+- Fixed generation error in ER: empty cave lists being added as candidates
+
 ## 0.5.1.4
 - Fixed incorrect ganon silvers hint
 - \~Merged in DR v1.4.8.1~
