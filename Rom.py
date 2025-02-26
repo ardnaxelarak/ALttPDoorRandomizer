@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '07f6a6521fff25ff5149c5f818a9039f'
+RANDOMIZERBASEHASH = 'a56edc4d337ec48eefefabf82c4f8695'
 
 
 class JsonRom(object):
@@ -859,8 +859,6 @@ def patch_rom(world, player, rom):
     # assorted fixes
     rom.write_byte(0x1800A2, 0x01)  # remain in real dark world when dying in dark world dungeon before killing aga1
     rom.write_byte(0x180169, 0x01 if world.lock_aga_door_in_escape else 0x00)  # Lock or unlock aga tower door during escape sequence.
-    if world.mode == 'inverted':
-        rom.write_byte(0x180169, 0x02)  # lock aga/ganon tower door with crystals in inverted
     rom.write_byte(0x180171, 0x01 if world.ganon_at_pyramid[player] else 0x00)  # Enable respawning on pyramid after ganon death
     rom.write_byte(0x180173, 0x01) # Bob is enabled
     rom.write_byte(0x180195, 0x08)  # Spike Cave Damage
@@ -926,6 +924,8 @@ def patch_rom(world, player, rom):
     rom.write_byte(0x18016A, 0xFF if world.keysanity else 0x00)
     
     rom.write_byte(0x18003B, 0x01 if world.keysanity else 0x00)  # maps showing crystals on overworld
+
+    rom.write_byte(0x18008E, 0x01 if world.pseudoboots else 0x00)
 
     # compasses showing dungeon count
     if world.clock_mode != 'off':
@@ -1133,6 +1133,9 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
 
     rom.write_byte(0x18004B, 0x01 if quickswap else 0x00)
 
+    # Reduced Flashing
+    rom.write_byte(0x18017F, 0x01)
+
     rom.write_byte(0x18021A, 1 if disable_music else 0x00)
 
     # restore Mirror sound effect volumes (for existing seeds that lack it)
@@ -1322,7 +1325,7 @@ def write_strings(rom, world, player):
 
     greenpendant = world.find_items('Green Pendant', player)[0]
     tt['sahasrahla_bring_courage'] = 'I lost my family heirloom in %s' % greenpendant.hint_text
-    tt['sign_ganons_tower'] = ('You need %d crystal to enter.' if world.crystals_needed_for_gt == 1 else 'You need %d crystals to enter.') % world.crystals_needed_for_gt
+    tt['sign_ganons_tower'] = 'You need to kill 7 deadrocks to enter.'
     
 
     ganon_crystals_singular = 'You need %d crystal to beat Ganon.'

@@ -1433,7 +1433,6 @@ class TextTable(object):
             'item_get_pendant_power',
             'item_get_pendant_wisdom',
             'item_get_mushroom',
-            'item_get_book',
             'item_get_moonpearl',
             'item_get_compass',
             'item_get_map', #60
@@ -1450,7 +1449,6 @@ class TextTable(object):
             'item_get_bottle',
             'item_get_big_key',
             'item_get_titans_mitts',
-            'item_get_magic_mirror',
             'item_get_fake_mastersword',
             'post_item_get_mastersword',
             'item_get_red_potion',
@@ -1673,7 +1671,7 @@ class TextTable(object):
         text['item_get_pendant_power'] = CompressedTextMapper.convert("We have the Pendant of Power! How robust!")
         text['item_get_pendant_wisdom'] = CompressedTextMapper.convert("We have the Pendant of Wisdom! How astute!")
         text['item_get_mushroom'] = CompressedTextMapper.convert("Mushroom! Don't eat it. Find a witch.")
-        text['item_get_book'] = CompressedTextMapper.convert("Book! Are you well read?")
+        text['item_get_book'] = CompressedTextMapper.convert("This book has a new feature--it can change the state of colored pegs!")
         text['item_get_moonpearl'] = CompressedTextMapper.convert("Moon Pearl! Rabbit Be Gone!")
         text['item_get_compass'] = CompressedTextMapper.convert("A compass! I can now find the boss.")
         # 60
@@ -1691,7 +1689,7 @@ class TextTable(object):
         text['item_get_bottle'] = CompressedTextMapper.convert("Bottle! Store all manner of things")
         text['item_get_big_key'] = CompressedTextMapper.convert("Yo! You got a Big Key!")
         text['item_get_titans_mitts'] = CompressedTextMapper.convert("Mitts! Lift ALL the rocks!")
-        text['item_get_magic_mirror'] = CompressedTextMapper.convert("Mirror! Take some time to reflect on this moment!")
+        text['item_get_magic_mirror'] = CompressedTextMapper.convert("Your Mirror has been upgraded and now works in both worlds!")
         text['item_get_fake_mastersword'] = CompressedTextMapper.convert("It's the Master Sword! …or not…\n\n         FOOL!")
         # 70
         text['post_item_get_mastersword'] = CompressedTextMapper.convert("{NOBORDER}\n{SPEED6}\n@, you got the sword!\n{CHANGEMUSIC}\nNow let's go beat up Agahnim!")
@@ -1719,7 +1717,7 @@ class TextTable(object):
         text['game_shooting_choice'] = CompressedTextMapper.convert("20 rupees.\n5 arrows.\nWin rupees!\nWant to play?\n  ≥ Yes\n    No\n{CHOICE}")
         text['game_shooting_yes'] = CompressedTextMapper.convert("Let's do this!")
         text['game_shooting_no'] = CompressedTextMapper.convert("Where are you going? Straight up!")
-        text['game_shooting_continue'] = CompressedTextMapper.convert("Keep playing?\n  ≥ yes\n    no\n{CHOICE}")
+        text['game_shooting_continue'] = CompressedTextMapper.convert("Keep playing?\n  ≥ Yes\n    No\n{CHOICE}")
         text['pond_of_wishing'] = CompressedTextMapper.convert("-Wishing Pond-\n\n On Vacation")
         text['pond_item_select'] = CompressedTextMapper.convert("Pick something\nto throw in.\n{ITEMSELECT}")
         text['pond_item_test'] = CompressedTextMapper.convert("You toss this?\n  ≥ Yup\n    Wrong\n{CHOICE}")

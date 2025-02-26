@@ -10,7 +10,7 @@ from Utils import int16_as_bytes
 
 class World(object):
 
-    def __init__(self, players, shuffle, logic, mode, swords, difficulty, difficulty_adjustments, timer, progressive, goal, place_dungeon_items, accessibility, shuffle_ganon, quickswap, fastmenu, disable_music, keysanity, retro, boss_shuffle, hints):
+    def __init__(self, players, shuffle, logic, mode, swords, difficulty, difficulty_adjustments, timer, progressive, goal, place_dungeon_items, accessibility, shuffle_ganon, quickswap, pseudoboots, fastmenu, disable_music, keysanity, retro, boss_shuffle, hints):
         self.players = players
         self.shuffle = shuffle
         self.logic = logic
@@ -65,6 +65,7 @@ class World(object):
         self.can_access_trock_big_chest = None
         self.can_access_trock_middle = None
         self.quickswap = quickswap
+        self.pseudoboots = pseudoboots
         self.fastmenu = fastmenu
         self.disable_music = disable_music
         self.keysanity = keysanity
@@ -392,6 +393,12 @@ class CollectionState(object):
         crystals = ['Crystal 1', 'Crystal 2', 'Crystal 3', 'Crystal 4', 'Crystal 5', 'Crystal 6', 'Crystal 7']
         return len([crystal for crystal in crystals if self.has(crystal, player)]) >= count
 
+    def can_pass_bushes(self, player):
+        return self.has_sword(player) or self.has('Weak Glove', player) or self.has('Power Glove', player) or self.has('Titans Mitts', player)
+
+    def can_pass_pots(self, player):
+        return self.has('Hammer', player) or self.has('Weak Glove', player) or self.has('Power Glove', player) or self.has('Titans Mitts', player)
+
     def can_lift_rocks(self, player):
         return self.has('Power Glove', player) or self.has('Titans Mitts', player)
 
@@ -469,11 +476,17 @@ class CollectionState(object):
     def has_Mirror(self, player):
         return self.has('Magic Mirror', player)
 
+    def has_TwoWay_Mirror(self, player):
+        return self.has('Magic Mirror', player, 2)
+
     def has_Boots(self, player):
         return self.has('Pegasus Boots', player)
 
     def has_Pearl(self, player):
         return self.has('Moon Pearl', player)
+
+    def has_Book(self, player):
+        return self.has('Book of Mudora', player)
 
     def has_fire_source(self, player):
         return self.has('Fire Rod', player) or self.has('Lamp', player)
@@ -536,8 +549,11 @@ class CollectionState(object):
                 elif self.has('Power Glove', item.player):
                     self.prog_items.add(('Titans Mitts', item.player))
                     changed = True
-                else:
+                elif self.has('Weak Glove', item.player):
                     self.prog_items.add(('Power Glove', item.player))
+                    changed = True
+                else:
+                    self.prog_items.add(('Weak Glove', item.player))
                     changed = True
             elif 'Shield' in item.name:
                 if self.has('Mirror Shield', item.player):

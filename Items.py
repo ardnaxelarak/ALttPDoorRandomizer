@@ -162,7 +162,7 @@ item_table = {'Bow': (True, False, None, 0x0B, 'Bow!\nJoin the archer class!', '
               'Map (Ganons Tower)': (False, True, 'Map', 0x72, 'A tightly folded map rests here', 'and the map', 'cartography kid', 'map for sale', 'a map to shrooms', 'map boy navigates again', 'A map to Ganon\'s Tower'),
               'Small Key (Universal)': (False, True, None, 0xAF, 'A small key for any door', 'and the key', 'the unlocking kid', 'keys for sale', 'unlock the fungus', 'key boy opens door again', 'A small key'),
               'Small Key (Universal)': (False, True, None, 0xAF, 'A small key for any door', 'and the key', 'the unlocking kid', 'keys for sale', 'unlock the fungus', 'key boy opens door again', 'A small key'),
-              'Teleporter': (False, False, None, 0xB8, 'A teleporter', 'and the teleporter', 'the teleporting kid', 'teleportation for sale', 'teleporting fungus', 'teleporter boy warps again', 'A teleporter'),
+              'Teleporter': (False, True, None, 0xB8, 'A teleporter', 'and the teleporter', 'the teleporting kid', 'teleportation for sale', 'teleporting fungus', 'teleporter boy warps again', 'A teleporter'),
               'IFrames (10)': (False, False, None, 0xB9, 'More invincibility frames', 'and the i-frames', 'the invincible kid', 'invincibility for sale', 'invincible fungus', 'invincble boy damaged again', 'Some invincibility frames'),
               'Nothing': (False, False, None, 0x5A, 'Some Hot Air', 'and the Nothing', 'the zen kid', 'outright theft', 'shroom theft', 'empty boy is bored again', 'Nothing'),
               'Red Potion': (False, False, None, 0x2E, None, None, None, None, None, None, None),
