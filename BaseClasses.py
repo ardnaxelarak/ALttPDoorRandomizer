@@ -3656,7 +3656,7 @@ bigkeyshuffle_mode = {'none': 0, 'off': 0, 'nearby': 2, 'wild': 3, 'on': 3}
 # byte 8: HHHD DPEE (enemy_health, enemy_dmg, potshuffle, enemies)
 e_health = {"default": 0, "easy": 1, "normal": 2, "hard": 3, "expert": 4}
 e_dmg = {"default": 0, "shuffled": 1, "random": 2}
-enemy_mode = {"none": 0, "shuffled": 1, "chaos": 2, "random": 2, "legacy": 3}
+enemy_mode = {"none": 0, "shuffled": 1, "chaos": 2, "random": 2, "mimics": 3}
 
 # byte 9: RRAA ABBB (restrict boss mode, algorithm, boss shuffle)
 rb_mode = {"none": 0, "mapcompass": 1, "dungeon": 2}

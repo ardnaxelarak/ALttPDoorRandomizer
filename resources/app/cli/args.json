@@ -587,7 +587,8 @@
   "shuffleenemies": {
     "choices": [
       "none",
-      "shuffled"
+      "shuffled",
+      "mimics"
     ]
   },
   "enemy_health": {
