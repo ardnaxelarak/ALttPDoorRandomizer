@@ -3,7 +3,7 @@ from Utils import snes_to_pc
 
 from source.dungeon.EnemyList import SpriteType, EnemySprite, sprite_translation
 from source.dungeon.RoomList import Room010C
-from source.enemizer.SpecialEnemyModes import get_enemy_map_uw, get_enemy_map_ow
+from source.enemizer.SpecialEnemyModes import get_enemy_map_uw, get_enemy_map_ow, write_mimic_changes
 from source.enemizer.SpriteSheets import sub_group_choices
 from source.enemizer.SpriteSheets import randomize_underworld_sprite_sheets, randomize_overworld_sprite_sheets
 from source.enemizer.TilePattern import tile_patterns
@@ -521,13 +521,16 @@ def write_enemy_shuffle_settings(world, player, rom):
         # rom.write_byte(snes_to_pc(0x368108), 0xc4)
         # rom.write_byte(snes_to_pc(0x0DB237), 4)  # health value - randomize it if killable, maybe
 
-        # mimic room barriers
-        data_tables = world.data_tables[player]
-        mimic_room = data_tables.room_list[0x10c] = Room010C
-        mimic_room.layer1[40].data[0] = 0x54  # rail adjust
-        mimic_room.layer1[40].data[1] = 0x9C
-        mimic_room.layer1[45].data[1] = 0xB0  # block adjust 1
-        mimic_room.layer1[47].data[1] = 0xD0  # block adjust 2
+        if world.enemy_shuffle[player] == 'mimics':
+            write_mimic_changes(rom)
+        else:
+            # mimic room barriers
+            data_tables = world.data_tables[player]
+            mimic_room = data_tables.room_list[0x10c] = Room010C
+            mimic_room.layer1[40].data[0] = 0x54  # rail adjust
+            mimic_room.layer1[40].data[1] = 0x9C
+            mimic_room.layer1[45].data[1] = 0xB0  # block adjust 1
+            mimic_room.layer1[47].data[1] = 0xD0  # block adjust 2
 
         # random tile pattern
         pattern_name, tile_pattern = random.choice(tile_patterns)

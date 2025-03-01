@@ -1,3 +1,6 @@
+import RaceRandom as random
+from Utils import snes_to_pc
+
 from source.dungeon.EnemyList import EnemySprite, SpriteType, sprite_translation, enemy_names
 
 def can_combine_req(req1, req2):
@@ -28,7 +31,10 @@ def get_enemy_map(mode, reqs, vanilla_map):
                     break
                 continue
             if req.killable:
-                data[room_id][idx] = 'GreenMimic'
+                if random.random() > 0.1:
+                    data[room_id][idx] = 'GreenMimic'
+                else:
+                    data[room_id][idx] = 'RedMimic'
             else:
                 data[room_id][idx] = enemy_names[sprite.kind]
         if len(data[room_id]) == 0:
@@ -43,4 +49,10 @@ def get_enemy_map_ow(mode, data_tables):
 def get_enemy_map_uw(mode, data_tables):
     reqs = data_tables.sprite_requirements
     return get_enemy_map(mode, reqs, data_tables.uw_enemy_table.room_map)
+
+def write_mimic_changes(rom):
+    rom.write_bytes(snes_to_pc(0x1EC71B),
+       [0x00, 0xF0, 0x10, 0x00, 0x00, 0xF3, 0x0D, 0x00,
+        0x00, 0xF3, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00])
+    rom.write_bytes(snes_to_pc(0x1EC75C), [0x01, 0x00])
 
