@@ -522,7 +522,7 @@ def write_enemy_shuffle_settings(world, player, rom):
         # rom.write_byte(snes_to_pc(0x0DB237), 4)  # health value - randomize it if killable, maybe
 
         if world.enemy_shuffle[player] == 'mimics':
-            write_mimic_changes(rom)
+            write_mimic_changes(rom, True)
         else:
             # mimic room barriers
             data_tables = world.data_tables[player]
