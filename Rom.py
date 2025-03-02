@@ -1708,9 +1708,9 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
                        ow_palettes, uw_palettes, reduce_flashing, shuffle_sfx,
                        shuffle_sfxinstruments, shuffle_songinstruments, msu_resume):
 
-    if not os.path.exists("data/sprites/official/001.link.1.zspr") and rom.orig_buffer:
-        dump_zspr(rom.orig_buffer[0x80000:0x87000], rom.orig_buffer[0xdd308:0xdd380],
-                  rom.orig_buffer[0xdedf5:0xdedf9], "data/sprites/official/001.link.1.zspr", "Nintendo", "Link")
+    # if not os.path.exists("data/sprites/official/001.link.1.zspr") and rom.orig_buffer:
+    #     dump_zspr(rom.orig_buffer[0x80000:0x87000], rom.orig_buffer[0xdd308:0xdd380],
+    #               rom.orig_buffer[0xdedf5:0xdedf9], "data/sprites/official/001.link.1.zspr", "Nintendo", "Link")
 
     if msu_resume:
         rom.write_bytes(0x18021D, [0x8, 0x7])
