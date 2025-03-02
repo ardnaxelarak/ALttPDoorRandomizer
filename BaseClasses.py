@@ -2944,7 +2944,7 @@ class Spoiler(object):
             self.settings = {'settings'}
         elif world.spoiler_mode == 'semi':
             self.settings = {'settings', 'entrances', 'requirements', 'prizes'}
-        elif world.spoiler_mode == 'full':
+        elif world.spoiler_mode == 'full' or world.spoiler_mode == 'json':
             self.settings = {'all'}
         elif world.spoiler_mode == 'debug':
             self.settings = {'all', 'debug'}

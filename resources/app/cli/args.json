@@ -10,7 +10,8 @@
       "settings",
       "semi",
       "full",
-      "debug"
+      "debug",
+      "json"
     ]
   },
   "mystery": {

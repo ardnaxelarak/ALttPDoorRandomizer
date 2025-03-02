@@ -160,7 +160,8 @@ def main(args, seed=None, fish=None):
 
     if world.spoiler_mode != 'none' and not args.jsonout:
         logger.info(world.fish.translate("cli", "cli", "create.meta"))
-        world.spoiler.meta_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
+        if world.spoiler_mode != 'json':
+            world.spoiler.meta_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
     if args.mystery and not args.suppress_meta:
         world.spoiler.mystery_meta_to_file(output_path(f'{outfilebase}_meta.txt'))
 
@@ -363,9 +364,9 @@ def main(args, seed=None, fish=None):
 
     if args.mystery and not args.suppress_meta:
         world.spoiler.hashes_to_file(output_path(f'{outfilebase}_meta.txt'))
-    elif world.spoiler_mode != 'none' and not args.jsonout:
+    elif world.spoiler_mode != 'none' and world.spoiler_mode != 'json' and not args.jsonout:
         world.spoiler.hashes_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
-    if world.spoiler_mode != 'none' and not args.jsonout:
+    if world.spoiler_mode != 'none' and world.spoiler_mode != 'json' and not args.jsonout:
         logger.info(world.fish.translate("cli", "cli", "patching.spoiler"))
         world.spoiler.to_file(output_path(f'{outfilebase}_Spoiler.txt'))
         if 'debug' in world.spoiler.settings:
@@ -385,7 +386,12 @@ def main(args, seed=None, fish=None):
         logger.info(world.fish.translate("cli","cli","patching.spoiler"))
         if args.jsonout:
             with open(output_path('%s_Spoiler.json' % outfilebase), 'w') as outfile:
-              outfile.write(world.spoiler.to_json())
+                outfile.write(world.spoiler.to_json())
+        elif world.spoiler_mode == 'json':
+            with open(output_path('%s_Spoiler.json' % outfilebase), 'w') as outfile:
+                outfile.write(world.spoiler.to_json())
+            with open(output_path('%s_Meta.json' % outfilebase), 'w') as outfile:
+                outfile.write(json.dumps(world.spoiler.metadata))
         elif world.players > 1 or world.logic[1] != "nologic":
             world.spoiler.playthrough_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
 
