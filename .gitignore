@@ -1,6 +1,8 @@
 .idea
 .vscode
 *_Spoiler.txt
+*_Spoiler.json
+*_Meta.json
 *.pyc
 *.sfc
 *.wixobj

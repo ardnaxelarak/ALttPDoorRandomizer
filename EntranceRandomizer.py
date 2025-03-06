@@ -19,6 +19,7 @@ class ArgumentDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
 def start():
     parser = argparse.ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--create_spoiler', help='Output a Spoiler File', action='store_true')
+    parser.add_argument('--json_spoiler', help='Output a JSON Spoiler File', action='store_true')
     parser.add_argument('--logic', default='noglitches', const='noglitches', nargs='?', choices=['noglitches', 'minorglitches', 'nologic'],
                         help='''\
                              Select Enforcement of Item Requirements. (default: %(default)s)
