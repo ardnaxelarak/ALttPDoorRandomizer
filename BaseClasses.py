@@ -217,7 +217,12 @@ class World(object):
 
             logging.getLogger('').debug('Placed %s at %s', item, location)
         else:
-            raise RuntimeError('Cannot assign item %s to location %s.' % (item, location))
+            if item.name == 'Teleporter':
+                from Items import ItemFactory
+                print('Cannot assign item %s to location %s, replacing with red rupee.' % (item, location))
+                self.push_item(location, ItemFactory('Rupees (20)', item.player), collect)
+            else:
+                raise RuntimeError('Cannot assign item %s to location %s.' % (item, location))
 
     def get_entrances(self):
         if self._cached_entrances is None:

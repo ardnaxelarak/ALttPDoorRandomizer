@@ -22,7 +22,7 @@ normalbottles = ['Bottle', 'Bottle (Red Potion)', 'Bottle (Green Potion)', 'Bott
 hardbottles = ['Bottle', 'Bottle (Red Potion)', 'Bottle (Green Potion)', 'Bottle (Blue Potion)', 'Bottle (Bee)', 'Bottle (Good Bee)']
 
 normalbaseitems = (['Sanctuary Heart Container', 'Bombs (10)'] +
-                   ['Rupees (300)'] * 4 + ['Boss Heart Container'] * 11 + ['Piece of Heart'] * 20)
+                   ['Rupees (300)'] * 4 + ['Boss Heart Container'] * 12 + ['Piece of Heart'] * 16)
 expertbaseitems = (['Sanctuary Heart Container', 'Bombs (10)'] +
                    ['Rupees (300)'] * 4 + ['Boss Heart Container'] * 10 + ['Piece of Heart'] * 24)
 normalfirst15extra = ['Rupees (100)', 'Rupees (300)', 'Rupees (50)'] + ['Bombs (3)'] * 6
@@ -56,7 +56,7 @@ difficulties = {
         basicbow = ['Bow', 'Silver Arrows'],
         magicitems = ['Bombos', 'Bombos', 'Cane of Somaria', 'Ether', 'Ether', 'Fire Rod', 'Ice Rod', 'Lamp', 'Cape', 'Cape',
                       'Quake', 'Quake', 'Cane of Byrna'],
-        teleporters = 10,
+        teleporters = 13,
         retro = ['Small Key (Universal)'] * 17 + ['Rupees (20)'] * 10,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 4,
@@ -78,7 +78,7 @@ difficulties = {
         progressivesword =  ['Progressive Sword'] * 3,
         basicbow = ['Bow'] * 2,
         magicitems = ['Bombos', 'Cane of Somaria', 'Ether', 'Fire Rod', 'Ice Rod', 'Cape', 'Quake', 'Cane of Byrna'],
-        teleporters = 15,
+        teleporters = 18,
         retro = ['Small Key (Universal)'] * 12 + ['Rupees (5)'] * 15,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 3,
