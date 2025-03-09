@@ -3,7 +3,7 @@ from Utils import snes_to_pc
 
 from source.dungeon.EnemyList import SpriteType, EnemySprite, sprite_translation
 from source.dungeon.RoomList import Room010C
-from source.enemizer.SpecialEnemyModes import get_enemy_map_uw, get_enemy_map_ow, write_mimic_changes
+from source.enemizer.SpecialEnemyModes import set_mimics, write_mimic_changes
 from source.enemizer.SpriteSheets import sub_group_choices
 from source.enemizer.SpriteSheets import randomize_underworld_sprite_sheets, randomize_overworld_sprite_sheets
 from source.enemizer.TilePattern import tile_patterns
@@ -426,10 +426,12 @@ skip_sprites = {
 
 
 def randomize_enemies(world, player):
-    if world.enemy_shuffle[player] != 'none':
+    if world.enemy_shuffle[player] == 'mimics':
         data_tables = world.data_tables[player]
-        custom_ow = get_enemy_map_ow(world.enemy_shuffle[player], data_tables)
-        custom_uw = get_enemy_map_uw(world.enemy_shuffle[player], data_tables)
+        set_mimics(data_tables)
+    elif world.enemy_shuffle[player] != 'none':
+        data_tables = world.data_tables[player]
+        custom_ow, custom_uw = {}, {}
         enemy_map = world.customizer.get_enemies() if world.customizer else None
         if enemy_map and player in enemy_map:
             if 'Underworld' in enemy_map[player]:
