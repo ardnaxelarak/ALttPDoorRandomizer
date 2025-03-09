@@ -147,15 +147,15 @@ def main(args, seed=None):
     if args.create_spoiler and not args.jsonout:
         world.spoiler.to_file(output_path('%s_Spoiler.txt' % outfilebase))
 
+    if not args.skip_playthrough:
+        logger.info('Calculating playthrough.')
+        create_playthrough(world)
+
     if args.json_spoiler:
         with open(output_path('%s_Spoiler.json' % outfilebase), 'w') as outfile:
             outfile.write(world.spoiler.to_json())
         with open(output_path('%s_Meta.json' % outfilebase), 'w') as outfile:
             outfile.write(json.dumps(world.spoiler.metadata))
-
-    if not args.skip_playthrough:
-        logger.info('Calculating playthrough.')
-        create_playthrough(world)
 
     if args.jsonout:
         print(json.dumps({**jsonout, 'spoiler': world.spoiler.to_json()}))
