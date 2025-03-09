@@ -1081,7 +1081,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     else:
         pool.extend(basicgloves)
 
-    if world.dark_rooms[player] in ['lamp_required']:
+    if world.dark_rooms[player] in ['require_lamp']:
         lamps_needed_for_dark_rooms = 1
     else:
         lamps_needed_for_dark_rooms = 0
@@ -1302,7 +1302,7 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     diff = difficulties[difficulty]
 
-    if world.dark_rooms[player] in ['lamp_required']:
+    if world.dark_rooms[player] in ['require_lamp']:
         lamps_needed_for_dark_rooms = 1
     else:
         lamps_needed_for_dark_rooms = 0
@@ -1511,7 +1511,7 @@ def make_customizer_pool(world, player):
             pool.remove('Fighter Sword')
             pool.append('Rupees (50)')
 
-    if world.dark_rooms[player] in ['lamp_required']:
+    if world.dark_rooms[player] in ['require_lamp']:
         lamps_needed_for_dark_rooms = 1
     else:
         lamps_needed_for_dark_rooms = 0

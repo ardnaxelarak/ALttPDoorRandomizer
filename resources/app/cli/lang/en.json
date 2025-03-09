@@ -395,7 +395,7 @@
     "collection_rate": [ "Display collection rate (default: %(default)s)" ],
     "pseudoboots": [ " Start with pseudo boots that allow dashing but no item checks (default: %(default)s)"],
     "mirrorscroll": [ " Players starts with mirror scroll that allows mirror in dungeons but not overworld (default: %(default)s"],
-    "dark_rooms": [ "Controls how dark rooms are treated in the game and logic:",
+    "dark_rooms": [ "Controls how dark rooms are treated in the game and logic (default: require_lamp):",
       "RequireLamp:      Lamp is always required for dark rooms to be in logic",
       "AlwaysLightCone:  Player gets a light cone even without the lamp, and dark rooms are always in logic",
       "NoDarkRooms:      Dark rooms are changed to no longer be dark, and are always in logic",
