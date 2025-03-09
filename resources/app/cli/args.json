@@ -566,6 +566,10 @@
       "always_in_logic"
     ]
   },
+  "crystal_book": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "calc_playthrough": {
     "action": "store_false",
     "type": "bool"

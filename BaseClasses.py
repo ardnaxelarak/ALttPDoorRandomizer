@@ -171,6 +171,7 @@ class World(object):
             set_player_attr('pseudoboots', False)
             set_player_attr('mirrorscroll', False)
             set_player_attr('dark_rooms', 'require_lamp')
+            set_player_attr('crystal_book', False)
             set_player_attr('collection_rate', False)
             set_player_attr('colorizepots', True)
             set_player_attr('pot_pool', {})
@@ -3065,6 +3066,7 @@ class Spoiler(object):
                          'pseudoboots': self.world.pseudoboots,
                          'mirrorscroll': self.world.mirrorscroll,
                          'dark_rooms': self.world.dark_rooms,
+                         'crystal_book': self.world.crystal_book,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
                          'race': self.world.settings.world_rep['meta']['race'],
@@ -3315,6 +3317,7 @@ class Spoiler(object):
                     outfile.write('Pseudoboots:'.ljust(line_width) + '%s\n' % yn(self.metadata['pseudoboots'][player]))
                     outfile.write('Mirror Scroll:'.ljust(line_width) + '%s\n' % yn(self.metadata['mirrorscroll'][player]))
                     outfile.write('Dark Rooms:'.ljust(line_width) + '%s\n' % self.metadata['dark_rooms'][player])
+                    outfile.write('Crystal Book:'.ljust(line_width) + '%s\n' % yn(self.metadata['crystal_book'][player]))
                     outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
                     outfile.write('Race:'.ljust(line_width) + '%s\n' % yn(self.world.settings.world_rep['meta']['race']))
             

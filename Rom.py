@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '5d715dfd920f9eadf5db51b5719e1ff6'
+RANDOMIZERBASEHASH = 'd4315f2f34fae3ac852d433fa990888b'
 
 
 class JsonRom(object):
@@ -1231,6 +1231,10 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     # Starting equipment
     if world.pseudoboots[player]:
         rom.write_byte(0x18008E, 0x01)
+
+    if world.crystal_book[player]:
+        rom.write_byte(0x1800A6, 0x01)
+
     rom.initial_sram.set_starting_equipment(world, player)
 
     rom.write_byte(0x18004A, 0x00 if world.mode[player] != 'inverted' else 0x01)  # Inverted mode

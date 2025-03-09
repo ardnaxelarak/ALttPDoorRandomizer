@@ -401,6 +401,7 @@
       "NoDarkRooms:      Dark rooms are changed to no longer be dark, and are always in logic",
       "AlwaysInLogic:    Dark rooms are always considered to be in logic, even if the player cannot see"
     ],
+    "crystal_book": [ " Book can be used indoors to flip the state of colored pegs (default: %(default)s)"],
     "bombbag": ["Start with 0 bomb capacity. Two capacity upgrades (+10) are added to the pool (default: %(default)s)" ],
     "any_enemy_logic": [
       "How to handle potential traversal between dungeon in Crossed door shuffle",
