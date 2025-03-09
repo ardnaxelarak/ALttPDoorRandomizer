@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '80e0a4f8bd5cc6f83ac9f7f46c01bf4f'
+RANDOMIZERBASEHASH = '9cdc4e5b97fc03af357b4f35ea8802fd'
 
 
 class JsonRom(object):
@@ -956,7 +956,15 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         rom.write_bytes(0x6D323, [0x00, 0x00, 0xe4, 0xff, 0x08, 0x0E])
 
     # set light cones
-    rom.write_byte(0x180038, 0x01 if world.sewer_light_cone[player] else 0x00)
+    if world.dark_rooms[player] == 'no_dark_rooms':
+        light_cone = 0x20
+    elif world.dark_rooms[player] == 'always_light_cone':
+        light_cone = 0x10
+    elif world.sewer_light_cone[player]:
+        light_cone = 0x01
+    else:
+        light_cone = 0x00
+    rom.write_byte(0x180038, light_cone)
 
     GREEN_TWENTY_RUPEES = 0x47
     TRIFORCE_PIECE = ItemFactory('Triforce Piece', player).code

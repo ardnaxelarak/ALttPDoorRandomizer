@@ -71,6 +71,7 @@ class World(object):
         self.fix_palaceofdarkness_exit = {}
         self.fix_trock_exit = {}
         self.shuffle_ganon = shuffle_ganon
+        self.dark_rooms = {}
         self.custom = custom
         self.customitemarray = customitemarray
         self.can_take_damage = True
@@ -169,6 +170,7 @@ class World(object):
             set_player_attr('pot_contents', None)
             set_player_attr('pseudoboots', False)
             set_player_attr('mirrorscroll', False)
+            set_player_attr('dark_rooms', 'require_lamp')
             set_player_attr('collection_rate', False)
             set_player_attr('colorizepots', True)
             set_player_attr('pot_pool', {})
@@ -3062,6 +3064,7 @@ class Spoiler(object):
                          'shopsanity': self.world.shopsanity,
                          'pseudoboots': self.world.pseudoboots,
                          'mirrorscroll': self.world.mirrorscroll,
+                         'dark_rooms': self.world.dark_rooms,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
                          'race': self.world.settings.world_rep['meta']['race'],
@@ -3311,6 +3314,7 @@ class Spoiler(object):
                     outfile.write('\n')
                     outfile.write('Pseudoboots:'.ljust(line_width) + '%s\n' % yn(self.metadata['pseudoboots'][player]))
                     outfile.write('Mirror Scroll:'.ljust(line_width) + '%s\n' % yn(self.metadata['mirrorscroll'][player]))
+                    outfile.write('Dark Rooms:'.ljust(line_width) + '%s\n' % self.metadata['dark_rooms'][player])
                     outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
                     outfile.write('Race:'.ljust(line_width) + '%s\n' % yn(self.world.settings.world_rep['meta']['race']))
             

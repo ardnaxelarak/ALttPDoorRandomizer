@@ -558,6 +558,14 @@
     "action": "store_true",
     "type": "bool"
   },
+  "dark_rooms": {
+    "choices": [
+      "require_lamp",
+      "always_light_cone",
+      "no_dark_rooms",
+      "always_in_logic"
+    ]
+  },
   "calc_playthrough": {
     "action": "store_false",
     "type": "bool"
