@@ -122,7 +122,8 @@
       "                Pedestal, or delivering Triforce Pieces.",
       "Ganon Hunt:     Places 30 Triforce Pieces in the world, collect",
       "                20 of them then defeat Ganon.",
-      "Completionist:  Find everything then defeat Ganon."
+      "Completionist:  Find everything then defeat Ganon.",
+      "Sanctuary:      Places the Trifroce in the Sanctuary."
     ],
     "difficulty": [
       "Select game difficulty. Affects available itempool. (default: %(default)s)",

@@ -3633,7 +3633,7 @@ sword_mode = {"random": 0, "assured": 1, "swordless": 2, "vanilla": 3}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
 goal_mode = {'ganon': 0, 'pedestal': 1, 'dungeons': 2, 'triforcehunt': 3, 'crystals': 4, 'trinity': 5,
-             'ganonhunt': 6, 'completionist': 7}
+             'ganonhunt': 6, 'completionist': 7, 'sanctuary': 1}
 diff_mode = {"normal": 0, "hard": 1, "expert": 2}
 func_mode = {"normal": 0, "hard": 1, "expert": 2}
 

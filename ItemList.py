@@ -185,7 +185,7 @@ def get_custom_array_key(item):
 def generate_itempool(world, player):
     if (world.difficulty[player] not in ['normal', 'hard', 'expert']
        or world.goal[player] not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'trinity', 'crystals',
-                                     'ganonhunt', 'completionist']
+                                     'ganonhunt', 'completionist', 'sanctuary']
        or world.mode[player] not in ['open', 'standard', 'inverted']
        or world.timer not in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown']
        or world.progressive not in ['on', 'off', 'random']):
@@ -201,7 +201,7 @@ def generate_itempool(world, player):
         location.event = True
         location.locked = True
 
-    if world.goal[player] in ['pedestal', 'triforcehunt']:
+    if world.goal[player] in ['pedestal', 'triforcehunt', 'sanctuary']:
         set_event_item('Ganon', 'Nothing')
     else:
         set_event_item('Ganon', 'Triforce')
@@ -1167,6 +1167,8 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
 
     # note: massage item pool now handles shrinking the pool appropriately
 
+    if goal in ['sanctuary']:
+        place_item('Sanctuary', 'Triforce')
     if goal in ['pedestal', 'trinity'] and swords != 'vanilla':
         place_item('Master Sword Pedestal', 'Triforce')
     if world.bow_mode[player].startswith('retro'):
@@ -1333,6 +1335,8 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
     elif timer == 'ohko':
         clock_mode = 'ohko'
 
+    if goal in ['sanctuary']:
+        place_item('Sanctuary', 'Triforce')
     if goal in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
 
@@ -1447,6 +1451,8 @@ def make_customizer_pool(world, player):
     elif timer == 'ohko':
         clock_mode = 'ohko'
 
+    if goal in ['sanctuary']:
+        place_item('Sanctuary', 'Triforce')
     if world.goal[player] in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
 
