@@ -1314,6 +1314,17 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     rom.write_byte(0x18003C, compass_mode)
 
     def get_entrance_coords(ent):
+        if ent is None:
+            owid_map =               [0x1E,   0x30,   0xFF,   0x7B,   0x5E,   0x70,   0x40,   0x75,   0x03,   0x58,   0x47]
+            x_map_position_generic = [0x03c0, 0x0740, 0xff00, 0x03c0, 0x01c0, 0x0bc0, 0x05c0, 0x09c0, 0x0ac0, 0x07c0, 0x0dc0]
+            y_map_position_generic = [0xff00, 0xff00, 0xff00, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0xff00, 0x0fc0, 0x0fc0]
+            world_indicator = 0x0000
+            idx = int((map_index-2)/2)
+            owid = owid_map[idx]
+            if owid != 0xFF:
+                if (owid < 0x40) == (world.is_tile_swapped(owid, player)):
+                    world_indicator = 0x8000
+            return [world_indicator | x_map_position_generic[idx], y_map_position_generic[idx]]
         if type(ent) is Location:
             from OverworldShuffle import OWTileRegions
             if ent.name == 'Hobo':
@@ -1346,22 +1357,15 @@ def patch_rom(world, rom, player, team, is_mystery=False):
 
         # write out dislocated coords
         if map_index >= 0x02 and map_index < 0x18 and (world.overworld_map[player] != 'default' or world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby']):
-            owid_map =               [0x1E,   0x30,   0xFF,   0x7B,   0x5E,   0x70,   0x40,   0x75,   0x03,   0x58,   0x47]
-            x_map_position_generic = [0x03c0, 0x0740, 0xff00, 0x03c0, 0x01c0, 0x0bc0, 0x05c0, 0x09c0, 0x0ac0, 0x07c0, 0x0dc0]
-            y_map_position_generic = [0xff00, 0xff00, 0xff00, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0xff00, 0x0fc0, 0x0fc0]
-            world_indicator = 0x0000
-            idx = int((map_index-2)/2)
-            owid = owid_map[idx]
-            if owid != 0xFF:
-                if (owid < 0x40) == (world.is_tile_swapped(owid, player)):
-                    world_indicator = 0x8000
-                write_int16(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+4, world_indicator | x_map_position_generic[idx])
-                write_int16(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+6, y_map_position_generic[idx])
+            coords = get_entrance_coords(None)
+            write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+4, coords)
 
         # write out icon coord data
         if world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby'] and dungeon_table[dungeon].prize:
             dungeon_obj = world.get_dungeon(dungeon, player)
-            entrance = dungeon_obj.prize.get_map_location()
+            entrance = None
+            if dungeon_obj.prize:
+                entrance = dungeon_obj.prize.get_map_location()
             coords = get_entrance_coords(entrance)
             # prize location
             write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+8, coords)
@@ -2334,9 +2338,20 @@ def write_strings(rom, world, player, team):
         silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
         tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
 
-    crystal5 = world.find_items('Crystal 5', player)[0]
-    crystal6 = world.find_items('Crystal 6', player)[0]
-    greenpendant = world.find_items('Green Pendant', player)[0]
+    crystal5 = world.find_items('Crystal 5', player)
+    crystal6 = world.find_items('Crystal 6', player)
+    greenpendant = world.find_items('Green Pendant', player)
+    def missing_prize():
+        from BaseClasses import Dungeon
+        d = Dungeon('your pocket', [], None, [], [], player, 0)
+        i = ItemFactory('Nothing', player)
+        i.dungeon_object = d
+        r = Region('Nowhere', RegionType.Menu, 'in your pocket', player)
+        r.dungeon = d
+        loc = Location(player, 'Nowhere', parent=r, hint_text='in your pocket')
+        loc.item = i
+        return loc
+    (crystal5, crystal6, greenpendant) = tuple([x[0] if x else missing_prize() for x in [crystal5, crystal6, greenpendant]])
     if world.prizeshuffle[player] in ['none', 'dungeon']:
         (crystal5, crystal6, greenpendant) = tuple([x.parent_region.dungeon.name for x in [crystal5, crystal6, greenpendant]])
         tt['bomb_shop'] = 'Big Bomb?\nMy supply is blocked until you clear %s and %s.' % (crystal5, crystal6)
