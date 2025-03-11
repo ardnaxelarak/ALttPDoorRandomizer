@@ -19,7 +19,7 @@ def set_mimic_map(reqs, enemy_map):
             if not req or req.boss:
                 continue
 
-            if not req.static:
+            if not sprite.static and not req.static and req.can_randomize:
                 if random.random() > 0.1:
                     sprite.kind = EnemySprite.GreenMimic
                 else:
