@@ -1245,7 +1245,7 @@ def modify_pool_for_start_inventory(start_inventory, world, player):
                         world.itempool.remove(alt_item)
                     i = i-1
             elif 'Bottle' in item.name:
-                bottle_item = next((x for x in world.itempool if 'Bottle' in item.name and x.player == player), None)
+                bottle_item = next((x for x in world.itempool if 'Bottle' in x.name and x.player == player), None)
                 if bottle_item is not None:
                     world.itempool.remove(bottle_item)
             if item.dungeon:

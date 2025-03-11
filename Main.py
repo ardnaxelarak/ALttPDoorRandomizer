@@ -429,6 +429,9 @@ def export_yaml(args, fish):
     for k,v in {"DR":__version__,"OR":ORVersion}.items():
         logger.info((k + ' Version:').ljust(16) + '%s' % v)
 
+    for player in range(1, world.players + 1):
+        world.difficulty_requirements[player] = difficulties[world.difficulty[player]]
+    
     set_starting_inventory(world, args)
 
     world.settings = CustomSettings()
