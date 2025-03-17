@@ -1081,10 +1081,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     else:
         pool.extend(basicgloves)
 
-    if world.dark_rooms[player] in ['require_lamp']:
-        lamps_needed_for_dark_rooms = 1
-    else:
-        lamps_needed_for_dark_rooms = 0
+    lamps_needed_for_dark_rooms = 1
 
     # old insanity shuffle didn't have fake LW/DW logic so this used to be conditional
     pool.extend(['Magic Mirror', 'Moon Pearl'])
@@ -1304,10 +1301,7 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     diff = difficulties[difficulty]
 
-    if world.dark_rooms[player] in ['require_lamp']:
-        lamps_needed_for_dark_rooms = 1
-    else:
-        lamps_needed_for_dark_rooms = 0
+    lamps_needed_for_dark_rooms = 1
 
     # expert+ difficulties produce the same contents for
     # all bottles, since only one bottle is available
@@ -1517,12 +1511,7 @@ def make_customizer_pool(world, player):
             pool.remove('Fighter Sword')
             pool.append('Rupees (50)')
 
-    if world.dark_rooms[player] in ['require_lamp']:
-        lamps_needed_for_dark_rooms = 1
-    else:
-        lamps_needed_for_dark_rooms = 0
-
-    return pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms
+    return pool, placed_items, precollected_items, clock_mode, 1
 
 
 filler_items = {
