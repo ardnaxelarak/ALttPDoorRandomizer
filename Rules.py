@@ -345,11 +345,11 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Blind Fight', player), lambda state: state.has_key('Small Key (Thieves Town)', player) and state.can_pass_pots(player) and state.has_Book(player))
     set_defeat_dungeon_boss_rule(world.get_location('Thieves\' Town - Boss', player))
     set_defeat_dungeon_boss_rule(world.get_location('Thieves\' Town - Prize', player))
-    set_rule(world.get_location('Thieves\' Town - Big Chest', player), lambda state: (state.has_key('Small Key (Thieves Town)', player) or item_name(state, 'Thieves\' Town - Big Chest', player) == ('Small Key (Thieves Town)', player)) and state.has('Hammer', player) and state.has_Book(player))
-    set_rule(world.get_location('Thieves\' Town - Blind\'s Cell', player), lambda state: state.has_Book(player))
+    set_rule(world.get_location('Thieves\' Town - Big Chest', player), lambda state: (state.has_key('Small Key (Thieves Town)', player) or item_name(state, 'Thieves\' Town - Big Chest', player) == ('Small Key (Thieves Town)', player)) and state.has('Hammer', player) and state.has_Book(player) and state.can_pass_pots(player))
+    set_rule(world.get_location('Thieves\' Town - Blind\'s Cell', player), lambda state: state.has_Book(player) and (state.can_kill_most_things(player) or state.can_pass_pots(player)))
     if world.accessibility != 'locations':
         set_always_allow(world.get_location('Thieves\' Town - Big Chest', player), lambda state, item: item.name == 'Small Key (Thieves Town)' and item.player == player and state.has('Hammer', player))
-    set_rule(world.get_location('Thieves\' Town - Attic', player), lambda state: state.has_key('Small Key (Thieves Town)', player) and state.can_pass_pots(player))
+    set_rule(world.get_location('Thieves\' Town - Attic', player), lambda state: state.has_key('Small Key (Thieves Town)', player) and state.can_pass_pots(player) and state.has_Book(player))
     for location in ['Thieves\' Town - Attic', 'Thieves\' Town - Big Chest', 'Thieves\' Town - Blind\'s Cell', 'Thieves\' Town - Boss']:
         forbid_item(world.get_location(location, player), 'Big Key (Thieves Town)', player)
     for location in ['Thieves\' Town - Attic', 'Thieves\' Town - Boss']:
