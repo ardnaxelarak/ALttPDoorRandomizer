@@ -517,7 +517,7 @@ def global_rules(world, player):
 
     set_trock_key_rules(world, player)
 
-    set_rule(world.get_entrance('Ganons Tower', player), lambda state: state.can_kill_most_things(player) and (state.has('Powder', player) or state.has('Quake', player)))
+    set_rule(world.get_entrance('Ganons Tower', player), lambda state: state.can_kill_most_things(player) and (state.has('Powder', player) or (state.has('Quake', player) and state.has_sword(player))))
 
 
 def no_glitches_rules(world, player):
