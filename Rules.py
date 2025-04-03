@@ -125,7 +125,7 @@ def global_rules(world, player):
     set_rule(world.get_location('Maze Race', player), lambda state: state.can_pass_bushes(player))
     set_rule(world.get_location('Mushroom', player), lambda state: state.can_pass_bushes(player))
     set_rule(world.get_location('Stumpy', player), lambda state: state.has_Pearl(player) and state.can_pass_bushes(player))
-    set_rule(world.get_location('Kakariko Tavern', player), lambda state: state.can_pass_bushes(player))
+    set_rule(world.get_location('Kakariko Tavern', player), lambda state: state.can_pass_pots(player))
 
     # these two aren't strictly required, but being able to use bushes makes farming rupees much easier
     set_rule(world.get_location('King Zora', player), lambda state: state.can_pass_bushes(player))
