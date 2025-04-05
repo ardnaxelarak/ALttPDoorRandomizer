@@ -702,10 +702,10 @@ def setup_required_overworld_groups(sheets):
     sheets[8].add_sprite_to_sheet([None, None, 18, None], {0x30, 0xC0})  # Desert (pre/post-Aga)
     sheets[10].add_sprite_to_sheet([None, None, None, 17], {0x3A, 0xCA})  # M-rock (pre/post-Aga)
     sheets[22].add_sprite_to_sheet([None, None, 24, None], {0x4F})  # Catfish
-    sheets[21].add_sprite_to_sheet([21, None, None, 21], {0x62})  # Smith DW
+    sheets[21].add_sprite_to_sheet([None, None, None, 21], {0x62, 0x69})  # Smith DW/VoO South
     sheets[27].add_sprite_to_sheet([None, 42, None, None], {0x68})  # Dig Game
     sheets[13].add_sprite_to_sheet([None, None, 76, None], {0x16, 0xA6})  # Witch hut (pre/post-Aga)
-    sheets[29].add_sprite_to_sheet([None, 77, None, 21], {0x69})  # VoO South
+    #sheets[29].add_sprite_to_sheet([None, 77, None, 21], {0x69})  # VoO South
     sheets[15].add_sprite_to_sheet([None, None, 78, None], {0x2A, 0xBA})  # Haunted Grove (pre/post-Aga)
     sheets[17].add_sprite_to_sheet([None, None, None, 76], {0x6A})  # Stumpy
     sheets[12].add_sprite_to_sheet([None, None, 55, 54], {0x80})  # Specials
