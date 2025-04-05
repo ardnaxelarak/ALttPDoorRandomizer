@@ -701,17 +701,17 @@ def setup_required_overworld_groups(sheets):
     sheets[6].add_sprite_to_sheet([0x4F, 0x49, 0x4A, 0x50], {0x18, 0x22, 0x28, 0xA8, 0xB2, 0xB8})
     sheets[8].add_sprite_to_sheet([None, None, 18, None], {0x30, 0xC0})  # Desert (pre/post-Aga)
     sheets[10].add_sprite_to_sheet([None, None, None, 17], {0x3A, 0xCA})  # M-rock (pre/post-Aga)
-    sheets[22].add_sprite_to_sheet([None, None, 24, None], {0x4F, 0xDF})  # Catfish (pre/post-Aga)
-    sheets[21].add_sprite_to_sheet([21, None, None, 21], {0x62, 0xF2})  # Smith DW (pre/post-Aga)
-    sheets[27].add_sprite_to_sheet([None, 42, None, None], {0x68, 0xF8})  # Dig Game (pre/post-Aga)
+    sheets[22].add_sprite_to_sheet([None, None, 24, None], {0x4F})  # Catfish
+    sheets[21].add_sprite_to_sheet([21, None, None, 21], {0x62})  # Smith DW
+    sheets[27].add_sprite_to_sheet([None, 42, None, None], {0x68})  # Dig Game
     sheets[13].add_sprite_to_sheet([None, None, 76, None], {0x16, 0xA6})  # Witch hut (pre/post-Aga)
-    sheets[29].add_sprite_to_sheet([None, 77, None, 21], {0x69, 0xF9})  # VoO South (pre/post-Aga)
+    sheets[29].add_sprite_to_sheet([None, 77, None, 21], {0x69})  # VoO South
     sheets[15].add_sprite_to_sheet([None, None, 78, None], {0x2A, 0xBA})  # Haunted Grove (pre/post-Aga)
-    sheets[17].add_sprite_to_sheet([None, None, None, 76], {0x6A, 0xFA})  # Stumpy (pre/post-Aga)
-    sheets[12].add_sprite_to_sheet([None, None, 55, 54], {0x80, 0x110})  # Specials (pre/post-Aga)
-    sheets[14].add_sprite_to_sheet([None, None, 12, 68], {0x81, 0x111})  # Zora's Domain (pre/post-Aga)
+    sheets[17].add_sprite_to_sheet([None, None, None, 76], {0x6A})  # Stumpy
+    sheets[12].add_sprite_to_sheet([None, None, 55, 54], {0x80})  # Specials
+    sheets[14].add_sprite_to_sheet([None, None, 12, 68], {0x81})  # Zora's Domain
     sheets[26].add_sprite_to_sheet([15, None, None, None], {0x92})  # Lumberjacks post-Aga
-    sheets[23].add_sprite_to_sheet([None, None, None, 25], {0x5E, 0xEE})  # PoD pre/post-Aga
+    sheets[23].add_sprite_to_sheet([None, None, None, 25], {0x5E})  # PoD
 
     free_sheet_reqs = [
         [None, None, None, 0x14],  # bully+pink ball needs this
