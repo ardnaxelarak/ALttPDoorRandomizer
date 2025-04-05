@@ -712,6 +712,7 @@ def setup_required_overworld_groups(sheets):
     sheets[14].add_sprite_to_sheet([None, None, 12, 68], {0x81})  # Zora's Domain
     sheets[26].add_sprite_to_sheet([15, None, None, None], {0x92})  # Lumberjacks post-Aga
     sheets[23].add_sprite_to_sheet([None, None, None, 25], {0x5E})  # PoD
+    sheets[19].add_sprite_to_sheet([None, 26, None, None], {0x5B})  # Pyramid post-Aga2 bat crash
 
     free_sheet_reqs = [
         [None, None, None, 0x14],  # bully+pink ball needs this
