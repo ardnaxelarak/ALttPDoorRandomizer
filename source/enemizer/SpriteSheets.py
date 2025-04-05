@@ -542,8 +542,7 @@ def setup_required_dungeon_groups(sheets, data_tables):
     sheets[did(3)].add_sprite_to_sheet([93, None, None, None], {0x51})  # mantle
     sheets[did(42)].add_sprite_to_sheet([21, None, None, None], {0x11e})  # hype cave
     sheets[did(10)].add_sprite_to_sheet([47, None, 46, None], {0x5c, 0x75, 0xb9, 0xd9})  # cannonballs
-    sheets[did(37)].add_sprite_to_sheet([31, None, 39, 82], {0x24, 0xb4, 0xb5, 0xc6, 0xc7, 0xd6})  # somaria platforms
-    # not sure 31 is needed above
+    sheets[did(37)].add_sprite_to_sheet([None, None, 39, 82], {0x24, 0xb4, 0xb5, 0xc6, 0xc7, 0xd6})  # somaria platforms
 
     free_sheet_reqs = [
         ([None, 77, None, 21], [0x121]),  # smithy
