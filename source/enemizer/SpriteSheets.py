@@ -123,6 +123,9 @@ LenientTrapsForTesting = {0x16, 0x26, 0x3f, 0x40, 0x42, 0x46, 0x49, 0x4e, 0x57,
                           0x65, 0x6a, 0x74, 0x76, 0x7d, 0x98,
                           0x9e, 0xaf, 0xba, 0xc6, 0xcb, 0xce, 0xd2, 0xd5,
                           0xd8, 0xdf, 0xe4, 0xe7, 0xee, 0xfd, 0x10c}
+PitRooms = {0x17, 0x1a, 0x2a, 0x31, 0x3c, 0x3d, 0x40, 0x44, 0x49, 0x4e, 0x56, 0x58, 0x5c, 0x67, 0x72,
+            0x7b, 0x7c, 0x7d, 0x7f, 0x82, 0x8b, 0x8d, 0x95, 0x96, 0x9b, 0x9c, 0x9d, 0x9e, 0xa0, 0xa5,
+            0xaf, 0xbc, 0xc0, 0xc5, 0xc6, 0xd1, 0xd5, 0xe7, 0xe8, 0xee, 0xf0, 0xf1, 0xfb, 0x123}
 
 # wallmasters must not be on tiles near spiral staircases. Unknown if other stairs have issues
 WallmasterInvalidRooms = {
@@ -222,9 +225,12 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.Hoarder2).sub_group(3, 0x11).exclude({0x10c}),
         SpriteRequirement(EnemySprite.TutorialGuard).affix(),
         SpriteRequirement(EnemySprite.LightningGate).affix().sub_group(3, 0x3f),
-        SpriteRequirement(EnemySprite.BlueGuard).aquaphobia().sub_group(1, [0xd, 0x49]),
-        SpriteRequirement(EnemySprite.GreenGuard).aquaphobia().sub_group(1, 0x49),
-        SpriteRequirement(EnemySprite.RedSpearGuard).aquaphobia().sub_group(1, [0xd, 0x49]),
+        SpriteRequirement(EnemySprite.BlueGuard).aquaphobia().sub_group(1, [0xd, 0x49]).exclude(PitRooms),
+        SpriteRequirement(EnemySprite.BlueGuard).aquaphobia().sub_group(1, [0xd, 0x49]).sub_group(2, [0x29, 0x13]),
+        SpriteRequirement(EnemySprite.GreenGuard).aquaphobia().sub_group(1, 0x49).exclude(PitRooms),
+        SpriteRequirement(EnemySprite.GreenGuard).aquaphobia().sub_group(1, 0x49).sub_group(2, 0x13),
+        SpriteRequirement(EnemySprite.RedSpearGuard).aquaphobia().sub_group(1, [0xd, 0x49]).exclude(PitRooms),
+        SpriteRequirement(EnemySprite.RedSpearGuard).aquaphobia().sub_group(1, [0xd, 0x49]).sub_group(2, [0x29, 0x13]),
         SpriteRequirement(EnemySprite.BluesainBolt).aquaphobia().sub_group(0, 0x46).sub_group(1, [0xd, 0x49]),
         SpriteRequirement(EnemySprite.UsainBolt).aquaphobia().sub_group(1, [0xd, 0x49]),
         SpriteRequirement(EnemySprite.BlueArcher).sub_group(0, 0x48).sub_group(1, 0x49),
