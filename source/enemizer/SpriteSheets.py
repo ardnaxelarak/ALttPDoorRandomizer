@@ -550,7 +550,7 @@ def setup_required_dungeon_groups(sheets, data_tables):
         ([None, 77, None, 21], [0x121]),  # smithy
         ([None, None, None, 80], [0x108]),  # chicken house
         ([14, 30, None, None], [0x123]),  # mini moldorm (shutter door)
-        ([None, None, 34, None], [0x36, 0x46, 0x66, 0x76]),  # pirogusu spawners
+        ([None, None, 34, None], [0x36, 0x46, 0x66]),  # pirogusu spawners
         ([None, 32, None, None], [0x9f]),  # babasu spawners
         ([31, None, None, None], [0x7f]),  # force baris
         ([None, None, 35, None], [0x39, 0x49]),  # wallmasters
@@ -570,7 +570,7 @@ def setup_required_dungeon_groups(sheets, data_tables):
         ([None, None, (28, 36), 82], [0x2, 0x64]),  # pull switches (snakes)
         ([None, None, None, 82], [0x1a, 0x3d, 0x44, 0x5e, 0x7c, 0x95, 0xc3]),  # collapsing bridges
         ([None, None, None, 83], [0x3f, 0xce]),  # pull tongue
-        ([None, None, None, 83], [0x35, 0x37, 0x76]),  # swamp drains
+        ([None, None, None, 83], [0x35, 0x37]),  # swamp drains
         ([None, None, 34, None], [0x28]),  # tektike forced? - spawn chest
         ([None, None, 37, None], [0x97]),  # wizzrobe spawner - in middle of room...
 
