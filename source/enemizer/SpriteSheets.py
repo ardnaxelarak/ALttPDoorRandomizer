@@ -527,7 +527,7 @@ def setup_required_dungeon_groups(sheets, data_tables):
 
     sheets[did(1)].add_sprite_to_sheet([70, 73, 28, 82], {0xe4, 0xf0})  # old man
     # various npcs
-    sheets[did(5)].add_sprite_to_sheet([75, 77, 74, 90], {0xf3, 0x109, 0x10e, 0x10f, 0x110, 0x111, 0x112,
+    sheets[did(5)].add_sprite_to_sheet([75, 77, 74, 90], {0xf3, 0xff, 0x109, 0x10e, 0x10f, 0x110, 0x111, 0x112,
                                                           0x11a, 0x11c, 0x11f, 0x122})
     sheets[did(7)].add_sprite_to_sheet([75, 77, 57, 54], {0x8, 0x2c, 0x114, 0x115, 0x116})  # big fairies
     sheets[did(13)].add_sprite_to_sheet([81, None, None, None], {0x55, 0x102, 0x104})  # uncle, sick kid
@@ -546,7 +546,6 @@ def setup_required_dungeon_groups(sheets, data_tables):
     # not sure 31 is needed above
 
     free_sheet_reqs = [
-        ([75, None, None, None], [0xff, 0x11f]),  # shopkeepers
         ([None, 77, None, 21], [0x121]),  # smithy
         ([None, None, None, 80], [0x108]),  # chicken house
         ([14, 30, None, None], [0x123]),  # mini moldorm (shutter door)
