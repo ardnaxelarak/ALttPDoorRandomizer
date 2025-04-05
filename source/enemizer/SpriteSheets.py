@@ -325,7 +325,7 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.BlueZirro).no_drop().sub_group(3, 0x1b).exclude(NoFlyingRooms),
         SpriteRequirement(EnemySprite.Pikit).sub_group(3, 0x1b),
         SpriteRequirement(EnemySprite.CrystalMaiden).affix(),
-        SpriteRequirement(EnemySprite.OldMan).affix().sub_group(0, 0x46).sub_group(1, 0x49).sub_group(2, 0x1c),
+        SpriteRequirement(EnemySprite.OldMan).affix().sub_group(2, 0x1c),
         SpriteRequirement(EnemySprite.PipeDown).affix(),
         SpriteRequirement(EnemySprite.PipeUp).affix(),
         SpriteRequirement(EnemySprite.PipeRight).affix(),
@@ -525,7 +525,7 @@ def init_sprite_sheets(requirements):
 
 def setup_required_dungeon_groups(sheets, data_tables):
 
-    sheets[did(1)].add_sprite_to_sheet([70, 73, 28, 82], {0xe4, 0xf0})  # old man
+    sheets[did(1)].add_sprite_to_sheet([None, None, 28, None], {0xe4, 0xf0})  # old man
     # various npcs
     sheets[did(5)].add_sprite_to_sheet([75, 77, 74, 90], {0xf3, 0xff, 0x109, 0x10e, 0x10f, 0x110, 0x111, 0x112,
                                                           0x11a, 0x11c, 0x11f, 0x122})
