@@ -272,7 +272,7 @@ As far as map trackers, Bonk Locations are supported on `CodeTracker` when the B
 
 This is a new option in addition to the traditional wild vs non-wild (keysanity/non-keysanity) options for all the dungeon item types (maps, compasses, small keys, big keys, prizes). This new option shuffles dungeon items into locations somewhere either within the dungeon that it is assigned to or within the surrounding district of that dungeon.
 
-## Prize Shuffle
+## Prize Shuffle (--prizeshuffle)
 
 A new option has been added to shuffle the 10 dungeon prizes in ways that they haven't been shuffled before. This means that dungeon prizes can be found in other item locations, such as chests or free-standing item locations. This also means that bosses are able to drop a 2nd item in place of the shuffled prize.
 
@@ -292,7 +292,7 @@ This option shuffles the prize into a location somewhere either within the dunge
 
 This option freely shuffles the prizes throughout the world. While the dungeon prizes can end up anywhere, they still are assigned to a specific dungeon. When you defeat the boss of a certain dungeon, checking the map on the overworld will reveal the location WHERE you can find the prize, an example shown [here](https://zelda.codemann8.com/images/shared/prizemap-all.gif). Finding the map will still reveal WHAT the prize is. If you defeated a boss but haven't collected the map for that dungeon, the prize will be indicated by a red X, example shown [here](https://zelda.codemann8.com/images/shared/prizemap-boss.gif). If you collected a map but haven't defeated the boss yet, the icon indicator on the map will be shown on the top edge (for LW dungeons) or the bottom edge (for DW dungeons), but it will show you WHAT the prize is for that dungeon, an example of that is shown [here](https://zelda.codemann8.com/images/shared/prizemap-map.gif).
 
-- It is important to note that the overworld map check has changed: the numbered icons that are displayed are NO LONGER indicating the crystal number like they have in the past. They are now indicating the dungeon that it belongs to; a blue 1-3 indicates the 3 LW dungeons (EP, DP, and ToH) and a red 1-7 indicate the 7 DW dungeons
+- It is important to note that the overworld map check has changed: the numbered icons that are displayed are NO LONGER indicating the crystal number like they have in the past. They are now indicating the dungeon that it belongs to; a blue E/D/T indicates the 3 LW dungeons (EP, DP, and ToH) and a red 1-7 indicate the 7 DW dungeons
 
 ## New Goal Options (--goal)
 
@@ -408,3 +408,9 @@ For randomizing the flute spots around the overworld
 ```
 
 This extends the item pool to bonk locations and makes them additional item locations
+
+```
+--prizeshuffle <mode>
+```
+
+This allows prizes (crystals/pendants) to shuffle outside their usual boss location.

@@ -460,7 +460,7 @@ def generate_itempool(world, player):
 
     # increase pool if not enough items
     ttl_locations = sum(1 for x in world.get_unfilled_locations(player) if not x.prize and not x.event)
-    ttl_locations -= 10 if world.prize_shuffle[player] in ['dungeon', 'nearby'] else 0 # TODO: Fix item pool to include prizes for these modes
+    ttl_locations -= 10 if world.prizeshuffle[player] in ['dungeon', 'nearby'] else 0 # TODO: Fix item pool to include prizes for these modes
     pool_size = count_player_dungeon_item_pool(world, player)
     pool_size += sum(1 for x in world.itempool if x.player == player)
 
