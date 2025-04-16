@@ -1,5 +1,6 @@
-from tkinter import ttk, font, Frame, E, W, NW, TOP, LEFT, RIGHT, Y, Label
+from tkinter import messagebox, ttk, font, Button, Frame, E, W, TOP, LEFT, RIGHT, X, Y, Label
 import source.gui.widgets as widgets
+from source.classes.Empty import Empty
 import json
 import os
 
@@ -28,6 +29,16 @@ def item_page(parent):
 
     self.frames["leftItemFrame"] = Frame(self.frames["mainFrame"])
     self.frames["leftItemFrame"].pack(side=LEFT)
+    self.frames["worldstateFrame"] = Frame(self.frames["leftItemFrame"])
+    self.frames["worldstateFrame"].pack(side=TOP, fill=X)
+    
+    ## Retro Button
+    widget = Empty()
+    widget.pieces = {}
+    widget.type = "button"
+    widget.pieces["button"] = Button(self.frames["worldstateFrame"], text="Retro", command=lambda: retro(widget))
+    widget.pieces["button"].pack(side=RIGHT, padx=(1, 2))
+
     self.frames["rightItemFrame"] = Frame(self.frames["mainFrame"])
     self.frames["rightItemFrame"].pack(side=RIGHT)
     
@@ -65,8 +76,6 @@ def item_page(parent):
             for key in dictWidgets:
                 self.widgets[key] = dictWidgets[key]
                 packAttrs = {"anchor":E}
-                if key == "retro":
-                    packAttrs["side"] = RIGHT
                 if self.widgets[key].type == "checkbox" or framename.startswith("leftPoolFrame"):
                     packAttrs["anchor"] = W
                 if framename == "checkboxes":
@@ -75,7 +84,32 @@ def item_page(parent):
                 elif framename == "leftPoolHeader":
                     packAttrs["side"] = LEFT
                     packAttrs["padx"] = (0, 20)
+                elif framename == "rightItemFrame" and self.widgets[key].type == "checkbox":
+                    packAttrs["side"] = LEFT
+                    packAttrs["padx"] = (118, 0)
                 packAttrs = widgets.add_padding_from_config(packAttrs, theseWidgets[key])
                 self.widgets[key].pack(packAttrs)
 
     return self
+
+def retro(baseWidget):
+    widget = baseWidget.pieces['button']
+    root = widget.winfo_toplevel()
+    text_output = ""
+    temp_widget = root.pages["randomizer"].pages["dungeon"].widgets["smallkeyshuffle"]
+    text_output += f'\n    {temp_widget.label.cget("text")}'
+    temp_widget.storageVar.set('universal')
+
+    temp_widget = root.pages["randomizer"].pages["item"].widgets["bow_mode"]
+    text_output += f'\n    {temp_widget.label.cget("text")}'
+    if temp_widget.storageVar.get() == 'progressive':
+        temp_widget.storageVar.set('retro')
+    elif temp_widget.storageVar.get() == 'silvers':
+        temp_widget.storageVar.set('retro_silvers')
+
+    temp_widget = root.pages["randomizer"].pages["item"].widgets["take_any"]
+    text_output += f'\n    {temp_widget.label.cget("text")}'
+    if temp_widget.storageVar.get() == 'none':
+        temp_widget.storageVar.set('random')
+
+    messagebox.showinfo('', f'The following settings were changed:{text_output}')

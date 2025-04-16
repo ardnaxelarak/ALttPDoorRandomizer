@@ -272,7 +272,7 @@ def create_guiargs(parent):
                 arg = options[mainpage][subpage][widget] if subpage != "" else options[mainpage][widget]
                 page = parent.pages[mainpage].pages[subpage] if subpage != "" else parent.pages[mainpage]
                 pagewidgets = page.content.customWidgets if mainpage == "custom" else page.content.startingWidgets if mainpage == "startinventory" else page.widgets
-                if hasattr(pagewidgets[widget], 'storageVar'):
+                if widget in pagewidgets and hasattr(pagewidgets[widget], 'storageVar'):
                     setattr(guiargs, arg, pagewidgets[widget].storageVar.get())
 
     # Get Multiworld Worlds count
