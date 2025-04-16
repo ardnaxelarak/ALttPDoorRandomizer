@@ -289,6 +289,12 @@ start_inventory:
 
 To start with multiple copies of progressive items, list them more than once.
 
+There are some additional non-standard keywords available that can be added as starting inventory:
+
+* `RandomWeapon` - This grants the player with the same random weapon options that Uncle gives in standard starts, including ammo for that weapon.
+* `Beat Agahnim 1` - This enables post-Agahnim world state by default and flags Agahnim 1 as defeated.
+* `Return Old Man` - This enables the Mountain Cave starting location by default. This also removes one item location from the game.
+
 ##### Known Issue
 
 This conflicts with the mystery yaml, if specified. These start inventory items will be added after those are added.
