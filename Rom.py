@@ -463,6 +463,13 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                         rom.write_byte(location.player_address, location.item.player)
                     else:
                         itemid = 0x5A
+
+            if not location.locked and ((location.item.smallkey and world.keyshuffle[player] == 'none') or (
+                location.item.bigkey and world.bigkeyshuffle[player] == 'none') or (
+                location.item.map and world.mapshuffle[player] == 'none') or (
+                location.item.compass and world.compassshuffle[player] == 'none')):
+                itemid = handle_native_dungeon(location, itemid)
+                
             rom.write_byte(location.address, itemid)
         else:
             # crystals
