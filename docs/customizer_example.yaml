@@ -17,6 +17,7 @@ settings:
     pseudoboots: true
     pottery: keys
     shopsanity: true
+    shuffle_followers: true
     shuffle: crossed
     shufflelinks: true
     ow_shuffle: parallel

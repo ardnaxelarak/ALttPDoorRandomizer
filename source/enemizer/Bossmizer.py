@@ -110,8 +110,8 @@ def add_kholdstare_to_list(sprite_list, room_id):
 
 
 def add_vitreous_to_list(sprite_list, room_id):
-    sprite_list.clear()  # vitreous does not play nice which other sprites on the tile, just kill them
-    sprite_list.append(create_sprite(room_id, EnemySprite.Vitreous, 0x00, 0, 0x07, 0x05))
+    sprite_list[:] = [x for x in sprite_list if x.sub_type == SpriteType.Overlord]  # vitreous does not play nice which other sprites on the tile, just kill them
+    sprite_list.insert(0, create_sprite(room_id, EnemySprite.Vitreous, 0x00, 0, 0x07, 0x05))
 
 
 def add_trinexx_to_list(sprite_list, room_id):
@@ -178,8 +178,9 @@ def boss_writes(world, player, rom):
                 remove_shell_from_boss_room(data_tables, dungeon.name, level, 0xF95)
             if boss.name != 'Blind' and dungeon.name == 'Thieves Town' and level is None:
                 rom.write_byte(snes_to_pc(0x368101), 1)  # set blind boss door flag
-                # maiden is deleted
-                del data_tables.uw_enemy_table.room_map[0x45][0]
+                if not world.shuffle_followers[player]:
+                    # maiden is deleted
+                    del data_tables.uw_enemy_table.room_map[0x45][0]
         if not arrghus_can_swim and water_tiles_on:
             remove_water_tiles(data_tables)
 

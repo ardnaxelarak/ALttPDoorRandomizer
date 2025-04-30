@@ -8,7 +8,7 @@ from OWEdges import OWTileRegions, OWEdgeGroups, OWEdgeGroupsTerrain, OWExitType
 from OverworldGlitchRules import create_owg_connections
 from Utils import bidict
 
-version_number = '0.5.1.5'
+version_number = '0.6.0.0'
 # branch indicator is intentionally different across branches
 version_branch = ''
 
@@ -1833,6 +1833,7 @@ mandatory_connections = [
     ('Broken Bridge Water Drop', 'Broken Bridge Water'), #flippers
     ('Broken Bridge Northeast Water Drop', 'Broken Bridge Water'), #flippers
     ('Broken Bridge West Water Drop', 'Broken Bridge Water'), #flippers
+    ('Kiki Assistance', 'Dark Palace Button'),
     ('Peg Area Rocks (West)', 'Hammer Pegs Area'), #mitts
     ('Peg Area Rocks (East)', 'Hammer Pegs Entry'), #mitts
     ('Dig Game To Ledge Drop', 'Dig Game Ledge'), #mitts

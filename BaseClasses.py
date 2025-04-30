@@ -1662,18 +1662,21 @@ class Entrance(object):
         self.temp_path = []
 
     def can_reach(self, state):
-                                # Destination         Pickup                   OW Only  No Ledges  Can S&Q  Allow Mirror
-        multi_step_locations = { 'Pyramid Crack':    ('Big Bomb',              True,    True,      False,   True),
-                                 'Missing Smith':    ('Frog',                  True,    False,     True,    True),
-                                 'Middle Aged Man':  ('Dark Blacksmith Ruins', True,    False,     True,    True),
-                                 'Old Man Drop Off': ('Lost Old Man',          True,    False,     False,   False),
-                                 'Revealing Light':  ('Suspicious Maiden',     False,   False,     False,   False)
+                                # Destination          Pickup                   OW Only  No Ledges  Can S&Q  Allow Mirror
+        multi_step_locations = { 'Pyramid Crack':     ('Big Bomb',              True,    True,      False,   True),
+                                 'Missing Smith':     ('Frog',                  True,    False,     True,    True),
+                                 'Middle Aged Man':   ('Dark Blacksmith Ruins', True,    False,     True,    True),
+                                 'Dark Palace Button':('Kiki',                  True,    False,     False,   False),
+                                 'Old Man Drop Off':  ('Lost Old Man',          True,    False,     False,   False),
+                                 'Revealing Light':   ('Suspicious Maiden',     False,   False,     False,   False)
         }
 
         if self.name in multi_step_locations:
             if self not in state.path:
                 world = self.parent_region.world
                 multi_step_loc = multi_step_locations[self.name]
+                if world.shuffle_followers[self.player]:
+                    multi_step_loc = (multi_step_loc[0], self.name == 'Pyramid Crack', multi_step_loc[2], True, True)
                 step_location = world.get_location(multi_step_loc[0], self.player)
                 if step_location.can_reach(state) and self.can_reach_thru(state, step_location, multi_step_loc[1], multi_step_loc[2], multi_step_loc[3], multi_step_loc[4]) and self.access_rule(state):
                     if not self in state.path:
@@ -2952,7 +2955,7 @@ class Spoiler(object):
             self.settings = {}
 
 
-        self.suppress_spoiler_locations = ['Big Bomb', 'Frog', 'Dark Blacksmith Ruins', 'Middle Aged Man', 'Lost Old Man', 'Old Man Drop Off']
+        self.suppress_spoiler_locations = ['Lost Old Man', 'Big Bomb', 'Frog', 'Dark Blacksmith Ruins', 'Middle Aged Man', 'Kiki']
 
     def set_overworld(self, entrance, exit, direction, player):
         if self.world.players == 1:
@@ -3018,6 +3021,7 @@ class Spoiler(object):
                          'ow_whirlpool': self.world.owWhirlpoolShuffle,
                          'ow_fluteshuffle': self.world.owFluteShuffle,
                          'bonk_drops': self.world.shuffle_bonk_drops,
+                         'shuffle_followers': self.world.shuffle_followers,
                          'shuffle': self.world.shuffle,
                          'shuffleganon': self.world.shuffle_ganon,
                          'shufflelinks': self.world.shufflelinks,
@@ -3259,6 +3263,7 @@ class Spoiler(object):
                     outfile.write('\n')
                     outfile.write('Shopsanity:'.ljust(line_width) + '%s\n' % yn(self.metadata['shopsanity'][player]))
                     outfile.write('Bonk Drops:'.ljust(line_width) + '%s\n' % yn(self.metadata['bonk_drops'][player]))
+                    outfile.write('Followers:'.ljust(line_width) + '%s\n' % yn(self.metadata['shuffle_followers'][player]))
                     outfile.write('Pottery Mode:'.ljust(line_width) + '%s\n' % self.metadata['pottery'][player])
                     outfile.write('Pot Shuffle (Legacy):'.ljust(line_width) + '%s\n' % yn(self.metadata['potshuffle'][player]))
                     outfile.write('Enemy Drop Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['dropshuffle'][player])
@@ -3670,7 +3675,7 @@ boss_mode = {"none": 0, "simple": 1, "full": 2, "chaos": 3, 'random': 3, 'unique
 or_mode = {"vanilla": 0, "parallel": 1, "full": 2}
 orcrossed_mode = {"none": 0, "polar": 1, "grouped": 2, "unrestricted": 4}
 
-# byte 12: KMB? FF?? (keep similar, mixed/tile flip, bonk drops, flute spots)
+# byte 12: KMBQ FF?? (keep similar, mixed/tile flip, bonk drops, follower quests, flute spots)
 flutespot_mode = {"vanilla": 0, "balanced": 1, "random": 2}
 
 # byte 13: FBBB TTPP (flute_mode, bow_mode, take_any, prize shuffle)
@@ -3737,7 +3742,8 @@ class Settings(object):
             | (0x08 if w.owWhirlpoolShuffle[p] else 0) | orcrossed_mode[w.owCrossed[p]],
 
             (0x80 if w.owKeepSimilar[p] else 0) | (0x40 if w.owMixed[p] else 0)
-            | (0x20 if w.shuffle_bonk_drops[p] else 0) | (flutespot_mode[w.owFluteShuffle[p]] << 4),
+            | (0x20 if w.shuffle_bonk_drops[p] else 0) | (0x10 if w.shuffle_followers[p] else 0)
+            | (flutespot_mode[w.owFluteShuffle[p]] << 4),
 
             (flute_mode[w.flute_mode[p]] << 7 | bow_mode[w.bow_mode[p]] << 4
              | take_any_mode[w.take_any[p]] << 2 | prizeshuffle_mode[w.prizeshuffle[p]]),
@@ -3822,6 +3828,7 @@ class Settings(object):
         args.ow_keepsimilar[p] = True if settings[12] & 0x80 else False
         args.ow_mixed[p] = True if settings[12] & 0x40 else False
         args.bonk_drops[p] = True if settings[12] & 0x20 else False
+        args.shuffle_followers[p] = True if settings[12] & 0x10 else False
         args.ow_fluteshuffle[p] = r(flutespot_mode)[(settings[12] & 0x0C) >> 2]
 
         if len(settings) > 13:

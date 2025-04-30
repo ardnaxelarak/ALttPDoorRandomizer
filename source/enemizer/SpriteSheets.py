@@ -123,6 +123,9 @@ LenientTrapsForTesting = {0x16, 0x26, 0x3f, 0x40, 0x42, 0x46, 0x49, 0x4e, 0x57,
                           0x65, 0x6a, 0x74, 0x76, 0x7d, 0x98,
                           0x9e, 0xaf, 0xba, 0xc6, 0xcb, 0xce, 0xd2, 0xd5,
                           0xd8, 0xdf, 0xe4, 0xe7, 0xee, 0xfd, 0x10c}
+PitRooms = {0x17, 0x1a, 0x2a, 0x31, 0x3c, 0x3d, 0x40, 0x44, 0x49, 0x4e, 0x56, 0x58, 0x5c, 0x67, 0x72,
+            0x7b, 0x7c, 0x7d, 0x7f, 0x82, 0x8b, 0x8d, 0x95, 0x96, 0x9b, 0x9c, 0x9d, 0x9e, 0xa0, 0xa5,
+            0xaf, 0xbc, 0xc0, 0xc5, 0xc6, 0xd1, 0xd5, 0xe7, 0xe8, 0xee, 0xf0, 0xf1, 0xfb, 0x123}
 
 # wallmasters must not be on tiles near spiral staircases. Unknown if other stairs have issues
 WallmasterInvalidRooms = {
@@ -222,9 +225,12 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.Hoarder2).sub_group(3, 0x11).exclude({0x10c}),
         SpriteRequirement(EnemySprite.TutorialGuard).affix(),
         SpriteRequirement(EnemySprite.LightningGate).affix().sub_group(3, 0x3f),
-        SpriteRequirement(EnemySprite.BlueGuard).aquaphobia().sub_group(1, [0xd, 0x49]),
-        SpriteRequirement(EnemySprite.GreenGuard).aquaphobia().sub_group(1, 0x49),
-        SpriteRequirement(EnemySprite.RedSpearGuard).aquaphobia().sub_group(1, [0xd, 0x49]),
+        SpriteRequirement(EnemySprite.BlueGuard).aquaphobia().sub_group(1, [0xd, 0x49]).exclude(PitRooms),
+        SpriteRequirement(EnemySprite.BlueGuard).aquaphobia().sub_group(1, [0xd, 0x49]).sub_group(2, [0x29, 0x13]),
+        SpriteRequirement(EnemySprite.GreenGuard).aquaphobia().sub_group(1, 0x49).exclude(PitRooms),
+        SpriteRequirement(EnemySprite.GreenGuard).aquaphobia().sub_group(1, 0x49).sub_group(2, 0x13),
+        SpriteRequirement(EnemySprite.RedSpearGuard).aquaphobia().sub_group(1, [0xd, 0x49]).exclude(PitRooms),
+        SpriteRequirement(EnemySprite.RedSpearGuard).aquaphobia().sub_group(1, [0xd, 0x49]).sub_group(2, [0x29, 0x13]),
         SpriteRequirement(EnemySprite.BluesainBolt).aquaphobia().sub_group(0, 0x46).sub_group(1, [0xd, 0x49]),
         SpriteRequirement(EnemySprite.UsainBolt).aquaphobia().sub_group(1, [0xd, 0x49]),
         SpriteRequirement(EnemySprite.BlueArcher).sub_group(0, 0x48).sub_group(1, 0x49),
@@ -325,7 +331,7 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.BlueZirro).no_drop().sub_group(3, 0x1b).exclude(NoFlyingRooms),
         SpriteRequirement(EnemySprite.Pikit).sub_group(3, 0x1b),
         SpriteRequirement(EnemySprite.CrystalMaiden).affix(),
-        SpriteRequirement(EnemySprite.OldMan).affix().sub_group(0, 0x46).sub_group(1, 0x49).sub_group(2, 0x1c),
+        SpriteRequirement(EnemySprite.OldMan).affix().sub_group(2, 0x1c),
         SpriteRequirement(EnemySprite.PipeDown).affix(),
         SpriteRequirement(EnemySprite.PipeUp).affix(),
         SpriteRequirement(EnemySprite.PipeRight).affix(),
@@ -470,6 +476,34 @@ required_boss_sheets = {EnemySprite.ArmosKnight: 9, EnemySprite.Lanmolas: 11, En
                         EnemySprite.Blind: 32, EnemySprite.Kholdstare: 22, EnemySprite.Vitreous: 22,
                         EnemySprite.TrinexxRockHead: 23}
 
+sheets_with_free_gfx = {
+    # intended for identifying gfx slots on each sheet that are unused during general enemization
+    # (ie. Catfish gfx unused when used elsewhere other than the usual Catfish screen)
+    # TODO: Could also provide sprite ID/s of replaced gfx slots indicated to be used as verification
+    0x0E: [0x08, 0x0C],
+    0x10: [0xCC, 0xCE, 0xEC, 0xEE],
+    0x11: [0xEA, 0xEC, 0xEE],
+    0x12: [0x88, 0x8A, 0xAA, 0x8C, 0xAC, 0x8E, 0xAE],
+    0x13: [0xA2, 0xA4],
+    0x14: [0xC0, 0xC2, 0xC4, 0xE0, 0xE2],
+    0x15: [0xC8, 0xEE],
+    0x18: [0x86, 0x8C, 0x8E],
+    0x19: [0xCE, 0xEC, 0xEE],
+    0x1C: [0xA0, 0xAC, 0xAE],
+    0x22: [0x8C, 0x8E, 0xAA, 0xAC, 0xAE],
+    0x24: [0xAC, 0xAE],
+    0x26: [0xA6, 0xA8, 0xAA, 0xAC, 0xAE],
+    0x27: [0x84, 0xA4],
+    0x29: [0x82, 0x84],
+    0x2A: [0x80, 0x82, 0x84, 0x86, 0x88],
+    0x2E: [0x80, 0x82, 0x84, 0x86, 0x88],
+    0x2F: [0x2C, 0x0A, 0x0C, 0x0E, 0x2E, 0x24],
+    0x36: [0xE7, 0xE9, 0xEB, 0xED, 0xC7, 0xC9, 0xCB, 0xCD],
+    0x48: [0x2B, 0x2D],
+    0x52: [0xE8, 0xC6, 0xC8, 0xCE, 0xEE, 0xCA, 0xCC, 0xEA],
+    0x53: [0xE8, 0xEA, 0xCA, 0xCC, 0xC6, 0xC8]
+}
+
 
 class SpriteSheet:
     def __init__(self, id, default_sub_groups):
@@ -525,9 +559,9 @@ def init_sprite_sheets(requirements):
 
 def setup_required_dungeon_groups(sheets, data_tables):
 
-    sheets[did(1)].add_sprite_to_sheet([70, 73, 28, 82], {0xe4, 0xf0})  # old man
+    sheets[did(1)].add_sprite_to_sheet([None, None, 28, None], {0xe4, 0xf0})  # old man
     # various npcs
-    sheets[did(5)].add_sprite_to_sheet([75, 77, 74, 90], {0xf3, 0x109, 0x10e, 0x10f, 0x110, 0x111, 0x112,
+    sheets[did(5)].add_sprite_to_sheet([75, 77, 74, 90], {0xf3, 0xff, 0x109, 0x10e, 0x10f, 0x110, 0x111, 0x112,
                                                           0x11a, 0x11c, 0x11f, 0x122})
     sheets[did(7)].add_sprite_to_sheet([75, 77, 57, 54], {0x8, 0x2c, 0x114, 0x115, 0x116})  # big fairies
     sheets[did(13)].add_sprite_to_sheet([81, None, None, None], {0x55, 0x102, 0x104})  # uncle, sick kid
@@ -542,15 +576,13 @@ def setup_required_dungeon_groups(sheets, data_tables):
     sheets[did(3)].add_sprite_to_sheet([93, None, None, None], {0x51})  # mantle
     sheets[did(42)].add_sprite_to_sheet([21, None, None, None], {0x11e})  # hype cave
     sheets[did(10)].add_sprite_to_sheet([47, None, 46, None], {0x5c, 0x75, 0xb9, 0xd9})  # cannonballs
-    sheets[did(37)].add_sprite_to_sheet([31, None, 39, 82], {0x24, 0xb4, 0xb5, 0xc6, 0xc7, 0xd6})  # somaria platforms
-    # not sure 31 is needed above
+    sheets[did(37)].add_sprite_to_sheet([None, None, 39, 82], {0x24, 0xb4, 0xb5, 0xc6, 0xc7, 0xd6})  # somaria platforms
 
     free_sheet_reqs = [
-        ([75, None, None, None], [0xff, 0x11f]),  # shopkeepers
         ([None, 77, None, 21], [0x121]),  # smithy
         ([None, None, None, 80], [0x108]),  # chicken house
         ([14, 30, None, None], [0x123]),  # mini moldorm (shutter door)
-        ([None, None, 34, None], [0x36, 0x46, 0x66, 0x76]),  # pirogusu spawners
+        ([None, None, 34, None], [0x36, 0x46, 0x66]),  # pirogusu spawners
         ([None, 32, None, None], [0x9f]),  # babasu spawners
         ([31, None, None, None], [0x7f]),  # force baris
         ([None, None, 35, None], [0x39, 0x49]),  # wallmasters
@@ -570,7 +602,7 @@ def setup_required_dungeon_groups(sheets, data_tables):
         ([None, None, (28, 36), 82], [0x2, 0x64]),  # pull switches (snakes)
         ([None, None, None, 82], [0x1a, 0x3d, 0x44, 0x5e, 0x7c, 0x95, 0xc3]),  # collapsing bridges
         ([None, None, None, 83], [0x3f, 0xce]),  # pull tongue
-        ([None, None, None, 83], [0x35, 0x37, 0x76]),  # swamp drains
+        ([None, None, None, 83], [0x35, 0x37]),  # swamp drains
         ([None, None, 34, None], [0x28]),  # tektike forced? - spawn chest
         ([None, None, 37, None], [0x97]),  # wizzrobe spawner - in middle of room...
 
@@ -701,17 +733,18 @@ def setup_required_overworld_groups(sheets):
     sheets[6].add_sprite_to_sheet([0x4F, 0x49, 0x4A, 0x50], {0x18, 0x22, 0x28, 0xA8, 0xB2, 0xB8})
     sheets[8].add_sprite_to_sheet([None, None, 18, None], {0x30, 0xC0})  # Desert (pre/post-Aga)
     sheets[10].add_sprite_to_sheet([None, None, None, 17], {0x3A, 0xCA})  # M-rock (pre/post-Aga)
-    sheets[22].add_sprite_to_sheet([None, None, 24, None], {0x4F, 0xDF})  # Catfish (pre/post-Aga)
-    sheets[21].add_sprite_to_sheet([21, None, None, 21], {0x62, 0xF2})  # Smith DW (pre/post-Aga)
-    sheets[27].add_sprite_to_sheet([None, 42, None, None], {0x68, 0xF8})  # Dig Game (pre/post-Aga)
+    sheets[22].add_sprite_to_sheet([None, None, 24, None], {0x4F})  # Catfish
+    sheets[21].add_sprite_to_sheet([None, None, None, 21], {0x62, 0x69})  # Smith DW/VoO South
+    sheets[27].add_sprite_to_sheet([None, 42, None, None], {0x68})  # Dig Game
     sheets[13].add_sprite_to_sheet([None, None, 76, None], {0x16, 0xA6})  # Witch hut (pre/post-Aga)
-    sheets[29].add_sprite_to_sheet([None, 77, None, 21], {0x69, 0xF9})  # VoO South (pre/post-Aga)
+    #sheets[29].add_sprite_to_sheet([None, 77, None, 21], {0x69})  # VoO South
     sheets[15].add_sprite_to_sheet([None, None, 78, None], {0x2A, 0xBA})  # Haunted Grove (pre/post-Aga)
-    sheets[17].add_sprite_to_sheet([None, None, None, 76], {0x6A, 0xFA})  # Stumpy (pre/post-Aga)
-    sheets[12].add_sprite_to_sheet([None, None, 55, 54], {0x80, 0x110})  # Specials (pre/post-Aga)
-    sheets[14].add_sprite_to_sheet([None, None, 12, 68], {0x81, 0x111})  # Zora's Domain (pre/post-Aga)
+    sheets[17].add_sprite_to_sheet([None, None, None, 76], {0x6A})  # Stumpy
+    sheets[12].add_sprite_to_sheet([None, None, 55, 54], {0x80})  # Specials
+    sheets[14].add_sprite_to_sheet([None, None, 12, 68], {0x81})  # Zora's Domain
     sheets[26].add_sprite_to_sheet([15, None, None, None], {0x92})  # Lumberjacks post-Aga
-    sheets[23].add_sprite_to_sheet([None, None, None, 25], {0x5E, 0xEE})  # PoD pre/post-Aga
+    sheets[23].add_sprite_to_sheet([None, None, None, 25], {0x5E})  # PoD
+    sheets[19].add_sprite_to_sheet([None, 26, None, None], {0x5B})  # Pyramid post-Aga2 bat crash
 
     free_sheet_reqs = [
         [None, None, None, 0x14],  # bully+pink ball needs this

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0.0
+- New Follower Shuffle option (See Readme)
+- HMG fixes for key pickup behavior
+- Fixed some errors with starting equipment
+- Added documentation for some unknown/obscure starting inventory options
+- Possible fix for ignorable error message for EXE users
+- \~Merged in DR v1.4.9~
+  - Fixed Moth conveyor issue
+
 ## 0.5.1.5
 - Fixed rare overworld map check VRAM crash
 - Fixed cavestate dark room hidden item issue

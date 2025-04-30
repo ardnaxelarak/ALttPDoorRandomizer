@@ -1301,7 +1301,7 @@ def create_doors(world, player):
     world.get_door('Swamp Drain Right Switch', player).event('Swamp Drain')
     world.get_door('Swamp Flooded Room Ladder', player).event('Swamp Drain')
 
-    if world.mode[player] == 'standard':
+    if world.mode[player] == 'standard' and 'Zelda Herself' not in [i.name for i in world.precollected_items if i.player == player]:
         world.get_door('Hyrule Castle Throne Room Tapestry', player).event('Zelda Pickup')
         world.get_door('Hyrule Castle Tapestry Backwards', player).event('Zelda Pickup')
 

@@ -1241,6 +1241,7 @@ OWTileRegions = bidict({
     'Broken Bridge Water': 0x5d,
 
     'Palace of Darkness Area': 0x5e,
+    'Dark Palace Button': 0x5e,
 
     'Hammer Pegs Area': 0x62,
     'Hammer Pegs Entry': 0x62,
@@ -1580,6 +1581,7 @@ OWExitTypes = {
                 'Middle Aged Man',
                 'Desert Pass Ladder (South)',
                 'Desert Pass Ladder (North)',
+                'Kiki Assistance',
                 'GT Approach',
                 'GT Leave',
             ],

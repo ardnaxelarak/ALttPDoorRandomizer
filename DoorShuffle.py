@@ -1063,8 +1063,11 @@ def handle_split_dungeons(dungeon_builders, recombinant_builders, entrances_map,
 
     for name, split_list in split_dungeon_entrances.items():
         builder = dungeon_builders.pop(name)
-        recombinant_builders[name] = builder
+        if all(len(sector.outstanding_doors) <= 0 for sector in builder.sectors):
+            dungeon_builders[name] = builder
+            continue
 
+        recombinant_builders[name] = builder
         split_builders = split_dungeon_builder(builder, split_list, builder_info)
         dungeon_builders.update(split_builders)
         for sub_name, split_entrances in split_list.items():

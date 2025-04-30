@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '80e0a4f8bd5cc6f83ac9f7f46c01bf4f'
+RANDOMIZERBASEHASH = '1143daca64a1dbdb151339830dca37df'
 
 
 class JsonRom(object):
@@ -474,6 +474,13 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                     rom.write_byte(location.player_address, location.item.player)
                 else:
                     itemid = 0x5A
+                    
+        if not location.locked and ((location.item.smallkey and world.keyshuffle[player] == 'none') or (
+            location.item.bigkey and world.bigkeyshuffle[player] == 'none') or (
+            location.item.map and world.mapshuffle[player] == 'none') or (
+            location.item.compass and world.compassshuffle[player] == 'none')):
+            itemid = handle_native_dungeon(location, itemid)
+
         rom.write_byte(location.address, itemid)
     for dungeon in [d for d in world.dungeons if d.player == player]:
         if dungeon.prize:
@@ -632,10 +639,6 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     write_int16(rom, 0x150002, owMode)
     write_int16(rom, 0x150004, owFlags)
 
-    from OverworldShuffle import can_reach_smith
-    if not can_reach_smith(world, player):
-        rom.write_byte(0x180043, 0x01) # patch for deleting smith on S+Q
-    
     # patch entrance/exits/holes
     for region in world.regions:
         for exit in region.exits:
@@ -721,7 +724,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     dr_flags |= DROptions.DarkWorld_Spawns  # no longer experimental
     if world.logic[player] not in ['owglitches', 'hybridglitches', 'nologic']:
         dr_flags |= DROptions.Fix_EG
-    if world.door_type_mode[player] in ['big', 'all', 'chaos']:
+    if world.door_type_mode[player] in ['big', 'all', 'chaos'] and world.doorShuffle[player] != 'vanilla':
         dr_flags |= DROptions.BigKeyDoor_Shuffle
     if world.dropshuffle[player] in ['underworld']:
         dr_flags |= DROptions.EnemyDropIndicator
@@ -1308,6 +1311,17 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     rom.write_byte(0x18003C, compass_mode)
 
     def get_entrance_coords(ent):
+        if ent is None:
+            owid_map =               [0x1E,   0x30,   0xFF,   0x7B,   0x5E,   0x70,   0x40,   0x75,   0x03,   0x58,   0x47]
+            x_map_position_generic = [0x03c0, 0x0740, 0xff00, 0x03c0, 0x01c0, 0x0bc0, 0x05c0, 0x09c0, 0x0ac0, 0x07c0, 0x0dc0]
+            y_map_position_generic = [0xff00, 0xff00, 0xff00, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0xff00, 0x0fc0, 0x0fc0]
+            world_indicator = 0x0000
+            idx = int((map_index-2)/2)
+            owid = owid_map[idx]
+            if owid != 0xFF:
+                if (owid < 0x40) == (world.is_tile_swapped(owid, player)):
+                    world_indicator = 0x8000
+            return [world_indicator | x_map_position_generic[idx], y_map_position_generic[idx]]
         if type(ent) is Location:
             from OverworldShuffle import OWTileRegions
             if ent.name == 'Hobo':
@@ -1340,22 +1354,15 @@ def patch_rom(world, rom, player, team, is_mystery=False):
 
         # write out dislocated coords
         if map_index >= 0x02 and map_index < 0x18 and (world.overworld_map[player] != 'default' or world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby']):
-            owid_map =               [0x1E,   0x30,   0xFF,   0x7B,   0x5E,   0x70,   0x40,   0x75,   0x03,   0x58,   0x47]
-            x_map_position_generic = [0x03c0, 0x0740, 0xff00, 0x03c0, 0x01c0, 0x0bc0, 0x05c0, 0x09c0, 0x0ac0, 0x07c0, 0x0dc0]
-            y_map_position_generic = [0xff00, 0xff00, 0xff00, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0x0fc0, 0xff00, 0x0fc0, 0x0fc0]
-            world_indicator = 0x0000
-            idx = int((map_index-2)/2)
-            owid = owid_map[idx]
-            if owid != 0xFF:
-                if (owid < 0x40) == (world.is_tile_swapped(owid, player)):
-                    world_indicator = 0x8000
-                write_int16(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+4, world_indicator | x_map_position_generic[idx])
-                write_int16(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+6, y_map_position_generic[idx])
+            coords = get_entrance_coords(None)
+            write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+4, coords)
 
         # write out icon coord data
         if world.prizeshuffle[player] not in ['none', 'dungeon', 'nearby'] and dungeon_table[dungeon].prize:
             dungeon_obj = world.get_dungeon(dungeon, player)
-            entrance = dungeon_obj.prize.get_map_location()
+            entrance = None
+            if dungeon_obj.prize:
+                entrance = dungeon_obj.prize.get_map_location()
             coords = get_entrance_coords(entrance)
             # prize location
             write_int16s(rom, snes_to_pc(0x0ABE2E)+(map_index*6)+8, coords)
@@ -1535,9 +1542,44 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         rom.write_byte(snes_to_pc(0x0DB810), 0x8A) # allows heart pieces to travel across water
         # rom.write_byte(snes_to_pc(0x0DB730), 0x08) # allows chickens to travel across water
 
-    # allow smith into multi-entrance caves in appropriate shuffles
-    if world.shuffle[player] in ['restricted', 'simple', 'full', 'lite', 'lean', 'district', 'swapped', 'crossed', 'insanity']:
-        rom.write_byte(0x18004C, 0x01)
+    
+    if world.shuffle_followers[player]:
+        from ItemList import follower_locations, follower_pickups
+
+        for loc_name, address in follower_locations.items():
+            loc = world.get_location(loc_name, player)
+            rom.write_byte(address, follower_pickups[loc.item.name])
+
+        rom.write_byte(0x18004C, 0x02) # enable follower shuffle
+        rom.write_byte(snes_to_pc(0x1BBD3A), 0x80) # allow all followers thru entrances
+        rom.write_bytes(snes_to_pc(0x1DFC70), [0xEA, 0xEA]) # allow followers at dig game
+        rom.write_byte(snes_to_pc(0x02823B), 0x80) # allow super bomb indoors
+        rom.write_byte(snes_to_pc(0x0283FB), 0x80) # allow maiden to go outside
+        rom.write_bytes(snes_to_pc(0x02D6F2), [0xEA, 0xEA]) # disable old man checkpoint
+        rom.write_byte(snes_to_pc(0x05DEFA), 0xAF) # no follower despawn at uncle
+        rom.write_byte(snes_to_pc(0x05DF3C), 0xAF) # no follower despawn at uncle
+        rom.write_bytes(snes_to_pc(0x079448), [0xEA, 0xEA]) # dont draw super bomb while falling into holes
+        rom.write_byte(snes_to_pc(0x079595), 0x80) # allow super bomb to follow into OW holes
+        rom.write_bytes(snes_to_pc(0x07A132), [0xEA, 0xEA]) # allow bomb use with super bomb
+        rom.write_byte(snes_to_pc(0x07A4B4), 0x80) # allow ether use with super bomb
+        rom.write_byte(snes_to_pc(0x07A589), 0x80) # allow bombos use with super bomb
+        rom.write_byte(snes_to_pc(0x07A66B), 0x80) # allow quake use with super bomb
+        rom.write_byte(snes_to_pc(0x07A919), 0x80) # disable kiki dialogue during mirror
+        rom.write_byte(snes_to_pc(0x07AAC5), 0xAF) # keep all followers after mirroring
+        rom.write_byte(snes_to_pc(0x08DED6), 0x80) # allow locksmith to follow with flute
+        rom.write_bytes(snes_to_pc(0x09A045), [0xEA, 0xEA]) # allow super bomb to follow into UW holes
+        rom.write_byte(snes_to_pc(0x09ACDF), 0x6B) # allow kiki/locksmith to follow after screen transition
+
+        if world.enemy_shuffle[player] != 'none':
+            # informs zelda and maiden to draw over gfx slots that are guaranteed unused
+            rom.write_bytes(0x1802C1, world.data_tables[player].room_headers[0x80].free_gfx[0:2])
+            rom.write_bytes(0x1802C7, world.data_tables[player].room_headers[0x45].free_gfx[0:2])
+    else:
+        from OverworldShuffle import can_reach_smith
+        if not can_reach_smith(world, player):
+            rom.write_byte(0x180043, 0x01) # patch for deleting smith on S+Q
+        if world.shuffle[player] in ['restricted', 'simple', 'full', 'lite', 'lean', 'district', 'swapped', 'crossed', 'insanity']:
+            rom.write_byte(0x18004C, 0x01) # allow smith into multi-entrance caves in appropriate shuffles
 
     # set correct flag for hera basement item
     hera_basement = world.get_location('Tower of Hera - Basement Cage', player)
@@ -2328,9 +2370,20 @@ def write_strings(rom, world, player, team):
         silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
         tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
 
-    crystal5 = world.find_items('Crystal 5', player)[0]
-    crystal6 = world.find_items('Crystal 6', player)[0]
-    greenpendant = world.find_items('Green Pendant', player)[0]
+    crystal5 = world.find_items('Crystal 5', player)
+    crystal6 = world.find_items('Crystal 6', player)
+    greenpendant = world.find_items('Green Pendant', player)
+    def missing_prize():
+        from BaseClasses import Dungeon
+        d = Dungeon('your pocket', [], None, [], [], player, 0)
+        i = ItemFactory('Nothing', player)
+        i.dungeon_object = d
+        r = Region('Nowhere', RegionType.Menu, 'in your pocket', player)
+        r.dungeon = d
+        loc = Location(player, 'Nowhere', parent=r, hint_text='in your pocket')
+        loc.item = i
+        return loc
+    (crystal5, crystal6, greenpendant) = tuple([x[0] if x else missing_prize() for x in [crystal5, crystal6, greenpendant]])
     if world.prizeshuffle[player] in ['none', 'dungeon']:
         (crystal5, crystal6, greenpendant) = tuple([x.parent_region.dungeon.name for x in [crystal5, crystal6, greenpendant]])
         tt['bomb_shop'] = 'Big Bomb?\nMy supply is blocked until you clear %s and %s.' % (crystal5, crystal6)

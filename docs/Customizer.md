@@ -289,6 +289,22 @@ start_inventory:
 
 To start with multiple copies of progressive items, list them more than once.
 
+There are some additional non-standard keywords available that can be added as starting inventory:
+
+* `RandomWeapon` - This grants the player with the same random weapon options that Uncle gives in standard starts, including ammo for that weapon.
+* `Beat Agahnim 1` - This enables post-Agahnim world state by default and flags Agahnim 1 as defeated.
+* `Return Old Man` - This enables the Mountain Cave starting location by default. This also removes one item location from the game.
+* Followers - These are the companions that can follow Link until you complete their quest. These can only be added if you have `Follower Shuffle` enabled. If standard start is enabled, a follower will only start following after the escape has been completed, unless it is set to start with Zelda.
+  * `Zelda Herself`
+  * `Escort Old Man`
+  * `Maiden Rescued`
+  * `Get Frog`
+  * `Sign Vandalized` (Locksmith)
+  * `Pick Up Kiki`
+  * `Pick Up Purple Chest`
+  * `Pick Up Big Bomb`
+  * `RandomFollower` - This will pick any of the above as a random follower to start
+
 ##### Known Issue
 
 This conflicts with the mystery yaml, if specified. These start inventory items will be added after those are added.

@@ -602,7 +602,8 @@ def determine_paths_for_dungeon(world, player, all_regions, name):
             paths.append(boss)
     if 'Thieves Boss' in all_r_names:
         paths.append('Thieves Boss')
-        if world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind':
+        if world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind' \
+                and not world.shuffle_followers[player]:
             paths.append(('Thieves Blind\'s Cell', 'Thieves Boss'))
     for drop_check in drop_path_checks:
         if drop_check in all_r_names:
@@ -1324,7 +1325,8 @@ def create_dungeon_builders(all_sectors, connections_tuple, world, player, dunge
                 for r_name in ['Hyrule Dungeon Cellblock', 'Sanctuary', 'Hyrule Castle Throne Room']:  # need to deliver zelda
                     assign_sector(find_sector(r_name, candidate_sectors), current_dungeon,
                                   candidate_sectors, global_pole)
-            if key == 'Thieves Town' and world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind':
+            if key == 'Thieves Town' and (world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind'
+                    and not world.shuffle_followers[player]):
                 assign_sector(find_sector("Thieves Blind's Cell", candidate_sectors), current_dungeon,
                               candidate_sectors, global_pole)
         entrances_map, potentials, connections = connections_tuple
@@ -1342,10 +1344,6 @@ def create_dungeon_builders(all_sectors, connections_tuple, world, player, dunge
                     if not sector:
                         sector = find_sector(r_name, all_sectors)
                     reverse_d_map[sector] = key
-        if world.mode[player] == 'standard':
-            if 'Hyrule Castle' in dungeon_map:
-                current_dungeon = dungeon_map['Hyrule Castle']
-                standard_stair_check(dungeon_map, current_dungeon, candidate_sectors, global_pole)
 
         complete_dungeons = {x: y for x, y in dungeon_map.items() if sum(len(sector.outstanding_doors) for sector in y.sectors) <= 0}
         [dungeon_map.pop(key) for key in complete_dungeons.keys()]
@@ -1353,6 +1351,11 @@ def create_dungeon_builders(all_sectors, connections_tuple, world, player, dunge
         if not dungeon_map:
             dungeon_map.update(complete_dungeons)
             return dungeon_map
+
+        if world.mode[player] == 'standard':
+            if 'Hyrule Castle' in dungeon_map:
+                current_dungeon = dungeon_map['Hyrule Castle']
+                standard_stair_check(dungeon_map, current_dungeon, candidate_sectors, global_pole)
 
         # categorize sectors
         identify_destination_sectors(accessible_sectors, reverse_d_map, dungeon_map, connections,

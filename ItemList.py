@@ -129,6 +129,40 @@ difficulties = {
     ),
 }
 
+
+follower_quests = {
+    'Zelda Pickup': ['Zelda Herself', 'Zelda Drop Off', 'Zelda Delivered'],
+    'Lost Old Man': ['Escort Old Man', 'Old Man Drop Off', 'Return Old Man'],
+    'Locksmith': ['Sign Vandalized', None, None],
+    'Kiki': ['Pick Up Kiki', 'Kiki Assistance', 'Dark Palace Opened'],
+    'Suspicious Maiden': ['Maiden Rescued', 'Revealing Light', 'Maiden Unmasked'],
+    'Frog': ['Get Frog', 'Missing Smith', 'Return Smith'],
+    'Dark Blacksmith Ruins': ['Pick Up Purple Chest', 'Middle Aged Man', 'Deliver Purple Chest'],
+    'Big Bomb': ['Pick Up Big Bomb', 'Pyramid Crack', 'Detonate Big Bomb'],
+}
+
+follower_locations = {
+    'Zelda Pickup': 0x1802C0,
+    'Lost Old Man': 0x1802C3,
+    'Suspicious Maiden': 0x1802C6,
+    'Frog': 0x1802C9,
+    'Locksmith': 0x1802CC,
+    'Kiki': 0x1802CF,
+    'Dark Blacksmith Ruins': 0x1802D2,
+    'Big Bomb': 0x1802D5,
+}
+
+follower_pickups = {
+    'Zelda Herself': 0x01,
+    'Escort Old Man': 0x04,
+    'Maiden Rescued': 0x06,
+    'Get Frog': 0x07,
+    'Sign Vandalized': 0x09,
+    'Pick Up Kiki': 0x0A,
+    'Pick Up Purple Chest': 0x0C,
+    'Pick Up Big Bomb': 0x0D,
+}
+
 # Translate between Mike's label array and YAML/JSON keys
 def get_custom_array_key(item):
   label_switcher = {
@@ -194,17 +228,10 @@ def generate_itempool(world, player):
     if world.timer in ['ohko', 'timed-ohko']:
         world.can_take_damage = False
 
-    def set_event_item(location_name, item_name=None):
-        location = world.get_location(location_name, player)
-        if item_name:
-            world.push_item(location, ItemFactory(item_name, player), False)
-        location.event = True
-        location.locked = True
-
     if world.goal[player] in ['pedestal', 'triforcehunt']:
-        set_event_item('Ganon', 'Nothing')
+        set_event_item(world, player, 'Ganon', 'Nothing')
     else:
-        set_event_item('Ganon', 'Triforce')
+        set_event_item(world, player, 'Ganon', 'Triforce')
 
     if world.goal[player] in ['triforcehunt', 'trinity']:
         region = world.get_region('Hyrule Castle Courtyard', player)
@@ -241,12 +268,17 @@ def generate_itempool(world, player):
         old_man.skip = True
 
     for loc, item in location_events.items():
-        if item:
-            set_event_item(loc, item)
-    
+        if loc in follower_quests and world.shuffle_followers[player]:
+            item = None
+        set_event_item(world, player, loc, item)
+
+    zelda_pickup, zelda_dropoff = None, None
     if world.mode[player] == 'standard':
-        set_event_item('Zelda Pickup', 'Zelda Herself')
-        set_event_item('Zelda Drop Off', 'Zelda Delivered')
+        if not world.shuffle_followers[player]:
+            zelda_pickup = 'Zelda Herself'
+        zelda_dropoff = 'Zelda Delivered'
+    set_event_item(world, player, 'Zelda Pickup', zelda_pickup)
+    set_event_item(world, player, 'Zelda Drop Off', zelda_dropoff)
 
     # set up item pool
     skip_pool_adjustments = False
@@ -459,7 +491,8 @@ def generate_itempool(world, player):
         world.itempool = [beemizer(item) for item in world.itempool]
 
     # increase pool if not enough items
-    ttl_locations = sum(1 for x in world.get_unfilled_locations(player) if world.prizeshuffle[player] != 'none' or not x.prize)
+    ttl_locations = sum(1 for x in world.get_unfilled_locations(player) if not x.prize and not x.event)
+    ttl_locations -= 10 if world.prizeshuffle[player] in ['dungeon', 'nearby'] else 0 # TODO: Fix item pool to include prizes for these modes
     pool_size = count_player_dungeon_item_pool(world, player)
     pool_size += sum(1 for x in world.itempool if x.player == player)
 
@@ -1245,7 +1278,7 @@ def modify_pool_for_start_inventory(start_inventory, world, player):
                         world.itempool.remove(alt_item)
                     i = i-1
             elif 'Bottle' in item.name:
-                bottle_item = next((x for x in world.itempool if 'Bottle' in item.name and x.player == player), None)
+                bottle_item = next((x for x in world.itempool if 'Bottle' in x.name and x.player == player), None)
                 if bottle_item is not None:
                     world.itempool.remove(bottle_item)
             if item.dungeon:
@@ -1639,6 +1672,50 @@ def fill_specific_items(world):
                         item_name = item_parts[0]
                         world.item_pool_config.verify[(item_name, item_player)] = placement['locations']
                         world.item_pool_config.verify_target += len(placement['locations'])
+
+
+def set_event_item(world, player, location_name, item_name=None):
+    location = world.get_location(location_name, player)
+    if item_name:
+        world.push_item(location, ItemFactory(item_name, player), False)
+    location.event = True
+    if location_name not in follower_quests or not world.shuffle_followers[player]:
+        location.locked = True
+
+
+def shuffle_event_items(world, player):
+    if (world.shuffle_followers[player]):
+        available_quests = follower_quests.copy()
+        available_pickups = [quests[0] for quests in available_quests.values()]
+
+        for loc_name in follower_quests.keys():
+            loc = world.get_location(loc_name, player)
+            if loc.item:
+                set_event_item(world, player, loc_name)
+                available_quests.pop(loc_name)
+                available_pickups.remove(loc.item.name)
+            
+
+        if world.mode[player] == 'standard':
+            if 'Zelda Herself' in available_pickups:
+                zelda_pickup = available_quests.pop('Zelda Pickup')[0]
+                available_pickups.remove(zelda_pickup)
+                set_event_item(world, player, 'Zelda Pickup', zelda_pickup)
+
+        random.shuffle(available_pickups)
+
+        restricted_pickups = { 'Get Frog': 'Dark Blacksmith Ruins'}
+        for pickup in restricted_pickups:
+            restricted_quests = [q for q in available_quests.keys() if q not in restricted_pickups[pickup]]
+            random.shuffle(restricted_quests)
+            quest = restricted_quests.pop()
+            available_quests.pop(quest)
+            available_pickups.remove(pickup)
+            set_event_item(world, player, quest, pickup)
+
+        for pickup in available_pickups:
+            quest, _ = available_quests.popitem()
+            set_event_item(world, player, quest, pickup)
 
 
 def get_item_and_event_flag(item, world, player, dungeon_pool, prize_set, prize_pool):
