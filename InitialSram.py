@@ -250,7 +250,7 @@ class InitialSram:
         equip[0x343] = min(starting_bombs, equip[0x370])
         equip[0x377] = min(starting_arrows, equip[0x371])
 
-        if not startingstate.has('Magic Mirror', player) and world.doorShuffle[player] != 'vanilla':
+        if not startingstate.has('Magic Mirror', player) and (world.doorShuffle[player] != 'vanilla' or world.mirrorscroll[player]):
             equip[0x353] = 1
         
         # Assertion and copy equip to initial_sram_bytes

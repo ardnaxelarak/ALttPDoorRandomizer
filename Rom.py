@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '2ccee3f731044db154e0608f2a4e32a9'
+RANDOMIZERBASEHASH = '1143daca64a1dbdb151339830dca37df'
 
 
 class JsonRom(object):
@@ -480,6 +480,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
             location.item.map and world.mapshuffle[player] == 'none') or (
             location.item.compass and world.compassshuffle[player] == 'none')):
             itemid = handle_native_dungeon(location, itemid)
+
         rom.write_byte(location.address, itemid)
     for dungeon in [d for d in world.dungeons if d.player == player]:
         if dungeon.prize:
@@ -723,7 +724,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     dr_flags |= DROptions.DarkWorld_Spawns  # no longer experimental
     if world.logic[player] not in ['owglitches', 'hybridglitches', 'nologic']:
         dr_flags |= DROptions.Fix_EG
-    if world.door_type_mode[player] in ['big', 'all', 'chaos']:
+    if world.door_type_mode[player] in ['big', 'all', 'chaos'] and world.doorShuffle[player] != 'vanilla':
         dr_flags |= DROptions.BigKeyDoor_Shuffle
     if world.dropshuffle[player] in ['underworld']:
         dr_flags |= DROptions.EnemyDropIndicator

@@ -110,8 +110,8 @@ def add_kholdstare_to_list(sprite_list, room_id):
 
 
 def add_vitreous_to_list(sprite_list, room_id):
-    sprite_list.clear()  # vitreous does not play nice which other sprites on the tile, just kill them
-    sprite_list.append(create_sprite(room_id, EnemySprite.Vitreous, 0x00, 0, 0x07, 0x05))
+    sprite_list[:] = [x for x in sprite_list if x.sub_type == SpriteType.Overlord]  # vitreous does not play nice which other sprites on the tile, just kill them
+    sprite_list.insert(0, create_sprite(room_id, EnemySprite.Vitreous, 0x00, 0, 0x07, 0x05))
 
 
 def add_trinexx_to_list(sprite_list, room_id):
