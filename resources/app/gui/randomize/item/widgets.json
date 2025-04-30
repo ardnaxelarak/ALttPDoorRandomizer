@@ -124,6 +124,10 @@
     "bonk_drops": {
       "type": "checkbox",
       "default": false
+    },
+    "followers": {
+      "type": "checkbox",
+      "default": false
     }
   },
   "leftPoolFrame": {

@@ -283,8 +283,7 @@
     "randomizer.generation.rom.dialog.allfiles": "All Files",
 
     "randomizer.item.hints": "Hints",
-    "randomizer.item.race": "Generate \"Race\" ROM",
-    "randomizer.item.retro": "Retro mode",
+    "randomizer.item.race": "Race",
     "randomizer.item.pseudoboots": "Pseudoboots",
     "randomizer.item.collection_rate": "Display Collection Rate",
     "randomizer.item.mirrorscroll": "Mirror Scroll",
@@ -370,6 +369,8 @@
     "randomizer.item.timer.timed-ohko": "Timed OHKO",
     "randomizer.item.timer.ohko": "OHKO",
     "randomizer.item.timer.timed-countdown": "Timed Countdown",
+
+    "randomizer.item.followers": "Followers",
 
     "randomizer.item.shopsanity": "Shopsanity",
 

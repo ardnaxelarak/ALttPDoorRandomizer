@@ -27,7 +27,7 @@ from Dungeons import create_dungeons
 from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dungeons_restrictive, ensure_good_items
 from Fill import dungeon_tracking
 from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops
-from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items, create_farm_locations
+from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items, create_farm_locations, shuffle_event_items, follower_pickups
 from UnderworldGlitchRules import connect_hmg_entrances_regions, create_hmg_entrances_regions
 from Utils import output_path, parse_player_names
 
@@ -35,6 +35,7 @@ from source.item.District import init_districts
 from source.item.FillUtil import create_item_pool_config, massage_item_pool, district_item_pool_config, verify_item_pool_config
 from source.overworld.EntranceShuffle2 import link_entrances_new
 from source.tools.BPS import create_bps_from_data
+from source.tools.GraphExporter import GephiStreamer
 from source.classes.CustomSettings import CustomSettings
 from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
@@ -244,6 +245,7 @@ def main(args, seed=None, fish=None):
                 sell_keys(world, player)
         else:
             lock_shop_locations(world, player)
+        shuffle_event_items(world, player)
 
     massage_item_pool(world)
     logger.info(world.fish.translate("cli", "cli", "placing.dungeon.prizes"))
@@ -476,6 +478,7 @@ def init_world(args, fish):
     world.owKeepSimilar = args.ow_keepsimilar.copy()
     world.owWhirlpoolShuffle = args.ow_whirlpool.copy()
     world.owFluteShuffle = args.ow_fluteshuffle.copy()
+    world.shuffle_followers = args.shuffle_followers.copy()
     world.shuffle_bonk_drops = args.bonk_drops.copy()
     world.open_pyramid = args.openpyramid.copy()
     world.boss_shuffle = args.shufflebosses.copy()
@@ -530,6 +533,7 @@ def set_starting_inventory(world, args):
     if world.customizer and world.customizer.get_start_inventory():
         for p, inv_list in world.customizer.get_start_inventory().items():
             if inv_list:
+                follower_added = False
                 for inv_item in inv_list:
                     name = inv_item.strip()
                     if inv_item == 'RandomWeapon':
@@ -543,7 +547,13 @@ def set_starting_inventory(world, args):
                             item = ItemFactory(e, p)
                             if item:
                                 world.push_precollected(item)
+                    elif inv_item == 'RandomFollower':
+                        name = random.choice([f for f in follower_pickups if f != 'Zelda Herself' or world.mode[p] == 'standard'])
                     name = name if name != 'Ocarina' or world.flute_mode[p] != 'active' else 'Ocarina (Activated)'
+                    if name in follower_pickups:
+                        if not world.shuffle_followers[p] or follower_added:
+                            continue
+                        follower_added = True
                     item = ItemFactory(name, p)
                     if item:
                         world.push_precollected(item)
@@ -591,6 +601,7 @@ def copy_world(world):
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()
     ret.owFluteShuffle = world.owFluteShuffle.copy()
+    ret.shuffle_followers = world.shuffle_followers.copy()
     ret.shuffle_bonk_drops = world.shuffle_bonk_drops.copy()
     ret.open_pyramid = world.open_pyramid.copy()
     ret.shufflelinks = world.shufflelinks.copy()
@@ -811,6 +822,7 @@ def copy_world_premature(world, player):
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()
     ret.owFluteShuffle = world.owFluteShuffle.copy()
+    ret.shuffle_followers = world.shuffle_followers.copy()
     ret.shuffle_bonk_drops = world.shuffle_bonk_drops.copy()
     ret.open_pyramid = world.open_pyramid.copy()
     ret.shufflelinks = world.shufflelinks.copy()

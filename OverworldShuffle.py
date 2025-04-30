@@ -1833,6 +1833,7 @@ mandatory_connections = [
     ('Broken Bridge Water Drop', 'Broken Bridge Water'), #flippers
     ('Broken Bridge Northeast Water Drop', 'Broken Bridge Water'), #flippers
     ('Broken Bridge West Water Drop', 'Broken Bridge Water'), #flippers
+    ('Kiki Assistance', 'Dark Palace Button'),
     ('Peg Area Rocks (West)', 'Hammer Pegs Area'), #mitts
     ('Peg Area Rocks (East)', 'Hammer Pegs Entry'), #mitts
     ('Dig Game To Ledge Drop', 'Dig Game Ledge'), #mitts

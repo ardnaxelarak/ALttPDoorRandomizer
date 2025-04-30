@@ -315,6 +315,7 @@ class RoomHeader:
 		self.byte_0 = byte_array[0]  # bg2, collision, lights out
 		self.sprite_sheet = byte_array[3]  # sprite gfx #
 		self.effect = byte_array[4]
+		self.free_gfx = []
 
 	def write_to_rom(self, rom, base_address):
 		room_offest = self.room_id*14

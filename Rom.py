@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '80e0a4f8bd5cc6f83ac9f7f46c01bf4f'
+RANDOMIZERBASEHASH = '7ce0f9fc9db08644ff77fb41993d9e34'
 
 
 class JsonRom(object):
@@ -638,10 +638,6 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     write_int16(rom, 0x150002, owMode)
     write_int16(rom, 0x150004, owFlags)
 
-    from OverworldShuffle import can_reach_smith
-    if not can_reach_smith(world, player):
-        rom.write_byte(0x180043, 0x01) # patch for deleting smith on S+Q
-    
     # patch entrance/exits/holes
     for region in world.regions:
         for exit in region.exits:
@@ -1545,9 +1541,44 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         rom.write_byte(snes_to_pc(0x0DB810), 0x8A) # allows heart pieces to travel across water
         # rom.write_byte(snes_to_pc(0x0DB730), 0x08) # allows chickens to travel across water
 
-    # allow smith into multi-entrance caves in appropriate shuffles
-    if world.shuffle[player] in ['restricted', 'simple', 'full', 'lite', 'lean', 'district', 'swapped', 'crossed', 'insanity']:
-        rom.write_byte(0x18004C, 0x01)
+    
+    if world.shuffle_followers[player]:
+        from ItemList import follower_locations, follower_pickups
+
+        for loc_name, address in follower_locations.items():
+            loc = world.get_location(loc_name, player)
+            rom.write_byte(address, follower_pickups[loc.item.name])
+
+        rom.write_byte(0x18004C, 0x02) # enable follower shuffle
+        rom.write_byte(snes_to_pc(0x1BBD3A), 0x80) # allow all followers thru entrances
+        rom.write_bytes(snes_to_pc(0x1DFC70), [0xEA, 0xEA]) # allow followers at dig game
+        rom.write_byte(snes_to_pc(0x02823B), 0x80) # allow super bomb indoors
+        rom.write_byte(snes_to_pc(0x0283FB), 0x80) # allow maiden to go outside
+        rom.write_bytes(snes_to_pc(0x02D6F2), [0xEA, 0xEA]) # disable old man checkpoint
+        rom.write_byte(snes_to_pc(0x05DEFA), 0xAF) # no follower despawn at uncle
+        rom.write_byte(snes_to_pc(0x05DF3C), 0xAF) # no follower despawn at uncle
+        rom.write_bytes(snes_to_pc(0x079448), [0xEA, 0xEA]) # dont draw super bomb while falling into holes
+        rom.write_byte(snes_to_pc(0x079595), 0x80) # allow super bomb to follow into OW holes
+        rom.write_bytes(snes_to_pc(0x07A132), [0xEA, 0xEA]) # allow bomb use with super bomb
+        rom.write_byte(snes_to_pc(0x07A4B4), 0x80) # allow ether use with super bomb
+        rom.write_byte(snes_to_pc(0x07A589), 0x80) # allow bombos use with super bomb
+        rom.write_byte(snes_to_pc(0x07A66B), 0x80) # allow quake use with super bomb
+        rom.write_byte(snes_to_pc(0x07A919), 0x80) # disable kiki dialogue during mirror
+        rom.write_byte(snes_to_pc(0x07AAC5), 0xAF) # keep all followers after mirroring
+        rom.write_byte(snes_to_pc(0x08DED6), 0x80) # allow locksmith to follow with flute
+        rom.write_bytes(snes_to_pc(0x09A045), [0xEA, 0xEA]) # allow super bomb to follow into UW holes
+        rom.write_byte(snes_to_pc(0x09ACDF), 0x6B) # allow kiki/locksmith to follow after screen transition
+
+        if world.enemy_shuffle[player] != 'none':
+            # informs zelda and maiden to draw over gfx slots that are guaranteed unused
+            rom.write_bytes(0x1802C1, world.data_tables[player].room_headers[0x80].free_gfx[0:2])
+            rom.write_bytes(0x1802C7, world.data_tables[player].room_headers[0x45].free_gfx[0:2])
+    else:
+        from OverworldShuffle import can_reach_smith
+        if not can_reach_smith(world, player):
+            rom.write_byte(0x180043, 0x01) # patch for deleting smith on S+Q
+        if world.shuffle[player] in ['restricted', 'simple', 'full', 'lite', 'lean', 'district', 'swapped', 'crossed', 'insanity']:
+            rom.write_byte(0x18004C, 0x01) # allow smith into multi-entrance caves in appropriate shuffles
 
     # set correct flag for hera basement item
     hera_basement = world.get_location('Tower of Hera - Basement Cage', player)
