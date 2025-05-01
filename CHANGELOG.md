@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0.1
+- Emergency fix for generation errors
+
 ## 0.6.0.0
 - New Follower Shuffle option (See Readme)
 - HMG fixes for key pickup behavior
