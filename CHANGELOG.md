@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0.2
+- Fixed issue with item pool placing items on Zelda Drop Off
+- Fix issue with infinite purple chest item get
+- Fix issue with Kiki running away on i-frame ledge hops
+- Fix issue with bad follower gfx on screens with followers
+- Fix issue with Zelda appearing in conditional follower locations
+
 ## 0.6.0.1
 - Emergency fix for generation errors
 

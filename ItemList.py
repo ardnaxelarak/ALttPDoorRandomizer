@@ -272,14 +272,6 @@ def generate_itempool(world, player):
             item = None
         set_event_item(world, player, loc, item)
 
-    zelda_pickup, zelda_dropoff = None, None
-    if world.mode[player] == 'standard':
-        if not world.shuffle_followers[player]:
-            zelda_pickup = 'Zelda Herself'
-        zelda_dropoff = 'Zelda Delivered'
-    set_event_item(world, player, 'Zelda Pickup', zelda_pickup)
-    set_event_item(world, player, 'Zelda Drop Off', zelda_dropoff)
-
     # set up item pool
     skip_pool_adjustments = False
     if world.customizer and world.customizer.get_item_pool() and player in world.customizer.get_item_pool():
