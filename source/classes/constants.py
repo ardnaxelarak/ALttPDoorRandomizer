@@ -74,6 +74,7 @@ SETTINGSTOPROCESS = {
       "restrict_boss_items": "restrict_boss_items",
       "itemfunction": "item_functionality",
       "timer": "timer",
+      "followers": "shuffle_followers",
 
       "shopsanity": "shopsanity",
       "bonk_drops": "bonk_drops",

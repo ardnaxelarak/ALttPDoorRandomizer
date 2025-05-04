@@ -657,6 +657,29 @@ def ensure_good_items(world, write_skips=False):
             if loc.type in [LocationType.Pot, LocationType.Bonk] and loc.item.name in valid_pot_items:
                 loc.skip = True
 
+    dungeon_pool = collections.defaultdict(list)
+    prize_pool = collections.defaultdict(list)
+    from Dungeons import dungeon_table
+    from Items import prize_item_table
+    for dungeon in world.dungeons:
+        if dungeon_table[dungeon.name].prize:
+            dungeon_pool[dungeon.player].append(dungeon)
+    prize_set = set(prize_item_table.keys())
+    for p in range(1, world.players + 1):
+        prize_pool[p] = prize_set.copy()
+
+    for player in dungeon_pool:
+        dungeons = list(dungeon_pool[player])
+        random.shuffle(dungeons)
+        dungeon_pool[player] = dungeons
+    for dungeon in world.dungeons:
+        if dungeon.prize:
+            dungeon_pool[dungeon.player].remove(dungeon)
+            prize_pool[dungeon.prize.player].remove(dungeon.prize.name)
+    for p in range(1, world.players + 1):
+        for dungeon in dungeon_pool[p]:
+            dungeon.prize = ItemFactory(prize_pool[p].pop(), p)
+
 
 invalid_location_replacement = {'Arrows (5)': 'Arrows (10)', 'Nothing':  'Rupees (5)',
                                 'Chicken': 'Rupees (5)', 'Big Magic': 'Small Magic', 'Fairy': 'Small Heart'}

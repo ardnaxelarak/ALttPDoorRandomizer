@@ -4,7 +4,7 @@ from Utils import snes_to_pc
 from source.dungeon.EnemyList import SpriteType, EnemySprite, sprite_translation
 from source.dungeon.RoomList import Room010C
 from source.enemizer.SpecialEnemyModes import set_mimics, write_mimic_changes
-from source.enemizer.SpriteSheets import sub_group_choices
+from source.enemizer.SpriteSheets import sub_group_choices, sheets_with_free_gfx
 from source.enemizer.SpriteSheets import randomize_underworld_sprite_sheets, randomize_overworld_sprite_sheets
 from source.enemizer.TilePattern import tile_patterns
 
@@ -315,6 +315,21 @@ def randomize_underworld_rooms(data_tables, world, player, custom_uw):
             done = False
             while not done:
                 chosen_sheet = random.choice(candidate_sheets)
+                if world.shuffle_followers[player] and room_id in [0x80, 0x45]:
+                    initial_chosen = chosen_sheet
+                    while True:
+                        candidate_sheets.remove(chosen_sheet)
+                        free_gfx = next((sheets_with_free_gfx[s] for s in chosen_sheet.sub_groups if s in sheets_with_free_gfx), None)
+                        if free_gfx:
+                            data_tables.room_headers[room_id].free_gfx = free_gfx
+                            break
+                        elif len(candidate_sheets):
+                            chosen_sheet = random.choice(candidate_sheets)
+                        else:
+                            chosen_sheet = initial_chosen
+                            # TODO: This shouldn't happen for the current use case
+                            # May need to limit the candidate_sprites below if needing gfx slots
+                            break
                 data_tables.room_headers[room_id].sprite_sheet = chosen_sheet.id - 0x40
                 candidate_sprites = get_possible_enemy_sprites(room_id, chosen_sheet, uw_candidates, data_tables)
                 randomized = True

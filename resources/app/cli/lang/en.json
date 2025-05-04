@@ -264,6 +264,9 @@
     "ow_whirlpool": [
       "Whirlpools will be shuffled and paired together."
     ],
+    "shuffle_followers": [
+      "Followers like Purple Chest and Old Man are shuffled."
+    ],
     "bonk_drops": [
       "Bonk drops from trees, rocks, and statues are shuffled with the item pool."
     ],

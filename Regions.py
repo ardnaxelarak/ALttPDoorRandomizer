@@ -133,7 +133,7 @@ def create_regions(world, player):
         create_lw_region(player, 'Ice Cave Area', None, ['Ice Rod Cave', 'Good Bee Cave', '20 Rupee Cave', 'Ice Cave Water Drop', 'Ice Cave SE']),
         create_lw_region(player, 'Ice Cave Water', None, ['Ice Cave Pier', 'Ice Cave SW'], 'Light World', Terrain.Water),
         create_lw_region(player, 'Desert Pass Area', ['Middle Aged Man'], ['Desert Fairy', '50 Rupee Cave', 'Middle Aged Man', 'Desert Pass Ladder (South)', 'Desert Pass Rocks (North)', 'Desert Pass WS', 'Desert Pass EC']),
-        create_lw_region(player, 'Middle Aged Man', ['Purple Chest'], None),
+        create_lw_region(player, 'Middle Aged Man', ['Purple Chest', 'Locksmith'], None),
         create_lw_region(player, 'Desert Pass Southeast', None, ['Desert Pass Rocks (South)', 'Desert Pass ES']),
         create_lw_region(player, 'Desert Pass Ledge', None, ['Desert Pass Ladder (North)', 'Desert Pass Ledge Drop', 'Desert Pass WC']),
         create_lw_region(player, 'Dam Area', ['Sunken Treasure'], ['Dam', 'Dam WC', 'Dam WS', 'Dam NC', 'Dam EC']),
@@ -197,7 +197,8 @@ def create_regions(world, player):
         create_dw_region(player, 'Broken Bridge Northeast', None, ['Broken Bridge Hammer Rock (North)', 'Broken Bridge Hookshot Gap', 'Broken Bridge Northeast Water Drop', 'Broken Bridge NE']),
         create_dw_region(player, 'Broken Bridge West', None, ['Broken Bridge West Water Drop', 'Broken Bridge NW']),
         create_dw_region(player, 'Broken Bridge Water', None, ['Broken Bridge NC'], 'Dark World', Terrain.Water),
-        create_dw_region(player, 'Palace of Darkness Area', None, ['Palace of Darkness Hint', 'Palace of Darkness', 'Palace of Darkness SW', 'Palace of Darkness SE']),
+        create_dw_region(player, 'Palace of Darkness Area', ['Kiki'], ['Palace of Darkness Hint', 'Palace of Darkness', 'Kiki Assistance', 'Palace of Darkness SW', 'Palace of Darkness SE']),
+        create_dw_region(player, 'Dark Palace Button', ['Kiki Assistance'], None),
         create_dw_region(player, 'Darkness Cliff', None, ['Dark Dunes Cliff Ledge Drop', 'Hammer Bridge North Cliff Ledge Drop', 'Dark Tree Line Cliff Ledge Drop', 'Palace of Darkness Cliff Ledge Drop']),
         create_dw_region(player, 'Hammer Pegs Area', ['Dark Blacksmith Ruins'], ['Hammer Peg Cave', 'Peg Area Rocks (East)']),
         create_dw_region(player, 'Hammer Pegs Entry', None, ['Peg Area Rocks (West)', 'Hammer Pegs WS']),
@@ -436,7 +437,6 @@ def create_dungeon_regions(world, player):
         create_dungeon_region(player, 'Hyrule Dungeon Staircase', 'Hyrule Castle', None, ['Hyrule Dungeon Staircase Up Stairs', 'Hyrule Dungeon Staircase Down Stairs']),
         create_dungeon_region(player, 'Hyrule Dungeon Cellblock', 'Hyrule Castle', ['Hyrule Castle - Big Key Drop'], ['Hyrule Dungeon Cellblock Up Stairs', 'Hyrule Dungeon Cellblock Door']),
         create_dungeon_region(player, 'Hyrule Dungeon Cell', 'Hyrule Castle',
-                              ["Hyrule Castle - Zelda's Chest"] if not std_flag else
                               ["Hyrule Castle - Zelda's Chest", 'Zelda Pickup'],
                               ['Hyrule Dungeon Cell Exit']),
 
@@ -456,7 +456,8 @@ def create_dungeon_regions(world, player):
         create_dungeon_region(player, 'Sewers Yet More Rats', 'Hyrule Castle', None, ['Sewers Pull Switch Down Stairs', 'Sewers Yet More Rats S']),
         create_dungeon_region(player, 'Sewers Pull Switch', 'Hyrule Castle', None, ['Sewers Pull Switch N', 'Sewers Pull Switch S']),
         create_dungeon_region(player, 'Sanctuary', 'Hyrule Castle',
-                              ['Sanctuary'] if not std_flag else ['Sanctuary', 'Zelda Drop Off'],
+                              #['Sanctuary'] if not std_flag else 
+                              ['Sanctuary', 'Zelda Drop Off'],
                               ['Sanctuary S', 'Sanctuary N', 'Sanctuary Mirror Route']),
 
         # Eastern Palace
@@ -1249,13 +1250,15 @@ def adjust_locations(world, player):
             location.prize = prize_on_boss
             location.real = not prize_on_boss
     # unreal events:
-    for l in ['Ganon', 'Zelda Pickup', 'Zelda Drop Off'] + list(location_events):
+    for l in ['Ganon'] + list(location_events):
         location = world.get_location_unsafe(l, player)
         if location:
             location.type = LocationType.Logical
             location.real = False
             if l not in ['Ganon', 'Agahnim 1', 'Agahnim 2']:
-                location.skip = True
+                from ItemList import follower_quests
+                if not world.shuffle_followers[player] or l not in follower_quests:
+                    location.skip = True
 
 
 def valid_pot_location(pot, pot_set, world, player):
@@ -1413,9 +1416,12 @@ location_events = {
     'Ice Palace - Boss Kill': 'Beat Boss',
     'Misery Mire - Boss Kill': 'Beat Boss',
     'Turtle Rock - Boss Kill': 'Beat Boss',
+    'Locksmith': 'Sign Vandalized',
     'Lost Old Man': 'Escort Old Man',
     'Old Man Drop Off': 'Return Old Man',
     'Floodgate': 'Open Floodgate',
+    'Kiki': 'Pick Up Kiki',
+    'Kiki Assistance': 'Dark Palace Opened',
     'Big Bomb': 'Pick Up Big Bomb',
     'Pyramid Crack': 'Detonate Big Bomb',
     'Frog': 'Get Frog',
@@ -1431,8 +1437,8 @@ location_events = {
     'Revealing Light': 'Maiden Unmasked',
     'Ice Block Drop': 'Convenient Block',
     'Skull Star Tile': 'Hidden Pits',
-    'Zelda Pickup': None,
-    'Zelda Drop Off': None
+    'Zelda Pickup': 'Zelda Herself',
+    'Zelda Drop Off': 'Zelda Delivered'
 }
 
 
@@ -1671,9 +1677,12 @@ location_table = {'Mushroom': (0x180013, 0x186df8, False, 'in the woods'),
                   'Ice Palace - Boss Kill': (None, None, False, None),
                   'Misery Mire - Boss Kill': (None, None, False, None),
                   'Turtle Rock - Boss Kill': (None, None, False, None),
+                  'Locksmith': (None, None, False, None),
                   'Lost Old Man': (None, None, False, None),
                   'Old Man Drop Off': (None, None, False, None),
                   'Floodgate': (None, None, False, None),
+                  'Kiki': (None, None, False, None),
+                  'Kiki Assistance': (None, None, False, None),
                   'Frog': (None, None, False, None),
                   'Missing Smith': (None, None, False, None),
                   'Dark Blacksmith Ruins': (None, None, False, None),

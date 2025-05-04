@@ -6,7 +6,7 @@
     "collection_rate": {"type":  "checkbox"},
     "race": { "type": "checkbox" }
   },
-  "leftItemFrame": {
+  "worldstateFrame": {
     "worldstate": {
       "type": "selectbox",
       "default": "open",
@@ -14,8 +14,13 @@
         "standard",
         "open",
         "inverted"
-      ]
-    },
+      ],
+      "config": {
+        "width": 13
+      }
+    }
+  },
+  "leftItemFrame": {
     "logiclevel": {
       "type": "selectbox",
       "options": [
@@ -64,12 +69,6 @@
     }
   },
   "rightItemFrame": {
-    "retro": {
-      "type": "button",
-      "config": {
-        "command": "retro"
-      }
-    },
     "sortingalgo": {
       "type": "selectbox",
       "default": "balanced",
@@ -123,6 +122,10 @@
       "type": "checkbox"
     },
     "bonk_drops": {
+      "type": "checkbox",
+      "default": false
+    },
+    "followers": {
       "type": "checkbox",
       "default": false
     }

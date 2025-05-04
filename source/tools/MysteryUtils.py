@@ -131,6 +131,7 @@ def roll_settings(weights):
     ret.ow_whirlpool = get_choice_bool('whirlpool_shuffle')
     overworld_flute = get_choice('flute_shuffle')
     ret.ow_fluteshuffle = overworld_flute if overworld_flute != 'none' else 'vanilla'
+    ret.shuffle_followers = get_choice_bool('shuffle_followers')
     ret.bonk_drops = get_choice_bool('bonk_drops')
     entrance_shuffle = get_choice('entrance_shuffle')
     ret.shuffle = entrance_shuffle if entrance_shuffle != 'none' else 'vanilla'

@@ -124,9 +124,28 @@ class InitialSram:
         if startingstate.has('Beat Agahnim 1', player):
             self.pre_open_lumberjack()
             if world.mode[player] == 'standard':
-                self.set_progress_indicator(0x80)  # todo: probably missing some code rom side for this
+                self.set_progress_indicator(0x80)
             else:
                 self.set_progress_indicator(0x03)
+
+        if startingstate.has('Zelda Herself', player):
+            self._initial_sram_bytes[0x3CC] = 0x01
+        elif startingstate.has('Escort Old Man', player):
+            self._initial_sram_bytes[0x3CC] = 0x04
+        elif startingstate.has('Maiden Rescued', player):
+            self._initial_sram_bytes[0x3CC] = 0x06
+        elif startingstate.has('Get Frog', player):
+            self._initial_sram_bytes[0x3CC] = 0x07
+        elif startingstate.has('Sign Vandalized', player):
+            self._initial_sram_bytes[0x3CC] = 0x09
+        elif startingstate.has('Pick Up Kiki', player):
+            self._initial_sram_bytes[0x3CC] = 0x0A
+        elif startingstate.has('Pick Up Purple Chest', player):
+            self._initial_sram_bytes[0x3CC] = 0x0C
+        elif startingstate.has('Pick Up Big Bomb', player):
+            self._initial_sram_bytes[0x3CC] = 0x0D
+        if self._initial_sram_bytes[0x3CC] > 0x01 and world.mode[player] == 'standard':
+            self._initial_sram_bytes[0x3D3] = 0x80
 
         for item in world.precollected_items:
             if item.player != player:
@@ -138,7 +157,9 @@ class InitialSram:
                              'Mirror Shield', 'Red Shield', 'Blue Shield', 'Progressive Shield',
                              'Red Mail', 'Blue Mail', 'Progressive Armor',
                              'Magic Upgrade (1/4)', 'Magic Upgrade (1/2)',
-                             'Return Old Man', 'Beat Agahnim 1']:
+                             'Return Old Man', 'Beat Agahnim 1', 'Zelda Herself', 'Escort Old Man',
+                             'Maiden Rescued', 'Get Frog', 'Sign Vandalized', 'Pick Up Kiki',
+                             'Pick Up Purple Chest', 'Pick Up Big Bomb']:
                 continue
 
             set_table = {'Book of Mudora': (0x34E, 1), 'Hammer': (0x34B, 1), 'Bug Catching Net': (0x34D, 1), 'Hookshot': (0x342, 1), 'Magic Mirror': (0x353, 2),
@@ -229,7 +250,7 @@ class InitialSram:
         equip[0x343] = min(starting_bombs, equip[0x370])
         equip[0x377] = min(starting_arrows, equip[0x371])
 
-        if not startingstate.has('Magic Mirror', player) and world.doorShuffle[player] != 'vanilla':
+        if not startingstate.has('Magic Mirror', player) and (world.doorShuffle[player] != 'vanilla' or world.mirrorscroll[player]):
             equip[0x353] = 1
         
         # Assertion and copy equip to initial_sram_bytes

@@ -11,8 +11,9 @@ def check_requirements(console=False):
                       'pyyaml': 'yaml'}
     missing = []
     for package, import_name in check_packages.items():
-        spec = importlib.util.find_spec(import_name)
-        if spec is None:
+        try:
+            __import__(import_name)
+        except ImportError:
             missing.append(package)
     if len(missing) > 0:
         packages = ','.join(missing)

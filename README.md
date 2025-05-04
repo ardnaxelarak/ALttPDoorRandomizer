@@ -234,6 +234,27 @@ New flute spots are chosen at random, with restrictions that limit the promixity
 
 New flute spots are chosen at random with minimum bias.
 
+## Follower Shuffle (--shuffle_followers)
+
+This shuffles the follower companions throughout the world. Here is a full list of followers in the game:
+
+- Princess Zelda
+- Old Man
+- Blind Maiden
+- Frog/Blacksmith
+- Locksmith (Guy who unlocks Purple Chest)
+- Kiki the Monkey
+- Purple Chest
+- Super Bomb
+
+When followers are shuffled, you must still fulfill the original requirements of the follower location. For example, if the Super Bomb Shop now contains the Frog, you must have crystals 5 and 6 and 100 rupees to unlock the Frog. It is also important to note that Purple Chest still needs to be delivered to the usual spot. Also, since it isn't useful normally, many people might not know that the Locksmith (the Purple Chest unlocking guy) can follow you, you must remove his sign to get him to follow.
+
+Most of the limitations of followers in the vanilla game have been lifted for this shuffle to work. For instance, you are able to mirror, flute, die, collect a crystal, and save/quit in most situations and still retain the follower. You are also able to enter caves/dungeons and complete dig game while you have a follower.
+
+In the scenario where you are forced down a narrow path and a follower is in your way and you already have a different follower. Running into that follower will switch the followers rather than overwriting, this gives you the opportunity to proceed with either one of the followers. Note that if you leave the screen, you lose this option to switch and you will need to go back to the original place you found the first follower.
+
+Optionally, thru the customizer, you can add a follower to your starting inventory, and you will be given that follower and it will stay with you until you complete their quest.
+
 ## Bonk Drop Shuffle (--bonk_drops)
 
 This adds 42 new item locations to the game. These bonk locations are limited to the ones that drop a static item in the vanilla game.
@@ -272,7 +293,7 @@ As far as map trackers, Bonk Locations are supported on `CodeTracker` when the B
 
 This is a new option in addition to the traditional wild vs non-wild (keysanity/non-keysanity) options for all the dungeon item types (maps, compasses, small keys, big keys, prizes). This new option shuffles dungeon items into locations somewhere either within the dungeon that it is assigned to or within the surrounding district of that dungeon.
 
-## Prize Shuffle
+## Prize Shuffle (--prizeshuffle)
 
 A new option has been added to shuffle the 10 dungeon prizes in ways that they haven't been shuffled before. This means that dungeon prizes can be found in other item locations, such as chests or free-standing item locations. This also means that bosses are able to drop a 2nd item in place of the shuffled prize.
 
@@ -292,7 +313,7 @@ This option shuffles the prize into a location somewhere either within the dunge
 
 This option freely shuffles the prizes throughout the world. While the dungeon prizes can end up anywhere, they still are assigned to a specific dungeon. When you defeat the boss of a certain dungeon, checking the map on the overworld will reveal the location WHERE you can find the prize, an example shown [here](https://zelda.codemann8.com/images/shared/prizemap-all.gif). Finding the map will still reveal WHAT the prize is. If you defeated a boss but haven't collected the map for that dungeon, the prize will be indicated by a red X, example shown [here](https://zelda.codemann8.com/images/shared/prizemap-boss.gif). If you collected a map but haven't defeated the boss yet, the icon indicator on the map will be shown on the top edge (for LW dungeons) or the bottom edge (for DW dungeons), but it will show you WHAT the prize is for that dungeon, an example of that is shown [here](https://zelda.codemann8.com/images/shared/prizemap-map.gif).
 
-- It is important to note that the overworld map check has changed: the numbered icons that are displayed are NO LONGER indicating the crystal number like they have in the past. They are now indicating the dungeon that it belongs to; a blue 1-3 indicates the 3 LW dungeons (EP, DP, and ToH) and a red 1-7 indicate the 7 DW dungeons
+- It is important to note that the overworld map check has changed: the numbered icons that are displayed are NO LONGER indicating the crystal number like they have in the past. They are now indicating the dungeon that it belongs to; a blue E/D/T indicates the 3 LW dungeons (EP, DP, and ToH) and a red 1-7 indicate the 7 DW dungeons
 
 ## New Goal Options (--goal)
 
@@ -404,7 +425,19 @@ This gives each OW tile a random chance to be flipped to the opposite world
 For randomizing the flute spots around the overworld
 
 ```
+--shuffle_followers
+```
+
+This shuffles the follower companion locations, ie. Purple Chest, Old Man, etc.
+
+```
 --bonk_drops
 ```
 
 This extends the item pool to bonk locations and makes them additional item locations
+
+```
+--prizeshuffle <mode>
+```
+
+This allows prizes (crystals/pendants) to shuffle outside their usual boss location.

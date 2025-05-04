@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.0.2
+- Fixed issue with item pool placing items on Zelda Drop Off
+- Fix issue with infinite purple chest item get
+- Fix issue with Kiki running away on i-frame ledge hops
+- Fix issue with bad follower gfx on screens with followers
+- Fix issue with Zelda appearing in conditional follower locations
+
+## 0.6.0.1
+- Emergency fix for generation errors
+
+## 0.6.0.0
+- New Follower Shuffle option (See Readme)
+- HMG fixes for key pickup behavior
+- Fixed some errors with starting equipment
+- Added documentation for some unknown/obscure starting inventory options
+- Possible fix for ignorable error message for EXE users
+- \~Merged in DR v1.4.9~
+  - Fixed Moth conveyor issue
+
 ## 0.5.1.5
 - Fixed rare overworld map check VRAM crash
 - Fixed cavestate dark room hidden item issue

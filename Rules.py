@@ -252,6 +252,7 @@ def global_rules(world, player):
     set_rule(world.get_location('Zora\'s Ledge', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_location('Flute Spot', player), lambda state: state.has('Shovel', player))
     set_rule(world.get_location('Bombos Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_beam_sword(player))
+    set_rule(world.get_location('Kiki Assistance', player), lambda state: state.has('Pick Up Kiki', player))  # Can S&Q with chest
     set_rule(world.get_location('Middle Aged Man', player), lambda state: state.has('Pick Up Purple Chest', player))  # Can S&Q with chest
     set_rule(world.get_location('Purple Chest', player), lambda state: state.has('Deliver Purple Chest', player))  # Can S&Q with chest
     set_rule(world.get_location('Sunken Treasure', player), lambda state: state.has('Open Floodgate', player))
@@ -406,6 +407,7 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Bonk Fairy (Dark)', player), lambda state: state.has_Boots(player))
     set_rule(world.get_entrance('Dark Lake Hylia Ledge Spike Cave', player), lambda state: state.can_lift_rocks(player))
 
+    set_rule(world.get_entrance('Palace of Darkness', player), lambda state: state.has('Dark Palace Opened', player))
     set_rule(world.get_entrance('Skull Woods Final Section', player), lambda state: state.has('Fire Rod', player))
     set_rule(world.get_entrance('Misery Mire', player), lambda state: state.has_sword(player) and state.has_misery_mire_medallion(player))  # sword required to cast magic (!)
     set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has('Turtle Opened', player))
@@ -1128,6 +1130,8 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_location('Maze Race', player), player)
     add_bunny_rule(world.get_location('Flute Spot', player), player)
     add_bunny_rule(world.get_location('Catfish', player), player)
+    add_bunny_rule(world.get_location('Kiki', player), player)
+    add_bunny_rule(world.get_location('Locksmith', player), player)
 
     # entrances
     add_bunny_rule(world.get_entrance('Lost Woods Hideout Drop', player), player)
@@ -1148,7 +1152,6 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('Skull Woods Final Section', player), player)  # bunny cannot use fire rod
     add_bunny_rule(world.get_entrance('Hookshot Cave', player), player)
     add_bunny_rule(world.get_entrance('Thieves Town', player), player)  # bunny cannot pull
-    add_bunny_rule(world.get_entrance('Palace of Darkness', player), player)  # kiki needs pearl
     add_bunny_rule(world.get_entrance('Hammer Peg Cave', player), player)
     add_bunny_rule(world.get_entrance('Bonk Fairy (Dark)', player), player)
     add_bunny_rule(world.get_entrance('Misery Mire', player), player)
@@ -1639,7 +1642,6 @@ def standard_rules(world, player):
                 else:
                     add_rule(loc, lambda state: standard_escape_rule(state))
 
-    set_rule(world.get_location('Zelda Pickup', player), lambda state: state.has('Big Key (Escape)', player))
     set_rule(world.get_entrance('Hyrule Castle Tapestry Backwards', player), lambda state: state.has('Zelda Herself', player))
 
     def check_rule_list(state, r_list):
@@ -1702,7 +1704,7 @@ def set_bunny_rules(world, player, inverted):
     bunny_accessible_locations = ['Link\'s Uncle', 'Sahasrahla', 'Sick Kid', 'Lost Woods Hideout', 'Lumberjack Tree',
                                   'Checkerboard Cave', 'Potion Shop', 'Spectacle Rock Cave', 'Pyramid', 'Old Man',
                                   'Hype Cave - Generous Guy', 'Peg Cave', 'Bumper Cave Ledge', 'Dark Blacksmith Ruins',
-                                  'Spectacle Rock', 'Bombos Tablet', 'Ether Tablet', 'Purple Chest', 'Blacksmith',
+                                  'Spectacle Rock', 'Bombos Tablet', 'Ether Tablet', 'Kiki Assistance', 'Purple Chest', 'Blacksmith',
                                   'Missing Smith', 'Master Sword Pedestal', 'Bottle Merchant', 'Sunken Treasure', 'Desert Ledge',
                                   'Pyramid Crack', 'Big Bomb', 'Stumpy', 'Lost Old Man', 'Old Man Drop Off', 'Murahdahla',
                                   'Kakariko Shop - Left', 'Kakariko Shop - Middle', 'Kakariko Shop - Right',

@@ -89,6 +89,10 @@
       "expert"
     ]
   },
+  "shuffle_followers": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "shopsanity": {
     "action": "store_true",
     "type": "bool"

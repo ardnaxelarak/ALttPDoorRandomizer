@@ -349,7 +349,8 @@ def determine_paths_for_dungeon(world, player, all_regions, name):
             paths.append(boss)
     if 'Thieves Boss' in all_r_names:
         paths.append('Thieves Boss')
-        if world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind':
+        if world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind' \
+                and not world.shuffle_followers[player]:
             paths.append(('Thieves Blind\'s Cell', 'Thieves Boss'))
     for drop_check in drop_path_checks:
         if drop_check in all_r_names:
