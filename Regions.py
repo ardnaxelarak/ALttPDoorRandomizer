@@ -1249,7 +1249,7 @@ def adjust_locations(world, player):
             location.prize = prize_on_boss
             location.real = not prize_on_boss
     # unreal events:
-    for l in ['Ganon', 'Zelda Pickup', 'Zelda Drop Off'] + list(location_events):
+    for l in ['Ganon'] + list(location_events):
         location = world.get_location_unsafe(l, player)
         if location:
             location.type = LocationType.Logical
@@ -1436,8 +1436,8 @@ location_events = {
     'Revealing Light': 'Maiden Unmasked',
     'Ice Block Drop': 'Convenient Block',
     'Skull Star Tile': 'Hidden Pits',
-    'Zelda Pickup': None,
-    'Zelda Drop Off': None
+    'Zelda Pickup': 'Zelda Herself',
+    'Zelda Drop Off': 'Zelda Delivered'
 }
 
 
