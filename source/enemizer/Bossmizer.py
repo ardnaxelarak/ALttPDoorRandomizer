@@ -75,6 +75,8 @@ def add_moldorm_to_list(sprite_list, room_id):
 
 
 def add_helmasaur_king_to_list(sprite_list, room_id):
+    if room_id == 0x29:  # preserves helma-copter behavior in skull woods
+        sprite_list.clear()
     sprite_list.insert(0, create_sprite(room_id, EnemySprite.HelmasaurKing, 0x00, 0, 0x07, 0x06))
 
 

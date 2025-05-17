@@ -1709,7 +1709,7 @@ def write_custom_shops(rom, world, player):
                 item_id, price, replace, replace_price, item_max = Items.item_table['Bee Trap'][3], [0, 0], 0xFF, [0, 0], 1
             else:
                 item_id = loc_item.code
-                price = int16_as_bytes(item['price'])
+                price = int16_as_bytes(int(item['price']))
                 replace = ItemFactory(item['replacement'], player).code if item['replacement'] else 0xFF
                 replace_price = int16_as_bytes(item['replacement_price'])
                 item_max = item['max']
