@@ -114,7 +114,7 @@ def create_item_pool_config(world):
                 single_arrow_placement.append('Red Shield Shop - Right')
                 config.static_placement[player]['Single Arrow'] = single_arrow_placement
             config.location_groups[player] = [
-                LocationGroup('Major').locs(mode_grouping['Overworld Major'] + mode_grouping['Big Chests'] + mode_grouping['Heart Containers']),
+                LocationGroup('Major').locs(mode_grouping['Overworld Major'] + mode_grouping['Big Chests'] + mode_grouping['Heart Containers'] + mode_grouping['Prizes']),
                 LocationGroup('bkhp').locs(mode_grouping['Heart Pieces']),
                 LocationGroup('bktrash').locs(mode_grouping['Overworld Trash'] + mode_grouping['Dungeon Trash']),
                 LocationGroup('bkgt').locs(mode_grouping['GT Trash'])]
@@ -129,11 +129,9 @@ def create_item_pool_config(world):
             LocationGroup('Backup')
         ]
         config.item_pool = {}
-        init_set = mode_grouping['Overworld Major'] + mode_grouping['Big Chests'] + mode_grouping['Heart Containers']
+        init_set = mode_grouping['Overworld Major'] + mode_grouping['Big Chests'] + mode_grouping['Heart Containers'] + mode_grouping['Prizes']
         for player in range(1, world.players + 1):
             groups = LocationGroup('Major').locs(init_set)
-            if world.prizeshuffle[player] != 'none':
-                groups.locations.extend(mode_grouping['Prizes'])
             if world.bigkeyshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Big Keys'])
                 if world.dropshuffle[player] != 'none':
@@ -167,7 +165,7 @@ def create_item_pool_config(world):
         dungeon_set = (mode_grouping['Big Chests'] + mode_grouping['Dungeon Trash'] + mode_grouping['Big Keys'] +
                        mode_grouping['Heart Containers'] + mode_grouping['GT Trash'] + mode_grouping['Small Keys'] +
                        mode_grouping['Compasses'] + mode_grouping['Maps'] + mode_grouping['Key Drops'] +
-                       mode_grouping['Pot Keys'] + mode_grouping['Big Key Drops'])
+                       mode_grouping['Pot Keys'] + mode_grouping['Big Key Drops'] + mode_grouping['Prizes'])
         dungeon_set = set(dungeon_set)
         for loc in world.get_locations():
             if loc.parent_region.dungeon and loc.type in [LocationType.Pot, LocationType.Drop]:
@@ -859,7 +857,7 @@ major_items = {'Bombos', 'Book of Mudora', 'Cane of Somaria', 'Ether', 'Fire Rod
                'Sanctuary Heart Container', 'Boss Heart Container', 'Progressive Shield', 'Ocarina (Activated)',
                'Mirror Shield', 'Progressive Armor', 'Blue Mail', 'Red Mail', 'Progressive Sword', 'Fighter Sword',
                'Master Sword', 'Tempered Sword', 'Golden Sword', 'Bow', 'Silver Arrows', 'Triforce Piece', 'Moon Pearl',
-               'Progressive Bow', 'Progressive Bow (Alt)'}
+               'Progressive Bow', 'Progressive Bow (Alt)', 'Triforce'}
 
 vanilla_swords = {"Link's Uncle", 'Master Sword Pedestal', 'Blacksmith', 'Pyramid Fairy - Left'}
 
