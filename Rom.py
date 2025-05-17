@@ -1565,7 +1565,8 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         rom.write_byte(snes_to_pc(0x07A589), 0x80) # allow bombos use with super bomb
         rom.write_byte(snes_to_pc(0x07A66B), 0x80) # allow quake use with super bomb
         rom.write_byte(snes_to_pc(0x07A919), 0x80) # disable kiki dialogue during mirror
-        rom.write_byte(snes_to_pc(0x07AAC5), 0xAF) # keep all followers after mirroring
+        rom.write_bytes(snes_to_pc(0x07AABD), [0xEA, 0xEA]) # allow locksmith to follow with mirror
+        rom.write_byte(snes_to_pc(0x07AAC1), 0x80) # allow kiki to follow with mirror
         rom.write_byte(snes_to_pc(0x08DED6), 0x80) # allow locksmith to follow with flute
         rom.write_bytes(snes_to_pc(0x09A045), [0xEA, 0xEA]) # allow super bomb to follow into UW holes
         rom.write_byte(snes_to_pc(0x09ACDF), 0x6B) # allow kiki/locksmith to follow after screen transition
