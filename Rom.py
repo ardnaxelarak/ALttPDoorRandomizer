@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'a23774f12c16a50834097fc0a661f6c1'
+RANDOMIZERBASEHASH = '6ba1a9f3907b2bd3d03d6f8d0c165568'
 
 
 class JsonRom(object):
@@ -1154,7 +1154,6 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                                   0x58, 0x60, 0x68, 0x70, 0x78,
                                   0x80, 0x88, 0x90, 0x98, 0xA0])  # spawn with full health
         rom.write_byte(0x39C6B, 0x80)  # never spawn sword beams
-        rom.write_bytes(0x187033, [0x28, 0x20, 0x28, 0x20])  # heart icon
     rom.write_byte(0x18002D, challenge)
 
     # set up clocks for timed modes
