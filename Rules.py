@@ -287,7 +287,7 @@ def global_rules(world, player):
              ((state.has('Cape', player) and state.can_extend_magic(player, 16, True)) or
              (state.has('Cane of Byrna', player) and
               (state.can_extend_magic(player, 12, True) or
-              (state.world.can_take_damage and (state.has_Boots(player) or state.has_hearts(player, 4))))))
+              (state.world.can_take_damage[player] and (state.has_Boots(player) or state.has_hearts(player, 4))))))
              )
 
     # underworld rules
@@ -539,10 +539,10 @@ def global_rules(world, player):
     set_rule(world.get_location('Ice Palace - Map Chest', player), lambda state: state.can_lift_rocks(player) and state.has('Hammer', player))
     set_rule(world.get_entrance('Ice Antechamber Hole', player), lambda state: state.can_lift_rocks(player) and state.has('Hammer', player))
     # todo: ohko rules for spike room - could split into two regions instead of these, but can_take_damage is usually true
-    set_rule(world.get_entrance('Ice Spike Room WS', player), lambda state: state.world.can_take_damage or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
-    set_rule(world.get_entrance('Ice Spike Room Up Stairs', player), lambda state: state.world.can_take_damage or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
-    set_rule(world.get_entrance('Ice Spike Room Down Stairs', player), lambda state: state.world.can_take_damage or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
-    set_rule(world.get_location('Ice Palace - Spike Room', player), lambda state: state.world.can_take_damage or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
+    set_rule(world.get_entrance('Ice Spike Room WS', player), lambda state: state.world.can_take_damage[player] or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
+    set_rule(world.get_entrance('Ice Spike Room Up Stairs', player), lambda state: state.world.can_take_damage[player] or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
+    set_rule(world.get_entrance('Ice Spike Room Down Stairs', player), lambda state: state.world.can_take_damage[player] or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
+    set_rule(world.get_location('Ice Palace - Spike Room', player), lambda state: state.world.can_take_damage[player] or state.has('Hookshot', player) or state.has('Cape', player) or state.has('Cane of Byrna', player))
     set_rule(world.get_location('Ice Palace - Freezor Chest', player), lambda state: state.can_melt_things(player))
     set_rule(world.get_entrance('Ice Hookshot Ledge Path', player), lambda state: state.has('Hookshot', player))
     set_rule(world.get_entrance('Ice Hookshot Balcony Path', player), lambda state: state.has('Hookshot', player))
@@ -566,11 +566,11 @@ def global_rules(world, player):
     #          (state.has('Ice Rod', player) and state.can_use_bombs(player)) or  # freeze popo and throw, bomb to finish
     #          state.has('Hammer', player) or state.has('Cane of Somaria', player) or state.can_shoot_arrows(player))  # need to defeat wizzrobes, bombs don't work ...
     #         byrna could work with sufficient magic
-    set_rule(world.get_location('Misery Mire - Spike Chest', player), lambda state: (state.world.can_take_damage and state.has_hearts(player, 4)) or state.has('Cane of Byrna', player) or state.has('Cape', player))
+    set_rule(world.get_location('Misery Mire - Spike Chest', player), lambda state: (state.world.can_take_damage[player] and state.has_hearts(player, 4)) or state.has('Cane of Byrna', player) or state.has('Cape', player))
     loc = world.get_location('Misery Mire - Spikes Pot Key', player)
     if loc.pot:
         if loc.pot.x == 48 and loc.pot.y == 28:  # pot shuffled to spike area
-            set_rule(loc, lambda state: (state.world.can_take_damage and state.has_hearts(player, 4))
+            set_rule(loc, lambda state: (state.world.can_take_damage[player] and state.has_hearts(player, 4))
                      or state.has('Cane of Byrna', player) or state.has('Cape', player))
     set_rule(world.get_entrance('Mire Left Bridge Hook Path', player), lambda state: state.has('Hookshot', player))
     set_rule(world.get_entrance('Mire Tile Room NW', player), lambda state: state.has_fire_source(player))
@@ -734,8 +734,8 @@ def global_rules(world, player):
 
     set_rule(world.get_entrance('Swamp Crystal Switch Inner to Crystal', player), lambda state: state.can_hit_crystal(player))
     set_rule(world.get_entrance('Swamp Crystal Switch Outer to Ranged Crystal', player), lambda state: state.can_hit_crystal_through_barrier(player) or state.has_beam_sword(player) or (state.has('Hookshot', player) and state.can_reach_blue(world.get_region('Swamp Crystal Switch Outer', player), player)))  # It is the length of the sword, not the beam itself that allows this
-    set_rule(world.get_entrance('Swamp Crystal Switch Outer to Inner Bypass', player), lambda state: state.world.can_take_damage or state.has('Cape', player) or state.has('Cane of Byrna', player))
-    set_rule(world.get_entrance('Swamp Crystal Switch Inner to Outer Bypass', player), lambda state: state.world.can_take_damage or state.has('Cape', player) or state.has('Cane of Byrna', player))
+    set_rule(world.get_entrance('Swamp Crystal Switch Outer to Inner Bypass', player), lambda state: state.world.can_take_damage[player] or state.has('Cape', player) or state.has('Cane of Byrna', player))
+    set_rule(world.get_entrance('Swamp Crystal Switch Inner to Outer Bypass', player), lambda state: state.world.can_take_damage[player] or state.has('Cape', player) or state.has('Cane of Byrna', player))
 
     set_rule(world.get_entrance('Thieves Hellway Blue Barrier', player), lambda state: state.can_reach_blue(world.get_region('Thieves Hellway', player), player))
     set_rule(world.get_entrance('Thieves Hellway Orange Barrier', player), lambda state: state.can_reach_orange(world.get_region('Thieves Hellway', player), player))
@@ -778,7 +778,7 @@ def global_rules(world, player):
 
     set_rule(world.get_entrance('Mire Conveyor to Crystal', player), lambda state: state.can_hit_crystal(player))
     set_rule(world.get_entrance('Mire Tall Dark and Roomy to Ranged Crystal', player), lambda state: True)  # Can always throw pots
-    set_rule(world.get_entrance('Mire Fishbone Blue Barrier Bypass', player), lambda state: False)  # (state.world.can_take_damage or state.has('Cape', player) or state.has('Cane of Byrna', player)) and state.can_tastate.can_use_bombs(player) // Easy to do but obscure. Should it be in logic?
+    set_rule(world.get_entrance('Mire Fishbone Blue Barrier Bypass', player), lambda state: False)  # (state.world.can_take_damage[player] or state.has('Cape', player) or state.has('Cane of Byrna', player)) and state.can_tastate.can_use_bombs(player) // Easy to do but obscure. Should it be in logic?
 
     set_rule(world.get_location('Turtle Rock - Chain Chomps', player), lambda state: state.can_reach('TR Chain Chomps Top', 'Region', player) and state.can_hit_crystal_through_barrier(player))
     set_rule(world.get_entrance('TR Chain Chomps Top to Bottom Barrier - Orange', player), lambda state: state.can_reach_orange(world.get_region('TR Chain Chomps Top', player), player))
@@ -998,7 +998,7 @@ def pot_rules(world, player):
                          ((state.has('Cape', player) and state.can_extend_magic(player, 16, True)) or
                          (state.has('Cane of Byrna', player) and
                           (state.can_extend_magic(player, 12, True) or
-                          (state.world.can_take_damage and (state.has_Boots(player) or state.has_hearts(player, 4)))))))
+                          (state.world.can_take_damage[player] and (state.has_Boots(player) or state.has_hearts(player, 4)))))))
         for l in world.get_region('Mire Hint', player).locations:
             if l.type == LocationType.Pot:
                 add_rule(l, lambda state: state.can_use_bombs(player))
@@ -1008,7 +1008,7 @@ def pot_rules(world, player):
         for number in ['1', '2']:
             loc = world.get_location_unsafe(f'Dark Lake Hylia Ledge Spike Cave Pot #{number}', player)
             if loc and loc.type == LocationType.Pot:
-                add_rule(loc, lambda state: state.world.can_take_damage or state.has('Hookshot', player)
+                add_rule(loc, lambda state: state.world.can_take_damage[player] or state.has('Hookshot', player)
                          or state.has('Cape', player)
                          or (state.has('Cane of Byrna', player)
                              and state.world.difficulty_adjustments[player] == 'normal'))
@@ -1021,7 +1021,7 @@ def pot_rules(world, player):
                 set_rule(loc, lambda state: state.has('Hammer', player) and state.can_lift_rocks(player))
         loc = world.get_location_unsafe('Mire Spikes Pot #3', player)
         if loc:
-            set_rule(loc, lambda state: (state.world.can_take_damage and state.has_hearts(player, 4))
+            set_rule(loc, lambda state: (state.world.can_take_damage[player] and state.has_hearts(player, 4))
                      or state.has('Cane of Byrna', player) or state.has('Cape', player))
         for l in world.get_region('Ice Refill', player).locations:
             if l.type == LocationType.Pot:

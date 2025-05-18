@@ -226,7 +226,10 @@ def generate_itempool(world, player):
         raise NotImplementedError('Not supported yet')
 
     if world.timer in ['ohko', 'timed-ohko']:
-        world.can_take_damage = False
+        world.can_take_damage[player] = False
+
+    if world.damage_challenge[player] in ['ohko', 'gloom']:
+        world.can_take_damage[player] = False
 
     if world.goal[player] in ['pedestal', 'triforcehunt', 'sanctuary']:
         set_event_item(world, player, 'Ganon', 'Nothing')
@@ -1287,7 +1290,7 @@ def modify_pool_for_start_inventory(start_inventory, world, player):
                         d.big_key = None
 
 
-def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer, goal, mode, swords, bombbag, dark_rooms, customitemarray):
+def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer, goal, mode, swords, bombbag, customitemarray):
     pool = []
     placed_items = {}
     precollected_items = []

@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'f68e3c6169462af6e95c56b65b40701b'
+RANDOMIZERBASEHASH = 'a23774f12c16a50834097fc0a661f6c1'
 
 
 class JsonRom(object):
@@ -1140,6 +1140,22 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     rom.write_byte(0x180044, 0x01 if world.swords[player] == 'swordless' else 0x00)  # hammer activates tablets
     if world.swords[player] == 'swordless':
         rom.initial_sram.set_swordless_curtains()  # open curtains
+
+    # set up challenge modes
+    challenge = 0x00;
+    if world.damage_challenge[player] == 'ohko':
+        challenge |= 0x01
+        rom.write_byte(0x39C6B, 0x80)  # never spawn sword beams
+    elif world.damage_challenge[player] == 'gloom':
+        challenge |= 0x02
+        rom.write_bytes(0x4F4AC, [0x08,
+                                  0x08, 0x10, 0x18, 0x20, 0x28,
+                                  0x30, 0x38, 0x40, 0x48, 0x50,
+                                  0x58, 0x60, 0x68, 0x70, 0x78,
+                                  0x80, 0x88, 0x90, 0x98, 0xA0])  # spawn with full health
+        rom.write_byte(0x39C6B, 0x80)  # never spawn sword beams
+        rom.write_bytes(0x187033, [0x28, 0x20, 0x28, 0x20])  # heart icon
+    rom.write_byte(0x18002D, challenge)
 
     # set up clocks for timed modes
     if world.shuffle[player] == 'vanilla':

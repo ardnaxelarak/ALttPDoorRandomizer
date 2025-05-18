@@ -571,6 +571,13 @@
       "always_in_logic"
     ]
   },
+  "damage_challenge": {
+    "choices": [
+      "normal",
+      "ohko",
+      "gloom"
+    ]
+  },
   "crystal_book": {
     "action": "store_true",
     "type": "bool"
