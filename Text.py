@@ -193,7 +193,7 @@ Blind_texts = [
     "Red mail?\nReturn to\nsender.",
     "For sale:\nBaby boots,\nNever found",
     "SRL or rtGG?\nI prefer the\nStepladder",
-    "Stepladders are\nalways up\nto something",
+    "Ladders are\nalways up\nto something",
     "Zelda's\nfashion is\nvery chic",
     "Zombie geese\nare waterfoul.\n",
     "I bought some\ncuccos for a\npoultry sum.",
