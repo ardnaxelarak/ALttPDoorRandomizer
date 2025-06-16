@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0.3
+- Arrghus' Room has water floor restored in boss shuffle
+- Fixed no music in Links House when S+Q from Kakariko
+- Fixed issue with Boots not showing in pause menu after collection
+- Fixed issue with Kiki running away outside the PoD maze
+- Fixed issue with Kiki running away when using Quake
+- Fixed issue with lingering purple chest after dropping and mirroring
+- Getting Locksmith to follow behaves closer to vanilla
+- Fixed issue with Locksmith follower despawning after purple chest item get
+- Possible fix for prizes getting placed in major locations
+- \~Merged in DR v1.4.10~
+  - Helmacopter fix
+
 ## 0.6.0.2
 - Fixed issue with item pool placing items on Zelda Drop Off
 - Fix issue with infinite purple chest item get
