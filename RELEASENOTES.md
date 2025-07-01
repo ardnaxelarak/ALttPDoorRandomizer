@@ -141,11 +141,8 @@ These are now independent of retro mode and have three options: None, Random, an
 
 # Patch Notes
 
-* 1.4.9
-  * Attempted fix for Moth conveyor room timing. THank for many people's input. Unsure if Helmacopter is still acceptable. 
-  * Mirror scroll will show up on file start screen if enabled (thanks Clearmouse!)
-  * Fixes for HMG by Muffins
-  * Various fixes for Enemizer by Codemann (gfx fixes, more randomization options)
-  * Vanilla door shuffle prevents big key doors changes from door_type_mode
-  * Couple of minor fixes to custom generation. Deals with a complete specification of all dungeons
-  * Various enemizer bans for blocked paths (thanks to all the reports, Q1 2025)
+* 1.4.10
+  * Logic: Changed the rule surrounding the Bumper Cave Ledge Drop (the murderdactyl) to only require Pearl AND (Cape OR Byrna OR a Sword) in OHKO mode for now. This is a temporary solution until a better way to prevent needing to use a framerule to get past the bird is invented.
+  * Helmacopter Fix.
+  * Fixed a bug in shopsanity that caused the generation to fail with certain prices.
+  * Enemizer: fairies were invalid on the overworld (unless a bonk occurred nearby), so they will no longer be randomized there.

@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '8b08e24b6cc615e3d02a8e4cc56e5418'
+RANDOMIZERBASEHASH = '54a07f064594e92f136cd994067a59c1'
 
 
 class JsonRom(object):
@@ -1592,7 +1592,8 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         rom.write_byte(snes_to_pc(0x07A589), 0x80) # allow bombos use with super bomb
         rom.write_byte(snes_to_pc(0x07A66B), 0x80) # allow quake use with super bomb
         rom.write_byte(snes_to_pc(0x07A919), 0x80) # disable kiki dialogue during mirror
-        rom.write_byte(snes_to_pc(0x07AAC5), 0xAF) # keep all followers after mirroring
+        rom.write_bytes(snes_to_pc(0x07AABD), [0xEA, 0xEA]) # allow locksmith to follow with mirror
+        rom.write_byte(snes_to_pc(0x07AAC1), 0x80) # allow kiki to follow with mirror
         rom.write_byte(snes_to_pc(0x08DED6), 0x80) # allow locksmith to follow with flute
         rom.write_bytes(snes_to_pc(0x09A045), [0xEA, 0xEA]) # allow super bomb to follow into UW holes
         rom.write_byte(snes_to_pc(0x09ACDF), 0x6B) # allow kiki/locksmith to follow after screen transition
@@ -1735,7 +1736,7 @@ def write_custom_shops(rom, world, player):
                 item_id, price, replace, replace_price, item_max = Items.item_table['Bee Trap'][3], [0, 0], 0xFF, [0, 0], 1
             else:
                 item_id = loc_item.code
-                price = int16_as_bytes(item['price'])
+                price = int16_as_bytes(int(item['price']))
                 replace = ItemFactory(item['replacement'], player).code if item['replacement'] else 0xFF
                 replace_price = int16_as_bytes(item['replacement_price'])
                 item_max = item['max']

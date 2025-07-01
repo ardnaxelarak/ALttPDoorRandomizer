@@ -349,7 +349,7 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Skull Woods Rock (West)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Skull Woods Rock (East)', player), lambda state: state.can_lift_rocks(player))
     # this more like an ohko rule - dependent on bird being present too - so enemizer could turn this off?
-    set_rule(world.get_entrance('Bumper Cave Ledge Drop', player), lambda state: state.has('Cape', player) or state.has('Cane of Byrna', player) or state.has_sword(player))
+    set_rule(world.get_entrance('Bumper Cave Ledge Drop', player), lambda state: world.can_take_damage or state.has('Cape', player) or state.has('Cane of Byrna', player) or state.has_sword(player))
     set_rule(world.get_entrance('Bumper Cave Rock (Outer)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Bumper Cave Rock (Inner)', player), lambda state: state.can_lift_rocks(player))
     set_rule(world.get_entrance('Skull Woods Pass Rock (North)', player), lambda state: state.can_lift_heavy_rocks(player))
@@ -1236,7 +1236,8 @@ def ow_bunny_rules(world, player):
     add_bunny_rule(world.get_entrance('Skull Woods Forgotten Bush (East)', player), player)
     add_bunny_rule(world.get_entrance('Skull Woods Second Section Hole', player), player)
     add_bunny_rule(world.get_entrance('East Dark Death Mountain Bushes', player), player)
-    add_bunny_rule(world.get_entrance('Bumper Cave Ledge Drop', player), player)
+    if not world.can_take_damage:
+        add_bunny_rule(world.get_entrance('Bumper Cave Ledge Drop', player), player)
     add_bunny_rule(world.get_entrance('Bumper Cave Rock (Outer)', player), player)
     add_bunny_rule(world.get_entrance('Bumper Cave Rock (Inner)', player), player)
     add_bunny_rule(world.get_entrance('Skull Woods Pass Bush Row (West)', player), player)

@@ -372,7 +372,7 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.DiggingGameNPC).affix().sub_group(1, 0x2a),
         SpriteRequirement(EnemySprite.Ganon).exalt().sub_group(0, 0x21).sub_group(1, 0x41)
         .sub_group(2, 0x45).sub_group(3, 0x33),
-        SpriteRequirement(EnemySprite.Faerie).immune(),
+        SpriteRequirement(EnemySprite.Faerie).ow_skip().immune(),
         SpriteRequirement(EnemySprite.FakeMasterSword).immune().sub_group(3, 0x11),
         SpriteRequirement(EnemySprite.MagicShopAssistant).affix().sub_group(0, 0x4b).sub_group(3, 0x5a),
         SpriteRequirement(EnemySprite.SomariaPlatform).affix().sub_group(2, 0x27),

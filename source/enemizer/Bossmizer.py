@@ -75,6 +75,8 @@ def add_moldorm_to_list(sprite_list, room_id):
 
 
 def add_helmasaur_king_to_list(sprite_list, room_id):
+    if room_id == 0x29:  # preserves helma-copter behavior in skull woods
+        sprite_list.clear()
     sprite_list.insert(0, create_sprite(room_id, EnemySprite.HelmasaurKing, 0x00, 0, 0x07, 0x06))
 
 
@@ -146,8 +148,6 @@ def boss_writes(world, player, rom):
     rom.write_byte(snes_to_pc(0x368102), eye_number)  # enemizer flag
     rom.write_byte(snes_to_pc(0x1DDBB3), eye_number)  # loop variable
     data_tables = world.data_tables[player]
-    arrghus_can_swim = True
-    water_tiles_on = True
     for dungeon in world.get_dungeons(player):
         for level, boss in dungeon.bosses.items():
             if not boss or boss.name in ['Agahnim', 'Agahnim2']:
@@ -157,10 +157,6 @@ def boss_writes(world, player, rom):
             # room changes
             if boss.name == 'Arrghus' and (dungeon.name != 'Swamp Palace' or level is not None):
                 rom.write_byte(snes_to_pc(0x0DB6BE), 0)   # arrghus can stand on ground
-                arrghus_can_swim = False
-            if boss.name != 'Arrghus' and dungeon.name == 'Swamp Palace' and level is None:
-                remove_water_tiles(data_tables)
-                water_tiles_on = False
             if boss.name == 'Trinexx' and (dungeon.name != 'Turtle Rock' or level is not None):
                 add_shell_to_boss_room(data_tables, dungeon.name, level, 0xFF2)
                 data_tables.room_headers[room_id].byte_0 = 0x60
@@ -181,8 +177,6 @@ def boss_writes(world, player, rom):
                 if not world.shuffle_followers[player]:
                     # maiden is deleted
                     del data_tables.uw_enemy_table.room_map[0x45][0]
-        if not arrghus_can_swim and water_tiles_on:
-            remove_water_tiles(data_tables)
 
 
 boss_defaults = {
