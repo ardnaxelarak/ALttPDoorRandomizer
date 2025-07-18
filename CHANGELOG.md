@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0.5
+- Emergency fix for map/key totals in non-DR
+
 ## 0.6.0.4
 - Fixed pause menu to show compass count and prizes to also show if you've seen them
 - Fixed crash when Old Man follower exits with you at his destination entrance
