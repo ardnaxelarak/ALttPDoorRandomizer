@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0.4
+- Fixed pause menu to show compass count and prizes to also show if you've seen them
+- Fixed crash when Old Man follower exits with you at his destination entrance
+- Old Man fetch cave is no longer restricted from exiting at his destination cave in ER
+- Kodongo AI is returned to its vanilla behavior in their vanilla rooms
+
 ## 0.6.0.3
 - Arrghus' Room has water floor restored in boss shuffle
 - Fixed no music in Links House when S+Q from Kakariko
