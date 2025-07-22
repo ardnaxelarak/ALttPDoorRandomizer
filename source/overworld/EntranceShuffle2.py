@@ -403,7 +403,6 @@ def do_old_man_cave_exit(entrances, exits, avail, cross_world):
         else:
             region_name = 'West Dark Death Mountain (Top)'
         om_cave_options = list(get_accessible_entrances(region_name, avail, [], cross_world, True, True, True, True))
-        om_cave_options = [e for e in om_cave_options if e in entrances and e != 'Old Man House (Bottom)']
         if avail.swapped:
             om_cave_options = [e for e in om_cave_options if e not in Forbidden_Swap_Entrances]
         assert len(om_cave_options), 'No available entrances left to place Old Man Cave'

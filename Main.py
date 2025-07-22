@@ -1071,7 +1071,7 @@ def create_playthrough(world):
 
         collection_spheres.append(sphere)
 
-        logging.getLogger('').debug(world.fish.translate("cli","cli","building.final.spheres"), len(collection_spheres), len(sphere), len(required_locations))
+        logging.getLogger('').debug(world.fish.translate("cli","cli","building.final.spheres"), len(collection_spheres), len(sphere), len(sphere) + len(required_locations))
         if not sphere:
             if world.has_beaten_game(state):
                 required_locations.clear()

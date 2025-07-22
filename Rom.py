@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '54a07f064594e92f136cd994067a59c1'
+RANDOMIZERBASEHASH = '294beab5461ddb889eefa4ca450a8f8b'
 
 
 class JsonRom(object):
@@ -794,6 +794,12 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         for room in world.rooms:
             if room.player == player and room.palette is not None:
                 rom.write_byte(0x13f200+room.index, room.palette)
+    else:
+        if world.keyshuffle[player] != 'universal':
+            for name, layout in world.key_layout[player].items():
+                offset = compass_data[name][4]//2
+                rom.write_byte(0x13f020+offset, layout.max_chests + layout.max_drops)  # not currently used
+                rom.write_byte(0x187010+offset, layout.max_chests)
     if world.doorShuffle[player] == 'basic':
         rom.write_byte(0x138002, 1)
     for door in world.doors:
@@ -1319,6 +1325,9 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                                      | (0x04 if world.mapshuffle[player] != 'none' else 0x00)
                                      | (0x08 if world.bigkeyshuffle[player] != 'none' else 0x00)))  # free roaming item text boxes
     rom.write_byte(0x18003B, 0x01 if world.mapshuffle[player] not in ['none', 'nearby'] else 0x00)  # maps showing crystals on overworld
+    if world.keyshuffle[player] != 'universal' and (world.mapshuffle[player] not in ['none', 'nearby'] or world.doorShuffle[player] != 'vanilla'
+          or world.dropshuffle[player] != 'none' or world.pottery[player] not in ['none', 'cave']):
+        rom.write_byte(0x18003A, 0x01)  # show key counts on map pickup
 
     # compasses showing dungeon count
     compass_mode = 0x80 if world.compassshuffle[player] not in ['none', 'nearby'] else 0x00
@@ -1474,9 +1483,10 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                               | (0x10 if world.logic[player] == 'nologic' else 0)))  # boss icon
 
     def get_reveal_bytes(itemName):
-        for dungeon in world.dungeons:
-            if dungeon.player == player and dungeon.prize and dungeon.prize.name == itemName:
-                return reveal_bytes.get(dungeon.name, 0x0000)
+        if world.prizeshuffle[player] != 'wild':
+            for dungeon in world.dungeons:
+                if dungeon.player == player and dungeon.prize and dungeon.prize.name == itemName:
+                    return reveal_bytes.get(dungeon.name, 0x0000)
         return 0x0000
 
     write_int16(rom, 0x18017A, get_reveal_bytes('Green Pendant')) # Sahasrahla reveal
