@@ -73,6 +73,7 @@ class World(object):
         self.shuffle_ganon = shuffle_ganon
         self.dark_rooms = {}
         self.damage_challenge = {}
+        self.shuffle_damage_table = {}
         self.custom = custom
         self.customitemarray = customitemarray
         self.can_take_damage = {}
@@ -174,6 +175,7 @@ class World(object):
             set_player_attr('can_take_damage', True)
             set_player_attr('dark_rooms', 'require_lamp')
             set_player_attr('damage_challenge', 'normal')
+            set_player_attr('shuffle_damage_table', 'vanilla')
             set_player_attr('crystal_book', False)
             set_player_attr('collection_rate', False)
             set_player_attr('colorizepots', True)
@@ -3075,6 +3077,7 @@ class Spoiler(object):
                          'can_take_damage': self.world.can_take_damage,
                          'dark_rooms': self.world.dark_rooms,
                          'damage_challenge': self.world.damage_challenge,
+                         'shuffle_damage_table': self.world.shuffle_damage_table,
                          'crystal_book': self.world.crystal_book,
                          'triforcegoal': self.world.treasure_hunt_count,
                          'triforcepool': self.world.treasure_hunt_total,
@@ -3328,6 +3331,7 @@ class Spoiler(object):
                     outfile.write('Mirror Scroll:'.ljust(line_width) + '%s\n' % yn(self.metadata['mirrorscroll'][player]))
                     outfile.write('Dark Rooms:'.ljust(line_width) + '%s\n' % self.metadata['dark_rooms'][player])
                     outfile.write('Damage Challenge:'.ljust(line_width) + '%s\n' % self.metadata['damage_challenge'][player])
+                    outfile.write('Damage Table Randomization:'.ljust(line_width) + '%s\n' % self.metadata['shuffle_damage_table'][player])
                     outfile.write('Crystal Book:'.ljust(line_width) + '%s\n' % yn(self.metadata['crystal_book'][player]))
                     outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
                     outfile.write('Race:'.ljust(line_width) + '%s\n' % yn(self.world.settings.world_rep['meta']['race']))

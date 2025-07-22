@@ -139,7 +139,7 @@ def parse_cli(argv, no_defaults=False):
                          'triforce_max_difference', 'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
                          'skullwoods', 'linked_drops',
-                         'pseudoboots', 'mirrorscroll', 'dark_rooms', 'damage_challenge', 'crystal_book', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
+                         'pseudoboots', 'mirrorscroll', 'dark_rooms', 'damage_challenge', 'shuffle_damage_table', 'crystal_book', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
@@ -213,6 +213,7 @@ def parse_settings():
         "mirrorscroll": False,
         "dark_rooms": "require_lamp",
         "damage_challenge": "normal",
+        "shuffle_damage_table": "vanilla",
         "crystal_book": False,
 
         "shuffleenemies": "none",

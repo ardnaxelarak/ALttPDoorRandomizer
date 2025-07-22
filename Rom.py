@@ -33,6 +33,7 @@ from source.overworld.EntranceData import door_addresses, ow_prize_table
 from source.overworld.EntranceShuffle2 import exit_ids
 from OverworldShuffle import default_flute_connections, flute_data
 from InitialSram import InitialSram
+from DamageTable import DamageTable
 
 from source.classes.SFX import randomize_sfx, randomize_sfxinstruments, randomize_songinstruments
 from source.item.FillUtil import valid_pot_items
@@ -1667,6 +1668,7 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         world.data_tables[player].write_to_rom(rom, colorize_pots, world.enemy_shuffle[player] == 'random')
 
     write_enemizer_tweaks(rom, world, player)
+    randomize_damage_table(rom, world, player)
     write_strings(rom, world, player, team)
 
     # write initial sram
@@ -1764,6 +1766,19 @@ def write_enemizer_tweaks(rom, world, player):
     if world.enemy_shuffle[player] != 'none':
         rom.write_byte(snes_to_pc(0x1DF6D8), 0)  # lets enemies walk on water instead of clipping into infinity?
         rom.write_byte(snes_to_pc(0x0DB6B3), 0x82)  # hovers don't need water necessarily?
+
+
+def randomize_damage_table(rom, world, player):
+    if world.shuffle_damage_table[player] == 'randomized':
+        rom.write_bytes(snes_to_pc(0x0DB8F9),
+            [0x00, 0x01, 0x02, 0x03, 0x04, 0x08, 0x10, 0x40,
+             0x00, 0x01, 0x02, 0x03, 0x04, 0x08, 0x10, 0x40,
+             0x00, 0x01, 0x02, 0x03, 0x04, 0x08, 0x10, 0x40,
+             0x00, 0x01, 0x02, 0x03, 0x04, 0x08, 0x10, 0x40,
+             0x00, 0x01, 0x02, 0x03, 0x04, 0x08, 0x10, 0x40])
+        dmg_table = DamageTable()
+        dmg_table.randomize_sword_subclasses()
+        rom.write_bytes(snes_to_pc(0x31C800), dmg_table.get_bytes())
 
 
 def hud_format_text(text):

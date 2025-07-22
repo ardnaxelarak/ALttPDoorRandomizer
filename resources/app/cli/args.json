@@ -616,6 +616,12 @@
       "mimics"
     ]
   },
+  "shuffle_damage_table": {
+    "choices": [
+      "vanilla",
+      "randomized"
+    ]
+  },
   "enemy_health": {
     "choices": [
       "default",
