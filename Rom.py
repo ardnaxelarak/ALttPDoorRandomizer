@@ -1089,8 +1089,8 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         0x51, 0x00 if world.bombbag[player] else 0x06, 0x31 if world.bombbag[player] else 0x52, 0xFF, # 6 +5 bomb upgrades -> +10 bomb upgrade. If bombbag -> turns into Bombs (10)
         0x53, 0x06, 0x54, 0xFF, # 6 +5 arrow upgrades -> +10 arrow upgrade
         0x58, 0x01, 0x36 if world.bow_mode[player].startswith('retro') else 0x43, 0xFF, # silver arrows -> single arrow (red 20 in retro mode)
-        0x3E, difficulty.boss_heart_container_limit, 0x47, 0xff, # boss heart -> green 20
-        0x17, difficulty.heart_piece_limit, 0x47, 0xff, # piece of heart -> green 20
+        0x3E, difficulty.boss_heart_container_limit, GREEN_TWENTY_RUPEES, 0xff, # boss heart -> green 20
+        0x17, difficulty.heart_piece_limit, GREEN_TWENTY_RUPEES, 0xff, # piece of heart -> green 20
         0xFF, 0xFF, 0xFF, 0xFF, # end of table sentinel
     ])
 
