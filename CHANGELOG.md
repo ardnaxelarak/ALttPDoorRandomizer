@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0.7
+- Emergency fix for GT cutscene GFX
+
 ## 0.6.0.6
 - Added ability to change GT entry cutscene GFX thru customizer
 - Chicken as a standing item is no longer a star gfx
