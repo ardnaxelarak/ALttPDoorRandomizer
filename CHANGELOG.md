@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0.6
+- Added ability to change GT entry cutscene GFX thru customizer
+- Chicken as a standing item is no longer a star gfx
+- Fix issue in DR with music silence in pre-Aga room
+- Other various music fixes
+- Fixed issue with Mystery subweights not correctly evaluating boolean settings
+
 ## 0.6.0.5
 - Emergency fix for map/key totals in non-DR
 

@@ -334,7 +334,7 @@ drops:
 
 Prize packs expect a list of eight items each (anything not specified will be whatever randomization would have normally occurred). The special drops expect a single item. Packs 1 through 7 are supported. Prize pack 0 is not customizable.
 
-## prices
+### prices
 
 This must be defined by player. You may have the prices of items in shops defined using the following
 
@@ -347,4 +347,28 @@ prices:
     Dark Death Mountain Shop - Middle: 150
     Dark Death Mountain Shop - Right: 300
     Dark Lake Hylia Shop - Left: 200
+```
+
+### gt_entry
+
+This must be defined by player. This is where you are able to customize aspects of GT entry
+
+#### cutscene_gfx
+
+This is where you can define custom GFX to be used in the GT entry cutscene. For convenience, there are a number of pre-defined names that can be used to indicate already known GFX values built into the ROM. There are too many to list, but a full list can be found in `item_gfx_table` in `Tables.py`. You can also use `Random` and it will take a random one from the aforementioned table.
+
+```
+gt_entry:
+  1:
+    cutscene_gfx: Mirror Shield
+```
+
+Alternatively, you may also supply a custom address and palette ID, respectively, if you are injecting your own personal custom GFX into the ROM.
+
+```
+gt_entry:
+  1:
+    cutscene_gfx:
+      - 0x8140
+      - 0x04
 ```
