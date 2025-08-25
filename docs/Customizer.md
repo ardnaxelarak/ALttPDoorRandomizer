@@ -334,7 +334,7 @@ drops:
 
 Prize packs expect a list of eight items each (anything not specified will be whatever randomization would have normally occurred). The special drops expect a single item. Packs 1 through 7 are supported. Prize pack 0 is not customizable.
 
-## prices
+### prices
 
 This must be defined by player. You may have the prices of items in shops defined using the following
 
