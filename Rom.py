@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'a197c4b7d1580bffd7f243fb750c6be0'
+RANDOMIZERBASEHASH = 'b8c930c1922fb15018c76be902cc15d9'
 
 
 class JsonRom(object):
@@ -1641,6 +1641,26 @@ def patch_rom(world, rom, player, team, is_mystery=False):
 
     write_enemizer_tweaks(rom, world, player)
     write_strings(rom, world, player, team)
+
+    # gt entry
+    if world.customizer:
+        gtentry = world.customizer.get_gtentry()
+        if gtentry and player in gtentry:
+            gtentry = gtentry[player]
+            if 'cutscene_gfx' in gtentry:
+                gfx = gtentry['cutscene_gfx']
+                if type(gfx) is str:
+                    from Tables import item_gfx_table
+                    if gfx.lower() == 'random':
+                        gfx = random.choice(list(item_gfx_table.keys()))
+                    if gfx in item_gfx_table:
+                        write_int16(rom, snes_to_pc(0x3081AA), item_gfx_table[gfx][1] + (0x8000 if not item_gfx_table[gfx][0] else 0))
+                        rom.write_byte(snes_to_pc(0x3081AC), item_gfx_table[gfx][2])
+                    else:
+                        logging.getLogger('').warning('Invalid name "%s" in customized GT entry cutscene gfx', gfx)
+                else:
+                    write_int16(rom, snes_to_pc(0x3081AA), gfx[0])
+                    rom.write_byte(snes_to_pc(0x3081AC), gfx[1])
 
     # write initial sram
     rom.write_initial_sram()

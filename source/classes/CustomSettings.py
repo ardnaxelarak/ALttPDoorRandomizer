@@ -298,6 +298,11 @@ class CustomSettings(object):
         if 'enemies' in self.file_source:
             return self.file_source['enemies']
         return None
+    
+    def get_gtentry(self):
+        if 'gt_entry' in self.file_source:
+            return self.file_source['gt_entry']
+        return None
 
 
     def get_attribute_by_player_composite(self, attribute, player):
