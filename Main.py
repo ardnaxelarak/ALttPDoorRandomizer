@@ -26,7 +26,7 @@ from Rules import set_rules
 from Dungeons import create_dungeons
 from Fill import distribute_items_restrictive, promote_dungeon_items, fill_dungeons_restrictive, ensure_good_items
 from Fill import dungeon_tracking
-from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops
+from Fill import sell_potions, sell_keys, balance_multiworld_progression, balance_money_progression, lock_shop_locations, set_prize_drops, fill_vanilla_big_chests
 from ItemList import generate_itempool, difficulties, fill_prizes, customize_shops, fill_specific_items, create_farm_locations, shuffle_event_items, follower_pickups
 from UnderworldGlitchRules import connect_hmg_entrances_regions, create_hmg_entrances_regions
 from Utils import output_path, parse_player_names
@@ -253,6 +253,8 @@ def main(args, seed=None, fish=None):
     fill_prizes(world)
 
     logger.info(world.fish.translate("cli","cli","placing.dungeon.items"))
+
+    fill_vanilla_big_chests(world)
 
     if args.algorithm != 'equitable':
         shuffled_locations = world.get_unfilled_locations()
@@ -520,6 +522,7 @@ def init_world(args, fish):
     world.overworld_map = args.overworld_map.copy()
     world.take_any = args.take_any.copy()
     world.restrict_boss_items = args.restrict_boss_items.copy()
+    world.big_chest_items = args.big_chest_items.copy()
     world.collection_rate = args.collection_rate.copy()
     world.colorizepots = args.colorizepots.copy()
     world.aga_randomness = args.aga_randomness.copy()
@@ -652,6 +655,7 @@ def copy_world(world):
     ret.allow_flip_sanc = world.allow_flip_sanc.copy()
     ret.prizes = world.prizes.copy()
     ret.restrict_boss_items = world.restrict_boss_items.copy()
+    ret.big_chest_items = world.big_chest_items.copy()
     ret.inaccessible_regions = world.inaccessible_regions.copy()
     ret.damage_table = world.damage_table
     ret.data_tables = world.data_tables  # can be changed...
@@ -877,6 +881,7 @@ def copy_world_premature(world, player):
     ret.allow_flip_sanc = world.allow_flip_sanc.copy()
     ret.prizes = world.prizes.copy()
     ret.restrict_boss_items = world.restrict_boss_items.copy()
+    ret.big_chest_items = world.big_chest_items.copy()
     ret.inaccessible_regions = world.inaccessible_regions.copy()
     ret.damage_table = world.damage_table
     ret.data_tables = world.data_tables  # can be changed...

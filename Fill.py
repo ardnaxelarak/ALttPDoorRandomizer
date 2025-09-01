@@ -43,6 +43,33 @@ def dungeon_tracking(world):
         layout.free_items = layout.location_cnt - layout.dungeon_items
 
 
+def fill_vanilla_big_chests(world):
+    def place_item(player, location_name, item_name):
+        location = world.get_location(location_name, player)
+        items = [item for item in world.itempool if item.location is None and item.name == item_name and item.player == player]
+        if len(items) == 0:
+            raise RuntimeError('Cannot find item %s for player %s in pool.' % (item_name, item.player))
+        item = items[0]
+        world.itempool.remove(item)
+        world.push_item(location, item, False)
+
+    for player in range(1, world.players + 1):
+        if world.big_chest_items[player] == 'vanilla':
+            place_item(player, "Hyrule Castle - Zelda's Chest", "Lamp")
+            place_item(player, "Sahasrahla", "Pegasus Boots")
+            place_item(player, "Eastern Palace - Big Chest", "Bow")
+            place_item(player, "Desert Palace - Big Chest", "Progressive Glove")
+            place_item(player, "Tower of Hera - Big Chest", "Moon Pearl")
+            place_item(player, "Palace of Darkness - Big Chest", "Hammer")
+            place_item(player, "Swamp Palace - Big Chest", "Hookshot")
+            place_item(player, "Skull Woods - Big Chest", "Fire Rod")
+            place_item(player, "Thieves' Town - Big Chest", "Progressive Glove")
+            place_item(player, "Ice Palace - Big Chest", "Flippers")
+            place_item(player, "Misery Mire - Big Chest", "Cane of Somaria")
+            place_item(player, "Turtle Rock - Big Chest", "Ice Rod")
+            place_item(player, "Ganons Tower - Big Chest", "Magic Mirror")
+
+
 def fill_dungeons_restrictive(world, shuffled_locations):
     # with shuffled dungeon items they are distributed as part of the normal item pool
     for item in world.get_items():

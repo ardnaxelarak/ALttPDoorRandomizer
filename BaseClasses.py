@@ -73,6 +73,7 @@ class World(object):
         self.shuffle_ganon = shuffle_ganon
         self.dark_rooms = {}
         self.damage_challenge = {}
+        self.big_chest_items = {}
         self.shuffle_damage_table = {}
         self.custom = custom
         self.customitemarray = customitemarray
@@ -148,6 +149,7 @@ class World(object):
             set_player_attr('bigkeyshuffle', 'none')
             set_player_attr('prizeshuffle', 'none')
             set_player_attr('restrict_boss_items', 'none')
+            set_player_attr('big_chest_items', 'random')
             set_player_attr('bombbag', False)
             set_player_attr('flute_mode', False)
             set_player_attr('bow_mode', False)
@@ -3054,6 +3056,7 @@ class Spoiler(object):
                          'open_pyramid': self.world.open_pyramid,
                          'accessibility': self.world.accessibility,
                          'restricted_boss_items': self.world.restrict_boss_items,
+                         'big_chest_items': self.world.big_chest_items,
                          'hints': self.world.hints,
                          'mapshuffle': self.world.mapshuffle,
                          'compassshuffle': self.world.compassshuffle,
@@ -3332,6 +3335,7 @@ class Spoiler(object):
                     outfile.write('Dark Rooms:'.ljust(line_width) + '%s\n' % self.metadata['dark_rooms'][player])
                     outfile.write('Damage Challenge:'.ljust(line_width) + '%s\n' % self.metadata['damage_challenge'][player])
                     outfile.write('Damage Table Randomization:'.ljust(line_width) + '%s\n' % self.metadata['shuffle_damage_table'][player])
+                    outfile.write('Big Chest Item Randomization:'.ljust(line_width) + '%s\n' % self.metadata['big_chest_items'][player])
                     outfile.write('Crystal Book:'.ljust(line_width) + '%s\n' % yn(self.metadata['crystal_book'][player]))
                     outfile.write('Hints:'.ljust(line_width) + '%s\n' % yn(self.metadata['hints'][player]))
                     outfile.write('Race:'.ljust(line_width) + '%s\n' % yn(self.world.settings.world_rep['meta']['race']))

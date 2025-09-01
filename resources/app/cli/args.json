@@ -461,6 +461,12 @@
       "dungeon"
     ]
   },
+  "big_chest_items": {
+    "choices": [
+      "random",
+      "vanilla"
+    ]
+  },
   "hints": {
     "action": "store_true",
     "type": "bool"

@@ -135,7 +135,7 @@ def parse_cli(argv, no_defaults=False):
                          'flute_mode', 'bow_mode', 'take_any', 'boots_hint', 'shuffle_followers',
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'prizeshuffle', 'startinventory',
-                         'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items',
+                         'usestartinventory', 'bombbag', 'shuffleganon', 'overworld_map', 'restrict_boss_items', 'big_chest_items',
                          'triforce_max_difference', 'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
                          'skullwoods', 'linked_drops',
@@ -189,6 +189,7 @@ def parse_settings():
         "mystery": False,
         "suppress_meta": False,
         "restrict_boss_items": "none",
+        "big_chest_items": "random",
 
         # Shuffle Ganon defaults to TRUE
         "openpyramid": "auto",

@@ -1146,7 +1146,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     else:
         pool.extend(diff.basicarmor)
 
-    if 'silvers' not in world.bow_mode[player]:
+    if 'silvers' not in world.bow_mode[player] and world.big_chest_items[player] != 'vanilla':
         pool.extend(['Progressive Bow'] * 2)
     elif swords != 'swordless':
         pool.extend(diff.basicbow)
