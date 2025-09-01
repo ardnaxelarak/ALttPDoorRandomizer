@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '294beab5461ddb889eefa4ca450a8f8b'
+RANDOMIZERBASEHASH = 'b2566e746c7694b21cb19566763c42e3'
 
 
 class JsonRom(object):
@@ -1098,8 +1098,8 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         0x51, 0x00 if world.bombbag[player] else 0x06, 0x31 if world.bombbag[player] else 0x52, 0xFF, # 6 +5 bomb upgrades -> +10 bomb upgrade. If bombbag -> turns into Bombs (10)
         0x53, 0x06, 0x54, 0xFF, # 6 +5 arrow upgrades -> +10 arrow upgrade
         0x58, 0x01, 0x36 if world.bow_mode[player].startswith('retro') else 0x43, 0xFF, # silver arrows -> single arrow (red 20 in retro mode)
-        0x3E, difficulty.boss_heart_container_limit, 0x47, 0xff, # boss heart -> green 20
-        0x17, difficulty.heart_piece_limit, 0x47, 0xff, # piece of heart -> green 20
+        0x3E, difficulty.boss_heart_container_limit, GREEN_TWENTY_RUPEES, 0xff, # boss heart -> green 20
+        0x17, difficulty.heart_piece_limit, GREEN_TWENTY_RUPEES, 0xff, # piece of heart -> green 20
         0xFF, 0xFF, 0xFF, 0xFF, # end of table sentinel
     ])
 
@@ -1670,6 +1670,26 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     write_enemizer_tweaks(rom, world, player)
     randomize_damage_table(rom, world, player)
     write_strings(rom, world, player, team)
+
+    # gt entry
+    if world.customizer:
+        gtentry = world.customizer.get_gtentry()
+        if gtentry and player in gtentry:
+            gtentry = gtentry[player]
+            if 'cutscene_gfx' in gtentry:
+                gfx = gtentry['cutscene_gfx']
+                if type(gfx) is str:
+                    from Tables import item_gfx_table
+                    if gfx.lower() == 'random':
+                        gfx = random.choice(list(item_gfx_table.keys()))
+                    if gfx in item_gfx_table:
+                        write_int16(rom, snes_to_pc(0x3081AA), item_gfx_table[gfx][1] + (0x8000 if not item_gfx_table[gfx][0] else 0))
+                        rom.write_byte(snes_to_pc(0x3081AC), item_gfx_table[gfx][2])
+                    else:
+                        logging.getLogger('').warning('Invalid name "%s" in customized GT entry cutscene gfx', gfx)
+                else:
+                    write_int16(rom, snes_to_pc(0x3081AA), gfx[0])
+                    rom.write_byte(snes_to_pc(0x3081AC), gfx[1])
 
     # write initial sram
     rom.write_initial_sram()
