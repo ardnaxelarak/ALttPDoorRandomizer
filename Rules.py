@@ -1669,7 +1669,7 @@ def standard_rules(world, player):
 
 def find_rules_for_zelda_delivery(world, player):
     # path rules for backtracking
-    start_region = world.get_region('Hyrule Dungeon Cellblock', player)
+    start_region = world.get_region(world.default_zelda_region[player], player)
     queue = deque([(start_region, [], [])])
     visited = {start_region}
     blank_state = CollectionState(world)
