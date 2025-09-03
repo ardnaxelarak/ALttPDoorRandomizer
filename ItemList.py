@@ -1676,7 +1676,7 @@ def set_event_item(world, player, location_name, item_name=None):
 
 
 def shuffle_event_items(world, player):
-    if (world.shuffle_followers[player]):
+    if world.shuffle_followers[player]:
         available_quests = follower_quests.copy()
         available_pickups = [quests[0] for quests in available_quests.values()]
 
@@ -1688,11 +1688,14 @@ def shuffle_event_items(world, player):
                 available_pickups.remove(loc.item.name)
             
 
-        if world.mode[player] == 'standard':
-            if 'Zelda Herself' in available_pickups:
-                zelda_pickup = available_quests.pop('Zelda Pickup')[0]
-                available_pickups.remove(zelda_pickup)
-                set_event_item(world, player, 'Zelda Pickup', zelda_pickup)
+        if world.mode[player] == 'standard' and 'Zelda Herself' in available_pickups:
+            zelda_dropoff = 'Zelda Pickup'
+            if world.default_zelda_region[player] == 'Thieves Blind\'s Cell':
+                zelda_dropoff = 'Suspicious Maiden'
+            available_quests.pop(zelda_dropoff)
+            zelda_pickup = 'Zelda Herself'
+            available_pickups.remove(zelda_pickup)
+            set_event_item(world, player, zelda_dropoff, zelda_pickup)
 
         random.shuffle(available_pickups)
 

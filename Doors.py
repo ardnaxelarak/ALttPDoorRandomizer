@@ -1302,8 +1302,12 @@ def create_doors(world, player):
     world.get_door('Swamp Flooded Room Ladder', player).event('Swamp Drain')
 
     if world.mode[player] == 'standard' and 'Zelda Herself' not in [i.name for i in world.precollected_items if i.player == player]:
-        world.get_door('Hyrule Castle Throne Room Tapestry', player).event('Zelda Pickup')
-        world.get_door('Hyrule Castle Tapestry Backwards', player).event('Zelda Pickup')
+        if not world.shuffle_followers[player]:
+            zelda_location = 'Zelda Pickup'
+        else:
+            zelda_location = 'Suspicious Maiden'
+        world.get_door('Hyrule Castle Throne Room Tapestry', player).event(zelda_location)
+        world.get_door('Hyrule Castle Tapestry Backwards', player).event(zelda_location)
 
     # crystal switches and barriers
     world.get_door('Hera Lobby Crystal Exit', player).c_switch()

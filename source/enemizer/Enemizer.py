@@ -521,6 +521,21 @@ def randomize_enemies(world, player):
                     green_mail, blue_mail, red_mail = original_table[idx]
                     del original_table[idx]
             world.data_tables[player].enemy_damage[i] = [green_mail, blue_mail, red_mail]
+    # determine default zelda follower location
+    if world.mode[player] == 'standard' and world.doorShuffle[player] == 'crossed' and world.shuffle_followers[player]:
+        def random_zelda():
+            world.default_zelda_region[player] = random.choice(['Hyrule Dungeon Cellblock', 'Thieves Blind\'s Cell'])
+        if world.customizer:
+            placements = world.customizer.get_placements()
+            if placements and player in placements and 'Zelda Herself' in placements[player].values():
+                location = [l for (l, item) in placements[player].items() if item == 'Zelda Herself'][0]
+                if location == 'Suspicious Maiden':
+                    world.default_zelda_region[player] = 'Thieves Blind\'s Cell'
+            else:
+                random_zelda()
+        else:
+            random_zelda()
+    
 
 
 def write_enemy_shuffle_settings(world, player, rom):
