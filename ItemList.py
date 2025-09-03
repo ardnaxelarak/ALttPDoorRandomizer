@@ -1715,10 +1715,11 @@ def get_item_and_event_flag(item, world, player, dungeon_pool, prize_set, prize_
     item_player = player if len(item_parts) < 2 else int(item_parts[1])
     item_name = item_parts[0]
     event_flag = False
-    if item_name in prize_set:
-        item_player = player  # prizes must be for that player
+    if item_name in prize_set or item_name in follower_pickups:
+        item_player = player  # must be for that player
         item_to_place = ItemFactory(item_name, item_player)
-        prize_pool.remove(item_name)
+        if item_name in prize_set:
+            prize_pool.remove(item_name)
         event_flag = True
     elif is_dungeon_item(item_name, world, item_player):
         item_to_place = next(x for x in dungeon_pool
