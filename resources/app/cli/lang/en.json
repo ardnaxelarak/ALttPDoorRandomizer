@@ -331,6 +331,13 @@
       "Random: Picks a random value between 0 and 7 (inclusive).",
       "0-7:    Number of crystals needed"
     ],
+    "ganon_item": [
+      "What item Ganon is vulnerable to while stunned in his final phase.",
+      "Silver: Silver arrows (as in the vanilla game).",
+      "Random: Picks a random damaging item (but not a medallion if swordless).",
+      "<item>: The specified item will damage stunned ganon.",
+      "None:   Stunned Ganon cannot be damaged. You must use the normal silverless methods."
+    ],
     "openpyramid": [ "Pre-opens the pyramid hole, this removes the Agahnim 2 requirement for it. (default: %(default)s)" ],
     "rom": [
       "Path to an ALttP JP (1.0) rom to use as a base." ,

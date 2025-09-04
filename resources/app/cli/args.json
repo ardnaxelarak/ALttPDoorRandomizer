@@ -311,6 +311,25 @@
       "random"
     ]
   },
+  "ganon_item": {
+    "choices": [
+      "silver",
+      "boomerang",
+      "hookshot",
+      "powder",
+      "fire_rod",
+      "ice_rod",
+      "bombos",
+      "ether",
+      "quake",
+      "hammer",
+      "bee",
+      "somaria",
+      "byrna",
+      "random",
+      "none"
+    ]
+  },
   "beemizer": {
     "choices": [
       "4", "3", "2", "1", "0"

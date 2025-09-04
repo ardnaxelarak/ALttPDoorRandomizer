@@ -22,7 +22,7 @@ from Dungeons import dungeon_music_addresses, dungeon_table
 from Regions import location_table, shop_to_location_table, retro_shops
 from RoomData import DoorKind
 from Text import MultiByteTextMapper, CompressedTextMapper, text_addresses, Credits, TextTable
-from Text import Uncle_texts, Ganon1_texts, Ganon_Phase_3_No_Silvers_texts, TavernMan_texts, Sahasrahla2_texts
+from Text import Uncle_texts, Ganon1_texts, Ganon_Phase_3_No_Silvers_texts, Ganon_Phase_3_No_Weakness_texts, TavernMan_texts, Sahasrahla2_texts
 from Text import Triforce_texts, Blind_texts, BombShop2_texts, junk_texts
 from Text import KingsReturn_texts, Sanctuary_texts, Kakariko_texts, Blacksmiths_texts, DeathMountain_texts
 from Text import LostWoods_texts, WishingWell_texts, DesertPalace_texts, MountainTower_texts, LinksHouse_texts
@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'b2566e746c7694b21cb19566763c42e3'
+RANDOMIZERBASEHASH = 'f0d684ceb9639cb9bb3b13b52a7cea66'
 
 
 class JsonRom(object):
@@ -1292,6 +1292,25 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     rom.write_byte(0x1801A6, world.crystals_needed_for_ganon[player])
     rom.write_byte(0x1801A2, 0x00)  # ped requirement is vanilla, set to 0x1 for special requirements
 
+    ganon_item_byte = {
+        "silver": 0x00,
+        "boomerang": 0x02,
+        "hookshot": 0x03,
+        "bomb": 0x04,
+        "powder": 0x05,
+        "fire_rod": 0x06,
+        "ice_rod": 0x07,
+        "bombos": 0x08,
+        "ether": 0x09,
+        "quake": 0x0A,
+        "hammer": 0x0C,
+        "bee": 0x10,
+        "somaria": 0x11,
+        "byrna": 0x12,
+        "none": 0xFF,
+    }
+    rom.write_byte(0x18002E, ganon_item_byte[world.ganon_item[player]])
+
     # block HC upstairs doors in rain state in standard mode
     prevent_rain = world.mode[player] == 'standard' and world.shuffle[player] != 'vanilla' and world.logic[player] != 'nologic'
     rom.write_byte(0x18008A, 0x01 if prevent_rain else 0x00)
@@ -2420,28 +2439,63 @@ def write_strings(rom, world, player, team):
 
     no_silver_text = Ganon_Phase_3_No_Silvers_texts[random.randint(0, len(Ganon_Phase_3_No_Silvers_texts) - 1)]
 
-    silverarrows = world.find_items('Silver Arrows', player)
-    random.shuffle(silverarrows)
-    if silverarrows:
-        hint_phrase = hint_text(silverarrows[0]).replace("Ganon's", "my")
-        silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?'
-    else:
-        silverarrow_hint = no_silver_text
-    tt['ganon_phase_3_no_silvers'] = silverarrow_hint
-    tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
-
-    prog_bow_locs = world.find_items('Progressive Bow', player)
-    distinguished_prog_bow_loc = next((location for location in prog_bow_locs if location.item.code == 0x65), None)
-    progressive_silvers = world.difficulty_requirements[player].progressive_bow_limit >= 2 or world.swords[player] == 'swordless'
-    if distinguished_prog_bow_loc:
-        prog_bow_locs.remove(distinguished_prog_bow_loc)
-        hint_phrase = hint_text(distinguished_prog_bow_loc).replace("Ganon's", "my")
-        silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
+    ganon_item = world.ganon_item[player]
+    if ganon_item == "silver":
+        silverarrows = world.find_items('Silver Arrows', player)
+        random.shuffle(silverarrows)
+        if silverarrows:
+            hint_phrase = hint_text(silverarrows[0]).replace("Ganon's", "my")
+            silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?'
+        else:
+            silverarrow_hint = no_silver_text
         tt['ganon_phase_3_no_silvers'] = silverarrow_hint
-    if any(prog_bow_locs):
-        hint_phrase = hint_text(random.choice(prog_bow_locs)).replace("Ganon's", "my")
-        silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
         tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
+
+        prog_bow_locs = world.find_items('Progressive Bow', player)
+        distinguished_prog_bow_loc = next((location for location in prog_bow_locs if location.item.code == 0x65), None)
+        progressive_silvers = world.difficulty_requirements[player].progressive_bow_limit >= 2 or world.swords[player] == 'swordless'
+        if distinguished_prog_bow_loc:
+            prog_bow_locs.remove(distinguished_prog_bow_loc)
+            hint_phrase = hint_text(distinguished_prog_bow_loc).replace("Ganon's", "my")
+            silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
+            tt['ganon_phase_3_no_silvers'] = silverarrow_hint
+        if any(prog_bow_locs):
+            hint_phrase = hint_text(random.choice(prog_bow_locs)).replace("Ganon's", "my")
+            silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
+            tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
+    elif ganon_item == "bomb":
+        tt['ganon_phase_3_no_bow'] = "You can't best\nme without\nexplosives!"
+        tt['ganon_phase_3_silvers'] = "Explosives!\nMy one true\nweakness!"
+    elif ganon_item == "bee":
+        tt['ganon_phase_3_no_bow'] = "You can't best\nme without\na bee!"
+        tt['ganon_phase_3_silvers'] = "Oh no! A bee!\nMy one true\nweakness!"
+    elif ganon_item == "none":
+        no_weakness_text = Ganon_Phase_3_No_Weakness_texts[random.randint(0, len(Ganon_Phase_3_No_Weakness_texts) - 1)]
+        tt['ganon_phase_3_no_bow'] = no_weakness_text
+        tt['ganon_phase_3_silvers'] = no_weakness_text
+    else:
+        name_table = {
+            'boomerang': ['a boomerang', 'A boomerang', 'Red Boomerang'],
+            'hookshot': ['a hookshot', 'A hookshot', 'Hookshot'],
+            'powder': ['the powder', 'Powder', 'Magic Powder'],
+            'fire_rod': ['the fire rod', 'The fire rod', 'Fire Rod'],
+            'ice_rod': ['the ice rod', 'The ice rod', 'Ice Rod'],
+            'bombos': ['bombos', 'Bombos', 'Bombos'],
+            'ether': ['ether', 'Ether', 'Ether'],
+            'quake': ['quake', 'Quake', 'Quake'],
+            'hammer': ['a hammer', 'A hammer', 'Hammer'],
+            'somaria': ['somaria', 'Somaria', 'Cane of Somaria'],
+            'byrna': ['byrna', 'Byrna', 'Cane of Byrna'],
+        }
+        locations = world.find_items(name_table[ganon_item][2], player)
+        random.shuffle(locations)
+        location_hint = (' %s?' % hint_text(locations[0]).replace("Ganon's", "my")) if locations else "?\nI think not!"
+        have_text = name_table[ganon_item][1]
+        none_text = name_table[ganon_item][0]
+        if len(have_text) <= 6:
+            have_text = "Oh no! %s" % have_text
+        tt['ganon_phase_3_no_bow'] = "Did you find %s%s" % (none_text, location_hint)
+        tt['ganon_phase_3_silvers'] = "%s!\nMy one true\nweakness!" % have_text
 
     crystal5 = world.find_items('Crystal 5', player)
     crystal6 = world.find_items('Crystal 6', player)

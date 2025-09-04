@@ -74,6 +74,8 @@ class World(object):
         self.dark_rooms = {}
         self.damage_challenge = {}
         self.shuffle_damage_table = {}
+        self.ganon_item = {}
+        self.ganon_item_orig = {}
         self.custom = custom
         self.customitemarray = customitemarray
         self.can_take_damage = {}
@@ -161,8 +163,10 @@ class World(object):
             set_player_attr('escape_assist', [])
             set_player_attr('crystals_needed_for_ganon', 7)
             set_player_attr('crystals_needed_for_gt', 7)
+            set_player_attr('ganon_item', 'silver')
             set_player_attr('crystals_ganon_orig', {})
             set_player_attr('crystals_gt_orig', {})
+            set_player_attr('ganon_item_orig', 'silver')
             set_player_attr('open_pyramid', 'auto')
             set_player_attr('take_any', 'none')
             set_player_attr('treasure_hunt_icon', 'Triforce Piece')
@@ -1346,6 +1350,42 @@ class CollectionState(object):
     def has_blunt_weapon(self, player):
         return self.has_sword(player) or self.has('Hammer', player)
 
+    def can_hit_stunned_ganon(self, player):
+        ganon_item = self.world.ganon_item[player]
+        if ganon_item == "silver":
+            return self.has("Silver Arroys", player) and self.can_shoot_arrows(player)
+        elif ganon_item == "boomerang":
+            return self.has("Blue Boomerang", player) or self.has("Red Boomerang", player)
+        elif ganon_item == "hookshot":
+            return self.has("Hookshot", player)
+        elif ganon_item == "bomb":
+            return self.can_use_bombs(player)
+        elif ganon_item == "powder":
+            return self.has("Magic Powder", player)
+        elif ganon_item == "fire_rod":
+            return self.has("Fire Rod", player)
+        elif ganon_item == "ice_rod":
+            return self.has("Ice Rod", player)
+        elif ganon_item == "bombos":
+            return self.has("Bombos", player) and self.can_use_medallions(player)
+        elif ganon_item == "ether":
+            return self.has("Ether", player) and self.can_use_medallions(player)
+        elif ganon_item == "quake":
+            return self.has("Quake", player) and self.can_use_medallions(player)
+        elif ganon_item == "hammer":
+            return self.has("Hammer", player)
+        elif ganon_item == "bee":
+            return (self.has_bottle(player) and (self.has("Bug Catching Net", player) or self.can_buy_unlimited("Bee", player)))
+        elif ganon_item == "somaria":
+            return self.has("Cane of Somaria", player)
+        elif ganon_item == "byrna":
+            return self.has("Cane of Byrna", player)
+        else:
+            return False
+
+    def can_use_medallions(self, player):
+        return self.has_sword(player)
+
     def has_Mirror(self, player):
         return self.has('Magic Mirror', player)
 
@@ -1364,7 +1404,7 @@ class CollectionState(object):
         return self.has('Ocarina (Activated)', player)
 
     def can_melt_things(self, player):
-        return self.has('Fire Rod', player) or (self.has('Bombos', player) and self.has_sword(player))
+        return self.has('Fire Rod', player) or (self.has('Bombos', player) and self.can_use_medallions(player))
 
     def can_avoid_lasers(self, player):
         return (self.has('Mirror Shield', player) or self.has('Cape', player)
@@ -3051,6 +3091,7 @@ class Spoiler(object):
                          'beemizer': self.world.beemizer,
                          'gt_crystals': self.world.crystals_needed_for_gt,
                          'ganon_crystals': self.world.crystals_needed_for_ganon,
+                         'ganon_item': self.world.ganon_item,
                          'open_pyramid': self.world.open_pyramid,
                          'accessibility': self.world.accessibility,
                          'restricted_boss_items': self.world.restrict_boss_items,
@@ -3263,6 +3304,7 @@ class Spoiler(object):
                         outfile.write('Triforce Pieces Total:'.ljust(line_width) + '%s\n' % self.metadata['triforcepool'][player])
                     outfile.write('Crystals Required for GT:'.ljust(line_width) + '%s\n' % str(self.world.crystals_gt_orig[player]))
                     outfile.write('Crystals Required for Ganon:'.ljust(line_width) + '%s\n' % str(self.world.crystals_ganon_orig[player]))
+                    outfile.write('Item Required for Ganon:'.ljust(line_width) + '%s\n' % str(self.world.ganon_item_orig[player]))
                     outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
                     outfile.write('\n')
                     outfile.write('Accessibility:'.ljust(line_width) + '%s\n' % self.metadata['accessibility'][player])

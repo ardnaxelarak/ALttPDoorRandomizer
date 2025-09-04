@@ -58,6 +58,26 @@ def check_python_version():
         logging.warning(BabelFish().translate("cli","cli","old.python.version"), sys.version)
 
 
+def random_ganon_item(sword_mode):
+    options = [
+        "silver",
+        "boomerang",
+        "hookshot",
+        "powder",
+        "fire_rod",
+        "ice_rod",
+        "hammer",
+        "bee",
+        "somaria",
+        "byrna",
+        "bombos",
+        "ether",
+        "quake",
+    ]
+    max_choice = len(options) - 3 if sword_mode == "swordless" else len(options) 
+    return options[random.randint(0, max_choice - 1)]
+
+
 def main(args, seed=None, fish=None):
     check_python_version()
     
@@ -99,6 +119,8 @@ def main(args, seed=None, fish=None):
 
     world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
     world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
+    world.ganon_item = {player: random_ganon_item(args.swords[player]) if args.ganon_item[player] == 'random' else args.ganon_item[player] for player in range(1, world.players + 1)}
+
     world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
 
     world.treasure_hunt_count = {}
@@ -479,6 +501,7 @@ def init_world(args, fish):
     world.bow_mode = args.bow_mode.copy()
     world.crystals_ganon_orig = args.crystals_ganon.copy()
     world.crystals_gt_orig = args.crystals_gt.copy()
+    world.ganon_item_orig = args.ganon_item.copy()
     world.owTerrain = args.ow_terrain.copy()
     world.owKeepSimilar = args.ow_keepsimilar.copy()
     world.owWhirlpoolShuffle = args.ow_whirlpool.copy()
@@ -604,8 +627,10 @@ def copy_world(world):
     ret.bow_mode = world.bow_mode.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
+    ret.ganon_item = world.ganon_item.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()
+    ret.ganon_item_orig = world.ganon_item_orig.copy()
     ret.owTerrain = world.owTerrain.copy()
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()
@@ -829,8 +854,10 @@ def copy_world_premature(world, player):
     ret.bow_mode = world.bow_mode.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
+    ret.ganon_item = world.ganon_item.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()
+    ret.ganon_item_orig = world.ganon_item_orig.copy()
     ret.owTerrain = world.owTerrain.copy()
     ret.owKeepSimilar = world.owKeepSimilar.copy()
     ret.owWhirlpoolShuffle = world.owWhirlpoolShuffle.copy()

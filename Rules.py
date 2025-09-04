@@ -862,8 +862,15 @@ def global_rules(world, player):
             add_mc_rule('Agahnim 1')
         add_mc_rule('Agahnim 2')
 
-    set_rule(world.get_location('Ganon', player), lambda state: state.has_beam_sword(player) and state.has_fire_source(player)
-                                                                and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or (state.has('Silver Arrows', player) and state.can_shoot_arrows(player)) or state.has('Lamp', player) or state.can_extend_magic(player, 12)))  # need to light torch a sufficient amount of times
+    set_rule(
+        world.get_location('Ganon', player),
+        lambda state: state.has_beam_sword(player)
+            and state.has_fire_source(player)
+            and (state.has('Tempered Sword', player) or state.has('Golden Sword', player)
+                or state.can_hit_stunned_ganon(player)
+                or state.has('Lamp', player)
+                or state.can_extend_magic(player, 12)))  # need to light torch a sufficient amount of times
+
     set_rule(world.get_entrance('Ganon Drop', player), lambda state: state.has_beam_sword(player))  # need to damage ganon to get tiles to drop
 
 
