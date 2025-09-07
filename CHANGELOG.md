@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0.8
+- Re-fixed issue with Old Man spawning on pyramid
+- Allowing Zelda to be in TT Prison for follower shuffle escape
+- Fixed error with placing Old Man Cave in ER
+- Fixed error when plando'ing followers at locations
+
 ## 0.6.0.7
 - Emergency fix for GT cutscene GFX
 
