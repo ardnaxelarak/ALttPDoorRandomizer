@@ -586,13 +586,13 @@ def determine_paths_for_dungeon(world, player, all_regions, name):
                 paths.append(portal.door.entrance.parent_region.name)
     if world.mode[player] == 'standard':
         if name == 'Hyrule Castle':
-            paths.append('Hyrule Dungeon Cellblock')
-            paths.append(('Hyrule Dungeon Cellblock', 'Sanctuary'))
+            paths.append(world.default_zelda_region[player])
+            paths.append((world.default_zelda_region[player], 'Sanctuary'))
         if name == 'Hyrule Castle Sewers':
             paths.append('Sanctuary')
         if name == 'Hyrule Castle Dungeon':
-            paths.append('Hyrule Dungeon Cellblock')
-            paths.append(('Hyrule Dungeon Cellblock', 'Hyrule Castle Throne Room'))
+            paths.append(world.default_zelda_region[player])
+            paths.append((world.default_zelda_region[player], 'Hyrule Castle Throne Room'))
     if world.doorShuffle[player] in ['basic'] and name == 'Thieves Town':
         paths.append('Thieves Attic Window')
     elif 'Thieves Attic Window' in all_r_names:
@@ -1322,7 +1322,7 @@ def create_dungeon_builders(all_sectors, connections_tuple, world, player, dunge
             for r_name in dungeon_boss_sectors[key]:
                 assign_sector(find_sector(r_name, candidate_sectors), current_dungeon, candidate_sectors, global_pole)
             if key == 'Hyrule Castle' and world.mode[player] == 'standard':
-                for r_name in ['Hyrule Dungeon Cellblock', 'Sanctuary', 'Hyrule Castle Throne Room']:  # need to deliver zelda
+                for r_name in [world.default_zelda_region[player], 'Sanctuary', 'Hyrule Castle Throne Room']:  # need to deliver zelda
                     assign_sector(find_sector(r_name, candidate_sectors), current_dungeon,
                                   candidate_sectors, global_pole)
             if key == 'Thieves Town' and (world.get_dungeon("Thieves Town", player).boss.enemizer_name == 'Blind'
@@ -3091,7 +3091,7 @@ def split_dungeon_builder(builder, split_list, builder_info):
             if builder.name == 'Hyrule Castle':
                 assign_sector(find_sector('Hyrule Castle Throne Room', candidate_sectors),
                               dungeon_map['Hyrule Castle Dungeon'], candidate_sectors, global_pole)
-                assign_sector(find_sector('Hyrule Dungeon Cellblock', candidate_sectors),
+                assign_sector(find_sector(world.default_zelda_region[player], candidate_sectors),
                               dungeon_map['Hyrule Castle Dungeon'], candidate_sectors, global_pole)
                 dungeon_map['Hyrule Castle Dungeon'].throne_door = world.get_door('Hyrule Castle Throne Room N', player)
                 dungeon_map['Hyrule Castle Sewers'].sewers_access = builder.throne_door

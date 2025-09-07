@@ -1805,7 +1805,10 @@ def imp_locations_factory(world, player):
         return imp_locations
     imp_locations = ['Agahnim 1', 'Agahnim 2', 'Attic Cracked Floor', 'Suspicious Maiden']
     if world.mode[player] == 'standard':
-        imp_locations.append('Zelda Pickup')
+        if world.default_zelda_region[player] == 'Thieves Blinds\' Cell':
+            imp_locations.append('Suspicious Maiden')
+        else:
+            imp_locations.append('Zelda Pickup')
         imp_locations.append('Zelda Drop Off')
     return imp_locations
 

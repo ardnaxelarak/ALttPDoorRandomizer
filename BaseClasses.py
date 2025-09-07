@@ -76,6 +76,7 @@ class World(object):
         self.can_take_damage = True
         self.hints = hints.copy()
         self.prizes = {}
+        self.default_zelda_region = {}
         self.dynamic_regions = []
         self.dynamic_locations = []
         self.spoiler_mode = spoiler_mode
@@ -185,6 +186,7 @@ class World(object):
             set_player_attr('standardize_palettes', 'standardize')
             set_player_attr('force_fix', {'gt': False, 'sw': False, 'pod': False, 'tr': False})
             set_player_attr('prizes', {'dig;': [], 'pull': [0, 0, 0], 'crab': [0, 0], 'stun': 0, 'fish': 0, 'enemies': []})
+            set_player_attr('default_zelda_region', 'Hyrule Dungeon Cellblock')
 
             set_player_attr('exp_cache', defaultdict(dict))
             set_player_attr('enabled_entrances', {})

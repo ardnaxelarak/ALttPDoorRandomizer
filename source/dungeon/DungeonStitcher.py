@@ -333,13 +333,13 @@ def determine_paths_for_dungeon(world, player, all_regions, name):
             if portal.destination:
                 paths.append(portal.door.entrance.parent_region.name)
     if world.mode[player] == 'standard' and name == 'Hyrule Castle Dungeon':
-        paths.append('Hyrule Dungeon Cellblock')
-        paths.append(('Hyrule Dungeon Cellblock', 'Hyrule Castle Throne Room'))
+        paths.append(world.default_zelda_region[player])
+        paths.append((world.default_zelda_region[player], 'Hyrule Castle Throne Room'))
         entrance = next(x for x in world.dungeon_portals[player] if x.name == 'Hyrule Castle South')
         # todo: in non-er, we can use the other portals too
-        paths.append(('Hyrule Dungeon Cellblock', entrance.door.entrance.parent_region.name))
+        paths.append((world.default_zelda_region[player], entrance.door.entrance.parent_region.name))
         paths.append(('Hyrule Castle Throne Room', [entrance.door.entrance.parent_region.name,
-                                                    'Hyrule Dungeon Cellblock']))
+                                                    world.default_zelda_region[player]]))
     if world.doorShuffle[player] in ['basic'] and name == 'Thieves Town':
         paths.append('Thieves Attic Window')
     elif 'Thieves Attic Window' in all_r_names:

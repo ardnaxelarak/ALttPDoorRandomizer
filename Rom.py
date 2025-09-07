@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '93386b05ee4b5de6b9165941b9e14e97'
+RANDOMIZERBASEHASH = '65fae75651987228878051028da066ad'
 
 
 class JsonRom(object):
@@ -1580,6 +1580,18 @@ def patch_rom(world, rom, player, team, is_mystery=False):
         rom.write_byte(snes_to_pc(0x08DED6), 0x80) # allow locksmith to follow with flute
         rom.write_bytes(snes_to_pc(0x09A045), [0xEA, 0xEA]) # allow super bomb to follow into UW holes
         rom.write_byte(snes_to_pc(0x09ACDF), 0x6B) # allow kiki/locksmith to follow after screen transition
+
+        if world.default_zelda_region[player] == 'Thieves Blind\'s Cell':
+            write_int16(rom, snes_to_pc(0x02D8D6), 0x45)  # change zelda spawn point to maiden cell
+            rom.write_bytes(snes_to_pc(0x02D8F0), [0x08, 0x08, 0x08, 0x09, 0x0B, 0x0A, 0x0B, 0x0B])
+            write_int16(rom, snes_to_pc(0x02D91C), 0x0B00)
+            write_int16(rom, snes_to_pc(0x02D92A), 0x0800)
+            write_int16(rom, snes_to_pc(0x02D938), 0x0860)
+            write_int16(rom, snes_to_pc(0x02D946), 0x0B90)
+            write_int16(rom, snes_to_pc(0x02D954), 0x0078)
+            write_int16(rom, snes_to_pc(0x02D962), 0x017F)
+            rom.write_byte(snes_to_pc(0x02D975), 0x00)
+            rom.write_byte(snes_to_pc(0x02D98A), 0x02)
 
         if world.enemy_shuffle[player] != 'none':
             # informs zelda and maiden to draw over gfx slots that are guaranteed unused
