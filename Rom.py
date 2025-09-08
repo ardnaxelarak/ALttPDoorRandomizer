@@ -2103,6 +2103,14 @@ def write_strings(rom, world, player, team):
             "    ~~~2020~~~\n    Linlinlin\n\n"
             "    ~~~2019~~~\n      Kohrek\n"
         )
+        if not world.is_bombshop_start(player):
+            links_house = 'Links House'
+        else:
+            links_house = 'Big Bomb Shop'
+        links_house = world.get_region(links_house, player)
+        links_house = next(e for e in links_house.entrances if e.name != 'Links House S&Q')
+        if 'Snitch Lady' in links_house.name:
+            tt['kakariko_alert_guards'] = CompressedTextMapper.convert("Hey @! I'm taking your house!\nk.thx.bye")
 
     # Let's keep this guy's text accurate to the shuffle setting.
     if world.shuffle[player] in ['vanilla', 'dungeonsfull', 'dungeonssimple', 'lite', 'lean']:
