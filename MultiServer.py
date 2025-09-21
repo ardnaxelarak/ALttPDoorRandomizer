@@ -83,7 +83,7 @@ def notify_client(client : Client, text : str):
     logging.info("Notice (Player %s in team %d): %s" % (client.name, client.team+1, text))
     asyncio.create_task(send_msgs(client.socket,  [['Print', text]]))
 
-async def server(websocket, path, ctx : Context):
+async def server(websocket, ctx : Context):
     client = Client(websocket)
     ctx.clients.append(client)
 
