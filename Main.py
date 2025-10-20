@@ -290,7 +290,7 @@ def main(args, seed=None, fish=None):
             for player in range(1, world.players + 1):
                 rom = JsonRom() if args.jsonout else LocalRom(args.rom)
 
-                patch_rom(world, rom, player, team, bool(args.mystery))
+                patch_rom(world, rom, player, team, bool(args.mystery), str(args.rom_header) if args.rom_header else None)
 
                 if args.race:
                     patch_race_rom(rom)

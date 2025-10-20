@@ -418,7 +418,7 @@ def handle_native_dungeon(location, itemid):
     return itemid
 
 
-def patch_rom(world, rom, player, team, is_mystery=False):
+def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     random.seed(world.rom_seeds[player])
 
     # progressive bow silver arrow hint hack
@@ -1744,8 +1744,23 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     # 21 bytes
     from Main import __version__
     from OverworldShuffle import __version__ as ORVersion
-    seedstring = f'{world.seed:09}' if isinstance(world.seed, int) else world.seed
-    rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+    if rom_header:
+        if len(rom_header) > 21:
+            raise Exception('ROM header too long. Max 21 bytes, found %d bytes.' % len(rom_header))
+        elif '|' in rom_header:
+            gen, seedstring = rom_header.split('|', 1)
+            gen = f'{gen:<3}'
+            seedstring = f'{int(seedstring):09}' if seedstring.isdigit() else seedstring[:9]
+            rom.name = bytearray(f'{gen}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+        elif len(rom_header) <= 9:
+            seedstring = f'{int(rom_header):09}' if rom_header.isdigit() else rom_header
+            rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+        else:
+            rom.name = bytearray(rom_header, 'utf8')[:21]
+    else:
+        seedstring = f'{world.seed:09}' if isinstance(world.seed, int) else world.seed
+        rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+
     rom.name.extend([0] * (21 - len(rom.name)))
     rom.write_bytes(0x7FC0, rom.name)
 
