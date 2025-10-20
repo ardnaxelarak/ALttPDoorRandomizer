@@ -97,29 +97,7 @@ def main(args, seed=None, fish=None):
     if args.securerandom:
         world.seed = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(9))
 
-    world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
-    world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
-    world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
-
-    world.treasure_hunt_count = {}
-    world.treasure_hunt_total = {}
-    for p in args.triforce_goal:
-        if int(args.triforce_goal[p]) != 0 or int(args.triforce_pool[p]) != 0 or int(args.triforce_goal_min[p]) != 0 or int(args.triforce_goal_max[p]) != 0 or int(args.triforce_pool_min[p]) != 0 or int(args.triforce_pool_max[p]) != 0:
-            if int(args.triforce_goal[p]) != 0:
-                world.treasure_hunt_count[p] = int(args.triforce_goal[p])
-            elif int(args.triforce_goal_min[p]) != 0 and int(args.triforce_goal_max[p]) != 0:
-                world.treasure_hunt_count[p] = random.randint(int(args.triforce_goal_min[p]), int(args.triforce_goal_max[p]))
-            else:
-                world.treasure_hunt_count[p] = 8 if world.goal[p] == 'trinity' else 20
-            if int(args.triforce_pool[p]) != 0:
-                world.treasure_hunt_total[p] = int(args.triforce_pool[p])
-            elif int(args.triforce_pool_min[p]) != 0 and int(args.triforce_pool_max[p]) != 0:
-                world.treasure_hunt_total[p] = random.randint(max(int(args.triforce_pool_min[p]), world.treasure_hunt_count[p] + int(args.triforce_min_difference[p])), min(int(args.triforce_pool_max[p]), world.treasure_hunt_count[p] + int(args.triforce_max_difference[p])))
-            else:
-                world.treasure_hunt_total[p] = 10 if world.goal[p] == 'trinity' else 30
-        else:
-            # this will be handled in ItemList.py and custom item pool is used to determine the numbers
-            world.treasure_hunt_count[p], world.treasure_hunt_total[p] = 0, 0
+    resolve_random_settings(world, args)
 
     world.rom_seeds = {player: random.randint(0, 999999999) for player in range(1, world.players + 1)}
     world.finish_init()
@@ -518,6 +496,33 @@ def init_world(args, fish):
     
     return world
 
+
+def resolve_random_settings(world, args):
+    world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
+    world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
+    world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
+
+    world.treasure_hunt_count = {}
+    world.treasure_hunt_total = {}
+    for p in args.triforce_goal:
+        if int(args.triforce_goal[p]) != 0 or int(args.triforce_pool[p]) != 0 or int(args.triforce_goal_min[p]) != 0 or int(args.triforce_goal_max[p]) != 0 or int(args.triforce_pool_min[p]) != 0 or int(args.triforce_pool_max[p]) != 0:
+            if int(args.triforce_goal[p]) != 0:
+                world.treasure_hunt_count[p] = int(args.triforce_goal[p])
+            elif int(args.triforce_goal_min[p]) != 0 and int(args.triforce_goal_max[p]) != 0:
+                world.treasure_hunt_count[p] = random.randint(int(args.triforce_goal_min[p]), int(args.triforce_goal_max[p]))
+            else:
+                world.treasure_hunt_count[p] = 8 if world.goal[p] == 'trinity' else 20
+            if int(args.triforce_pool[p]) != 0:
+                world.treasure_hunt_total[p] = int(args.triforce_pool[p])
+            elif int(args.triforce_pool_min[p]) != 0 and int(args.triforce_pool_max[p]) != 0:
+                world.treasure_hunt_total[p] = random.randint(max(int(args.triforce_pool_min[p]), world.treasure_hunt_count[p] + int(args.triforce_min_difference[p])), min(int(args.triforce_pool_max[p]), world.treasure_hunt_count[p] + int(args.triforce_max_difference[p])))
+            else:
+                world.treasure_hunt_total[p] = 10 if world.goal[p] == 'trinity' else 30
+        else:
+            # this will be handled in ItemList.py and custom item pool is used to determine the numbers
+            world.treasure_hunt_count[p], world.treasure_hunt_total[p] = 0, 0
+    return
+    
 
 def set_starting_inventory(world, args):
     for player in range(1, world.players + 1):
