@@ -2229,6 +2229,7 @@ def write_strings(rom, world, player, team):
 
         # Next we write a few hints for specific inconvenient locations. We don't make many because in entrance this is highly unpredictable.
         locations_to_hint = InconvenientLocations.copy()
+        hinted_locations = []
         if world.doorShuffle[player] == 'vanilla':
             locations_to_hint.extend(InconvenientDungeonLocations)
         if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
@@ -2246,7 +2247,6 @@ def write_strings(rom, world, player, team):
                     second_item = hint_text(world.get_location('Swamp Palace - West Chest', player).item)
                     first_item = hint_text(world.get_location('Swamp Palace - Big Key Chest', player).item)
                 this_hint = f'The westmost chests in Swamp Palace contain {first_item} and {second_item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Mire Left':
                 if random.randint(0, 1) == 0:
                     first_item = hint_text(world.get_location('Misery Mire - Compass Chest', player).item)
@@ -2255,38 +2255,31 @@ def write_strings(rom, world, player, team):
                     second_item = hint_text(world.get_location('Misery Mire - Compass Chest', player).item)
                     first_item = hint_text(world.get_location('Misery Mire - Big Key Chest', player).item)
                 this_hint = f'The westmost chests in Misery Mire contain {first_item} and {second_item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Tower of Hera - Big Key Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'Waiting in the Tower of Hera basement leads to {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Ganons Tower - Big Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The big chest in Ganon\'s Tower contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Thieves\' Town - Big Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The big chest in Thieves\' Town contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Ice Palace - Big Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The big chest in Ice Palace contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Eastern Palace - Big Key Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The antifairy guarded chest in Eastern Palace contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Sahasrahla':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'Sahasrahla seeks a green pendant for {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Graveyard Cave':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The cave north of the graveyard contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             else:
                 this_hint = f'{location} contains {hint_text(world.get_location(location, player).item)}.'
-                tt[hint_locations.pop(0)] = this_hint
+            hinted_locations.append(location)
+            tt[hint_locations.pop(0)] = this_hint
 
         # Lastly we write hints to show where certain interesting items are.
         # It is done the way it is to re-use the silver code and also to give one hint per each type of item regardless
@@ -2299,9 +2292,10 @@ def write_strings(rom, world, player, team):
         if world.owShuffle[player] != 'vanilla' or world.owMixed[player]:
             # Adding a guaranteed hint for the Flute in overworld shuffle.
             this_location = world.find_items_not_key_only(flute_item, player)
-            if this_location:
+            if this_location and this_location not in hinted_locations:
                 this_hint = this_location[0].item.hint_text + ' can be found ' + hint_text(this_location[0]) + '.'
                 this_hint = this_hint[0].upper() + this_hint[1:]
+                hinted_locations.append(this_location)
                 tt[hint_locations.pop(0)] = this_hint
             items_to_hint.remove(flute_item)
         if world.keyshuffle[player] not in ['none', 'nearby', 'universal']:
@@ -2317,11 +2311,12 @@ def write_strings(rom, world, player, team):
         while hint_count > 0 and len(items_to_hint) > 0:
             this_item = items_to_hint.pop(0)
             this_location = world.find_items_not_key_only(this_item, player)
-            if this_location:
+            if this_location and this_location not in hinted_locations:
                 random.shuffle(this_location)
                 item_name = this_location[0].item.hint_text
                 item_name = item_name[0].upper() + item_name[1:]
                 this_hint = f'{item_name} can be found {hint_text(this_location[0])}.'
+                hinted_locations.append(this_location)
                 tt[hint_locations.pop(0)] = this_hint
                 hint_count -= 1
 
