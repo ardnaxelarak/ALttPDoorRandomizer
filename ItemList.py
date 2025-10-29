@@ -228,12 +228,17 @@ def generate_itempool(world, player):
     if world.timer in ['ohko', 'timed-ohko']:
         world.can_take_damage = False
 
-    if world.goal[player] in ['pedestal', 'triforcehunt']:
+    goal_req = None
+    if world.custom_goals[player]['ganongoal'] and 'requirements' in world.custom_goals[player]['ganongoal']:
+        goal_req = world.custom_goals[player]['ganongoal']['requirements'][0]
+    if world.goal[player] in ['pedestal', 'triforcehunt'] or (goal_req and goal_req['condition'] == 0x00):
         set_event_item(world, player, 'Ganon', 'Nothing')
     else:
         set_event_item(world, player, 'Ganon', 'Triforce')
 
-    if world.goal[player] in ['triforcehunt', 'trinity']:
+    if world.custom_goals[player]['murahgoal'] and 'requirements' in world.custom_goals[player]['murahgoal']:
+        goal_req = world.custom_goals[player]['murahgoal']['requirements'][0]
+    if world.goal[player] in ['triforcehunt', 'trinity'] or (goal_req and goal_req['condition'] != 0x00):
         region = world.get_region('Hyrule Castle Courtyard', player)
         loc = Location(player, "Murahdahla", parent=region)
         region.locations.append(loc)
@@ -1159,11 +1164,17 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
         place_item('Link\'s Uncle', swords_to_use.pop())
         place_item('Blacksmith', swords_to_use.pop())
         place_item('Pyramid Fairy - Left', swords_to_use.pop())
-        if goal not in ['pedestal', 'trinity']:
-            place_item('Master Sword Pedestal', swords_to_use.pop())
-        else:
-            place_item('Master Sword Pedestal', 'Triforce')
+        if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+            place_item('Master Sword Pedestal', 'Nothing')
+            world.get_location('Master Sword Pedestal', player).locked = True
             pool.append(swords_to_use.pop())
+        else:
+            if goal not in ['pedestal', 'trinity']:
+                place_item('Master Sword Pedestal', swords_to_use.pop())
+            else:
+                place_item('Master Sword Pedestal', 'Triforce')
+                world.get_location('Master Sword Pedestal', player).locked = True
+                pool.append(swords_to_use.pop())
     else:
         pool.extend(diff.progressivesword if want_progressives() else diff.basicsword)
         if swords == 'assured':
@@ -1189,8 +1200,12 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
 
     # note: massage item pool now handles shrinking the pool appropriately
 
-    if goal in ['pedestal', 'trinity'] and swords != 'vanilla':
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+        place_item('Master Sword Pedestal', 'Nothing')
+        world.get_location('Master Sword Pedestal', player).locked = True
+    elif goal in ['pedestal', 'trinity'] and swords != 'vanilla':
         place_item('Master Sword Pedestal', 'Triforce')
+        world.get_location('Master Sword Pedestal', player).locked = True
     if world.bow_mode[player].startswith('retro'):
         pool = [item.replace('Single Arrow', 'Rupees (5)') for item in pool]
         pool = [item.replace('Arrows (10)', 'Rupees (5)') for item in pool]
@@ -1352,8 +1367,12 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
     elif timer == 'ohko':
         clock_mode = 'ohko'
 
-    if goal in ['pedestal', 'trinity']:
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+        place_item('Master Sword Pedestal', 'Nothing')
+        world.get_location('Master Sword Pedestal', player).locked = True
+    elif goal in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
+        world.get_location('Master Sword Pedestal', player).locked = True
 
     if mode == 'standard':
         if world.keyshuffle[player] == 'universal':
@@ -1466,8 +1485,12 @@ def make_customizer_pool(world, player):
     elif timer == 'ohko':
         clock_mode = 'ohko'
 
-    if world.goal[player] in ['pedestal', 'trinity']:
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+        place_item('Master Sword Pedestal', 'Nothing')
+        world.get_location('Master Sword Pedestal', player).locked = True
+    elif world.goal[player] in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
+        world.get_location('Master Sword Pedestal', player).locked = True
 
     guaranteed_items = alwaysitems + ['Magic Mirror', 'Moon Pearl']
     if world.is_tile_swapped(0x18, player) or world.flute_mode[player] == 'active':
