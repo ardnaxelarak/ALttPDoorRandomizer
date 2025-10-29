@@ -2394,13 +2394,13 @@ def write_strings(rom, world, player, team):
         for name, district in world.districts[player].items():
             hint_type = 'foolish'
             choices = []
-            item_count, item_type = 0, 'useful'
+            item_count, item_type = 0, 'logic'
             for loc_name in district.locations:
                 location_item = world.get_location(loc_name, player).item
                 if location_item.advancement:
                     if 'Heart Container' in location_item.name or location_item.compass or location_item.map:
                         continue
-                    itm_type = 'useful' if useful_item_for_hint(location_item, world) else 'vital'
+                    itm_type = 'logic'
                     hint_type = 'path'
                     if item_type == itm_type:
                         choices.append(location_item)
