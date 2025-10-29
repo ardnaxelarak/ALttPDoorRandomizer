@@ -3272,17 +3272,17 @@ class Spoiler(object):
                         outfile.write('Triforce Pieces Required:'.ljust(line_width) + '%s\n' % self.metadata['triforcegoal'][player])
                         outfile.write('Triforce Pieces Total:'.ljust(line_width) + '%s\n' % self.metadata['triforcepool'][player])
                     custom = self.metadata['custom_goals'][player]
-                    if 'requirements' in custom['gtentry']:
+                    if custom['gtentry'] and 'requirements' in custom['gtentry']:
                         outfile.write('GT Entry Requirement:'.ljust(line_width) + 'custom\n')
                     else:
                         outfile.write('GT Entry Requirement:'.ljust(line_width) + '%s crystals\n' % str(self.world.crystals_gt_orig[player]))
-                    if 'requirements' in custom['ganongoal']:
+                    if custom['ganongoal'] and 'requirements' in custom['ganongoal']:
                         outfile.write('Ganon Requirement:'.ljust(line_width) + 'custom\n')
                     else:
                         outfile.write('Ganon Requirement:'.ljust(line_width) + '%s crystals\n' % str(self.world.crystals_ganon_orig[player]))
-                    if 'requirements' in custom['pedgoal']:
+                    if custom['pedgoal'] and 'requirements' in custom['pedgoal']:
                         outfile.write('Pedestal Requirement:'.ljust(line_width) + 'custom\n')
-                    if 'requirements' in custom['murahgoal']:
+                    if custom['murahgoal'] and 'requirements' in custom['murahgoal']:
                         outfile.write('Murahdahla Requirement:'.ljust(line_width) + 'custom\n')
                     outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
                     outfile.write('\n')
