@@ -97,29 +97,7 @@ def main(args, seed=None, fish=None):
     if args.securerandom:
         world.seed = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(9))
 
-    world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
-    world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
-    world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
-
-    world.treasure_hunt_count = {}
-    world.treasure_hunt_total = {}
-    for p in args.triforce_goal:
-        if int(args.triforce_goal[p]) != 0 or int(args.triforce_pool[p]) != 0 or int(args.triforce_goal_min[p]) != 0 or int(args.triforce_goal_max[p]) != 0 or int(args.triforce_pool_min[p]) != 0 or int(args.triforce_pool_max[p]) != 0:
-            if int(args.triforce_goal[p]) != 0:
-                world.treasure_hunt_count[p] = int(args.triforce_goal[p])
-            elif int(args.triforce_goal_min[p]) != 0 and int(args.triforce_goal_max[p]) != 0:
-                world.treasure_hunt_count[p] = random.randint(int(args.triforce_goal_min[p]), int(args.triforce_goal_max[p]))
-            else:
-                world.treasure_hunt_count[p] = 8 if world.goal[p] == 'trinity' else 20
-            if int(args.triforce_pool[p]) != 0:
-                world.treasure_hunt_total[p] = int(args.triforce_pool[p])
-            elif int(args.triforce_pool_min[p]) != 0 and int(args.triforce_pool_max[p]) != 0:
-                world.treasure_hunt_total[p] = random.randint(max(int(args.triforce_pool_min[p]), world.treasure_hunt_count[p] + int(args.triforce_min_difference[p])), min(int(args.triforce_pool_max[p]), world.treasure_hunt_count[p] + int(args.triforce_max_difference[p])))
-            else:
-                world.treasure_hunt_total[p] = 10 if world.goal[p] == 'trinity' else 30
-        else:
-            # this will be handled in ItemList.py and custom item pool is used to determine the numbers
-            world.treasure_hunt_count[p], world.treasure_hunt_total[p] = 0, 0
+    resolve_random_settings(world, args)
 
     world.rom_seeds = {player: random.randint(0, 999999999) for player in range(1, world.players + 1)}
     world.finish_init()
@@ -312,7 +290,7 @@ def main(args, seed=None, fish=None):
             for player in range(1, world.players + 1):
                 rom = JsonRom() if args.jsonout else LocalRom(args.rom)
 
-                patch_rom(world, rom, player, team, bool(args.mystery))
+                patch_rom(world, rom, player, team, bool(args.mystery), str(args.rom_header) if args.rom_header else None)
 
                 if args.race:
                     patch_race_rom(rom)
@@ -517,6 +495,184 @@ def init_world(args, fish):
 
     
     return world
+
+
+def resolve_random_settings(world, args):
+    world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
+    world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
+    world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
+
+    world.treasure_hunt_count = {}
+    world.treasure_hunt_total = {}
+    for p in args.triforce_goal:
+        if int(args.triforce_goal[p]) != 0 or int(args.triforce_pool[p]) != 0 or int(args.triforce_goal_min[p]) != 0 or int(args.triforce_goal_max[p]) != 0 or int(args.triforce_pool_min[p]) != 0 or int(args.triforce_pool_max[p]) != 0:
+            if int(args.triforce_goal[p]) != 0:
+                world.treasure_hunt_count[p] = int(args.triforce_goal[p])
+            elif int(args.triforce_goal_min[p]) != 0 and int(args.triforce_goal_max[p]) != 0:
+                world.treasure_hunt_count[p] = random.randint(int(args.triforce_goal_min[p]), int(args.triforce_goal_max[p]))
+            else:
+                world.treasure_hunt_count[p] = 8 if world.goal[p] == 'trinity' else 20
+            if int(args.triforce_pool[p]) != 0:
+                world.treasure_hunt_total[p] = int(args.triforce_pool[p])
+            elif int(args.triforce_pool_min[p]) != 0 and int(args.triforce_pool_max[p]) != 0:
+                world.treasure_hunt_total[p] = random.randint(max(int(args.triforce_pool_min[p]), world.treasure_hunt_count[p] + int(args.triforce_min_difference[p])), min(int(args.triforce_pool_max[p]), world.treasure_hunt_count[p] + int(args.triforce_max_difference[p])))
+            else:
+                world.treasure_hunt_total[p] = 10 if world.goal[p] == 'trinity' else 30
+        else:
+            # this will be handled in ItemList.py and custom item pool is used to determine the numbers
+            world.treasure_hunt_count[p], world.treasure_hunt_total[p] = 0, 0
+
+    if world.customizer:
+        def process_goal(goal_type):
+            goal_input = goals[player][goal_type]
+            world.custom_goals[player][goal_type] = goal = {}
+            if 'cutscene_gfx' in goal_input and goal_type in ['gtentry', 'pedgoal', 'murahgoal']:
+                gfx = goal_input['cutscene_gfx']
+                if type(gfx) is str:
+                    from Tables import item_gfx_table
+                    if gfx.lower() == 'random':
+                        gfx = random.choice(list(item_gfx_table.keys()))
+                    if gfx in item_gfx_table:
+                        goal['cutscene_gfx'] = (item_gfx_table[gfx][1] + (0x8000 if not item_gfx_table[gfx][0] else 0), item_gfx_table[gfx][2])
+                    else:
+                        raise Exception(f'Invalid name "{gfx}" in customized {goal_type} cutscene gfx')
+                else:
+                    goal['cutscene_gfx'] = gfx
+            if 'requirements' in goal_input:
+                if goal_type == 'ganongoal' and world.goal[player] == 'pedestal':
+                    goal['requirements'] = [0x00]
+                    goal['logic'] = False
+                    return
+                goal['requirements'] = []
+                goal['logic'] = {}
+                if 'goaltext' in goal_input:
+                    goal['goaltext'] = goal_input['goaltext']
+                else:
+                    raise Exception(f'Missing goal text for {goal_type}')
+
+                req_table = {
+                    'Invulnerable': 0x00,
+                    'Pendants': 0x01,
+                    'Crystals': 0x02,
+                    'PendantBosses': 0x03,
+                    'CrystalBosses': 0x04,
+                    'Bosses': 0x05,
+                    'Agahnim1Defeated': 0x06,
+                    'Agahnim1': 0x06,
+                    'Aga1': 0x06,
+                    'Agahnim2Defeated': 0x07,
+                    'Agahnim2': 0x07,
+                    'Aga2': 0x07,
+                    'GoalItemsCollected': 0x08,
+                    'GoalItems': 0x08,
+                    'TriforcePieces': 0x08,
+                    'TriforceHunt': 0x08,
+                    'MaxCollectionRate': 0x09,
+                    'CollectionRate': 0x09,
+                    'Collection': 0x09,
+                    'CustomGoal': 0x0A,
+                    'Custom': 0x0A,
+                }
+                if isinstance(goal_input['requirements'], list):
+                    for r in list(goal_input['requirements']):
+                        req = {}
+                        try:
+                            req['condition'] = req_table[list(r.keys())[0]]
+                            if req['condition'] == req_table['Invulnerable']:
+                                goal['requirements']= [req]
+                                goal['logic'] = False
+                                break
+                            elif req['condition'] == req_table['CustomGoal']:
+                                if isinstance(r['address'], int) and 0x7E0000 <= r['address'] <= 0x7FFFFF:
+                                    compare_table = {
+                                        'minimum': 0x00,
+                                        'at least': 0x00,
+                                        'equal': 0x01,
+                                        'equals': 0x01,
+                                        'equal to': 0x01,
+                                        'any flag': 0x02,
+                                        'all flags': 0x03,
+                                        'flags match': 0x03,
+                                        'count bits': 0x04,
+                                        'count flags': 0x04,
+                                    }
+                                    if r['comparison'] in compare_table:
+                                        options = compare_table[r['comparison']]
+                                        if r['address'] >= 0x7F0000:
+                                            options |= 0x10
+                                        if isinstance(r['target'], int) and 0 <= r['target'] <= 0xFFFF:
+                                            if 'size' in r and r['size'] in ['word', '16-bit', '16bit', '16 bit', '16', '2-byte', '2byte', '2 byte', '2-bytes', '2 bytes']:
+                                                options |= 0x08
+                                                req['target'] = r['target']
+                                            elif 0 <= r['target'] <= 0xFF:
+                                                req['target'] = r['target']
+                                            else:
+                                                raise Exception(f'Invalid custom goal target for {goal_type}, must be an 8-bit integer')
+                                            req.update({'address': r['address'] & 0xFFFF, 'options': options})
+                                            goal['requirements'].append(req)
+                                        else:
+                                            raise Exception(f'Invalid custom goal target for {goal_type}, must be a 16-bit integer')
+                                    else:
+                                        raise KeyError(f'Invalid custom goal comparison for {goal_type}')
+                                else:
+                                    raise Exception(f'Custom goal address for {goal_type} only allows 0x7Exxxx and 0x7Fxxxx addresses')
+                            else:
+                                if req['condition'] not in [req_table['Aga1'], req_table['Aga2']]:
+                                    if 'target' not in r:
+                                        req['condition'] |= 0x80
+                                    else:
+                                        if isinstance(r['target'], int):
+                                            if req['condition'] < req_table['TriforcePieces']:
+                                                if 0 <= r['target'] <= 0xFF:
+                                                    req['target'] = r['target']
+                                                else:
+                                                    raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}, must be an 8-bit integer')
+                                            else:
+                                                if 0 <= r['target'] <= 0xFFFF:
+                                                    req['target'] = r['target']
+                                                else:
+                                                    raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}, must be a 16-bit integer')
+                                        elif isinstance(r['target'], str):
+                                            if r['target'].lower() == 'random':
+                                                req['target'] = 'random'
+                                            elif r['target'].endswith('%') and 1 <= int(r['target'][:-1]) <= 100:
+                                                req['target'] = req['target']
+                                            else:
+                                                raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}')
+                                if req['condition'] & 0x7F == req_table['Pendants']:
+                                    goal['logic']['pendants'] = req['target'] or 3
+                                elif req['condition'] & 0x7F == req_table['Crystals']:
+                                    goal['logic']['crystals'] = req['target'] or 7
+                                elif req['condition'] & 0x7F == req_table['PendantBosses']:
+                                    goal['logic']['pendant_bosses'] = req['target'] or 3
+                                elif req['condition'] & 0x7F == req_table['CrystalBosses']:
+                                    goal['logic']['crystal_bosses'] = req['target'] or 7
+                                elif req['condition'] & 0x7F == req_table['Bosses']:
+                                    goal['logic']['bosses'] = req['target'] or 10
+                                elif req['condition'] & 0x7F == req_table['Aga1']:
+                                    goal['logic']['aga1'] = True
+                                elif req['condition'] & 0x7F == req_table['Aga2']:
+                                    goal['logic']['aga2'] = True
+                                elif req['condition'] & 0x7F == req_table['TriforcePieces']:
+                                    goal['logic']['goal_items'] = req['target'] or None
+                                elif req['condition'] & 0x7F == req_table['CollectionRate']:
+                                    goal['logic']['collection'] = req['target'] or None
+                                goal['requirements'].append(req)
+                        except KeyError:
+                            raise KeyError(f'Invalid {goal_type} requirement: {r}')
+                else:
+                    raise KeyError(f'Invalid {goal_type} requirement definition')
+                if 'logic' in goal_input and goal['logic'] is not None:
+                    goal['logic'].update(goal_input['logic'])
+            return
+
+        goals = world.customizer.get_goals()
+        for player in range(1, world.players + 1):
+            if goals and player in goals:
+                for g in ['gtentry', 'ganongoal', 'pedgoal', 'murahgoal']:
+                    if g in goals[player]:
+                        process_goal(g)
+    return
 
 
 def set_starting_inventory(world, args):

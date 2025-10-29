@@ -299,9 +299,9 @@ class CustomSettings(object):
             return self.file_source['enemies']
         return None
     
-    def get_gtentry(self):
-        if 'gt_entry' in self.file_source:
-            return self.file_source['gt_entry']
+    def get_goals(self):
+        if 'goals' in self.file_source:
+            return self.file_source['goals']
         return None
 
 

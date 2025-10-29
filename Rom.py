@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '65fae75651987228878051028da066ad'
+RANDOMIZERBASEHASH = 'ec0ac9063daaeb39faf1282faa3fdba8'
 
 
 class JsonRom(object):
@@ -418,7 +418,7 @@ def handle_native_dungeon(location, itemid):
     return itemid
 
 
-def patch_rom(world, rom, player, team, is_mystery=False):
+def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     random.seed(world.rom_seeds[player])
 
     # progressive bow silver arrow hint hack
@@ -1218,8 +1218,6 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     rom.write_bytes(0xE9A5, [0x7E, 0x00, 0x24]) # disable below ganon chest
     if world.is_pyramid_open(player):
         rom.initial_sram.pre_open_pyramid_hole()
-    if world.crystals_needed_for_gt[player] == 0:
-        rom.initial_sram.pre_open_ganons_tower()
     rom.write_byte(0x18008F, 0x01 if world.is_atgt_swapped(player) else 0x00) # AT/GT swapped
     rom.write_byte(0xF5D73, 0xF0) # bees are catchable
     rom.write_byte(0xF5F10, 0xF0) # bees are catchable
@@ -1247,22 +1245,105 @@ def patch_rom(world, rom, player, team, is_mystery=False):
                               (0x02 if 'bombs' in world.escape_assist[player] else 0x00) |
                               (0x04 if 'magic' in world.escape_assist[player] else 0x00))) # Escape assist
 
-    if world.goal[player] in ['pedestal', 'triforcehunt']:
-        rom.write_byte(0x1801A8, 0x01)  # make ganon invincible
-    elif world.goal[player] in ['dungeons']:
-        rom.write_byte(0x1801A8, 0x02)  # make ganon invincible until all dungeons are beat
-    elif world.goal[player] in ['crystals', 'trinity']:
-        rom.write_byte(0x1801A8, 0x04)  # make ganon invincible until all crystals
-    elif world.goal[player] in ['ganonhunt']:
-        rom.write_byte(0x1801A8, 0x05)  # make ganon invincible until all triforce pieces collected
-    elif world.goal[player] in ['completionist']:
-        rom.write_byte(0x1801A8, 0x0B)  # make ganon invincible until everything is collected
-    else:
-        rom.write_byte(0x1801A8, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
+    gt_entry, ped_pull, ganon_goal, murah_goal = [], [], [], []
+    # 00: Invulnerable
+    # 01: All pendants
+    # 02: All crystals
+    # 03: Pendant bosses
+    # 04: Crystal bosses
+    # 05: Prize bosses
+    # 06: Agahnim 1 defeated
+    # 07: Agahnim 2 defeated
+    # 08: Goal items collected (ie. Triforce Pieces)
+    # 09: Max collection rate
+    # 0A: Custom goal
 
-    rom.write_byte(0x18019A, world.crystals_needed_for_gt[player])
-    rom.write_byte(0x1801A6, world.crystals_needed_for_ganon[player])
-    rom.write_byte(0x1801A2, 0x00)  # ped requirement is vanilla, set to 0x1 for special requirements
+    def get_goal_bytes(type):
+        goal_bytes = []
+        for req in world.custom_goals[player][type]['requirements']:
+            goal_bytes += [req['condition']]
+            if req['condition'] == 0x0A:
+                # custom goal
+                goal_bytes += [req['options']]
+                goal_bytes += int16_as_bytes(req['address'])
+                if 0x08 & req['options'] == 0:
+                    goal_bytes += [req['target']]
+                else:
+                    goal_bytes += int16_as_bytes(req['target'])
+            elif 'target' in req:
+                if req['condition'] & 0x7F < 0x08:
+                    goal_bytes += [req['target']]
+                else:
+                    goal_bytes += int16_as_bytes(req['target'])
+        return goal_bytes
+
+    if world.custom_goals[player]['gtentry'] and 'requirements' in world.custom_goals[player]['gtentry']:
+        gt_entry += get_goal_bytes('gtentry')
+    else:
+        gt_entry += [0x02, world.crystals_needed_for_gt[player]]
+    if len(gt_entry) == 0 or gt_entry == [0x02, 0x00]:
+        rom.initial_sram.pre_open_ganons_tower()
+
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal']:
+        ped_pull += get_goal_bytes('pedgoal')
+    else:
+        ped_pull += [0x81]
+
+    if world.custom_goals[player]['murahgoal'] and 'requirements' in world.custom_goals[player]['murahgoal']:
+        murah_goal += get_goal_bytes('murahgoal')
+    else:
+        if world.goal[player] in ['triforcehunt', 'trinity']:
+            murah_goal += [0x88]
+        else:
+            murah_goal += [0x00]
+
+    if world.custom_goals[player]['ganongoal'] and 'requirements' in world.custom_goals[player]['ganongoal']:
+        ganon_goal += get_goal_bytes('ganongoal')
+    else:
+        if world.goal[player] in ['pedestal', 'triforcehunt']:
+            ganon_goal = [0x00]
+        elif world.goal[player] in ['dungeons']:
+            ganon_goal += [0x81, 0x82, 0x06, 0x07] # pendants, crystals, and agas
+        elif world.goal[player] in ['crystals', 'trinity']:
+            ganon_goal += [0x02, world.crystals_needed_for_ganon[player]]
+        elif world.goal[player] in ['ganonhunt']:
+            ganon_goal += [0x88] # triforce pieces
+        elif world.goal[player] in ['completionist']:
+            ganon_goal += [0x81, 0x82, 0x06, 0x07, 0x89] # AD and max collection rate
+        else:
+            ganon_goal += [0x02, world.crystals_needed_for_ganon[player], 0x07] # crystals and aga2
+
+    gt_entry += [0xFF]
+    ped_pull += [0xFF]
+    ganon_goal += [0xFF]
+    murah_goal += [0xFF]
+    start_address = 0x8198 + 8
+
+    write_int16(rom, 0x180198, start_address)
+    rom.write_bytes(snes_to_pc(0xB00000 + start_address), gt_entry)
+    start_address += len(gt_entry)
+
+    write_int16(rom, 0x18019A, start_address)
+    rom.write_bytes(snes_to_pc(0xB00000 + start_address), ganon_goal)
+    start_address += len(ganon_goal)
+
+    write_int16(rom, 0x18019C, start_address)
+    rom.write_bytes(snes_to_pc(0xB00000 + start_address), ped_pull)
+    start_address += len(ped_pull)
+
+    write_int16(rom, 0x18019E, start_address)
+    rom.write_bytes(snes_to_pc(0xB00000 + start_address), murah_goal)
+    start_address += len(murah_goal)
+
+    if start_address > 0x81D8:
+        raise Exception("Custom Goal data too long to fit in allocated space, try reducing the amount of requirements.")
+
+    # gt entry
+    gtentry = world.custom_goals[player]['gtentry']
+    if gtentry and 'cutscene_gfx' in gtentry:
+        gfx = gtentry['cutscene_gfx']
+        write_int16(rom, snes_to_pc(0x3081D8), gfx[0])
+        rom.write_byte(snes_to_pc(0x3081E6), gfx[1])
 
     # block HC upstairs doors in rain state in standard mode
     prevent_rain = world.mode[player] == 'standard' and world.shuffle[player] != 'vanilla' and world.logic[player] != 'nologic'
@@ -1654,26 +1735,6 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     write_enemizer_tweaks(rom, world, player)
     write_strings(rom, world, player, team)
 
-    # gt entry
-    if world.customizer:
-        gtentry = world.customizer.get_gtentry()
-        if gtentry and player in gtentry:
-            gtentry = gtentry[player]
-            if 'cutscene_gfx' in gtentry:
-                gfx = gtentry['cutscene_gfx']
-                if type(gfx) is str:
-                    from Tables import item_gfx_table
-                    if gfx.lower() == 'random':
-                        gfx = random.choice(list(item_gfx_table.keys()))
-                    if gfx in item_gfx_table:
-                        write_int16(rom, snes_to_pc(0x3081AA), item_gfx_table[gfx][1] + (0x8000 if not item_gfx_table[gfx][0] else 0))
-                        rom.write_byte(snes_to_pc(0x3081AC), item_gfx_table[gfx][2])
-                    else:
-                        logging.getLogger('').warning('Invalid name "%s" in customized GT entry cutscene gfx', gfx)
-                else:
-                    write_int16(rom, snes_to_pc(0x3081AA), gfx[0])
-                    rom.write_byte(snes_to_pc(0x3081AC), gfx[1])
-
     # write initial sram
     rom.write_initial_sram()
 
@@ -1683,8 +1744,23 @@ def patch_rom(world, rom, player, team, is_mystery=False):
     # 21 bytes
     from Main import __version__
     from OverworldShuffle import __version__ as ORVersion
-    seedstring = f'{world.seed:09}' if isinstance(world.seed, int) else world.seed
-    rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+    if rom_header:
+        if len(rom_header) > 21:
+            raise Exception('ROM header too long. Max 21 bytes, found %d bytes.' % len(rom_header))
+        elif '|' in rom_header:
+            gen, seedstring = rom_header.split('|', 1)
+            gen = f'{gen:<3}'
+            seedstring = f'{int(seedstring):09}' if seedstring.isdigit() else seedstring[:9]
+            rom.name = bytearray(f'{gen}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+        elif len(rom_header) <= 9:
+            seedstring = f'{int(rom_header):09}' if rom_header.isdigit() else rom_header
+            rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+        else:
+            rom.name = bytearray(rom_header, 'utf8')[:21]
+    else:
+        seedstring = f'{world.seed:09}' if isinstance(world.seed, int) else world.seed
+        rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+
     rom.name.extend([0] * (21 - len(rom.name)))
     rom.write_bytes(0x7FC0, rom.name)
 
@@ -2103,6 +2179,14 @@ def write_strings(rom, world, player, team):
             "    ~~~2020~~~\n    Linlinlin\n\n"
             "    ~~~2019~~~\n      Kohrek\n"
         )
+        if not world.is_bombshop_start(player):
+            links_house = 'Links House'
+        else:
+            links_house = 'Big Bomb Shop'
+        links_house = world.get_region(links_house, player)
+        links_house = next(e for e in links_house.entrances if e.name != 'Links House S&Q')
+        if 'Snitch Lady' in links_house.name:
+            tt['kakariko_alert_guards'] = CompressedTextMapper.convert("Hey @! I'm taking your house!\nk.thx.bye")
 
     # Let's keep this guy's text accurate to the shuffle setting.
     if world.shuffle[player] in ['vanilla', 'dungeonsfull', 'dungeonssimple', 'lite', 'lean']:
@@ -2221,6 +2305,7 @@ def write_strings(rom, world, player, team):
 
         # Next we write a few hints for specific inconvenient locations. We don't make many because in entrance this is highly unpredictable.
         locations_to_hint = InconvenientLocations.copy()
+        hinted_locations = []
         if world.doorShuffle[player] == 'vanilla':
             locations_to_hint.extend(InconvenientDungeonLocations)
         if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull']:
@@ -2238,7 +2323,6 @@ def write_strings(rom, world, player, team):
                     second_item = hint_text(world.get_location('Swamp Palace - West Chest', player).item)
                     first_item = hint_text(world.get_location('Swamp Palace - Big Key Chest', player).item)
                 this_hint = f'The westmost chests in Swamp Palace contain {first_item} and {second_item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Mire Left':
                 if random.randint(0, 1) == 0:
                     first_item = hint_text(world.get_location('Misery Mire - Compass Chest', player).item)
@@ -2247,38 +2331,31 @@ def write_strings(rom, world, player, team):
                     second_item = hint_text(world.get_location('Misery Mire - Compass Chest', player).item)
                     first_item = hint_text(world.get_location('Misery Mire - Big Key Chest', player).item)
                 this_hint = f'The westmost chests in Misery Mire contain {first_item} and {second_item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Tower of Hera - Big Key Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'Waiting in the Tower of Hera basement leads to {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Ganons Tower - Big Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The big chest in Ganon\'s Tower contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Thieves\' Town - Big Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The big chest in Thieves\' Town contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Ice Palace - Big Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The big chest in Ice Palace contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Eastern Palace - Big Key Chest':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The antifairy guarded chest in Eastern Palace contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Sahasrahla':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'Sahasrahla seeks a green pendant for {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             elif location == 'Graveyard Cave':
                 item = hint_text(world.get_location(location, player).item)
                 this_hint = f'The cave north of the graveyard contains {item}.'
-                tt[hint_locations.pop(0)] = this_hint
             else:
                 this_hint = f'{location} contains {hint_text(world.get_location(location, player).item)}.'
-                tt[hint_locations.pop(0)] = this_hint
+            hinted_locations.append(location)
+            tt[hint_locations.pop(0)] = this_hint
 
         # Lastly we write hints to show where certain interesting items are.
         # It is done the way it is to re-use the silver code and also to give one hint per each type of item regardless
@@ -2291,9 +2368,10 @@ def write_strings(rom, world, player, team):
         if world.owShuffle[player] != 'vanilla' or world.owMixed[player]:
             # Adding a guaranteed hint for the Flute in overworld shuffle.
             this_location = world.find_items_not_key_only(flute_item, player)
-            if this_location:
+            if this_location and this_location not in hinted_locations:
                 this_hint = this_location[0].item.hint_text + ' can be found ' + hint_text(this_location[0]) + '.'
                 this_hint = this_hint[0].upper() + this_hint[1:]
+                hinted_locations.append(this_location)
                 tt[hint_locations.pop(0)] = this_hint
             items_to_hint.remove(flute_item)
         if world.keyshuffle[player] not in ['none', 'nearby', 'universal']:
@@ -2309,11 +2387,12 @@ def write_strings(rom, world, player, team):
         while hint_count > 0 and len(items_to_hint) > 0:
             this_item = items_to_hint.pop(0)
             this_location = world.find_items_not_key_only(this_item, player)
-            if this_location:
+            if this_location and this_location not in hinted_locations:
                 random.shuffle(this_location)
                 item_name = this_location[0].item.hint_text
                 item_name = item_name[0].upper() + item_name[1:]
                 this_hint = f'{item_name} can be found {hint_text(this_location[0])}.'
+                hinted_locations.append(this_location)
                 tt[hint_locations.pop(0)] = this_hint
                 hint_count -= 1
 
@@ -2330,13 +2409,13 @@ def write_strings(rom, world, player, team):
         for name, district in world.districts[player].items():
             hint_type = 'foolish'
             choices = []
-            item_count, item_type = 0, 'useful'
+            item_count, item_type = 0, 'logic'
             for loc_name in district.locations:
                 location_item = world.get_location(loc_name, player).item
                 if location_item.advancement:
                     if 'Heart Container' in location_item.name or location_item.compass or location_item.map:
                         continue
-                    itm_type = 'useful' if useful_item_for_hint(location_item, world) else 'vital'
+                    itm_type = 'logic'
                     hint_type = 'path'
                     if item_type == itm_type:
                         choices.append(location_item)
@@ -2499,6 +2578,21 @@ def write_strings(rom, world, player, team):
         tt['ganon_fall_in'] = Ganon1_texts[random.randint(0, len(Ganon1_texts) - 1)]
         tt['ganon_fall_in_alt'] = 'You cannot defeat me until you finish your goal!'
         tt['ganon_phase_3_alt'] = 'Got wax in\nyour ears?\nI can not die!'
+    
+    def get_custom_goal_text(type):
+        goal_text = world.custom_goals[player][type]['goaltext']
+        if '%d' in goal_text:
+            return goal_text % world.custom_goals[player][type]['requirements'][0]['target']
+        return goal_text
+
+    if world.custom_goals[player]['gtentry'] and 'goaltext' in world.custom_goals[player]['gtentry']:
+        tt['sign_ganons_tower'] = get_custom_goal_text('gtentry')
+    if world.custom_goals[player]['ganongoal'] and 'goaltext' in world.custom_goals[player]['ganongoal']:
+        tt['sign_ganon'] = get_custom_goal_text('ganongoal')
+    if world.custom_goals[player]['pedgoal'] and 'goaltext' in world.custom_goals[player]['pedgoal']:
+        tt['mastersword_pedestal_goal'] = get_custom_goal_text('pedgoal')
+    if world.custom_goals[player]['murahgoal'] and 'goaltext' in world.custom_goals[player]['murahgoal']:
+        tt['murahdahla'] = get_custom_goal_text('murahgoal')
 
     tt['kakariko_tavern_fisherman'] = TavernMan_texts[random.randint(0, len(TavernMan_texts) - 1)]
 
