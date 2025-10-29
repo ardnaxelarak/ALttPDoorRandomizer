@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.1.0
+- New Custom Goal framework (see Customizer.md)
+- New 'logic' hint terminology to replace vital/useful terminology
+- Removed possibility of duplicated hints
+- New fix for hammering pot drops when at sprite limit
+- Fixed issue with incorrect Ganon silvers hint
+- Fixed issue with Locksmith despawning after purple chest if a follower is stored
+- Fixed pogdor glitch (frogdor but at PoD entrance and Kiki following)
+- Fixed issue with Duck gfx overwriting GT Cutscene gfx
+- New CLI argument to allow external generators to supply a custom ROM Header
+- Fixed error with extra argument in MultiServer call
+- Added new text if Link's House is placed at any Snitch Lady house
+
 ## 0.6.0.8
 - Re-fixed issue with Old Man spawning on pyramid
 - Allowing Zelda to be in TT Prison for follower shuffle escape
