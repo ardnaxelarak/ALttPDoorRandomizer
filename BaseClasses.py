@@ -3394,10 +3394,22 @@ class Spoiler(object):
                     outfile.write(f'{dungeon}:'.ljust(line_width) + '%s Medallion\n' % medallion)
                 for player in range(1, self.world.players + 1):
                     player_name = '' if self.world.players == 1 else str(' (Player ' + str(player) + ')')
-                    if self.world.crystals_gt_orig[player] == 'random':
+                    goal = self.world.custom_goals[player]['gtentry']
+                    if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                        outfile.write(str('GT Entry Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
+                    elif self.world.crystals_gt_orig[player] == 'random':
                         outfile.write(str('Crystals Required for GT' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['gt_crystals'][player])))
-                    if self.world.crystals_ganon_orig[player] == 'random':
-                        outfile.write(str('Crystals Required for Ganon' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player])))
+                    goal = self.world.custom_goals[player]['ganongoal']
+                    if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                        outfile.write(str('Ganon Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
+                    elif self.world.crystals_ganon_orig[player] == 'random':
+                       outfile.write(str('Crystals Required for Ganon' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player])))
+                    goal = self.world.custom_goals[player]['pedgoal']
+                    if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                        outfile.write(str('Pedestal Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
+                    goal = self.world.custom_goals[player]['murahgoal']
+                    if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                        outfile.write(str('Murahdahla Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
                 outfile.write('\n\nPrizes:\n\n')
                 for dungeon, prize in self.prizes.items():
                     outfile.write(str(dungeon + ':').ljust(line_width) + '%s\n' % prize)

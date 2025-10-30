@@ -236,6 +236,7 @@ def generate_itempool(world, player):
     else:
         set_event_item(world, player, 'Ganon', 'Triforce')
 
+    goal_req = None
     if world.custom_goals[player]['murahgoal'] and 'requirements' in world.custom_goals[player]['murahgoal']:
         goal_req = world.custom_goals[player]['murahgoal']['requirements'][0]
     if world.goal[player] in ['triforcehunt', 'trinity'] or (goal_req and goal_req['condition'] != 0x00):
