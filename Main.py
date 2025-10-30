@@ -552,10 +552,12 @@ def resolve_random_settings(world, args):
 
                 req_table = {
                     'Invulnerable': 0x00,
+                    'Disabled': 0x00,
                     'Pendants': 0x01,
                     'Crystals': 0x02,
                     'PendantBosses': 0x03,
                     'CrystalBosses': 0x04,
+                    'PrizeBosses': 0x05,
                     'Bosses': 0x05,
                     'Agahnim1Defeated': 0x06,
                     'Agahnim1': 0x06,
@@ -577,7 +579,10 @@ def resolve_random_settings(world, args):
                     for r in list(goal_input['requirements']):
                         req = {}
                         try:
-                            req['condition'] = req_table[list(r.keys())[0]]
+                            if isinstance(r, str):
+                                req['condition'] = req_table[r]
+                            else:
+                                req['condition'] = req_table[list(r.keys())[0]]
                             if req['condition'] == req_table['Invulnerable']:
                                 goal['requirements']= [req]
                                 goal['logic'] = False
@@ -647,7 +652,7 @@ def resolve_random_settings(world, args):
                                     goal['logic']['pendant_bosses'] = req['target'] or 3
                                 elif req['condition'] & 0x7F == req_table['CrystalBosses']:
                                     goal['logic']['crystal_bosses'] = req['target'] or 7
-                                elif req['condition'] & 0x7F == req_table['Bosses']:
+                                elif req['condition'] & 0x7F == req_table['PrizeBosses']:
                                     goal['logic']['bosses'] = req['target'] or 10
                                 elif req['condition'] & 0x7F == req_table['Aga1']:
                                     goal['logic']['aga1'] = True
