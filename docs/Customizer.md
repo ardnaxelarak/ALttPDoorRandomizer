@@ -117,7 +117,7 @@ For the various events, you may define many conditions for the player to meet. A
 * `Crystals` (Default: 7)
 * `PendantBosses` (Default: 3)
 * `CrystalBosses` (Default: 7)
-* `Bosses` (Default: 10)
+* `PrizeBosses` (Default: 10)
 * `Agahnim1Defeated`
 * `Agahnim2Defeated`
 * `TriforcePieces` (Default: set elsewhere)

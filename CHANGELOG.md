@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.1.1
+- Fixed issue with Bosses goals in Custom Goal Framework
+- Fixed error when using Custom Goals with no extra values
+- Added more Custom Goal detail in Spoiler Log
+
 ## 0.6.1.0
 - New Custom Goal framework (see Customizer.md)
 - New 'logic' hint terminology to replace vital/useful terminology
