@@ -76,7 +76,7 @@ This must be defined by player. Each player number should be listed with the app
 
 * `gtentry` (Ganon's Tower entrance)
 * `ganongoal` (Ganon vulnerability)
-* `pedpull` (Master Sword Pedestal activation)
+* `pedgoal` (Master Sword Pedestal activation)
 * `murahgoal` (Murahdahla requirement, if given requirements, Murahdahla appears always and acts as an alternative way to beat the game)
 
 These four custom goals use the following identical structure to define them. These goals have four primary subsections: `cutscene_gfx`, `goaltext`, `requirements`, and `logic`
