@@ -83,7 +83,7 @@ def fill_dungeons_restrictive(world, shuffled_locations):
                 shuffled_locations.pop(i)
             # place 2 HMG keys
             hybrid_state_base = all_state_base.copy()
-            for x in bigs + smalls + prizes + others:
+            for x in bigs + smalls + others:
                 hybrid_state_base.collect(x, True)
             hybrid_smalls = [ItemFactory('Small Key (Swamp Palace)', player)] * 2
             fill(hybrid_state_base, hybrid_smalls, hybrid_locations, unplaced_smalls)
