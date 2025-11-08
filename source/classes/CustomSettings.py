@@ -577,9 +577,13 @@ class CustomSettings(object):
 
 
 def load_yaml(path):
-    if os.path.exists(Path(path)):
-        with open(path, "r", encoding="utf-8") as f:
-            return yaml.load(f, Loader=yaml.SafeLoader)
-    elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
-        return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
+    try:
+        if os.path.exists(Path(path)):
+            with open(path, "r", encoding="utf-8") as f:
+                return yaml.load(f, Loader=yaml.SafeLoader)
+        elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
+            return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
+    except yaml.YAMLError as e:
+        error_msg = f"Error parsing YAML file '{path}':\n{str(e)}"
+        raise ValueError(error_msg) from e
 
