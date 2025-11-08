@@ -77,32 +77,37 @@ def bottom_frame(self, parent, args=None):
             argsDump['sprite'] = argsDump['sprite'].name
         save_settings(parent, argsDump, "last.json")
 
-        guiargs = create_guiargs(parent)
-        # get default values for missing parameters
-        cliargs = ['--multi', str(guiargs.multi)]
-        if hasattr(guiargs, 'customizer'):
-            cliargs.extend(['--customizer', str(guiargs.customizer)])
-        for k,v in vars(parse_cli(cliargs)).items():
-            if k not in vars(guiargs):
-                setattr(guiargs, k, v)
-            elif type(v) is dict:  # use same settings for every player
-                players = guiargs.multi if len(v) == 0 else len(v)
-                setattr(guiargs, k, {player: getattr(guiargs, k) for player in range(1, players + 1)})
-        argsDump = vars(guiargs)
-
-        needEnemizer = False
-        falsey = ["none", "default", False, 0]
-        for enemizerOption in ["shuffleenemies", "enemy_damage", "shufflebosses", "enemy_health"]:
-            if enemizerOption in argsDump:
-                if isinstance(argsDump[enemizerOption], dict):
-                    for playerID,playerSetting in argsDump[enemizerOption].items():
-                        if not playerSetting in falsey:
-                            needEnemizer = True
-                elif not argsDump[enemizerOption] in falsey:
-                    needEnemizer = True
-        seeds = []
-
         try:
+            guiargs = create_guiargs(parent)
+            # get default values for missing parameters
+            cliargs = ['--multi', str(guiargs.multi)]
+            if hasattr(guiargs, 'customizer'):
+                cliargs.extend(['--customizer', str(guiargs.customizer)])
+
+            for k,v in vars(parse_cli(cliargs)).items():
+                if k not in vars(guiargs):
+                    setattr(guiargs, k, v)
+                elif type(v) is dict:  # use same settings for every player
+                    players = guiargs.multi if len(v) == 0 else len(v)
+                    setattr(guiargs, k, {player: getattr(guiargs, k) for player in range(1, players + 1)})
+            if guiargs.multi == 1 and guiargs.names.endswith("=="):
+                # allow settings code thru player names entry
+                guiargs.code[1] = guiargs.names
+                guiargs.names = ""
+            argsDump = vars(guiargs)
+
+            needEnemizer = False
+            falsey = ["none", "default", False, 0]
+            for enemizerOption in ["shuffleenemies", "enemy_damage", "shufflebosses", "enemy_health"]:
+                if enemizerOption in argsDump:
+                    if isinstance(argsDump[enemizerOption], dict):
+                        for playerID,playerSetting in argsDump[enemizerOption].items():
+                            if not playerSetting in falsey:
+                                needEnemizer = True
+                    elif not argsDump[enemizerOption] in falsey:
+                        needEnemizer = True
+            seeds = []
+
             if guiargs.count is not None and guiargs.seed:
                 seed = guiargs.seed
                 for _ in range(guiargs.count):
