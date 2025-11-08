@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1.2
+- Various fixes for Custom Goal Framework
+- Added custom gfx for Pedestal and Murahdahla
+- Re-fixed purple chest follower dupe
+- Updated tournament winners texts
+
 ## 0.6.1.1
 - Fixed issue with Bosses goals in Custom Goal Framework
 - Fixed error when using Custom Goals with no extra values
