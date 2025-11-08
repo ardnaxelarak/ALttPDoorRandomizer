@@ -645,23 +645,23 @@ def resolve_random_settings(world, args):
                                             else:
                                                 raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}')
                                 if req['condition'] & 0x7F == req_table['Pendants']:
-                                    goal['logic']['pendants'] = req['target'] or 3
+                                    goal['logic']['pendants'] = req['target'] = req.get('target', 3)
                                 elif req['condition'] & 0x7F == req_table['Crystals']:
-                                    goal['logic']['crystals'] = req['target'] or 7
+                                    goal['logic']['crystals'] = req['target'] = req.get('target', 7)
                                 elif req['condition'] & 0x7F == req_table['PendantBosses']:
-                                    goal['logic']['pendant_bosses'] = req['target'] or 3
+                                    goal['logic']['pendant_bosses'] = req['target'] = req.get('target', 3)
                                 elif req['condition'] & 0x7F == req_table['CrystalBosses']:
-                                    goal['logic']['crystal_bosses'] = req['target'] or 7
+                                    goal['logic']['crystal_bosses'] = req['target'] = req.get('target', 7)
                                 elif req['condition'] & 0x7F == req_table['PrizeBosses']:
-                                    goal['logic']['bosses'] = req['target'] or 10
+                                    goal['logic']['bosses'] = req['target'] = req.get('target', 10)
                                 elif req['condition'] & 0x7F == req_table['Aga1']:
                                     goal['logic']['aga1'] = True
                                 elif req['condition'] & 0x7F == req_table['Aga2']:
                                     goal['logic']['aga2'] = True
                                 elif req['condition'] & 0x7F == req_table['TriforcePieces']:
-                                    goal['logic']['goal_items'] = req['target'] or None
+                                    goal['logic']['goal_items'] = req['target'] = req.get('target', None)
                                 elif req['condition'] & 0x7F == req_table['CollectionRate']:
-                                    goal['logic']['collection'] = req['target'] or None
+                                    goal['logic']['collection'] = req['target'] = req.get('target', None)
                                 goal['requirements'].append(req)
                         except KeyError:
                             raise KeyError(f'Invalid {goal_type} requirement: {r}')

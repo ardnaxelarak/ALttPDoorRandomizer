@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '72c4b2d00057d1faced32871d8081f3a'
+RANDOMIZERBASEHASH = '2039c11b935d3b81f78810d9f4be19d6'
 
 
 class JsonRom(object):
@@ -1270,8 +1270,11 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
                     goal_bytes += [req['target']]
                 else:
                     goal_bytes += int16_as_bytes(req['target'])
-            elif 'target' in req:
-                if req['condition'] & 0x7F < 0x08:
+            elif req['condition'] & 0x80 == 0:
+                if req['condition'] & 0x7F == 0x06 or req['condition'] & 0x7F == 0x07:
+                    # agahnims have no target value
+                    pass
+                elif req['condition'] & 0x7F < 0x08:
                     goal_bytes += [req['target']]
                 else:
                     goal_bytes += int16_as_bytes(req['target'])
@@ -1338,12 +1341,19 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     if start_address > 0x81D8:
         raise Exception("Custom Goal data too long to fit in allocated space, try reducing the amount of requirements.")
 
-    # gt entry
-    gtentry = world.custom_goals[player]['gtentry']
-    if gtentry and 'cutscene_gfx' in gtentry:
-        gfx = gtentry['cutscene_gfx']
-        write_int16(rom, snes_to_pc(0x3081D8), gfx[0])
-        rom.write_byte(snes_to_pc(0x3081E6), gfx[1])
+    # goal cutscene gfx
+    goals = {
+        #goal:       gfx addr,  palette addr
+        'gtentry':   (0x3081D8, 0x3081E6),
+        'pedgoal':   (0x3081ED, 0x3081F3),
+        'murahgoal': (0x3081F6, 0x3081FC),
+    }
+    for goal_type, gfx_addr in goals.items():
+        goal = world.custom_goals[player][goal_type]
+        if goal and 'cutscene_gfx' in goal:
+            gfx = goal['cutscene_gfx']
+            write_int16(rom, snes_to_pc(gfx_addr[0]), gfx[0])
+            rom.write_byte(snes_to_pc(gfx_addr[1]), gfx[1])
 
     # block HC upstairs doors in rain state in standard mode
     prevent_rain = world.mode[player] == 'standard' and world.shuffle[player] != 'vanilla' and world.logic[player] != 'nologic'
@@ -1751,7 +1761,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
             gen, seedstring = rom_header.split('|', 1)
             gen = f'{gen:<3}'
             seedstring = f'{int(seedstring):09}' if seedstring.isdigit() else seedstring[:9]
-            rom.name = bytearray(f'{gen}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+            rom.name = bytearray(f'OR{gen}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
         elif len(rom_header) <= 9:
             seedstring = f'{int(rom_header):09}' if rom_header.isdigit() else rom_header
             rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
@@ -2581,8 +2591,10 @@ def write_strings(rom, world, player, team):
     
     def get_custom_goal_text(type):
         goal_text = world.custom_goals[player][type]['goaltext']
-        if '%d' in goal_text:
-            return goal_text % world.custom_goals[player][type]['requirements'][0]['target']
+        placeholder_count = goal_text.count('%d')
+        if placeholder_count > 0:
+            targets = [req['target'] for req in world.custom_goals[player][type]['requirements'] if 'target' in req][:placeholder_count]
+            return goal_text % tuple(targets)
         return goal_text
 
     if world.custom_goals[player]['gtentry'] and 'goaltext' in world.custom_goals[player]['gtentry']:
