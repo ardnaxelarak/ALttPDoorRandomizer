@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'a1c8a1c9b4a626f25a240d5b35b17ffe'
+RANDOMIZERBASEHASH = '39c6d90d9aa4711fe3c95d85b1a9b16e'
 
 
 class JsonRom(object):
@@ -1270,8 +1270,11 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
                     goal_bytes += [req['target']]
                 else:
                     goal_bytes += int16_as_bytes(req['target'])
-            elif 'target' in req:
-                if req['condition'] & 0x7F < 0x08:
+            elif req['condition'] & 0x80 == 0:
+                if req['condition'] & 0x7F == 0x06 or req['condition'] & 0x7F == 0x07:
+                    # agahnims have no target value
+                    pass
+                elif req['condition'] & 0x7F < 0x08:
                     goal_bytes += [req['target']]
                 else:
                     goal_bytes += int16_as_bytes(req['target'])
@@ -2588,8 +2591,10 @@ def write_strings(rom, world, player, team):
     
     def get_custom_goal_text(type):
         goal_text = world.custom_goals[player][type]['goaltext']
-        if '%d' in goal_text:
-            return goal_text % world.custom_goals[player][type]['requirements'][0]['target']
+        placeholder_count = goal_text.count('%d')
+        if placeholder_count > 0:
+            targets = [req['target'] for req in world.custom_goals[player][type]['requirements'] if 'target' in req][:placeholder_count]
+            return goal_text % tuple(targets)
         return goal_text
 
     if world.custom_goals[player]['gtentry'] and 'goaltext' in world.custom_goals[player]['gtentry']:
