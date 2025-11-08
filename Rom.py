@@ -1758,7 +1758,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
             gen, seedstring = rom_header.split('|', 1)
             gen = f'{gen:<3}'
             seedstring = f'{int(seedstring):09}' if seedstring.isdigit() else seedstring[:9]
-            rom.name = bytearray(f'{gen}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
+            rom.name = bytearray(f'OR{gen}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
         elif len(rom_header) <= 9:
             seedstring = f'{int(rom_header):09}' if rom_header.isdigit() else rom_header
             rom.name = bytearray(f'OR{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
