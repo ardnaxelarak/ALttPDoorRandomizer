@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '72c4b2d00057d1faced32871d8081f3a'
+RANDOMIZERBASEHASH = 'a1c8a1c9b4a626f25a240d5b35b17ffe'
 
 
 class JsonRom(object):
@@ -1338,12 +1338,19 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     if start_address > 0x81D8:
         raise Exception("Custom Goal data too long to fit in allocated space, try reducing the amount of requirements.")
 
-    # gt entry
-    gtentry = world.custom_goals[player]['gtentry']
-    if gtentry and 'cutscene_gfx' in gtentry:
-        gfx = gtentry['cutscene_gfx']
-        write_int16(rom, snes_to_pc(0x3081D8), gfx[0])
-        rom.write_byte(snes_to_pc(0x3081E6), gfx[1])
+    # goal cutscene gfx
+    goals = {
+        #goal:       gfx addr,  palette addr
+        'gtentry':   (0x3081D8, 0x3081E6),
+        'pedgoal':   (0x3081ED, 0x3081F3),
+        'murahgoal': (0x3081F6, 0x3081FC),
+    }
+    for goal_type, gfx_addr in goals.items():
+        goal = world.custom_goals[player][goal_type]
+        if goal and 'cutscene_gfx' in goal:
+            gfx = goal['cutscene_gfx']
+            write_int16(rom, snes_to_pc(gfx_addr[0]), gfx[0])
+            rom.write_byte(snes_to_pc(gfx_addr[1]), gfx[1])
 
     # block HC upstairs doors in rain state in standard mode
     prevent_rain = world.mode[player] == 'standard' and world.shuffle[player] != 'vanilla' and world.logic[player] != 'nologic'
