@@ -5,7 +5,8 @@
     * Pot bug when at sprite limit
     * Kodongo AI vanilla in vanilla rooms
     * Issue with music silencing across certain room transitions
-  * Gltiched: Some HMG logic fixed. Thanks Muffins! (Sorry it took me forever to get this PR in)
+  * Glitched: Some HMG logic fixed. Thanks Muffins! (Sorry it took me forever to get this PR in)
+  * Glitched: Blind fight VRAM fix. Thanks Mufffins!
   * Text: Updated tourney winners. Thanks clearmouse!
   * Enemizer: Banned Swamola enemy everywhere as they may be causing crashes
   * Enemizer: Enemy bans from Q2 and Q3. Thank you for all the reports.
