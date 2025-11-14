@@ -40,7 +40,7 @@ from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
 from source.rom.DataTables import init_data_tables
 
-version_number = '1.4.10'
+version_number = '1.4.11'
 version_branch = '-u'
 __version__ = f'{version_number}{version_branch}'
 

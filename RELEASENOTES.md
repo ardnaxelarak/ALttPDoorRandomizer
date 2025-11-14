@@ -141,8 +141,14 @@ These are now independent of retro mode and have three options: None, Random, an
 
 # Patch Notes
 
-* 1.4.10
-  * Logic: Changed the rule surrounding the Bumper Cave Ledge Drop (the murderdactyl) to only require Pearl AND (Cape OR Byrna OR a Sword) in OHKO mode for now. This is a temporary solution until a better way to prevent needing to use a framerule to get past the bird is invented.
-  * Helmacopter Fix.
-  * Fixed a bug in shopsanity that caused the generation to fail with certain prices.
-  * Enemizer: fairies were invalid on the overworld (unless a bonk occurred nearby), so they will no longer be randomized there.
+* 1.4.11
+  * Rom fixes (all thanks to Codemann, I believe)
+    * Pot bug when at sprite limit
+    * Kodongo AI vanilla in vanilla rooms
+    * Issue with music silencing across certain room transitions
+  * Glitched: Some HMG logic fixed. Thanks Muffins! (Sorry it took me forever to get this PR in)
+  * Glitched: Blind fight VRAM fix. Thanks Mufffins!
+  * Text: Updated tourney winners. Thanks clearmouse!
+  * Enemizer: Banned Swamola enemy everywhere as they may be causing crashes
+  * Enemizer: Enemy bans from Q2 and Q3. Thank you for all the reports.
+
