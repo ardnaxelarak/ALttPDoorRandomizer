@@ -160,7 +160,7 @@ def and_rule(rule1, rule2):
 
 
 def add_lamp_requirement(spot, player):
-    add_rule(spot, lambda state: state.has('Lamp', player, state.world.lamps_needed_for_dark_rooms))
+    add_rule(spot, lambda state: state.has('Lamp', player) or state.world.free_lamp_cone[player])
 
 
 def forbid_item(location, item, player):

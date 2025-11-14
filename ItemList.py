@@ -266,13 +266,13 @@ def generate_itempool(world, player):
     # set up item pool
     skip_pool_adjustments = False
     if world.customizer and world.customizer.get_item_pool() and player in world.customizer.get_item_pool():
-        (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms) = make_customizer_pool(world, player)
+        (pool, placed_items, precollected_items, clock_mode) = make_customizer_pool(world, player)
         skip_pool_adjustments = True
     elif world.custom:
-        (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_icon, lamps_needed_for_dark_rooms) = make_custom_item_pool(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.customitemarray)
+        (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_icon) = make_custom_item_pool(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.customitemarray)
         world.rupoor_cost = min(world.customitemarray[player]["rupoorcost"], 9999)
     else:
-        (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms) = get_pool_core(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.doorShuffle[player], world.logic[player], world.flute_mode[player] == 'active')
+        (pool, placed_items, precollected_items, clock_mode) = get_pool_core(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.doorShuffle[player], world.logic[player], world.flute_mode[player] == 'active')
 
     if player in world.pool_adjustment.keys() and not skip_pool_adjustments:
         amt = world.pool_adjustment[player]
@@ -350,8 +350,6 @@ def generate_itempool(world, player):
         for item in items:
             if item.name == 'Bomb Upgrade (+10)' and item.player == player:
                 item.advancement = True
-
-    world.lamps_needed_for_dark_rooms = lamps_needed_for_dark_rooms
 
     if clock_mode is not None:
         world.clock_mode = clock_mode
@@ -946,8 +944,6 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     else:
         pool.extend(basicgloves)
 
-    lamps_needed_for_dark_rooms = 1
-
     # old insanity shuffle didn't have fake LW/DW logic so this used to be conditional
     pool.extend(['Magic Mirror', 'Moon Pearl'])
 
@@ -1048,7 +1044,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
                 pool.extend(['Small Key (Universal)'])
         else:
             pool.extend(['Small Key (Universal)'])
-    return (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms)
+    return (pool, placed_items, precollected_items, clock_mode)
 
 
 item_alternates = {
@@ -1152,8 +1148,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     diff = difficulties[difficulty]
 
-    lamps_needed_for_dark_rooms = 1
-
     # expert+ difficulties produce the same contents for
     # all bottles, since only one bottle is available
     if diff.same_bottle:
@@ -1213,7 +1207,7 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
             pool.remove('Fighter Sword')
             pool.append('Rupees (50)')
 
-    return (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_icon, lamps_needed_for_dark_rooms)
+    return (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_icon)
 
 
 def make_customizer_pool(world, player):
@@ -1357,7 +1351,7 @@ def make_customizer_pool(world, player):
             pool.remove('Fighter Sword')
             pool.append('Rupees (50)')
 
-    return pool, placed_items, precollected_items, clock_mode, 1
+    return pool, placed_items, precollected_items, clock_mode
 
 
 filler_items = {

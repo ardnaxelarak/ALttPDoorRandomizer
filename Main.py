@@ -171,7 +171,7 @@ def main(args, seed=None, fish=None):
     world.finish_init()
 
     # custom settings - these haven't been promoted to full settings yet
-    in_progress_settings = ['force_enemy']
+    in_progress_settings = ['force_enemy', 'free_lamp_cone']
     for player in range(1, world.players + 1):
         for setting in in_progress_settings:
             if world.customizer and world.customizer.has_setting(player, setting):
@@ -494,7 +494,6 @@ def copy_world(world):
     ret.can_take_damage = world.can_take_damage
     ret.difficulty_requirements = world.difficulty_requirements.copy()
     ret.fix_fake_world = world.fix_fake_world.copy()
-    ret.lamps_needed_for_dark_rooms = world.lamps_needed_for_dark_rooms
     ret.mapshuffle = world.mapshuffle.copy()
     ret.compassshuffle = world.compassshuffle.copy()
     ret.keyshuffle = world.keyshuffle.copy()
@@ -502,6 +501,7 @@ def copy_world(world):
     ret.bombbag = world.bombbag.copy()
     ret.flute_mode = world.flute_mode.copy()
     ret.bow_mode = world.bow_mode.copy()
+    ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()

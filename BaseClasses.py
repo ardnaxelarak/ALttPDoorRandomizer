@@ -69,7 +69,6 @@ class World(object):
         self.dynamic_locations = []
         self.spoiler_mode = spoiler_mode
         self.spoiler = Spoiler(self)
-        self.lamps_needed_for_dark_rooms = 1
         self.doors = []
         self._door_cache = {}
         self.paired_doors = {}
@@ -123,6 +122,8 @@ class World(object):
             set_player_attr('bombbag', False)
             set_player_attr('flute_mode', False)
             set_player_attr('bow_mode', False)
+            set_player_attr('free_lamp_cone', False)
+
             set_player_attr('difficulty_requirements', None)
             set_player_attr('boss_shuffle', 'none')
             set_player_attr('enemy_shuffle', 'none')
