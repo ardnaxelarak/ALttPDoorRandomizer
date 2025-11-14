@@ -655,9 +655,11 @@ def setup_custom_enemy_sheets(custom_enemies, sheets, data_tables, sheet_range, 
                 if key not in requirements:
                     continue
                 req = requirements[key]
-                if isinstance(req, dict):
+                if isinstance(req, dict) and room_id in req:
                     req = req[room_id]
-                if req.static or not req.can_randomize:
+                else:
+                    req = None
+                if req and (req.static or not req.can_randomize):
                     try:
                         combine_req(sub_groups_choices, req)
                     except IncompatibleEnemyException:

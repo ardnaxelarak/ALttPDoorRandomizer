@@ -1,4 +1,5 @@
 import RaceRandom as random
+from collections import defaultdict
 from Utils import snes_to_pc
 
 from source.dungeon.EnemyList import SpriteType, EnemySprite, sprite_translation
@@ -428,12 +429,16 @@ def randomize_enemies(world, player):
     if world.enemy_shuffle[player] != 'none':
         data_tables = world.data_tables[player]
         custom_uw, custom_ow = {}, {}
-        enemy_map = world.customizer.get_enemies() if world.customizer else None
-        if enemy_map and player in enemy_map:
-            if 'Underworld' in enemy_map[player]:
-                custom_uw = enemy_map[player]['Underworld']
-            if 'Overworld' in enemy_map[player]:
-                custom_ow = enemy_map[player]['Overworld']
+        if world.force_enemy[player]:
+            custom_ow = {area_id: {i: world.force_enemy[player] for i, s in enumerate(sprite_list)} for area_id, sprite_list in world.data_tables[player].ow_enemy_table.items()}
+            custom_uw = {room_id: {i: world.force_enemy[player] for i, s in enumerate(sprite_list)} for room_id, sprite_list in world.data_tables[player].uw_enemy_table.room_map.items()}
+        else:
+            enemy_map = world.customizer.get_enemies() if world.customizer else None
+            if enemy_map and player in enemy_map:
+                if 'Underworld' in enemy_map[player]:
+                    custom_uw = enemy_map[player]['Underworld']
+                if 'Overworld' in enemy_map[player]:
+                    custom_ow = enemy_map[player]['Overworld']
         randomize_underworld_sprite_sheets(data_tables.sprite_sheets, data_tables, custom_uw)
         randomize_underworld_rooms(data_tables, world, player, custom_uw)
         randomize_overworld_sprite_sheets(data_tables.sprite_sheets, data_tables, custom_ow)

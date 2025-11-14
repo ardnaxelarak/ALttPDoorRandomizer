@@ -38,7 +38,7 @@ from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
 from source.rom.DataTables import init_data_tables
 
-version_number = '1.4.11'
+version_number = '1.5.0'
 version_branch = '-u'
 __version__ = f'{version_number}{version_branch}'
 
@@ -169,6 +169,13 @@ def main(args, seed=None, fish=None):
 
     world.rom_seeds = {player: random.randint(0, 999999999) for player in range(1, world.players + 1)}
     world.finish_init()
+
+    # custom settings - these haven't been promoted to full settings yet
+    in_progress_settings = ['force_enemy']
+    for player in range(1, world.players + 1):
+        for setting in in_progress_settings:
+            if world.customizer and world.customizer.has_setting(player, setting):
+                getattr(world, setting)[player] = world.customizer.get_setting(player, setting)
 
     logger.info(
       world.fish.translate("cli","cli","app.title") + "\n",
