@@ -2434,6 +2434,9 @@ def eval_small_key_door_partial_main(state, door_name, dungeon, player):
                     number = min(number, door_rule.alternate_small_key)
                     door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
                     break
+            if state.placing_items and any(lock_item == item.name for item in state.placing_items):
+                number = min(number, door_rule.alternate_small_key)
+                door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
     return door_openable
 
 

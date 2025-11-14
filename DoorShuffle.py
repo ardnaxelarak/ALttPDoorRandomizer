@@ -290,7 +290,12 @@ def vanilla_key_logic(world, player):
         create_alternative_door_rules('Mire Map Spike Side Blue Barrier', 2, 'Misery Mire', world, player)
         create_alternative_door_rules('Mire Crystal Dead End Left Barrier', 2, 'Misery Mire', world, player)
         create_alternative_door_rules('Mire Crystal Dead End Right Barrier', 2, 'Misery Mire', world, player)
-        # gt logic? I'm unsure it needs adjusting
+        # gt logic
+        conveyor_star_pits_door = world.key_logic[player]['Ganons Tower'].door_rules['GT Conveyor Star Pits EN']
+        firesnake_door = world.key_logic[player]['Ganons Tower'].door_rules['GT Firesnake Room SW']
+        firesnake_door.alternate_big_key_loc.update(conveyor_star_pits_door.alternate_big_key_loc)
+        tile_door = world.key_logic[player]['Ganons Tower'].door_rules['GT Tile Room EN']
+        tile_door.alternate_big_key_loc.update(conveyor_star_pits_door.alternate_big_key_loc)
 
 
 def create_alternative_door_rules(door, amount, dungeon, world, player):
