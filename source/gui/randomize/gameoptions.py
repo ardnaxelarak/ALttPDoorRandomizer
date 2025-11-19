@@ -1,6 +1,7 @@
 from tkinter import ttk, StringVar, Button, Entry, Frame, Label, NE, NW, E, W, LEFT, RIGHT
 from functools import partial
 import source.classes.SpriteSelector as spriteSelector
+import source.classes.ItemGfxSelector as itemGfxSelector
 import source.gui.widgets as widgets
 import json
 import os
@@ -65,6 +66,34 @@ def gameoptions_page(top, parent):
     spriteEntry.pack(side=LEFT)
     spriteSelectButton.pack(side=LEFT)
     spriteDialogFrame.pack(anchor=E)
+
+    ## Triforce Piece graphics selection
+    triforcegfxDialogFrame = Frame(self.frames["leftRomOptionsFrame"])
+    triforceGfxLabel = Label(triforcegfxDialogFrame, text='Triforce Piece:')
+
+    self.widgets["triforce_gfx"] = {}
+    self.widgets["triforce_gfx"]["selectedItem"] = None
+    self.widgets["triforce_gfx"]["itemNameVar"] = StringVar()
+    self.widgets["triforce_gfx"]["itemNameVar"].set('Triforce')
+
+    triforceGfxEntry = Label(triforcegfxDialogFrame, textvariable=self.widgets["triforce_gfx"]["itemNameVar"])
+
+    def triforce_gfx_setter(item_name):
+        self.widgets["triforce_gfx"]["selectedItem"] = item_name
+        self.widgets["triforce_gfx"]["itemNameVar"].set(item_name)
+
+    def triforce_gfx_select():
+        # Import Tables to get valid item names
+        from Tables import item_gfx_table
+        valid_items = list(item_gfx_table.keys())
+        itemGfxSelector.ItemGfxSelector(parent, triforce_gfx_setter, valid_items=valid_items)
+
+    triforceGfxSelectButton = Button(triforcegfxDialogFrame, text='...', command=triforce_gfx_select)
+
+    triforceGfxLabel.pack(side=LEFT)
+    triforceGfxEntry.pack(side=LEFT)
+    triforceGfxSelectButton.pack(side=LEFT)
+    triforcegfxDialogFrame.pack(anchor=E)
 
     return self
 

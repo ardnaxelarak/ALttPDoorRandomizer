@@ -43,7 +43,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '4397d4085a981cf416b0e8b4f57584a0'
+RANDOMIZERBASEHASH = 'fea650d598f4399db790903d9eb16186'
 
 
 class JsonRom(object):
@@ -1875,7 +1875,7 @@ def hud_format_text(text):
     return output[:32]
 
 
-def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, sprite,
+def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, sprite, triforce_gfx,
                        ow_palettes, uw_palettes, reduce_flashing, shuffle_sfx,
                        shuffle_sfxinstruments, shuffle_songinstruments, msu_resume):
 
@@ -1933,6 +1933,20 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     # write link sprite if required
     if sprite is not None:
         write_sprite(rom, sprite)
+    
+    if triforce_gfx is not None:
+        from Tables import item_gfx_table
+        if triforce_gfx in item_gfx_table.keys():
+            (is_custom, address, palette, pal_addr, size) = item_gfx_table[triforce_gfx]
+            address = address if is_custom else 0x8000 + address
+            write_int16(rom, snes_to_pc(0xA2C600+(0x6C*2)), address)
+            write_int16(rom, snes_to_pc(0xA2C800+(0x6C*2)), address)
+            rom.write_byte(snes_to_pc(0xA2B100+0x6C), 0 if size == 2 else 4)
+            rom.write_byte(snes_to_pc(0xA2BA00+0x6C), size)
+            rom.write_byte(snes_to_pc(0xA2BB00+0x6C), size)
+            rom.write_byte(snes_to_pc(0xA2BC00+0x6C), palette)
+            rom.write_byte(snes_to_pc(0xA2BD00+0x6C), palette)
+            write_int16(rom, snes_to_pc(0xA2BE00+(0x6C*2)), pal_addr)
 
     # sprite author credits
     padded_author = sprite.author_name if sprite is not None else "Nintendo"

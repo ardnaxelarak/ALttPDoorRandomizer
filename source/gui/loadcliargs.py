@@ -197,6 +197,13 @@ def loadcliargs(gui, args, settings=None):
                        spriteNameVar=gui.pages["adjust"].content.spriteNameVar2,
                        randomSpriteVar=gui.randomSprite)
 
+        # Figure out Triforce GFX Selection
+        if "triforce_gfx" in args and args["triforce_gfx"] is not None:
+            gui.pages["randomizer"].pages["gameoptions"].widgets["triforce_gfx"]["selectedItem"] = args["triforce_gfx"]
+            gui.pages["randomizer"].pages["gameoptions"].widgets["triforce_gfx"]["itemNameVar"].set(args["triforce_gfx"])
+            gui.pages["adjust"].content.triforce_gfx = args["triforce_gfx"]
+            gui.pages["adjust"].content.triforceGfxNameVar.set(args["triforce_gfx"])
+
 # Load args/settings for Adjust tab
 def loadadjustargs(gui, settings):
     options = {

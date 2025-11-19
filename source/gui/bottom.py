@@ -345,6 +345,9 @@ def create_guiargs(parent):
     guiargs.sprite = parent.pages["randomizer"].pages["gameoptions"].widgets["sprite"]["spriteObject"]
     guiargs.randomSprite = parent.randomSprite.get()
 
+    # Get Triforce Piece GFX Selection
+    guiargs.triforce_gfx = parent.pages["randomizer"].pages["gameoptions"].widgets["triforce_gfx"]["selectedItem"]
+
     # Get output path
     guiargs.outputpath = parent.settings["outputpath"]
 

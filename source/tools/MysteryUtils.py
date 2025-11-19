@@ -261,6 +261,7 @@ def roll_settings(weights):
     if 'rom' in weights:
         romweights = weights['rom']
         ret.sprite = get_choice('sprite', romweights)
+        ret.triforce_gfx = get_choice('triforce_gfx', romweights)
         ret.disablemusic = get_choice_bool('disablemusic', romweights)
         ret.quickswap = get_choice_bool('quickswap', romweights)
         ret.reduce_flashing = get_choice_bool('reduce_flashing', romweights)

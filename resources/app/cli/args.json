@@ -501,6 +501,7 @@
     ]
   },
   "sprite": {},
+  "triforce_gfx": {},
   "create_rom": {
     "action": "store_false",
     "type": "bool"
