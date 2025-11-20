@@ -17,7 +17,7 @@ from OverworldGlitchRules import create_owg_connections
 from PotShuffle import shuffle_pots, shuffle_pot_switches
 from Regions import create_regions, create_shops, mark_light_dark_world_regions, create_dungeon_regions, adjust_locations
 from OWEdges import create_owedges
-from OverworldShuffle import link_overworld, update_world_regions, create_dynamic_exits
+from OverworldShuffle import link_overworld, update_world_regions, create_dynamic_flute_exits, create_dynamic_mirror_exits
 from Rom import patch_rom, patch_race_rom, apply_rom_settings, LocalRom, JsonRom, get_hash_string
 from Doors import create_doors
 from DoorShuffle import link_doors, connect_portal, link_doors_prep
@@ -172,7 +172,6 @@ def main(args, seed=None, fish=None):
         create_shops(world, player)
         update_world_regions(world, player)
         mark_light_dark_world_regions(world, player)
-        create_dynamic_exits(world, player)
     
     init_districts(world)
 
@@ -809,13 +808,13 @@ def copy_world(world):
         update_world_regions(ret, player)
         if world.logic[player] in ('owglitches', 'hybridglitches', 'nologic'):
             create_owg_connections(ret, player)
-        create_dynamic_exits(ret, player)
         create_dungeon_regions(ret, player)
         create_owedges(ret, player)
         create_shops(ret, player)
-        #create_doors(ret, player)
         create_rooms(ret, player)
         create_dungeons(ret, player)
+        create_dynamic_mirror_exits(ret, player)
+        create_dynamic_flute_exits(ret, player)
 
     # there are region references here they must be migrated to preserve integrity
     # ret.exp_cache = world.exp_cache.copy()
@@ -940,7 +939,7 @@ def copy_world(world):
     return ret
 
 
-def copy_world_premature(world, player):
+def copy_world_premature(world, player, create_flute_exits=True):
     # ToDo: Not good yet
     ret = World(world.players, world.owShuffle, world.owCrossed, world.owMixed, world.shuffle, world.doorShuffle, world.logic, world.mode, world.swords,
                 world.difficulty, world.difficulty_adjustments, world.timer, world.progressive, world.goal, world.algorithm,
@@ -1032,13 +1031,15 @@ def copy_world_premature(world, player):
     update_world_regions(ret, player)
     if world.logic[player] in ('owglitches', 'hybridglitches', 'nologic'):
         create_owg_connections(ret, player)
-    create_dynamic_exits(ret, player)
     create_dungeon_regions(ret, player)
     create_owedges(ret, player)
     create_shops(ret, player)
     create_doors(ret, player)
     create_rooms(ret, player)
     create_dungeons(ret, player)
+    create_dynamic_mirror_exits(ret, player) # assumes these have already been added to world
+    if create_flute_exits:
+        create_dynamic_flute_exits(ret, player)
 
     if world.mode[player] == 'standard':
         parent = ret.get_region('Menu', player)

@@ -864,7 +864,7 @@ def get_accessible_entrances(start_region, avail, assumed_inventory=[], cross_wo
     
     for p in range(1, avail.world.players + 1):
         avail.world.key_logic[p] = {}
-    base_world = copy_world_premature(avail.world, avail.player)
+    base_world = copy_world_premature(avail.world, avail.player, create_flute_exits=True)
     base_world.override_bomb_check = True
     
     connect_simple(base_world, 'Links House S&Q', start_region, avail.player)
