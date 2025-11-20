@@ -1026,7 +1026,7 @@ def copy_world_premature(world, player):
     ret.key_logic = world.key_logic.copy()
     ret.settings = world.settings
 
-    ret.is_copied_world = True
+    ret.is_premature_copied_world = True
 
     create_regions(ret, player)
     update_world_regions(ret, player)

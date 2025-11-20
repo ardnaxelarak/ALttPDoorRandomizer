@@ -65,7 +65,7 @@ class World(object):
         self.lock_aga_door_in_escape = False
         self.save_and_quit_from_boss = True
         self.override_bomb_check = False
-        self.is_copied_world = False
+        self.is_premature_copied_world = False
         self.accessibility = accessibility.copy()
         self.fix_skullwoods_exit = {}
         self.fix_palaceofdarkness_exit = {}
