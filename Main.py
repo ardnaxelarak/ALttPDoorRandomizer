@@ -170,7 +170,6 @@ def main(args, seed=None, fish=None):
     for player in range(1, world.players + 1):
         link_overworld(world, player)
         create_shops(world, player)
-        update_world_regions(world, player)
         mark_light_dark_world_regions(world, player)
     
     init_districts(world)
