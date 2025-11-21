@@ -2701,8 +2701,8 @@ class Location(object):
         self.recursion_count = 0
         self.staleness_count = 0
         self.locked = False
-        self.real = True
-        self.always_allow = lambda item, state: False
+        self.real = not crystal
+        self.always_allow = None
         self.access_rule = lambda state: True
         self.verbose_rule = None
         self.item_rule = lambda item: True
@@ -2716,7 +2716,7 @@ class Location(object):
     def can_fill(self, state, item, check_access=True):
         if not self.valid_multiworld(state, item):
             return False
-        return self.always_allow(state, item) or (self.parent_region.can_fill(item) and self.item_rule(item) and (not check_access or self.can_reach(state)))
+        return (self.always_allow and self.always_allow(state, item)) or (self.parent_region.can_fill(item) and self.item_rule(item) and (not check_access or self.can_reach(state)))
 
     def valid_multiworld(self, state, item):
         if self.type == LocationType.Pot and self.player != item.player:
