@@ -2,6 +2,7 @@ from tkinter import ttk, filedialog, messagebox, StringVar, Button, Entry, Frame
 from AdjusterMain import adjust, patch
 from argparse import Namespace
 from source.classes.SpriteSelector import SpriteSelector
+from source.classes.ItemGfxSelector import ItemGfxSelector
 import source.gui.widgets as widgets
 import json
 import logging
@@ -71,6 +72,30 @@ def adjust_page(top, parent, settings):
     spriteSelectButton2.pack(side=LEFT)
     spriteDialogFrame2.pack(anchor=E)
 
+    # Triforce Piece GFX Selection
+    self.triforceGfxNameVar = StringVar()
+    self.triforceGfxNameVar.set('(unchanged)')
+    triforceGfxDialogFrame = Frame(self.frames["leftAdjustFrame"])
+    triforceGfxLabel = Label(triforceGfxDialogFrame, text='Triforce Piece:')
+    triforceGfxEntry = Label(triforceGfxDialogFrame, textvariable=self.triforceGfxNameVar)
+    self.triforce_gfx = None
+
+    def set_triforce_gfx(item_name):
+        self.triforce_gfx = item_name
+        self.triforceGfxNameVar.set(item_name if item_name else '(unchanged)')
+
+    def TriforceGfxSelectAdjuster():
+        from Tables import item_gfx_table
+        valid_items = list(item_gfx_table.keys())
+        ItemGfxSelector(parent, set_triforce_gfx, valid_items=valid_items)
+
+    triforceGfxSelectButton = Button(triforceGfxDialogFrame, text='...', command=TriforceGfxSelectAdjuster)
+
+    triforceGfxLabel.pack(side=LEFT)
+    triforceGfxEntry.pack(side=LEFT)
+    triforceGfxSelectButton.pack(side=LEFT)
+    triforceGfxDialogFrame.pack(anchor=E)
+
     # Path to game file to Adjust
     # This one's more-complicated, build it and stuff it
     adjustRomFrame = Frame(self.frames["bottomAdjustFrame"])
@@ -117,6 +142,7 @@ def adjust_page(top, parent, settings):
         guiargs.rom = self.romVar2.get()
         guiargs.baserom = top.pages["randomizer"].pages["generation"].widgets["rom"].storageVar.get()
         guiargs.sprite = self.sprite
+        guiargs.triforce_gfx = self.triforce_gfx
         guiargs.outputpath = os.path.dirname(guiargs.rom)
         try:
             adjust(args=guiargs)
@@ -171,6 +197,7 @@ def adjust_page(top, parent, settings):
         guiargs.patch = self.patchVar.get()
         guiargs.baserom = top.pages["randomizer"].pages["generation"].widgets["rom"].storageVar.get()
         guiargs.sprite = self.sprite
+        guiargs.triforce_gfx = self.triforce_gfx
         guiargs.outputpath = os.path.dirname(guiargs.patch)
         try:
             patch(args=guiargs)

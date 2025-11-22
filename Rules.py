@@ -50,9 +50,11 @@ def set_rules(world, player):
     ow_bunny_rules(world, player)
     ow_terrain_rules(world, player)
 
+    if world.is_premature_copied_world:
+        return
+
     if world.mode[player] == 'standard':
-        if not world.is_copied_world:
-            standard_rules(world, player)
+        standard_rules(world, player)
     else:
         misc_key_rules(world, player)
 
@@ -91,23 +93,20 @@ def set_rules(world, player):
 
     if (world.flute_mode[player] != 'active' and not world.is_tile_swapped(0x18, player)
             and 'Ocarina (Activated)' not in list(map(str, [i for i in world.precollected_items if i.player == player]))):
-        if not world.is_copied_world:
-            # Commented out below, this would be needed for rando implementations where Inverted requires flute activation in bunny territory
-            # kak_region = self.world.get_region('Kakariko Village', player)
-            # add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player) and state.is_not_bunny(kak_region, player))
-            add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player))
+        # Commented out below, this would be needed for rando implementations where Inverted requires flute activation in bunny territory
+        # kak_region = self.world.get_region('Kakariko Village', player)
+        # add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player) and state.is_not_bunny(kak_region, player))
+        add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player))
 
     # if swamp and dam have not been moved we require mirror for swamp palace
     if not world.swamp_patch_required[player]:
         add_rule(world.get_entrance('Swamp Lobby Moat', player), lambda state: state.has_Mirror(player))
 
-    if not world.is_copied_world:
-        set_bunny_rules(world, player, world.mode[player] == 'inverted')
+    set_bunny_rules(world, player, world.mode[player] == 'inverted')
 
     # These rules go here because they overwrite/add to some of the above rules
     if world.logic[player] == 'hybridglitches':
-        if not world.is_copied_world:
-            underworld_glitches_rules(world, player)
+        underworld_glitches_rules(world, player)
 
 def mirrorless_path_to_location(world, startName, targetName, player):
     # If Agahnim is defeated then the courtyard needs to be accessible without using the mirror for the mirror offset glitch.
@@ -399,7 +398,7 @@ def global_rules(world, player):
 
     # bonk items
     if world.shuffle_bonk_drops[player]:
-        if not world.is_copied_world:
+        if not world.is_premature_copied_world:
             from Regions import bonk_prize_table
             for location_name, (_, _, aga_required, _, _, _) in bonk_prize_table.items():
                 loc = world.get_location(location_name, player)
@@ -983,7 +982,7 @@ def global_rules(world, player):
 
     add_key_logic_rules(world, player)
 
-    if world.logic[player] == 'hybridglitches' and not world.is_copied_world:
+    if world.logic[player] == 'hybridglitches' and not world.is_premature_copied_world:
         add_hmg_key_logic_rules(world, player)
     # End of door rando rules.
 
@@ -1490,7 +1489,7 @@ def no_glitches_rules(world, player):
     set_rule(world.get_entrance('Paradox Cave Push Block Reverse', player), lambda state: False)  # no glitches does not require block override
     set_rule(world.get_entrance('Ice Lake Northeast Pier Hop', player), lambda state: False)
     forbid_bomb_jump_requirements(world, player)
-    if not world.is_copied_world:
+    if not world.is_premature_copied_world:
         add_conditional_lamps(world, player)
 
 
@@ -1801,11 +1800,11 @@ def standard_rules(world, player):
         add_rule(world.get_entrance(entrance, player), lambda state: state.has('Zelda Delivered', player))
 
     if world.shuffle_bonk_drops[player]:
-        if not world.is_copied_world:
+        if not world.is_premature_copied_world:
             add_rule(world.get_location('Hyrule Castle Tree', player), lambda state: state.has('Zelda Delivered', player))
             add_rule(world.get_location('Central Bonk Rocks Tree', player), lambda state: state.has('Zelda Delivered', player))
 
-    if not world.is_copied_world:
+    if not world.is_premature_copied_world:
         add_rule(world.get_location('Hyrule Castle Courtyard Tree Pull', player), lambda state: state.has('Zelda Delivered', player))
 
     # don't allow bombs to get past here before zelda is rescued

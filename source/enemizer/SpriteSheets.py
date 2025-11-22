@@ -363,7 +363,7 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.TrinexxFireHead).exalt().sub_group(0, 0x40).sub_group(3, 0x3f),
         SpriteRequirement(EnemySprite.TrinexxIceHead).exalt().sub_group(0, 0x40).sub_group(3, 0x3f),
         SpriteRequirement(EnemySprite.Blind).exalt().sub_group(1, 0x2c).sub_group(2, 0x3b),
-        SpriteRequirement(EnemySprite.Swamola).no_drop().sub_group(3, 0x19),
+        SpriteRequirement(EnemySprite.Swamola).skip().no_drop().sub_group(3, 0x19),
         SpriteRequirement(EnemySprite.Lynel).sub_group(3, 0x14),
         SpriteRequirement(EnemySprite.BunnyBeam).no_drop().ow_skip(),
         SpriteRequirement(EnemySprite.FloppingFish).uw_skip().immune(),

@@ -30,9 +30,11 @@ def adjust(args):
 
     if not hasattr(args,"sprite"):
         args.sprite = None
+    if not hasattr(args,"triforce_gfx"):
+        args.triforce_gfx = None
 
     apply_rom_settings(rom, args.heartbeep, args.heartcolor, args.quickswap, args.fastmenu, args.disablemusic,
-                       args.sprite, args.ow_palettes, args.uw_palettes, args.reduce_flashing, args.shuffle_sfx,
+                       args.sprite, args.triforce_gfx, args.ow_palettes, args.uw_palettes, args.reduce_flashing, args.shuffle_sfx,
                        args.shuffle_sfxinstruments, args.shuffle_songinstruments, args.msu_resume)
 
     output_path.cached_path = args.outputpath
@@ -65,10 +67,12 @@ def patch(args):
 
     if not hasattr(args, "sprite"):
         args.sprite = None
+    if not hasattr(args, "triforce_gfx"):
+        args.triforce_gfx = None
 
     apply_rom_settings(rom, args.heartbeep, args.heartcolor, args.quickswap, args.fastmenu, args.disablemusic,
-                       args.sprite, args.ow_palettes, args.uw_palettes, args.reduce_flashing, args.shuffle_sfx,
-                       args.shuffle_sfxinstruments, args.shuffle_songinstruments, args.msu_resume)
+                       args.sprite, args.triforce_gfx, args.ow_palettes, args.uw_palettes, args.reduce_flashing,
+                       args.shuffle_sfx, args.shuffle_sfxinstruments, args.shuffle_songinstruments, args.msu_resume)
 
     output_path.cached_path = args.outputpath
     rom.write_to_file(output_path('%s.sfc' % outfile_base))

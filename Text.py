@@ -192,7 +192,7 @@ Blind_texts = [
     "Gloves open\na handful\nof checks",
     "Red mail?\nReturn to\nsender.",
     "For sale:\nBaby boots,\nNever found",
-    "SRL or rtGG?\nI prefer the\nLadder",
+    "SRL or rtGG?\nI prefer the\nStepladder",
     "Ladders are\nalways up\nto something",
     "Zelda's\nfashion is\nvery chic",
     "Zombie geese\nare waterfoul.\n",

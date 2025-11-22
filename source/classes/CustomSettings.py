@@ -208,6 +208,7 @@ class CustomSettings(object):
 
                 # rom adjust stuff
                 args.sprite[p] = get_setting(settings['sprite'], args.sprite[p])
+                args.triforce_gfx[p] = get_setting(settings['triforce_gfx'], args.triforce_gfx[p])
                 args.disablemusic[p] = get_setting(settings['disablemusic'], args.disablemusic[p])
                 args.quickswap[p] = get_setting(settings['quickswap'], args.quickswap[p])
                 args.reduce_flashing[p] = get_setting(settings['reduce_flashing'], args.reduce_flashing[p])

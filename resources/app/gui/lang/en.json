@@ -42,6 +42,8 @@
 
     "adjust.sprite": "Sprite:",
     "adjust.sprite.unchanged": "(unchanged)",
+    "adjust.triforcegfx": "Triforce Piece:",
+    "adjust.triforcegfx.unchanged": "(unchanged)",
 
     "adjust.rom": "Rom to adjust: ",
     "adjust.rom.romfiles": "Rom Files",
@@ -259,7 +261,8 @@
 
     "randomizer.gameoptions.sprite": "Sprite:",
     "randomizer.gameoptions.sprite.unchanged": "(unchanged)",
-
+    "randomizer.gameoptions.triforcegfx": "Triforce Piece:",
+    "randomizer.gameoptions.triforcegfx.unchanged": "(unchanged)",
 
     "randomizer.generation.bps": "Create BPS Patches",
     "randomizer.generation.spoiler": "Create Spoiler Log",
