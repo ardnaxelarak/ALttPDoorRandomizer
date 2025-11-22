@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.1.3
+- Added new post-gen option to change Triforce Piece GFX
+- Added new GFX for 10/11 keys to replace the A/B GFX
+- Fixed issue with Follower Sprite GFX after mirroring
+- Fixed VRAM issue with Crystal Maiden cutscene
+- Some performance updates
+- \~Merged in DR v1.4.11~
+  - Enemizer bans update
+
 ## 0.6.1.2
 - Various fixes for Custom Goal Framework
 - Added custom gfx for Pedestal and Murahdahla
