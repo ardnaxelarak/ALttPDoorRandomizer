@@ -996,13 +996,14 @@ def drop_rules(world, player):
     for super_tile, enemy_list in data_tables.uw_enemy_table.room_map.items():
         for enemy in enemy_list:
             if enemy.location:
-                rule = defeat_rule_single(world, player, enemy, enemy.location.parent_region)
-                if enemy.location.parent_region.name in special_rules_check:
-                    rule = special_rules_for_region(world, player, enemy.location.parent_region.name,
-                                                    enemy.location, rule)
+                true_location = world.get_location(enemy.location.name, player)
+                rule = defeat_rule_single(world, player, enemy, true_location.parent_region)
+                if true_location.parent_region.name in special_rules_check:
+                    rule = special_rules_for_region(world, player, true_location.parent_region.name,
+                                                    true_location, rule)
                 if rule.rule_lambda is None:
                     raise Exception(f'Bad rule for enemy drop. Need to inspect this case: {hex(enemy.kind)}')
-                add_rule_new(enemy.location, rule)
+                add_rule_new(true_location, rule)
 
 
 def ow_inverted_rules(world, player):
