@@ -4,8 +4,9 @@
   * Logic: Fixed vanilla key logic for GT basement
   * Logic (Playthrough): Fixed an issue where enemy kill rules were not applied during playthrough calculation. (Thanks Catobat for the catch)
   * Enemy Drop: Added "spies" and shadows for hidden enemies when enemy drop shuffled is enabled
+  * Pottery: Pots will uncolor when the item inside is collected next time the room is loaded
   * Keysanity/Keydrop Menu for DR:
-    * Map key information is now controlled by the Dungeon Chest Counts setting. If set to always on, this information will be available right away in the menu. And will be on the HUD even when the map is not obtained.
+    * Map key information is now controlled by the Dungeon Chest Counts setting. If set to always on, this information will be available right away in the menu and will be on the HUD even when the map is not obtained.
     * The key counter on the HUD for the current dungeon now accounts for keys from enemies or pots that are from vanilla key locations.
     * The first number on the HUD represents all keys collected either in that dungeon or elsewhere.
     * The second number on the HUD is the total keys that can be collected either in that dungeon or elsewhere.
