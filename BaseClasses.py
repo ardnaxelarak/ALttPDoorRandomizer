@@ -81,7 +81,6 @@ class World(object):
         self.dynamic_locations = []
         self.spoiler_mode = spoiler_mode
         self.spoiler = Spoiler(self)
-        self.lamps_needed_for_dark_rooms = 1
         self.owedges = []
         self._owedge_cache = {}
         self.owswaps = {}
@@ -149,12 +148,15 @@ class World(object):
             set_player_attr('bombbag', False)
             set_player_attr('flute_mode', False)
             set_player_attr('bow_mode', False)
+            set_player_attr('free_lamp_cone', False)
+
             set_player_attr('difficulty_requirements', None)
             set_player_attr('boss_shuffle', 'none')
             set_player_attr('enemy_shuffle', 'none')
             set_player_attr('enemy_health', 'default')
             set_player_attr('enemy_damage', 'default')
             set_player_attr('any_enemy_logic', 'allow_all')
+            set_player_attr('force_enemy', None)
             set_player_attr('beemizer', '0')
             set_player_attr('escape_assist', [])
             set_player_attr('crystals_needed_for_ganon', 7)

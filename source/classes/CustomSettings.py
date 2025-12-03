@@ -222,6 +222,14 @@ class CustomSettings(object):
                 args.shuffle_songinstruments[p] = get_setting(settings['shuffle_songinstruments'], args.shuffle_songinstruments[p])
                 args.msu_resume[p] = get_setting(settings['msu_resume'], args.msu_resume[p])
 
+    def has_setting(self, player, setting):
+        if 'settings' in self.file_source and player in self.file_source['settings']:
+            return setting in self.file_source['settings'][player]
+        return False
+
+    def get_setting(self, player, setting):
+        return self.file_source['settings'][player][setting]
+
     def get_item_pool(self):
         if 'item_pool' in self.file_source:
             return self.file_source['item_pool']

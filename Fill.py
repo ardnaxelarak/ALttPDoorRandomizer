@@ -183,13 +183,11 @@ def fill_restrictive(world, base_state, locations, itempool, key_pool=None, sing
                 spot_to_fill = None
 
                 item_locations = filter_locations(item_to_place, locations, world, vanilla)
-                # for dungeon items, it is worth reducing this list further by excluding locations outside of the respective dungeon
-                reduced_locations = item_locations if not item_to_place.dungeon else \
-                                    [location for location in item_locations if not location.always_allow and location.parent_region.can_fill(item_to_place)]
-
+                if is_dungeon_item(item_to_place, world):
+                    item_locations = [l for l in item_locations if valid_dungeon_placement(item_to_place, l, world)]
                 verify(item_to_place, item_locations, maximum_exploration_state, single_player_placement,
                        perform_access_check, key_pool, world)
-                for location in reduced_locations:
+                for location in item_locations:
                     spot_to_fill = verify_spot_to_fill(location, item_to_place, maximum_exploration_state,
                                                        single_player_placement, perform_access_check, key_pool, world)
                     if spot_to_fill:
