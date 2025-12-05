@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1.4
+- Fixes for Glitched Rain State (Bonk Shuffle included)
+- \~Merged in DR v1.5.0~
+  - GT Key Logic fix
+  - New HUD key count behavior
+  - Pot uncoloring on collection
+
 ## 0.6.1.3
 - Added new post-gen option to change Triforce Piece GFX
 - Added new GFX for 10/11 keys to replace the A/B GFX
