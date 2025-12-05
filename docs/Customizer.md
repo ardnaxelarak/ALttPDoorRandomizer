@@ -51,7 +51,9 @@ Start inventory is not supported here. It has a separate section.
 Some settings are intended to only be accessed using the customizer:
 
 * `aga_randomness` setting this to false, turns off blue balls and ganon warp randomness
-* `money_balance` this is a percent (0-100). For numbers less than 100, both price balancing and money balancing will only attempt to ensure the player has access to only a percentage of the required funds. When 0, this should effectively disable money balancing. Grinding for rupees may be necessary whenever this is less than 100. 
+* `money_balance` this is a percent (0-100). For numbers less than 100, both price balancing and money balancing will only attempt to ensure the player has access to only a percentage of the required funds. When 0, this should effectively disable money balancing. Grinding for rupees may be necessary whenever this is less than 100.
+* `free_lamp_cone` setting this to true will make all dark rooms have a light cone without lamp. The lamp will be placed without regard to dark room logic.
+* `force_enemy` setting this to a specific enemy (like 'StalfosKnight' or 'Lynel', complete list in EnemyList.py) will attempt to make all enemies that type. Some enemies cannot be changed (like bosses). Known issues with gfx glitches occurring in the overworld, as they do not limit the enemy types as appropriate for the sprite sheet.
 
 ###### Not Yet Implemented
 

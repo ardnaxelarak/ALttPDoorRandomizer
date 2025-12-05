@@ -87,7 +87,7 @@ def adjust_page(top, parent, settings):
     def TriforceGfxSelectAdjuster():
         from Tables import item_gfx_table
         valid_items = list(item_gfx_table.keys())
-        ItemGfxSelector(parent, set_triforce_gfx, valid_items=valid_items)
+        ItemGfxSelector(parent, set_triforce_gfx, valid_items=valid_items, adjuster=True)
 
     triforceGfxSelectButton = Button(triforceGfxDialogFrame, text='...', command=TriforceGfxSelectAdjuster)
 

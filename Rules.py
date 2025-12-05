@@ -322,7 +322,7 @@ def and_rule(rule1, rule2):
 
 
 def add_lamp_requirement(spot, player):
-    add_rule(spot, lambda state: state.has('Lamp', player, state.world.lamps_needed_for_dark_rooms))
+    add_rule(spot, lambda state: state.has('Lamp', player) or state.world.free_lamp_cone[player])
 
 
 def forbid_item(location, item, player):
@@ -1175,13 +1175,14 @@ def drop_rules(world, player):
     for super_tile, enemy_list in data_tables.uw_enemy_table.room_map.items():
         for enemy in enemy_list:
             if enemy.location:
-                rule = defeat_rule_single(world, player, enemy, enemy.location.parent_region)
-                if enemy.location.parent_region.name in special_rules_check:
-                    rule = special_rules_for_region(world, player, enemy.location.parent_region.name,
-                                                    enemy.location, rule)
+                true_location = world.get_location(enemy.location.name, player)
+                rule = defeat_rule_single(world, player, enemy, true_location.parent_region)
+                if true_location.parent_region.name in special_rules_check:
+                    rule = special_rules_for_region(world, player, true_location.parent_region.name,
+                                                    true_location, rule)
                 if rule.rule_lambda is None:
                     raise Exception(f'Bad rule for enemy drop. Need to inspect this case: {hex(enemy.kind)}')
-                add_rule_new(enemy.location, rule)
+                add_rule_new(true_location, rule)
 
 
 def ow_inverted_rules(world, player):
@@ -2270,6 +2271,9 @@ def eval_small_key_door_partial_main(state, door_name, dungeon, player):
                     number = min(number, door_rule.alternate_small_key)
                     door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
                     break
+            if state.placing_items and any(lock_item == item.name for item in state.placing_items):
+                number = min(number, door_rule.alternate_small_key)
+                door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
     return door_openable
 
 

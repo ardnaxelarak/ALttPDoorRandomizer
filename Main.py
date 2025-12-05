@@ -40,7 +40,7 @@ from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
 from source.rom.DataTables import init_data_tables
 
-version_number = '1.4.11'
+version_number = '1.5.0'
 version_branch = '-u'
 __version__ = f'{version_number}{version_branch}'
 
@@ -491,6 +491,12 @@ def init_world(args, fish):
     world.aga_randomness = args.aga_randomness.copy()
     world.money_balance = args.money_balance.copy()
 
+    # custom settings - these haven't been promoted to full settings yet
+    in_progress_settings = ['force_enemy', 'free_lamp_cone']
+    for player in range(1, world.players + 1):
+        for setting in in_progress_settings:
+            if world.customizer and world.customizer.has_setting(player, setting):
+                getattr(world, setting)[player] = world.customizer.get_setting(player, setting)
     
     return world
 
@@ -742,7 +748,6 @@ def copy_world(world):
     ret.can_take_damage = world.can_take_damage
     ret.difficulty_requirements = world.difficulty_requirements.copy()
     ret.fix_fake_world = world.fix_fake_world.copy()
-    ret.lamps_needed_for_dark_rooms = world.lamps_needed_for_dark_rooms
     ret.mapshuffle = world.mapshuffle.copy()
     ret.compassshuffle = world.compassshuffle.copy()
     ret.keyshuffle = world.keyshuffle.copy()
@@ -751,6 +756,7 @@ def copy_world(world):
     ret.bombbag = world.bombbag.copy()
     ret.flute_mode = world.flute_mode.copy()
     ret.bow_mode = world.bow_mode.copy()
+    ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
@@ -963,7 +969,6 @@ def copy_world_premature(world, player, create_flute_exits=True):
     ret.can_take_damage = world.can_take_damage
     ret.difficulty_requirements = world.difficulty_requirements.copy()
     ret.fix_fake_world = world.fix_fake_world.copy()
-    ret.lamps_needed_for_dark_rooms = world.lamps_needed_for_dark_rooms
     ret.mapshuffle = world.mapshuffle.copy()
     ret.compassshuffle = world.compassshuffle.copy()
     ret.keyshuffle = world.keyshuffle.copy()
@@ -972,6 +977,7 @@ def copy_world_premature(world, player, create_flute_exits=True):
     ret.bombbag = world.bombbag.copy()
     ret.flute_mode = world.flute_mode.copy()
     ret.bow_mode = world.bow_mode.copy()
+    ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
