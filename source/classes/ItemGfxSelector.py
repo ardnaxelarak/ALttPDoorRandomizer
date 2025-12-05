@@ -5,12 +5,13 @@ from Utils import local_path
 
 
 class ItemGfxSelector(object):
-    def __init__(self, parent, callback, valid_items=None):
+    def __init__(self, parent, callback, valid_items=None, adjuster=False):
         self.parent = parent
         self.window = Toplevel(parent)
         self.window.geometry("800x650")
         self.callback = callback
         self.valid_items = valid_items if valid_items else []
+        self.adjuster = adjuster
 
         self.window.wm_title("Select Triforce Piece Graphics")
         self.window['padx'] = 5
@@ -37,6 +38,10 @@ class ItemGfxSelector(object):
 
         button = Button(frame, text="Default (Triforce)", command=self.use_default)
         button.pack(side=LEFT, padx=(0, 5))
+
+        if adjuster:
+            button = Button(frame, text="Current triforce from rom", command=self.use_default_unchanged)
+            button.pack(side=LEFT, padx=(0, 5))
 
         set_icon(self.window)
         self.window.focus()
@@ -114,6 +119,10 @@ class ItemGfxSelector(object):
 
     def use_default(self):
         self.callback("Triforce")
+        self.window.destroy()
+
+    def use_default_unchanged(self):
+        self.callback(None)
         self.window.destroy()
 
     def select_item(self, item_name):
