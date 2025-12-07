@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.1.5
+- Fixed error with non-prize shuffle
+
 ## 0.6.1.4
 - Fixes for Glitched Rain State (Bonk Shuffle included)
 - \~Merged in DR v1.5.0~
