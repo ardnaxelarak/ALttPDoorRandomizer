@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.1.6
+- Fixed bonk drop sparkles in DW
+- \~Merged in DR v1.5.1~
+  - Fixed key count issues
+
 ## 0.6.1.5
 - Fixed error with non-prize shuffle
 
