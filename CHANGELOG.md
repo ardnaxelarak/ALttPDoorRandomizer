@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1.7
+- \~Merged in DR v1.5.2~
+  - Reverted key count update
+
 ## 0.6.1.6
 - Fixed bonk drop sparkles in DW
 - \~Merged in DR v1.5.1~
