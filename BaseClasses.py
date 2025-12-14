@@ -151,7 +151,7 @@ class World(object):
             set_player_attr('prizeshuffle', 'none')
             set_player_attr('restrict_boss_items', 'none')
             set_player_attr('bombbag', False)
-            set_player_attr('flute_mode', False)
+            set_player_attr('flute_mode', 'normal')
             set_player_attr('bow_mode', False)
             set_player_attr('free_lamp_cone', False)
 
@@ -3792,7 +3792,7 @@ orcrossed_mode = {"none": 0, "polar": 1, "grouped": 2, "unrestricted": 4}
 flutespot_mode = {"vanilla": 0, "balanced": 1, "random": 2}
 
 # byte 13: FBBB TTPP (flute_mode, bow_mode, take_any, prize shuffle)
-flute_mode = {'normal': 0, 'active': 1}
+flute_mode = {'normal': 0, 'active': 1, 'pseudo': 1}
 bow_mode = {'progressive': 0, 'silvers': 1, 'retro': 2, 'retro_silvers': 3}  # reserved 8 modes?
 take_any_mode = {'none': 0, 'random': 1, 'fixed': 2}
 prizeshuffle_mode = {'none': 0, 'dungeon': 1, 'nearby': 2, 'wild': 3}

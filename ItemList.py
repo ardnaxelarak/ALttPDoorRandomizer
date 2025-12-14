@@ -255,7 +255,7 @@ def generate_itempool(world, player):
         loc.locked = True
         loc.forced_item = loc.item
 
-    if (world.flute_mode[player] != 'active' and not world.is_tile_swapped(0x18, player)
+    if (world.flute_mode[player] not in ['active', 'pseudo'] and not world.is_tile_swapped(0x18, player)
             and 'Ocarina (Activated)' not in list(map(str, [i for i in world.precollected_items if i.player == player]))):
         region = world.get_region('Kakariko Village',player)
 
@@ -290,7 +290,7 @@ def generate_itempool(world, player):
         (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_total, treasure_hunt_icon) = make_custom_item_pool(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.customitemarray[player])
         world.rupoor_cost = min(world.customitemarray[player]["rupoorcost"], 9999)
     else:
-        (pool, placed_items, precollected_items, clock_mode) = get_pool_core(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.doorShuffle[player], world.logic[player], world.flute_mode[player] == 'active' or world.is_tile_swapped(0x18, player))
+        (pool, placed_items, precollected_items, clock_mode) = get_pool_core(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.doorShuffle[player], world.logic[player], world.flute_mode[player] in ['active', 'pseudo'] or world.is_tile_swapped(0x18, player))
 
     if player in world.pool_adjustment.keys() and not skip_pool_adjustments:
         amt = world.pool_adjustment[player]
@@ -1497,7 +1497,7 @@ def make_customizer_pool(world, player):
         world.get_location('Master Sword Pedestal', player).locked = True
 
     guaranteed_items = alwaysitems + ['Magic Mirror', 'Moon Pearl']
-    if world.is_tile_swapped(0x18, player) or world.flute_mode[player] == 'active':
+    if world.is_tile_swapped(0x18, player) or world.flute_mode[player] in ['active', 'pseudo']:
         guaranteed_items.remove('Ocarina')
         guaranteed_items.append('Ocarina (Activated)')
     missing_items = []

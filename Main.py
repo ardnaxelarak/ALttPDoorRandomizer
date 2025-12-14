@@ -721,7 +721,7 @@ def set_starting_inventory(world, args):
         if args.usestartinventory[player]:
             for tok in filter(None, args.startinventory[player].replace("_", " ").split(',')):
                 name = tok.strip()
-                name = name if name != 'Ocarina' or world.flute_mode[player] != 'active' else 'Ocarina (Activated)'
+                name = name if name != 'Ocarina' or world.flute_mode[player] not in ['active', 'pseudo'] else 'Ocarina (Activated)'
                 item = ItemFactory(name, player)
                 if item:
                     world.push_precollected(item)
@@ -745,7 +745,7 @@ def set_starting_inventory(world, args):
                                 world.push_precollected(item)
                     elif inv_item == 'RandomFollower':
                         name = random.choice([f for f in follower_pickups if f != 'Zelda Herself' or world.mode[p] == 'standard'])
-                    name = name if name != 'Ocarina' or world.flute_mode[p] != 'active' else 'Ocarina (Activated)'
+                    name = name if name != 'Ocarina' or world.flute_mode[p] not in ['active', 'pseudo'] else 'Ocarina (Activated)'
                     if name in follower_pickups:
                         if not world.shuffle_followers[p] or follower_added:
                             continue

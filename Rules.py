@@ -91,7 +91,7 @@ def set_rules(world, player):
             else:
                 add_rule(location, lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
 
-    if (world.flute_mode[player] != 'active' and not world.is_tile_swapped(0x18, player)
+    if (world.flute_mode[player] not in ['active', 'pseudo'] and not world.is_tile_swapped(0x18, player)
             and 'Ocarina (Activated)' not in list(map(str, [i for i in world.precollected_items if i.player == player]))):
         # Commented out below, this would be needed for rando implementations where Inverted requires flute activation in bunny territory
         # kak_region = self.world.get_region('Kakariko Village', player)

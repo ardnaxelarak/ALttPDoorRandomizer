@@ -50,6 +50,7 @@
   },
   "flute_mode": {
     "choices": [
+      "pseudo",
       "normal",
       "active"
     ]

@@ -2447,7 +2447,7 @@ def write_strings(rom, world, player, team):
         # of how many exist. This supports many settings well.
         items_to_hint = RelevantItems.copy()
         flute_item = 'Ocarina'
-        if world.is_tile_swapped(0x18, player) or world.flute_mode[player] == 'active':
+        if world.is_tile_swapped(0x18, player) or world.flute_mode[player] in ['active', 'pseudo']:
             items_to_hint.remove(flute_item)
             flute_item = 'Ocarina (Activated)'
         if world.owShuffle[player] != 'vanilla' or world.owMixed[player]:
