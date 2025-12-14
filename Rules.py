@@ -50,9 +50,11 @@ def set_rules(world, player):
     ow_bunny_rules(world, player)
     ow_terrain_rules(world, player)
 
+    if world.is_premature_copied_world:
+        return
+
     if world.mode[player] == 'standard':
-        if not world.is_copied_world:
-            standard_rules(world, player)
+        standard_rules(world, player)
     else:
         misc_key_rules(world, player)
 
@@ -61,45 +63,50 @@ def set_rules(world, player):
     drop_rules(world, player)
     challenge_room_rules(world, player)
 
-    if world.goal[player] == 'dungeons':
-        # require all dungeons to beat ganon
-        add_rule(world.get_location('Ganon', player), lambda state: state.has_beaten_aga(player) and state.has('Beat Agahnim 2', player) and state.has('Beat Boss', player, 10))
-    elif world.goal[player] in ['crystals', 'ganon']:
-        add_rule(world.get_location('Ganon', player), lambda state: state.has_crystals(world.crystals_needed_for_ganon[player], player))
-        if world.goal[player] == 'ganon':
-            # require aga2 to beat ganon
-            add_rule(world.get_location('Ganon', player), lambda state: state.has('Beat Agahnim 2', player))
-    elif world.goal[player] in ['triforcehunt', 'trinity']:
-        if world.goal[player] == 'trinity':
+    if world.custom_goals[player]['ganongoal'] and 'requirements' in world.custom_goals[player]['ganongoal']:
+        rule = get_goal_rule('ganongoal', world, player)
+        add_rule(world.get_location('Ganon', player), rule)
+    else:
+        if world.goal[player] == 'dungeons':
+            # require all dungeons to beat ganon
+            add_rule(world.get_location('Ganon', player), lambda state: state.has_beaten_aga(player) and state.has('Beat Agahnim 2', player) and state.has('Beat Boss', player, 10))
+        elif world.goal[player] in ['crystals', 'ganon']:
             add_rule(world.get_location('Ganon', player), lambda state: state.has_crystals(world.crystals_needed_for_ganon[player], player))
-        for location in world.get_region('Hyrule Castle Courtyard', player).locations:
-            if location.name == 'Murahdahla':
-                add_rule(location, lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
-    elif world.goal[player] == 'ganonhunt':
-        add_rule(world.get_location('Ganon', player), lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
-    elif world.goal[player] == 'completionist':
-        add_rule(world.get_location('Ganon', player), lambda state: state.everything(player))
+            if world.goal[player] == 'ganon':
+                # require aga2 to beat ganon
+                add_rule(world.get_location('Ganon', player), lambda state: state.has('Beat Agahnim 2', player))
+        elif world.goal[player] in ['triforcehunt', 'trinity']:
+            if world.goal[player] == 'trinity':
+                add_rule(world.get_location('Ganon', player), lambda state: state.has_crystals(world.crystals_needed_for_ganon[player], player))
+        elif world.goal[player] == 'ganonhunt':
+            add_rule(world.get_location('Ganon', player), lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
+        elif world.goal[player] == 'completionist':
+            add_rule(world.get_location('Ganon', player), lambda state: state.everything(player))
 
+    for location in world.get_region('Hyrule Castle Courtyard', player).locations:
+        if location.name == 'Murahdahla':
+            if world.custom_goals[player]['murahgoal'] and 'requirements' in world.custom_goals[player]['murahgoal']:
+                rule = get_goal_rule('murahgoal', world, player)
+                add_rule(location, rule)
+            else:
+                add_rule(location, lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
 
     if (world.flute_mode[player] != 'active' and not world.is_tile_swapped(0x18, player)
             and 'Ocarina (Activated)' not in list(map(str, [i for i in world.precollected_items if i.player == player]))):
-        if not world.is_copied_world:
-            # Commented out below, this would be needed for rando implementations where Inverted requires flute activation in bunny territory
-            # kak_region = self.world.get_region('Kakariko Village', player)
-            # add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player) and state.is_not_bunny(kak_region, player))
-            add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player))
+        # Commented out below, this would be needed for rando implementations where Inverted requires flute activation in bunny territory
+        # kak_region = self.world.get_region('Kakariko Village', player)
+        # add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player) and state.is_not_bunny(kak_region, player))
+        add_rule(world.get_location('Flute Activation', player), lambda state: state.has('Ocarina', player))
 
     # if swamp and dam have not been moved we require mirror for swamp palace
     if not world.swamp_patch_required[player]:
         add_rule(world.get_entrance('Swamp Lobby Moat', player), lambda state: state.has_Mirror(player))
 
-    if not world.is_copied_world:
-        set_bunny_rules(world, player, world.mode[player] == 'inverted')
+    set_bunny_rules(world, player, world.mode[player] == 'inverted')
 
     # These rules go here because they overwrite/add to some of the above rules
     if world.logic[player] == 'hybridglitches':
-        if not world.is_copied_world:
-            underworld_glitches_rules(world, player)
+        underworld_glitches_rules(world, player)
 
 def mirrorless_path_to_location(world, startName, targetName, player):
     # If Agahnim is defeated then the courtyard needs to be accessible without using the mirror for the mirror offset glitch.
@@ -175,6 +182,132 @@ def add_rule(spot, rule, combine='and'):
     else:
         spot.access_rule = lambda state: rule(state) and old_rule(state)
 
+
+def get_goal_rule(goal_type, world, player):
+    goal_data = world.custom_goals[player][goal_type]
+    if goal_data['requirements'][0]['condition'] == 0x00:
+        return lambda state: False
+    rule = None
+    def add_to_rule(new_rule):
+        nonlocal rule
+        if rule is None:
+            rule = new_rule
+        else:
+            rule = and_rule(rule, new_rule)
+    if 'logic' in goal_data:
+        for logic, data in goal_data['logic'].items():
+            if logic == 'pendants':
+                pendants = int(data)
+                add_to_rule(lambda state: state.has_pendants(pendants, player))
+            elif logic == 'crystals':
+                crystals = int(data)
+                add_to_rule(lambda state: state.has_crystals(crystals, player))
+            elif logic == 'pendant_bosses':
+                pendant_bosses = int(data)
+                add_to_rule(lambda state: state.has_pendant_bosses(pendant_bosses, player))
+            elif logic == 'crystal_bosses':
+                crystal_bosses = int(data)
+                add_to_rule(lambda state: state.has_crystal_bosses(crystal_bosses, player))
+            elif logic == 'bosses':
+                bosses = int(data)
+                add_to_rule(lambda state: state.has('Beat Boss', player, bosses))
+            elif logic == 'aga1':
+                add_to_rule(lambda state: state.has('Beat Agahnim 1', player))
+            elif logic == 'aga2':
+                add_to_rule(lambda state: state.has('Beat Agahnim 2', player))
+            elif logic == 'goal_items':
+                if data is not None:
+                    goal_items = int(data)
+                    add_to_rule(lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= goal_items)
+                else:
+                    add_to_rule(lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
+            elif logic == 'collection':
+                if data is not None:
+                    all_locations = [x for x in world.get_filled_locations(player) if not x.locked]
+                    collection = int(data) - len(all_locations)
+                    add_to_rule(lambda state: state.everything(player, collection))
+                else:
+                    add_to_rule(lambda state: state.everything(player))
+            elif logic == 'item':
+                for item in data:
+                    item_name = item
+                    if '(' in item_name:
+                        item_name, region_name = item_name.rsplit(' (', 1)
+                        region_name = region_name.rstrip(')')
+                        region = world.get_region(region_name, player)
+                        if region and region.dungeon:
+                            region_name = region.dungeon.name
+                        else:
+                            try:
+                                if world.get_dungeon(region_name, player):
+                                    pass
+                            except:
+                                raise Exception(f'Invalid dungeon/region name in custom goal logic for item {item}')
+                        item_name = f'{item_name} ({region_name})'
+                    if '=' in item_name:
+                        item_name, count = item_name.rsplit('=', 1)
+                        count = int(count)
+                        add_to_rule(lambda state: state.has(item_name, player, count))
+                    else:
+                        add_to_rule(lambda state: state.has(item_name, player))
+            elif logic == 'access':
+                for region_name in data:
+                    region = world.get_region(region_name, player)
+                    if not region:
+                        raise Exception(f'Invalid region name in custom goal logic for region: {region_name}')
+                    add_to_rule(lambda state: state.can_reach(region, None, player))
+            elif logic == 'ability':
+                for ability in data:
+                    param = None
+                    if '(' in ability:
+                        ability, param = ability.split('(', 1)
+                        param = param.rstrip(')')
+                    if ability == 'FarmBombs':
+                        add_to_rule(lambda state: state.can_farm_bombs(player))
+                    elif ability == 'FarmRupees':
+                        add_to_rule(lambda state: state.can_farm_rupees(player))
+                    elif ability == 'NoBunny':
+                        if not param:
+                            raise Exception(f'NoBunny ability requires a region argument in custom goal logic')
+                        bunny_region = param
+                        region = world.get_region(bunny_region, player)
+                        if region:
+                            add_to_rule(lambda state: state.is_not_bunny(bunny_region, player))
+                        else:
+                            raise Exception(f'Invalid region name in custom goal logic for NoBunny ability: {param}')
+                    elif ability == 'CanUseBombs':
+                        add_to_rule(lambda state: state.can_use_bombs(player))
+                    elif ability == 'CanBonkDrop':
+                        add_to_rule(lambda state: state.can_collect_bonkdrops(player))
+                    elif ability == 'CanLift':
+                        add_to_rule(lambda state: state.can_lift_rocks(player))
+                    elif ability == 'MagicExtension':
+                        magic_count = 16
+                        if param:
+                            magic_count = int(param)
+                        add_to_rule(lambda state: state.can_extend_magic(player, magic_count))
+                    elif ability == 'CanStun':
+                        add_to_rule(lambda state: state.can_stun_enemies(player))
+                    elif ability == 'CanKill':
+                        if param:
+                            enemy_count = int(param)
+                            add_to_rule(lambda state: state.can_kill_most_things(player, enemy_count))
+                        else:
+                            add_to_rule(lambda state: state.can_kill_most_things(player))
+                    elif ability == 'CanShootArrows':
+                        add_to_rule(lambda state: state.can_shoot_arrows(player))
+                    elif ability == 'CanFlute':
+                        add_to_rule(lambda state: state.can_flute(player))
+                    elif ability == 'HasFire':
+                        add_to_rule(lambda state: state.has_fire_source(player))
+                    elif ability == 'CanMelt':
+                        add_to_rule(lambda state: state.can_melt_things(player))
+                    elif ability == 'HasMMMedallion':
+                        add_to_rule(lambda state: state.has_misery_mire_medallion(player))
+                    elif ability == 'HasTRMedallion':
+                        add_to_rule(lambda state: state.has_turtle_rock_medallion(player))
+    return rule if rule is not None else lambda state: True
+
 def add_bunny_rule(spot, player):
     if spot.can_cause_bunny(player):
         add_rule(spot, lambda state: state.has_Pearl(player))
@@ -189,7 +322,7 @@ def and_rule(rule1, rule2):
 
 
 def add_lamp_requirement(spot, player):
-    add_rule(spot, lambda state: state.world.dark_rooms[player] not in ['require_lamp'] or state.has('Lamp', player, state.world.lamps_needed_for_dark_rooms))
+    add_rule(spot, lambda state: state.world.dark_rooms[player] not in ['require_lamp'] or state.has('Lamp', player))
 
 
 def forbid_item(location, item, player):
@@ -244,7 +377,11 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Flute Spot 8', player), lambda state: state.can_flute(player))
 
     # overworld location rules
-    set_rule(world.get_location('Master Sword Pedestal', player), lambda state: state.has('Red Pendant', player) and state.has('Blue Pendant', player) and state.has('Green Pendant', player))
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal']:
+        rule = get_goal_rule('pedgoal', world, player)
+        set_rule(world.get_location('Master Sword Pedestal', player), rule)
+    else:
+        set_rule(world.get_location('Master Sword Pedestal', player), lambda state: state.has('Red Pendant', player) and state.has('Blue Pendant', player) and state.has('Green Pendant', player))
     set_rule(world.get_location('Ether Tablet', player), lambda state: state.has('Book of Mudora', player) and state.has_beam_sword(player))
     set_rule(world.get_location('Old Man', player), lambda state: state.has('Return Old Man', player))
     set_rule(world.get_location('Old Man Drop Off', player), lambda state: state.has('Escort Old Man', player))
@@ -261,7 +398,7 @@ def global_rules(world, player):
 
     # bonk items
     if world.shuffle_bonk_drops[player]:
-        if not world.is_copied_world:
+        if not world.is_premature_copied_world:
             from Regions import bonk_prize_table
             for location_name, (_, _, aga_required, _, _, _) in bonk_prize_table.items():
                 loc = world.get_location(location_name, player)
@@ -412,9 +549,13 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Misery Mire', player), lambda state: state.has_sword(player) and state.has_misery_mire_medallion(player))  # sword required to cast magic (!)
     set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has('Turtle Opened', player))
 
+    if world.custom_goals[player]['gtentry'] and 'requirements' in world.custom_goals[player]['gtentry']:
+        rule = get_goal_rule('gtentry', world, player)
+        set_rule(world.get_entrance('Ganons Tower' if not world.is_atgt_swapped(player) else 'Agahnims Tower', player), rule)
+    else:
+        set_rule(world.get_entrance('Ganons Tower' if not world.is_atgt_swapped(player) else 'Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
     if not world.is_atgt_swapped(player):
         set_rule(world.get_entrance('Agahnims Tower', player), lambda state: state.has('Cape', player) or state.has_beam_sword(player))
-    set_rule(world.get_entrance('Ganons Tower' if not world.is_atgt_swapped(player) else 'Agahnims Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
 
     # Start of door rando rules
     # TODO: Do these need to flag off when door rando is off? - some of them, yes
@@ -841,7 +982,7 @@ def global_rules(world, player):
 
     add_key_logic_rules(world, player)
 
-    if world.logic[player] == 'hybridglitches' and not world.is_copied_world:
+    if world.logic[player] == 'hybridglitches' and not world.is_premature_copied_world:
         add_hmg_key_logic_rules(world, player)
     # End of door rando rules.
 
@@ -1041,13 +1182,14 @@ def drop_rules(world, player):
     for super_tile, enemy_list in data_tables.uw_enemy_table.room_map.items():
         for enemy in enemy_list:
             if enemy.location:
-                rule = defeat_rule_single(world, player, enemy, enemy.location.parent_region)
-                if enemy.location.parent_region.name in special_rules_check:
-                    rule = special_rules_for_region(world, player, enemy.location.parent_region.name,
-                                                    enemy.location, rule)
+                true_location = world.get_location(enemy.location.name, player)
+                rule = defeat_rule_single(world, player, enemy, true_location.parent_region)
+                if true_location.parent_region.name in special_rules_check:
+                    rule = special_rules_for_region(world, player, true_location.parent_region.name,
+                                                    true_location, rule)
                 if rule.rule_lambda is None:
                     raise Exception(f'Bad rule for enemy drop. Need to inspect this case: {hex(enemy.kind)}')
-                add_rule_new(enemy.location, rule)
+                add_rule_new(true_location, rule)
 
 
 def ow_inverted_rules(world, player):
@@ -1355,7 +1497,7 @@ def no_glitches_rules(world, player):
     set_rule(world.get_entrance('Paradox Cave Push Block Reverse', player), lambda state: False)  # no glitches does not require block override
     set_rule(world.get_entrance('Ice Lake Northeast Pier Hop', player), lambda state: False)
     forbid_bomb_jump_requirements(world, player)
-    if not world.is_copied_world:
+    if not world.is_premature_copied_world:
         add_conditional_lamps(world, player)
 
 
@@ -1666,9 +1808,12 @@ def standard_rules(world, player):
         add_rule(world.get_entrance(entrance, player), lambda state: state.has('Zelda Delivered', player))
 
     if world.shuffle_bonk_drops[player]:
-        if not world.is_copied_world:
+        if not world.is_premature_copied_world:
             add_rule(world.get_location('Hyrule Castle Tree', player), lambda state: state.has('Zelda Delivered', player))
             add_rule(world.get_location('Central Bonk Rocks Tree', player), lambda state: state.has('Zelda Delivered', player))
+
+    if not world.is_premature_copied_world:
+        add_rule(world.get_location('Hyrule Castle Courtyard Tree Pull', player), lambda state: state.has('Zelda Delivered', player))
 
     # don't allow bombs to get past here before zelda is rescued
     set_rule(world.get_entrance('GT Hookshot South Entry to Ranged Crystal', player), lambda state: (state.can_use_bombs(player) and state.has('Zelda Delivered', player)) or state.has('Blue Boomerang', player) or state.has('Red Boomerang', player))  # or state.has('Cane of Somaria', player))
@@ -1676,7 +1821,7 @@ def standard_rules(world, player):
 
 def find_rules_for_zelda_delivery(world, player):
     # path rules for backtracking
-    start_region = world.get_region('Hyrule Dungeon Cellblock', player)
+    start_region = world.get_region(world.default_zelda_region[player], player)
     queue = deque([(start_region, [], [])])
     visited = {start_region}
     blank_state = CollectionState(world)
@@ -2133,6 +2278,9 @@ def eval_small_key_door_partial_main(state, door_name, dungeon, player):
                     number = min(number, door_rule.alternate_small_key)
                     door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
                     break
+            if state.placing_items and any(lock_item == item.name for item in state.placing_items):
+                number = min(number, door_rule.alternate_small_key)
+                door_openable |= state.has_sm_key(key_logic.small_key_name, player, number)
     return door_openable
 
 

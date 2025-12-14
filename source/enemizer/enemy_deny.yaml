@@ -84,7 +84,7 @@ UwGeneralDeny:
   - [ 0x0039, 4, [ "RollerVerticalUp", "RollerVerticalDown", "RollerHorizontalLeft", "RollerHorizontalRight", "FirebarCW", "FirebarCCW" ] ]  #"Skull Woods - Play Pen - Spike Trap 1"
   - [0x0039, 5, ["RollerVerticalUp", "RollerVerticalDown", "RollerHorizontalLeft", "Bumper", "AntiFairyCircle"]]  #"Skull Woods - Play Pen - Hardhat Beetle"
   - [ 0x0039, 6, [ "RollerVerticalUp", "RollerVerticalDown", "RollerHorizontalLeft", "RollerHorizontalRight", "FirebarCW", "FirebarCCW" ] ]  #"Skull Woods - Play Pen - Spike Trap 2"
-  - [0x003a, 1, ["RollerVerticalUp"]]
+  - [0x003a, 1, ["RollerVerticalUp", "RollerVerticalDown"]]
   - [ 0x003b, 1, [ "Bumper", "AntiFairyCircle" ]]
   - [ 0x003b, 4, ["RollerVerticalUp", "RollerVerticalDown"]]
   - [ 0x003c, 0, ["BigSpike"]]
@@ -339,7 +339,11 @@ UwGeneralDeny:
   - [ 0x00c2, 5, [ "Wizzrobe", "Statue" ] ]  # Wizzrobes can't spawn on pots
   - [ 0x00c5, 6, [ "RollerVerticalUp", "RollerVerticalDown", "RollerHorizontalLeft", "RollerHorizontalRight", "Beamos", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Turtle Rock - Catwalk - Mini Helmasaur"
   - [ 0x00c5, 7, [ "Statue" ] ]  #"Turtle Rock - Catwalk - Laser Eye (Left) 4"
+  - [0x00c6, 2, ["Bumper", "AntiFairyCircle"]]
+  - [0x00c6, 3, ["Bumper", "AntiFairyCircle"]]
+  - [0x00c6, 4, ["Bumper", "AntiFairyCircle"]]
   - [0x00c6, 5, ["Bumper", "AntiFairyCircle"]]
+  - [0x00c6, 6, ["Bumper", "AntiFairyCircle"]]
   - [ 0x00cb, 0, [ "Wizzrobe", "Statue" ] ]  # Wizzrobes can't spawn on pots
   - [ 0x00cb, 3, [ "RollerVerticalUp", "RollerVerticalDown", "Beamos", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Thieves' Town - Grand Room NW - Zol 1"
   - [ 0x00cb, 5, [ "RollerVerticalUp", "RollerVerticalDown", "Beamos", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Thieves' Town - Grand Room NW - Zol 2"
@@ -397,6 +401,7 @@ UwGeneralDeny:
   - [ 0x00e4, 2, [ "RollerHorizontalLeft", "RollerHorizontalRight", "Beamos", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Old Man Home - Keese 3"
   - [ 0x00e5, 4, [ "RollerVerticalDown", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Old Man Home Circle - Keese 5"
   - [ 0x00e5, 5, [ "RollerVerticalDown", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Old Man Home Circle - Keese 6"
+  - [0x00e6, 0, ["Statue"]]  # Death Mountain Descent Cave Left - Keese 1 - Statue blocking pot access
   - [ 0x00e7, 0, [ "RollerVerticalUp", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Death Mountain Descent Cave Right - Keese 1"
   - [ 0x00e7, 1, [ "RollerVerticalUp", "AntiFairyCircle", "BigSpike", "SpikeBlock", "Bumper" ] ]  #"Death Mountain Descent Cave Right - Keese 2"
   - [ 0x00e7, 2, [ "RollerVerticalUp", "RollerVerticalDown", "RollerHorizontalRight" ] ]  #"Death Mountain Descent Cave Right - Keese 3"
@@ -441,7 +446,7 @@ OwGeneralDeny:
   - [0x05, 10, ["Bumper", "AntiFairyCircle"]]  # Blocks path
   - [0x05, 11, ["Bumper", "AntiFairyCircle"]]  # Blocks path to portal
   - [0x07, 3, ["Bumper", "AntiFairyCircle", "RollerHorizontalRight", "RollerHorizontalLeft"]]  # Blocks path to ladder
-  - [0x07, 4, ["RollerHorizontalLeft"]]  # Blocks path to ladder
+  - [0x07, 4, ["Bumper", "AntiFairyCircle", "RollerHorizontalLeft"]]  # Blocks path to ladder
   - [0x1e, 3, ["Beamos", "Bumper", "BigSpike", "AntiFairyCircle"]]  # forbid a beamos here
   - [0x35, 8, ["RollerVerticalUp", "RollerVerticalDown"]]  # blocks the dock
   - [0x37, 5, ["RollerVerticalUp"]]  # combines with a roller above to make the way impassable
@@ -450,7 +455,7 @@ OwGeneralDeny:
   - [0x40, 13, ["Beamos", "Bumper", "BigSpike", "AntiFairyCircle", "Thief"]]
   - [0x40, 14, ["Beamos", "Bumper", "BigSpike", "AntiFairyCircle", "Thief"]]
   - [0x40, 16, ["RollerVerticalUp", "RollerVerticalDown"]]  # Ropa near back hole is really large as a roller
-  - [0x55, 6, ["BigSpike"]]
+  - [0x55, 6, ["BigSpike", "Bumper", "AntiFairyCircle"]]
   - [0x57, 5, ["RollerVerticalUp", "RollerVerticalDown"]]
   - [0x5b, 0, ["AntiFairyCircle", "Bumper"]]  # ropa on pyramid
   - [0x5e, 0, ["Gibo"]]  # kiki eating Gibo
@@ -480,6 +485,7 @@ OwGeneralDeny:
   - [0x77, 1, ["Bumper", "AntiFairyCircle"]]  # soft-lock potential near ladder
   - [0x7f, 1, ["Bumper", "AntiFairyCircle"]]  # soft-lock potential near ladder
 UwEnemyDrop:
+  - [0x0015, 8, ["Zoro"]]  # layer issues
   - [0x0085, 9, ["Babasu"]]  # ran off the edge and didn't return
   - [0x00cb, 3, ["Zoro"]]  # layer issues
   - [0x00cb, 5, ["Zoro"]]  # layer issues

@@ -522,6 +522,7 @@
     ]
   },
   "sprite": {},
+  "triforce_gfx": {},
   "create_rom": {
     "action": "store_false",
     "type": "bool"
@@ -688,5 +689,6 @@
   },
   "outputname": {},
   "notes": {},
-  "code": {}
+  "code": {},
+  "rom_header" : {}
 }

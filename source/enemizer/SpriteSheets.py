@@ -363,7 +363,7 @@ def init_sprite_requirements():
         SpriteRequirement(EnemySprite.TrinexxFireHead).exalt().sub_group(0, 0x40).sub_group(3, 0x3f),
         SpriteRequirement(EnemySprite.TrinexxIceHead).exalt().sub_group(0, 0x40).sub_group(3, 0x3f),
         SpriteRequirement(EnemySprite.Blind).exalt().sub_group(1, 0x2c).sub_group(2, 0x3b),
-        SpriteRequirement(EnemySprite.Swamola).no_drop().sub_group(3, 0x19),
+        SpriteRequirement(EnemySprite.Swamola).skip().no_drop().sub_group(3, 0x19),
         SpriteRequirement(EnemySprite.Lynel).sub_group(3, 0x14),
         SpriteRequirement(EnemySprite.BunnyBeam).no_drop().ow_skip(),
         SpriteRequirement(EnemySprite.FloppingFish).uw_skip().immune(),
@@ -683,9 +683,11 @@ def setup_custom_enemy_sheets(custom_enemies, sheets, data_tables, sheet_range, 
                 if key not in requirements:
                     continue
                 req = requirements[key]
-                if isinstance(req, dict):
+                if isinstance(req, dict) and room_id in req:
                     req = req[room_id]
-                if req.static or not req.can_randomize:
+                else:
+                    req = None
+                if req and (req.static or not req.can_randomize):
                     try:
                         combine_req(sub_groups_choices, req)
                     except IncompatibleEnemyException:

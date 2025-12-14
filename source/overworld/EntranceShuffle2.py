@@ -403,6 +403,7 @@ def do_old_man_cave_exit(entrances, exits, avail, cross_world):
         else:
             region_name = 'West Dark Death Mountain (Top)'
         om_cave_options = list(get_accessible_entrances(region_name, avail, [], cross_world, True, True, True, True))
+        om_cave_options = [e for e in om_cave_options if e in avail.entrances]
         if avail.swapped:
             om_cave_options = [e for e in om_cave_options if e not in Forbidden_Swap_Entrances]
         assert len(om_cave_options), 'No available entrances left to place Old Man Cave'
@@ -643,7 +644,6 @@ def do_dark_sanc(entrances, exits, avail):
             entrances.remove(choice)
             exits.remove('Dark Sanctuary Hint')
             connect_entrance(choice, 'Dark Sanctuary Hint', avail)
-            ext.connect(avail.world.get_entrance(choice, avail.player).parent_region)
             if not avail.coupled:
                 avail.decoupled_entrances.remove(choice)
             if avail.swapped and choice != 'Dark Sanctuary Hint':
@@ -651,8 +651,7 @@ def do_dark_sanc(entrances, exits, avail):
                 entrances.remove(swap_ent)
                 exits.remove(swap_ext)
         elif not ext.connected_region:
-            # default to output to vanilla area, assume vanilla connection 
-            ext.connect(avail.world.get_region('Dark Chapel Area', avail.player))
+            raise Exception('Dark Sanctuary Hint was placed earlier but its exit not properly connected')
 
 
 def do_links_house(entrances, exits, avail, cross_world):
@@ -722,8 +721,6 @@ def do_links_house(entrances, exits, avail, cross_world):
             connect_two_way(links_house, lh_exit, avail)
         else:
             connect_entrance(links_house, lh_exit, avail)
-            ext = avail.world.get_entrance('Big Bomb Shop Exit', avail.player)
-            ext.connect(avail.world.get_entrance(links_house, avail.player).parent_region)
         entrances.remove(links_house)
         exits.remove(lh_exit)
         if not avail.coupled:
@@ -867,7 +864,7 @@ def get_accessible_entrances(start_region, avail, assumed_inventory=[], cross_wo
     
     for p in range(1, avail.world.players + 1):
         avail.world.key_logic[p] = {}
-    base_world = copy_world_premature(avail.world, avail.player)
+    base_world = copy_world_premature(avail.world, avail.player, create_flute_exits=True)
     base_world.override_bomb_check = True
     
     connect_simple(base_world, 'Links House S&Q', start_region, avail.player)
@@ -1907,6 +1904,12 @@ def connect_entrance(entrancename, exit_name, avail):
     avail.entrances.remove(entrancename)
     if avail.coupled:
         avail.exits.remove(exit_name)
+    if exit_name == 'Big Bomb Shop' and avail.world.is_bombshop_start(avail.player):
+        ext = avail.world.get_entrance('Big Bomb Shop Exit', avail.player)
+        ext.connect(avail.world.get_entrance(entrancename, avail.player).parent_region)
+    if exit_name == 'Dark Sanctuary Hint' and avail.world.is_dark_chapel_start(avail.player):
+        ext = avail.world.get_entrance('Dark Sanctuary Hint Exit', avail.player)
+        ext.connect(avail.world.get_entrance(entrancename, avail.player).parent_region)
     world.spoiler.set_entrance(entrance.name, exit.name if exit is not None else region.name, 'entrance', player)
     logging.getLogger('').debug(f'Connected (entr) {entrance.name} to {exit.name if exit is not None else region.name}')
 

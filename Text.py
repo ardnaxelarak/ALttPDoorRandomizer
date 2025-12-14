@@ -192,7 +192,7 @@ Blind_texts = [
     "Gloves open\na handful\nof checks",
     "Red mail?\nReturn to\nsender.",
     "For sale:\nBaby boots,\nNever found",
-    "SRL or rtGG?\nI prefer the\nLadder",
+    "SRL or rtGG?\nI prefer the\nStepladder",
     "Ladders are\nalways up\nto something",
     "Zelda's\nfashion is\nvery chic",
     "Zombie geese\nare waterfoul.\n",
@@ -1789,6 +1789,8 @@ class TextTable(object):
         text['hylian_text_2'] = CompressedTextMapper.convert("%%^= %==%\n ^ =%^=\n==%= ^^%^")
         text['desert_entry_translated'] = CompressedTextMapper.convert("Kneel before this stone, and magic will move around you.")
         text['telepathic_tile_under_ganon'] = CompressedTextMapper.convert("Doors Async League winners\n{HARP}\n"
+                                                                           "  ~~~2025~~~\nSchulzer\n\n"
+                                                                           "  ~~~2024~~~\nhumbugh\n\n"
                                                                            "  ~~~2023~~~\nEriror\n\n"
                                                                            "  ~~~2022~~~\nAndy\n\n"
                                                                            "  ~~~2021~~~\nprdwong")
@@ -1802,7 +1804,8 @@ class TextTable(object):
         text['telepathic_tile_ice_stalfos_knights_room'] = CompressedTextMapper.convert("{NOBORDER}\nKnock 'em down and then bomb them dead.")
         text['telepathic_tile_tower_of_hera_entrance'] = CompressedTextMapper.convert("{NOBORDER}\nThis is a bad place, with a guy who will make you fall…\n\n\na lot.")
         text['houlihan_room'] = CompressedTextMapper.convert("Randomizer tournament winners\n{HARP}\n"
-                                                             "  ~~~2023~~~\nnGanonsGoneWild\n\n"
+                                                             "  ~~~2024~~~\nGammachuu\n\n"
+                                                             "  ~~~2023~~~\nGanonsGoneWild\n\n"
                                                              "  ~~~2022~~~\nObscure\n\n"
                                                              "  ~~~2021~~~\nDaaanty\n\n"
                                                              "  ~~~2019~~~\nJet082\n\n"
@@ -2036,6 +2039,7 @@ class TextTable(object):
         text['ganon_phase_3_alt'] = CompressedTextMapper.convert("Got wax in your ears? I cannot die!")
         # 190
         text['sign_east_death_mountain_bridge'] = CompressedTextMapper.convert("Glitched\ntournament\nwinners\n{HARP}\n"
+                                                                               "~~~HMG 2025~~~\nSkele\n"
                                                                                "~~~No Logic 2024~~~\ntam\n\n"
                                                                                "~~~HMG 2023~~~\ntam\n\n"
                                                                                "~~~No Logic 2022~~~\nChexhuman\n\n"
@@ -2050,5 +2054,6 @@ class TextTable(object):
         text['ganon_phase_3_no_silvers'] = CompressedTextMapper.convert("You can't best me without silver arrows!")
         text['ganon_phase_3_silvers'] = CompressedTextMapper.convert("Oh no! Silver! My one true weakness!")
         text['murahdahla'] = CompressedTextMapper.convert("Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n{PAUSE3}\n… … …\nWait! You can see me? I knew I should have\nhidden in a hollow tree.")
+        text['mastersword_pedestal_goal'] = CompressedTextMapper.convert("To claim thy reward, you must present all 3 Pendants of Virtue.")
         text['end_pad_data'] = bytearray([0xfb])
         text['terminator'] = bytearray([0xFF, 0xFF])

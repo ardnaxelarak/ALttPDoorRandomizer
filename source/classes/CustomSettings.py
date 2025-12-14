@@ -208,6 +208,7 @@ class CustomSettings(object):
 
                 # rom adjust stuff
                 args.sprite[p] = get_setting(settings['sprite'], args.sprite[p])
+                args.triforce_gfx[p] = get_setting(settings['triforce_gfx'], args.triforce_gfx[p])
                 args.disablemusic[p] = get_setting(settings['disablemusic'], args.disablemusic[p])
                 args.quickswap[p] = get_setting(settings['quickswap'], args.quickswap[p])
                 args.reduce_flashing[p] = get_setting(settings['reduce_flashing'], args.reduce_flashing[p])
@@ -220,6 +221,14 @@ class CustomSettings(object):
                 args.shuffle_sfxinstruments[p] = get_setting(settings['shuffle_sfxinstruments'], args.shuffle_sfxinstruments[p])
                 args.shuffle_songinstruments[p] = get_setting(settings['shuffle_songinstruments'], args.shuffle_songinstruments[p])
                 args.msu_resume[p] = get_setting(settings['msu_resume'], args.msu_resume[p])
+
+    def has_setting(self, player, setting):
+        if 'settings' in self.file_source and player in self.file_source['settings']:
+            return setting in self.file_source['settings'][player]
+        return False
+
+    def get_setting(self, player, setting):
+        return self.file_source['settings'][player][setting]
 
     def get_item_pool(self):
         if 'item_pool' in self.file_source:
@@ -299,9 +308,9 @@ class CustomSettings(object):
             return self.file_source['enemies']
         return None
     
-    def get_gtentry(self):
-        if 'gt_entry' in self.file_source:
-            return self.file_source['gt_entry']
+    def get_goals(self):
+        if 'goals' in self.file_source:
+            return self.file_source['goals']
         return None
 
 
@@ -577,9 +586,13 @@ class CustomSettings(object):
 
 
 def load_yaml(path):
-    if os.path.exists(Path(path)):
-        with open(path, "r", encoding="utf-8") as f:
-            return yaml.load(f, Loader=yaml.SafeLoader)
-    elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
-        return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
+    try:
+        if os.path.exists(Path(path)):
+            with open(path, "r", encoding="utf-8") as f:
+                return yaml.load(f, Loader=yaml.SafeLoader)
+        elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
+            return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
+    except yaml.YAMLError as e:
+        error_msg = f"Error parsing YAML file '{path}':\n{str(e)}"
+        raise ValueError(error_msg) from e
 

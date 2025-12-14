@@ -17,7 +17,7 @@ from OverworldGlitchRules import create_owg_connections
 from PotShuffle import shuffle_pots, shuffle_pot_switches
 from Regions import create_regions, create_shops, mark_light_dark_world_regions, create_dungeon_regions, adjust_locations
 from OWEdges import create_owedges
-from OverworldShuffle import link_overworld, update_world_regions, create_dynamic_exits
+from OverworldShuffle import link_overworld, update_world_regions, create_dynamic_flute_exits, create_dynamic_mirror_exits
 from Rom import patch_rom, patch_race_rom, apply_rom_settings, LocalRom, JsonRom, get_hash_string
 from Doors import create_doors
 from DoorShuffle import link_doors, connect_portal, link_doors_prep
@@ -40,7 +40,7 @@ from source.enemizer.DamageTables import DamageTable
 from source.enemizer.Enemizer import randomize_enemies
 from source.rom.DataTables import init_data_tables
 
-version_number = '1.4.10'
+version_number = '1.5.0'
 version_branch = '-u'
 __version__ = f'{version_number}{version_branch}'
 
@@ -117,31 +117,7 @@ def main(args, seed=None, fish=None):
     if args.securerandom:
         world.seed = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(9))
 
-    world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
-    world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
-    world.ganon_item = {player: random_ganon_item(args.swords[player]) if args.ganon_item[player] == 'random' else args.ganon_item[player] for player in range(1, world.players + 1)}
-
-    world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
-
-    world.treasure_hunt_count = {}
-    world.treasure_hunt_total = {}
-    for p in args.triforce_goal:
-        if int(args.triforce_goal[p]) != 0 or int(args.triforce_pool[p]) != 0 or int(args.triforce_goal_min[p]) != 0 or int(args.triforce_goal_max[p]) != 0 or int(args.triforce_pool_min[p]) != 0 or int(args.triforce_pool_max[p]) != 0:
-            if int(args.triforce_goal[p]) != 0:
-                world.treasure_hunt_count[p] = int(args.triforce_goal[p])
-            elif int(args.triforce_goal_min[p]) != 0 and int(args.triforce_goal_max[p]) != 0:
-                world.treasure_hunt_count[p] = random.randint(int(args.triforce_goal_min[p]), int(args.triforce_goal_max[p]))
-            else:
-                world.treasure_hunt_count[p] = 8 if world.goal[p] == 'trinity' else 20
-            if int(args.triforce_pool[p]) != 0:
-                world.treasure_hunt_total[p] = int(args.triforce_pool[p])
-            elif int(args.triforce_pool_min[p]) != 0 and int(args.triforce_pool_max[p]) != 0:
-                world.treasure_hunt_total[p] = random.randint(max(int(args.triforce_pool_min[p]), world.treasure_hunt_count[p] + int(args.triforce_min_difference[p])), min(int(args.triforce_pool_max[p]), world.treasure_hunt_count[p] + int(args.triforce_max_difference[p])))
-            else:
-                world.treasure_hunt_total[p] = 10 if world.goal[p] == 'trinity' else 30
-        else:
-            # this will be handled in ItemList.py and custom item pool is used to determine the numbers
-            world.treasure_hunt_count[p], world.treasure_hunt_total[p] = 0, 0
+    resolve_random_settings(world, args)
 
     world.rom_seeds = {player: random.randint(0, 999999999) for player in range(1, world.players + 1)}
     world.finish_init()
@@ -215,9 +191,7 @@ def main(args, seed=None, fish=None):
     for player in range(1, world.players + 1):
         link_overworld(world, player)
         create_shops(world, player)
-        update_world_regions(world, player)
         mark_light_dark_world_regions(world, player)
-        create_dynamic_exits(world, player)
     
     init_districts(world)
 
@@ -335,7 +309,7 @@ def main(args, seed=None, fish=None):
             for player in range(1, world.players + 1):
                 rom = JsonRom() if args.jsonout else LocalRom(args.rom)
 
-                patch_rom(world, rom, player, team, bool(args.mystery))
+                patch_rom(world, rom, player, team, bool(args.mystery), str(args.rom_header) if args.rom_header else None)
 
                 if args.race:
                     patch_race_rom(rom)
@@ -344,7 +318,7 @@ def main(args, seed=None, fish=None):
                 world.spoiler.hashes[(player, team)] = get_hash_string(rom.hash)
 
                 apply_rom_settings(rom, args.heartbeep[player], args.heartcolor[player], args.quickswap[player],
-                                   args.fastmenu[player], args.disablemusic[player], args.sprite[player],
+                                   args.fastmenu[player], args.disablemusic[player], args.sprite[player], args.triforce_gfx[player],
                                    args.ow_palettes[player], args.uw_palettes[player], args.reduce_flashing[player],
                                    args.shuffle_sfx[player], args.shuffle_sfxinstruments[player], args.shuffle_songinstruments[player],
                                    args.msu_resume[player])
@@ -548,8 +522,198 @@ def init_world(args, fish):
     world.aga_randomness = args.aga_randomness.copy()
     world.money_balance = args.money_balance.copy()
 
-    
+    # custom settings - these haven't been promoted to full settings yet
+    in_progress_settings = ['force_enemy', 'free_lamp_cone']
+    for player in range(1, world.players + 1):
+        for setting in in_progress_settings:
+            if world.customizer and world.customizer.has_setting(player, setting):
+                getattr(world, setting)[player] = world.customizer.get_setting(player, setting)
+
     return world
+
+
+def resolve_random_settings(world, args):
+    world.crystals_needed_for_ganon = {player: random.randint(0, 7) if args.crystals_ganon[player] == 'random' else int(args.crystals_ganon[player]) for player in range(1, world.players + 1)}
+    world.crystals_needed_for_gt = {player: random.randint(0, 7) if args.crystals_gt[player] == 'random' else int(args.crystals_gt[player]) for player in range(1, world.players + 1)}
+    world.ganon_item = {player: random_ganon_item(args.swords[player]) if args.ganon_item[player] == 'random' else args.ganon_item[player] for player in range(1, world.players + 1)}
+    world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
+
+    world.treasure_hunt_count = {}
+    world.treasure_hunt_total = {}
+    for p in args.triforce_goal:
+        if int(args.triforce_goal[p]) != 0 or int(args.triforce_pool[p]) != 0 or int(args.triforce_goal_min[p]) != 0 or int(args.triforce_goal_max[p]) != 0 or int(args.triforce_pool_min[p]) != 0 or int(args.triforce_pool_max[p]) != 0:
+            if int(args.triforce_goal[p]) != 0:
+                world.treasure_hunt_count[p] = int(args.triforce_goal[p])
+            elif int(args.triforce_goal_min[p]) != 0 and int(args.triforce_goal_max[p]) != 0:
+                world.treasure_hunt_count[p] = random.randint(int(args.triforce_goal_min[p]), int(args.triforce_goal_max[p]))
+            else:
+                world.treasure_hunt_count[p] = 8 if world.goal[p] == 'trinity' else 20
+            if int(args.triforce_pool[p]) != 0:
+                world.treasure_hunt_total[p] = int(args.triforce_pool[p])
+            elif int(args.triforce_pool_min[p]) != 0 and int(args.triforce_pool_max[p]) != 0:
+                world.treasure_hunt_total[p] = random.randint(max(int(args.triforce_pool_min[p]), world.treasure_hunt_count[p] + int(args.triforce_min_difference[p])), min(int(args.triforce_pool_max[p]), world.treasure_hunt_count[p] + int(args.triforce_max_difference[p])))
+            else:
+                world.treasure_hunt_total[p] = 10 if world.goal[p] == 'trinity' else 30
+        else:
+            # this will be handled in ItemList.py and custom item pool is used to determine the numbers
+            world.treasure_hunt_count[p], world.treasure_hunt_total[p] = 0, 0
+
+    if world.customizer:
+        def process_goal(goal_type):
+            goal_input = goals[player][goal_type]
+            world.custom_goals[player][goal_type] = goal = {}
+            if 'cutscene_gfx' in goal_input and goal_type in ['gtentry', 'pedgoal', 'murahgoal']:
+                gfx = goal_input['cutscene_gfx']
+                if type(gfx) is str:
+                    from Tables import item_gfx_table
+                    if gfx.lower() == 'random':
+                        gfx = random.choice(list(item_gfx_table.keys()))
+                    if gfx in item_gfx_table:
+                        goal['cutscene_gfx'] = (item_gfx_table[gfx][1] + (0x8000 if not item_gfx_table[gfx][0] else 0), item_gfx_table[gfx][2])
+                    else:
+                        raise Exception(f'Invalid name "{gfx}" in customized {goal_type} cutscene gfx')
+                else:
+                    goal['cutscene_gfx'] = gfx
+            if 'requirements' in goal_input:
+                if goal_type == 'ganongoal' and world.goal[player] == 'pedestal':
+                    goal['requirements'] = [0x00]
+                    goal['logic'] = False
+                    return
+                goal['requirements'] = []
+                goal['logic'] = {}
+                if 'goaltext' in goal_input:
+                    goal['goaltext'] = goal_input['goaltext']
+                else:
+                    raise Exception(f'Missing goal text for {goal_type}')
+
+                req_table = {
+                    'Invulnerable': 0x00,
+                    'Disabled': 0x00,
+                    'Pendants': 0x01,
+                    'Crystals': 0x02,
+                    'PendantBosses': 0x03,
+                    'CrystalBosses': 0x04,
+                    'PrizeBosses': 0x05,
+                    'Bosses': 0x05,
+                    'Agahnim1Defeated': 0x06,
+                    'Agahnim1': 0x06,
+                    'Aga1': 0x06,
+                    'Agahnim2Defeated': 0x07,
+                    'Agahnim2': 0x07,
+                    'Aga2': 0x07,
+                    'GoalItemsCollected': 0x08,
+                    'GoalItems': 0x08,
+                    'TriforcePieces': 0x08,
+                    'TriforceHunt': 0x08,
+                    'MaxCollectionRate': 0x09,
+                    'CollectionRate': 0x09,
+                    'Collection': 0x09,
+                    'CustomGoal': 0x0A,
+                    'Custom': 0x0A,
+                }
+                if isinstance(goal_input['requirements'], list):
+                    for r in list(goal_input['requirements']):
+                        req = {}
+                        try:
+                            if isinstance(r, str):
+                                req['condition'] = req_table[r]
+                            else:
+                                req['condition'] = req_table[list(r.keys())[0]]
+                            if req['condition'] == req_table['Invulnerable']:
+                                goal['requirements']= [req]
+                                goal['logic'] = False
+                                break
+                            elif req['condition'] == req_table['CustomGoal']:
+                                if isinstance(r['address'], int) and 0x7E0000 <= r['address'] <= 0x7FFFFF:
+                                    compare_table = {
+                                        'minimum': 0x00,
+                                        'at least': 0x00,
+                                        'equal': 0x01,
+                                        'equals': 0x01,
+                                        'equal to': 0x01,
+                                        'any flag': 0x02,
+                                        'all flags': 0x03,
+                                        'flags match': 0x03,
+                                        'count bits': 0x04,
+                                        'count flags': 0x04,
+                                    }
+                                    if r['comparison'] in compare_table:
+                                        options = compare_table[r['comparison']]
+                                        if r['address'] >= 0x7F0000:
+                                            options |= 0x10
+                                        if isinstance(r['target'], int) and 0 <= r['target'] <= 0xFFFF:
+                                            if 'size' in r and r['size'] in ['word', '16-bit', '16bit', '16 bit', '16', '2-byte', '2byte', '2 byte', '2-bytes', '2 bytes']:
+                                                options |= 0x08
+                                                req['target'] = r['target']
+                                            elif 0 <= r['target'] <= 0xFF:
+                                                req['target'] = r['target']
+                                            else:
+                                                raise Exception(f'Invalid custom goal target for {goal_type}, must be an 8-bit integer')
+                                            req.update({'address': r['address'] & 0xFFFF, 'options': options})
+                                            goal['requirements'].append(req)
+                                        else:
+                                            raise Exception(f'Invalid custom goal target for {goal_type}, must be a 16-bit integer')
+                                    else:
+                                        raise KeyError(f'Invalid custom goal comparison for {goal_type}')
+                                else:
+                                    raise Exception(f'Custom goal address for {goal_type} only allows 0x7Exxxx and 0x7Fxxxx addresses')
+                            else:
+                                if req['condition'] not in [req_table['Aga1'], req_table['Aga2']]:
+                                    if 'target' not in r:
+                                        req['condition'] |= 0x80
+                                    else:
+                                        if isinstance(r['target'], int):
+                                            if req['condition'] < req_table['TriforcePieces']:
+                                                if 0 <= r['target'] <= 0xFF:
+                                                    req['target'] = r['target']
+                                                else:
+                                                    raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}, must be an 8-bit integer')
+                                            else:
+                                                if 0 <= r['target'] <= 0xFFFF:
+                                                    req['target'] = r['target']
+                                                else:
+                                                    raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}, must be a 16-bit integer')
+                                        elif isinstance(r['target'], str):
+                                            if r['target'].lower() == 'random':
+                                                req['target'] = 'random'
+                                            elif r['target'].endswith('%') and 1 <= int(r['target'][:-1]) <= 100:
+                                                req['target'] = req['target']
+                                            else:
+                                                raise Exception(f'Invalid {list(r.keys())[0]} requirement target for {goal_type}')
+                                if req['condition'] & 0x7F == req_table['Pendants']:
+                                    goal['logic']['pendants'] = req['target'] = req.get('target', 3)
+                                elif req['condition'] & 0x7F == req_table['Crystals']:
+                                    goal['logic']['crystals'] = req['target'] = req.get('target', 7)
+                                elif req['condition'] & 0x7F == req_table['PendantBosses']:
+                                    goal['logic']['pendant_bosses'] = req['target'] = req.get('target', 3)
+                                elif req['condition'] & 0x7F == req_table['CrystalBosses']:
+                                    goal['logic']['crystal_bosses'] = req['target'] = req.get('target', 7)
+                                elif req['condition'] & 0x7F == req_table['PrizeBosses']:
+                                    goal['logic']['bosses'] = req['target'] = req.get('target', 10)
+                                elif req['condition'] & 0x7F == req_table['Aga1']:
+                                    goal['logic']['aga1'] = True
+                                elif req['condition'] & 0x7F == req_table['Aga2']:
+                                    goal['logic']['aga2'] = True
+                                elif req['condition'] & 0x7F == req_table['TriforcePieces']:
+                                    goal['logic']['goal_items'] = req['target'] = req.get('target', None)
+                                elif req['condition'] & 0x7F == req_table['CollectionRate']:
+                                    goal['logic']['collection'] = req['target'] = req.get('target', None)
+                                goal['requirements'].append(req)
+                        except KeyError:
+                            raise KeyError(f'Invalid {goal_type} requirement: {r}')
+                else:
+                    raise KeyError(f'Invalid {goal_type} requirement definition')
+                if 'logic' in goal_input and goal['logic'] and goal['logic'] is not None:
+                    goal['logic'].update(goal_input['logic'])
+            return
+
+        goals = world.customizer.get_goals()
+        for player in range(1, world.players + 1):
+            if goals and player in goals:
+                for g in ['gtentry', 'ganongoal', 'pedgoal', 'murahgoal']:
+                    if g in goals[player]:
+                        process_goal(g)
+    return
 
 
 def set_starting_inventory(world, args):
@@ -616,7 +780,6 @@ def copy_world(world):
     ret.can_take_damage = world.can_take_damage
     ret.difficulty_requirements = world.difficulty_requirements.copy()
     ret.fix_fake_world = world.fix_fake_world.copy()
-    ret.lamps_needed_for_dark_rooms = world.lamps_needed_for_dark_rooms
     ret.mapshuffle = world.mapshuffle.copy()
     ret.compassshuffle = world.compassshuffle.copy()
     ret.keyshuffle = world.keyshuffle.copy()
@@ -625,6 +788,7 @@ def copy_world(world):
     ret.bombbag = world.bombbag.copy()
     ret.flute_mode = world.flute_mode.copy()
     ret.bow_mode = world.bow_mode.copy()
+    ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.ganon_item = world.ganon_item.copy()
@@ -687,13 +851,13 @@ def copy_world(world):
         update_world_regions(ret, player)
         if world.logic[player] in ('owglitches', 'hybridglitches', 'nologic'):
             create_owg_connections(ret, player)
-        create_dynamic_exits(ret, player)
         create_dungeon_regions(ret, player)
         create_owedges(ret, player)
         create_shops(ret, player)
-        #create_doors(ret, player)
         create_rooms(ret, player)
         create_dungeons(ret, player)
+        create_dynamic_mirror_exits(ret, player)
+        create_dynamic_flute_exits(ret, player)
 
     # there are region references here they must be migrated to preserve integrity
     # ret.exp_cache = world.exp_cache.copy()
@@ -818,7 +982,7 @@ def copy_world(world):
     return ret
 
 
-def copy_world_premature(world, player):
+def copy_world_premature(world, player, create_flute_exits=True):
     # ToDo: Not good yet
     ret = World(world.players, world.owShuffle, world.owCrossed, world.owMixed, world.shuffle, world.doorShuffle, world.logic, world.mode, world.swords,
                 world.difficulty, world.difficulty_adjustments, world.timer, world.progressive, world.goal, world.algorithm,
@@ -843,7 +1007,6 @@ def copy_world_premature(world, player):
     ret.can_take_damage = world.can_take_damage
     ret.difficulty_requirements = world.difficulty_requirements.copy()
     ret.fix_fake_world = world.fix_fake_world.copy()
-    ret.lamps_needed_for_dark_rooms = world.lamps_needed_for_dark_rooms
     ret.mapshuffle = world.mapshuffle.copy()
     ret.compassshuffle = world.compassshuffle.copy()
     ret.keyshuffle = world.keyshuffle.copy()
@@ -852,6 +1015,7 @@ def copy_world_premature(world, player):
     ret.bombbag = world.bombbag.copy()
     ret.flute_mode = world.flute_mode.copy()
     ret.bow_mode = world.bow_mode.copy()
+    ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
     ret.ganon_item = world.ganon_item.copy()
@@ -910,19 +1074,21 @@ def copy_world_premature(world, player):
     ret.key_logic = world.key_logic.copy()
     ret.settings = world.settings
 
-    ret.is_copied_world = True
+    ret.is_premature_copied_world = True
 
     create_regions(ret, player)
     update_world_regions(ret, player)
     if world.logic[player] in ('owglitches', 'hybridglitches', 'nologic'):
         create_owg_connections(ret, player)
-    create_dynamic_exits(ret, player)
     create_dungeon_regions(ret, player)
     create_owedges(ret, player)
     create_shops(ret, player)
     create_doors(ret, player)
     create_rooms(ret, player)
     create_dungeons(ret, player)
+    create_dynamic_mirror_exits(ret, player) # assumes these have already been added to world
+    if create_flute_exits:
+        create_dynamic_flute_exits(ret, player)
 
     if world.mode[player] == 'standard':
         parent = ret.get_region('Menu', player)

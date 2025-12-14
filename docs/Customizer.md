@@ -51,7 +51,9 @@ Start inventory is not supported here. It has a separate section.
 Some settings are intended to only be accessed using the customizer:
 
 * `aga_randomness` setting this to false, turns off blue balls and ganon warp randomness
-* `money_balance` this is a percent (0-100). For numbers less than 100, both price balancing and money balancing will only attempt to ensure the player has access to only a percentage of the required funds. When 0, this should effectively disable money balancing. Grinding for rupees may be necessary whenever this is less than 100. 
+* `money_balance` this is a percent (0-100). For numbers less than 100, both price balancing and money balancing will only attempt to ensure the player has access to only a percentage of the required funds. When 0, this should effectively disable money balancing. Grinding for rupees may be necessary whenever this is less than 100.
+* `free_lamp_cone` setting this to true will make all dark rooms have a light cone without lamp. The lamp will be placed without regard to dark room logic.
+* `force_enemy` setting this to a specific enemy (like 'StalfosKnight' or 'Lynel', complete list in EnemyList.py) will attempt to make all enemies that type. Some enemies cannot be changed (like bosses). Known issues with gfx glitches occurring in the overworld, as they do not limit the enemy types as appropriate for the sprite sheet.
 
 ###### Not Yet Implemented
 
@@ -69,6 +71,134 @@ Then each player can have the entire item pool defined. The name of item should 
 ##### Caveat 
  
 Dungeon items amount can be increased (but not decreased as the minimum of each dungeon item is either pre-determined or calculated by door rando) if the type of dungeon item is not shuffled then it is attempted to be placed in the dungeon. Extra item beyond dungeon capacity not be confined to the dungeon.
+
+### goals
+
+This must be defined by player. Each player number should be listed with the appropriate custom goals. This section has four primary subsections for each of the current supported events:
+
+* `gtentry` (Ganon's Tower entrance)
+* `ganongoal` (Ganon vulnerability)
+* `pedgoal` (Master Sword Pedestal activation)
+* `murahgoal` (Murahdahla requirement, if given requirements, Murahdahla appears always and acts as an alternative way to beat the game)
+
+These four custom goals use the following identical structure to define them. These goals have four primary subsections: `cutscene_gfx`, `goaltext`, `requirements`, and `logic`
+
+#### cutscene_gfx
+
+This is where you can define custom GFX to be used for an event that has an animation (currently only the GT entry cutscene is supported). For convenience, there are a number of pre-defined names that can be used to indicate already known GFX values built into the ROM. There are too many to list, but a full list can be found in `item_gfx_table` in `Tables.py`. You can also use `Random` and it will take a random one from the aforementioned table.
+
+```yaml
+goals:
+  1:
+    gtentry:
+      cutscene_gfx: Mirror Shield
+```
+
+Alternatively, you may also supply a custom address and palette ID, respectively, if you are injecting your own personal custom GFX into the ROM.
+
+```yaml
+goals:
+  1:
+    gtentry:
+      cutscene_gfx:
+        - 0x8140
+        - 0x04
+```
+
+#### goaltext
+
+This is where you define the dialogue that will show in-game that informs the player what the goal is. This section is required if a goal event has any `requirements` defined. This value can contain `%d` as a numeric placeholder, where this value will be provided by the goal information provided in the `requirements` section (prioritizes the first goal defined).
+
+A new dialogue has been added for Master Sword Pedestal, if you attempt to receive the pedestal item but do not satisfy the condition for it, a dialogue will appear.
+
+#### requirements
+
+For the various events, you may define many conditions for the player to meet. All of the conditions you specify must pass to activate the event. There are several built-in conditions that can be used and the logic will be automatically added for consideration. However, when `CustomGoal` goals are used, there is no automatic logic that gets applied for this; for this, you must supply additional logic information to be used during generation. For more information on this, see the `logic` subsection. Keep in mind, through this level of customization, it is possible to create unbeatable games, and it will be possible to require things that the game doesn't provide a way to see the current progress for, and none of the options here change any HUD or UI elements to expose that information. It will be important to be careful when making these definitions and to use all provided tools and information to minimize these risks. These are the current supported conditions:
+
+* `Pendants` (Default: 3)
+* `Crystals` (Default: 7)
+* `PendantBosses` (Default: 3)
+* `CrystalBosses` (Default: 7)
+* `PrizeBosses` (Default: 10)
+* `Agahnim1Defeated`
+* `Agahnim2Defeated`
+* `TriforcePieces` (Default: set elsewhere)
+* `CollectionRate` (Default: Max)
+* `CustomGoal` (Needs additional `logic` defined when applicable)
+
+These condition sections use a default target value unless a `target` is specified to override the default.
+
+In addition, we have provided a `CustomGoal` to allow for very advanced control over custom requirements; this however requires some knowledge of either the rando assembly code, the LTTP disassembly source, or autotracker memory addresses. `CustomGoal` uses a few additional required and optional subsections:
+
+* `address`: An address from memory that the game should read to compare (Only addresses from banks 0x7E and 0x7F are valid)
+* `target`: A value to use to compare to the value found at the address (Hexadecimal values can be used)
+* `size`: Optional, default is 1 byte will be read from memory (`16bit` or `2 bytes` are valid keywords to specify 2 bytes should be read and compared)
+* `comparison`: This is to specify the method of comparison that should take place
+
+##### comparison
+
+* `minimum` or `at least`: Checks if a value is met or exceeded. This will likely be the most common comparison method.
+* `equals`: Checks if a value exactly matches
+* `any flag`: Checks against a bitfield value to see if any flag bits are set. (ie. a target of 0x40 only checks the one flag)
+* `flags match`: Checks against a bitfield value to see if all flag bits are set. (ie. a target of 0x70 checks if all 3 bits are set)
+* `count bits`: Counts the number of bits are set and compares that to the target
+
+#### logic
+
+Logic is automatically calculated for all of the basic out-of-the-box conditions, so nothing additional is required for specification for these. But for `CustomGoal`, this `logic` subsection is here to allow mode sculptors to provide this custom logic. This section is handled by three subsections: `item`, `access`, and `ability`
+
+##### item
+
+This is simply a list of items that are to be logically required to unlock the event. If multiple of the an item are needed, use an `=` followed by the amount required (ie. `- Triforce Piece=30`). For better support of Door Rando, dungeon items can be specified with a region name instead of a dungeon name; this way if you want to require a specific Big Key that opens a specific big chest in some room, this is possible to achieve (ie. `- Big Key (PoD Big Chest Balcony)`)
+
+##### access
+
+This is a list of regions that are logically required to be able to access before unlocking an event. Region names are internally named and not exposed on spoiler logs, but can be found by browsing `Regions.py`
+
+##### ability
+
+This is a list of abilities that the player logically requires. These are built-in logical patterns to make it easy to bundle larger nuanced requirements into one single definition. Some abilities take in an optional or required parameter, specified within `(` and `)` following the ability keyword. Here are the allowed keywords:
+
+* `FarmBombs`: Link has access to repeatedly acquire bombs
+* `CanUseBombs`: Link has the ability to use bombs
+* `FarmRupees`: Link has access to repeatedly acquire rupees
+* `NoBunny(<region name>)`: Link is required to not be a bunny in the specified region
+* `MagicExtension(<number>)`: Link has a magic meter with a higher capacity (parameter is optional, a value of 8 represents one normal full magic bar, default value if left blank is 16, which is equivalent to half magic or one bottle with access to a green potion)
+* `CanStun`: Link has the ability to stun enemies
+* `CanKill(<number of enemies>)`: Link has the ability to kill most enemy types (parameter is optional, higher number tends to favor weapons that don't consume ammo, default value is 6 enemies)
+* `CanShootArrows`: Link has ability to fire arrows at enemies
+* `CanBonkDrop`: Link is able to retrieve Bonk Drops from trees and rocks
+* `CanLift`: Link is able to lift basic rocks
+* `CanFlute`: Link has ability to use flute (includes access to flute activation)
+* `HasFire`: Link has a fire source
+* `CanMelt`: Link can melt ice with Firerod or Bombos
+* `HasMMMedallion`: Link has the medallion required for unlocking Misery Mire entrance
+* `HasTRMedallion`: Link has the medallion required for unlocking Turtle Rock entrance
+
+#### (example)
+
+This entire section is very advanced and can be used to make very powerful customizations to the game. To make the overall definition more clear, we provide an example that makes use of a lot of the controls in place: Ganon requiring both 5 crystals AND requiring opening the GT Big Chest
+
+```yaml
+goals:
+  1:
+    ganongoal:
+      goaltext: You’ll need %d crystals and to open the Big Chest in Ganon’s Tower
+      requirements:
+        - Crystals:
+          target: 5
+        - Custom:
+          address: 0x7ef118
+          target: 0x80
+          comparison: flags match
+      logic:
+        item:
+          - Big Key (GT Big Chest)
+        access:
+          - GT Big Chest
+        ability:
+          - NoBunny(GT Big Chest)
+```
 
 ### placements
 
@@ -347,28 +477,4 @@ prices:
     Dark Death Mountain Shop - Middle: 150
     Dark Death Mountain Shop - Right: 300
     Dark Lake Hylia Shop - Left: 200
-```
-
-### gt_entry
-
-This must be defined by player. This is where you are able to customize aspects of GT entry
-
-#### cutscene_gfx
-
-This is where you can define custom GFX to be used in the GT entry cutscene. For convenience, there are a number of pre-defined names that can be used to indicate already known GFX values built into the ROM. There are too many to list, but a full list can be found in `item_gfx_table` in `Tables.py`. You can also use `Random` and it will take a random one from the aforementioned table.
-
-```
-gt_entry:
-  1:
-    cutscene_gfx: Mirror Shield
-```
-
-Alternatively, you may also supply a custom address and palette ID, respectively, if you are injecting your own personal custom GFX into the ROM.
-
-```
-gt_entry:
-  1:
-    cutscene_gfx:
-      - 0x8140
-      - 0x04
 ```

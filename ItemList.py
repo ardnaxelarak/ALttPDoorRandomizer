@@ -231,12 +231,18 @@ def generate_itempool(world, player):
     if world.damage_challenge[player] in ['ohko', 'gloom']:
         world.can_take_damage[player] = False
 
-    if world.goal[player] in ['pedestal', 'triforcehunt', 'sanctuary']:
+    goal_req = None
+    if world.custom_goals[player]['ganongoal'] and 'requirements' in world.custom_goals[player]['ganongoal']:
+        goal_req = world.custom_goals[player]['ganongoal']['requirements'][0]
+    if world.goal[player] in ['pedestal', 'triforcehunt', 'sanctuary'] or (goal_req and goal_req['condition'] == 0x00):
         set_event_item(world, player, 'Ganon', 'Nothing')
     else:
         set_event_item(world, player, 'Ganon', 'Triforce')
 
-    if world.goal[player] in ['triforcehunt', 'trinity']:
+    goal_req = None
+    if world.custom_goals[player]['murahgoal'] and 'requirements' in world.custom_goals[player]['murahgoal']:
+        goal_req = world.custom_goals[player]['murahgoal']['requirements'][0]
+    if world.goal[player] in ['triforcehunt', 'trinity'] or (goal_req and goal_req['condition'] != 0x00):
         region = world.get_region('Hyrule Castle Courtyard', player)
         loc = Location(player, "Murahdahla", parent=region)
         region.locations.append(loc)
@@ -278,13 +284,13 @@ def generate_itempool(world, player):
     # set up item pool
     skip_pool_adjustments = False
     if world.customizer and world.customizer.get_item_pool() and player in world.customizer.get_item_pool():
-        (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms) = make_customizer_pool(world, player)
+        (pool, placed_items, precollected_items, clock_mode) = make_customizer_pool(world, player)
         skip_pool_adjustments = True
     elif world.custom and player in world.customitemarray:
-        (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_total, treasure_hunt_icon, lamps_needed_for_dark_rooms) = make_custom_item_pool(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.customitemarray[player])
+        (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_total, treasure_hunt_icon) = make_custom_item_pool(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.customitemarray[player])
         world.rupoor_cost = min(world.customitemarray[player]["rupoorcost"], 9999)
     else:
-        (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms) = get_pool_core(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.doorShuffle[player], world.logic[player], world.flute_mode[player] == 'active' or world.is_tile_swapped(0x18, player))
+        (pool, placed_items, precollected_items, clock_mode) = get_pool_core(world, player, world.progressive, world.shuffle[player], world.difficulty[player], world.treasure_hunt_total[player], world.timer, world.goal[player], world.mode[player], world.swords[player], world.bombbag[player], world.doorShuffle[player], world.logic[player], world.flute_mode[player] == 'active' or world.is_tile_swapped(0x18, player))
 
     if player in world.pool_adjustment.keys() and not skip_pool_adjustments:
         amt = world.pool_adjustment[player]
@@ -363,8 +369,6 @@ def generate_itempool(world, player):
         for item in items:
             if item.name == 'Bomb Upgrade (+10)' and item.player == player:
                 item.advancement = True
-
-    world.lamps_needed_for_dark_rooms = lamps_needed_for_dark_rooms
 
     if clock_mode is not None:
         world.clock_mode = clock_mode
@@ -1109,8 +1113,6 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     else:
         pool.extend(basicgloves)
 
-    lamps_needed_for_dark_rooms = 1
-
     # old insanity shuffle didn't have fake LW/DW logic so this used to be conditional
     pool.extend(['Magic Mirror', 'Moon Pearl'])
 
@@ -1162,11 +1164,17 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
         place_item('Link\'s Uncle', swords_to_use.pop())
         place_item('Blacksmith', swords_to_use.pop())
         place_item('Pyramid Fairy - Left', swords_to_use.pop())
-        if goal not in ['pedestal', 'trinity']:
-            place_item('Master Sword Pedestal', swords_to_use.pop())
-        else:
-            place_item('Master Sword Pedestal', 'Triforce')
+        if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+            place_item('Master Sword Pedestal', 'Nothing')
+            world.get_location('Master Sword Pedestal', player).locked = True
             pool.append(swords_to_use.pop())
+        else:
+            if goal not in ['pedestal', 'trinity']:
+                place_item('Master Sword Pedestal', swords_to_use.pop())
+            else:
+                place_item('Master Sword Pedestal', 'Triforce')
+                world.get_location('Master Sword Pedestal', player).locked = True
+                pool.append(swords_to_use.pop())
     else:
         pool.extend(diff.progressivesword if want_progressives() else diff.basicsword)
         if swords == 'assured':
@@ -1194,8 +1202,12 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
 
     if goal in ['sanctuary']:
         place_item('Sanctuary', 'Triforce')
-    if goal in ['pedestal', 'trinity'] and swords != 'vanilla':
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+        place_item('Master Sword Pedestal', 'Nothing')
+        world.get_location('Master Sword Pedestal', player).locked = True
+    elif goal in ['pedestal', 'trinity'] and swords != 'vanilla':
         place_item('Master Sword Pedestal', 'Triforce')
+        world.get_location('Master Sword Pedestal', player).locked = True
     if world.bow_mode[player].startswith('retro'):
         pool = [item.replace('Single Arrow', 'Rupees (5)') for item in pool]
         pool = [item.replace('Arrows (10)', 'Rupees (5)') for item in pool]
@@ -1213,7 +1225,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
                 pool.extend(['Small Key (Universal)'])
         else:
             pool.extend(['Small Key (Universal)'])
-    return (pool, placed_items, precollected_items, clock_mode, lamps_needed_for_dark_rooms)
+    return (pool, placed_items, precollected_items, clock_mode)
 
 
 item_alternates = {
@@ -1329,8 +1341,6 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     diff = difficulties[difficulty]
 
-    lamps_needed_for_dark_rooms = 1
-
     # expert+ difficulties produce the same contents for
     # all bottles, since only one bottle is available
     if diff.same_bottle:
@@ -1359,8 +1369,12 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
 
     if goal in ['sanctuary']:
         place_item('Sanctuary', 'Triforce')
-    if goal in ['pedestal', 'trinity']:
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+        place_item('Master Sword Pedestal', 'Nothing')
+        world.get_location('Master Sword Pedestal', player).locked = True
+    elif goal in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
+        world.get_location('Master Sword Pedestal', player).locked = True
 
     if mode == 'standard':
         if world.keyshuffle[player] == 'universal':
@@ -1392,7 +1406,7 @@ def make_custom_item_pool(world, player, progressive, shuffle, difficulty, timer
             pool.remove('Fighter Sword')
             pool.append('Rupees (50)')
 
-    return (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_total, treasure_hunt_icon, lamps_needed_for_dark_rooms)
+    return (pool, placed_items, precollected_items, clock_mode, treasure_hunt_count, treasure_hunt_total, treasure_hunt_icon)
 
 def make_customizer_pool(world, player):
     pool = []
@@ -1475,8 +1489,12 @@ def make_customizer_pool(world, player):
 
     if goal in ['sanctuary']:
         place_item('Sanctuary', 'Triforce')
-    if world.goal[player] in ['pedestal', 'trinity']:
+    if world.custom_goals[player]['pedgoal'] and 'requirements' in world.custom_goals[player]['pedgoal'] and world.custom_goals[player]['pedgoal']['requirements'][0]['condition'] == 0x00:
+        place_item('Master Sword Pedestal', 'Nothing')
+        world.get_location('Master Sword Pedestal', player).locked = True
+    elif world.goal[player] in ['pedestal', 'trinity']:
         place_item('Master Sword Pedestal', 'Triforce')
+        world.get_location('Master Sword Pedestal', player).locked = True
 
     guaranteed_items = alwaysitems + ['Magic Mirror', 'Moon Pearl']
     if world.is_tile_swapped(0x18, player) or world.flute_mode[player] == 'active':
@@ -1539,7 +1557,7 @@ def make_customizer_pool(world, player):
             pool.remove('Fighter Sword')
             pool.append('Rupees (50)')
 
-    return pool, placed_items, precollected_items, clock_mode, 1
+    return pool, placed_items, precollected_items, clock_mode
 
 
 filler_items = {
@@ -1685,7 +1703,7 @@ def set_event_item(world, player, location_name, item_name=None):
 
 
 def shuffle_event_items(world, player):
-    if (world.shuffle_followers[player]):
+    if world.shuffle_followers[player]:
         available_quests = follower_quests.copy()
         available_pickups = [quests[0] for quests in available_quests.values()]
 
@@ -1697,11 +1715,14 @@ def shuffle_event_items(world, player):
                 available_pickups.remove(loc.item.name)
             
 
-        if world.mode[player] == 'standard':
-            if 'Zelda Herself' in available_pickups:
-                zelda_pickup = available_quests.pop('Zelda Pickup')[0]
-                available_pickups.remove(zelda_pickup)
-                set_event_item(world, player, 'Zelda Pickup', zelda_pickup)
+        if world.mode[player] == 'standard' and 'Zelda Herself' in available_pickups:
+            zelda_dropoff = 'Zelda Pickup'
+            if world.default_zelda_region[player] == 'Thieves Blind\'s Cell':
+                zelda_dropoff = 'Suspicious Maiden'
+            available_quests.pop(zelda_dropoff)
+            zelda_pickup = 'Zelda Herself'
+            available_pickups.remove(zelda_pickup)
+            set_event_item(world, player, zelda_dropoff, zelda_pickup)
 
         random.shuffle(available_pickups)
 
@@ -1724,10 +1745,11 @@ def get_item_and_event_flag(item, world, player, dungeon_pool, prize_set, prize_
     item_player = player if len(item_parts) < 2 else int(item_parts[1])
     item_name = item_parts[0]
     event_flag = False
-    if item_name in prize_set:
-        item_player = player  # prizes must be for that player
+    if item_name in prize_set or item_name in follower_pickups:
+        item_player = player  # must be for that player
         item_to_place = ItemFactory(item_name, item_player)
-        prize_pool.remove(item_name)
+        if item_name in prize_set:
+            prize_pool.remove(item_name)
         event_flag = True
     elif is_dungeon_item(item_name, world, item_player):
         item_to_place = next(x for x in dungeon_pool

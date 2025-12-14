@@ -183,6 +183,8 @@ def fill_restrictive(world, base_state, locations, itempool, key_pool=None, sing
                 spot_to_fill = None
 
                 item_locations = filter_locations(item_to_place, locations, world, vanilla)
+                if is_dungeon_item(item_to_place, world) and not (item_to_place.prize and world.prizeshuffle[item_to_place.player] == 'none'):
+                    item_locations = [l for l in item_locations if valid_dungeon_placement(item_to_place, l, world)]
                 verify(item_to_place, item_locations, maximum_exploration_state, single_player_placement,
                        perform_access_check, key_pool, world)
                 for location in item_locations:

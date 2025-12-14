@@ -65,7 +65,7 @@ class World(object):
         self.lock_aga_door_in_escape = False
         self.save_and_quit_from_boss = True
         self.override_bomb_check = False
-        self.is_copied_world = False
+        self.is_premature_copied_world = False
         self.accessibility = accessibility.copy()
         self.fix_skullwoods_exit = {}
         self.fix_palaceofdarkness_exit = {}
@@ -81,11 +81,11 @@ class World(object):
         self.can_take_damage = {}
         self.hints = hints.copy()
         self.prizes = {}
+        self.default_zelda_region = {}
         self.dynamic_regions = []
         self.dynamic_locations = []
         self.spoiler_mode = spoiler_mode
         self.spoiler = Spoiler(self)
-        self.lamps_needed_for_dark_rooms = 1
         self.owedges = []
         self._owedge_cache = {}
         self.owswaps = {}
@@ -153,12 +153,15 @@ class World(object):
             set_player_attr('bombbag', False)
             set_player_attr('flute_mode', False)
             set_player_attr('bow_mode', False)
+            set_player_attr('free_lamp_cone', False)
+
             set_player_attr('difficulty_requirements', None)
             set_player_attr('boss_shuffle', 'none')
             set_player_attr('enemy_shuffle', 'none')
             set_player_attr('enemy_health', 'default')
             set_player_attr('enemy_damage', 'default')
             set_player_attr('any_enemy_logic', 'allow_all')
+            set_player_attr('force_enemy', None)
             set_player_attr('beemizer', '0')
             set_player_attr('escape_assist', [])
             set_player_attr('crystals_needed_for_ganon', 7)
@@ -197,6 +200,8 @@ class World(object):
             set_player_attr('standardize_palettes', 'standardize')
             set_player_attr('force_fix', {'gt': False, 'sw': False, 'pod': False, 'tr': False})
             set_player_attr('prizes', {'dig;': [], 'pull': [0, 0, 0], 'crab': [0, 0], 'stun': 0, 'fish': 0, 'enemies': []})
+            set_player_attr('default_zelda_region', 'Hyrule Dungeon Cellblock')
+            set_player_attr('custom_goals', {'gtentry': None, 'ganongoal': None, 'pedgoal': None, 'murahgoal': None})
 
             set_player_attr('exp_cache', defaultdict(dict))
             set_player_attr('enabled_entrances', {})
@@ -1221,15 +1226,34 @@ class CollectionState(object):
     def item_count(self, item, player):
         return self.prog_items[item, player]
 
-    def everything(self, player):
-        all_locations = self.world.get_filled_locations(player)
-        all_locations.remove(self.world.get_location('Ganon', player))
-        return (len([x for x in self.locations_checked if x.player == player])
+    def everything(self, player, all_except=0):
+        all_locations = [x for x in self.world.get_filled_locations(player) if not x.locked]
+        return (len([x for x in self.locations_checked if x.player == player and not x.locked]) + all_except
                 >= len(all_locations))
 
     def has_crystals(self, count, player):
         crystals = ['Crystal 1', 'Crystal 2', 'Crystal 3', 'Crystal 4', 'Crystal 5', 'Crystal 6', 'Crystal 7']
         return len([crystal for crystal in crystals if self.has(crystal, player)]) >= count
+
+    def has_pendants(self, count, player):
+        pendants = ['Green Pendant', 'Red Pendant', 'Blue Pendant']
+        return len([pendant for pendant in pendants if self.has(pendant, player)]) >= count
+
+    def has_bosses(self, count, player, prize_type=None):
+        dungeons = 'Eastern Palace', 'Desert Palace', 'Tower of Hera', 'Palace of Darkness', 'Swamp Palace', "Thieves' Town", 'Skull Woods', 'Ice Palace', 'Misery Mire', 'Turtle Rock'
+        reachable_bosses = 0
+        for d in dungeons:
+            region = self.world.get_region(f'{d} - Boss Kill', player)
+            if prize_type is None or prize_type in region.dungeon.prize.name:
+                if self.can_reach(region, None, player):
+                    reachable_bosses += 1
+        return reachable_bosses >= count
+
+    def has_crystal_bosses(self, count, player):
+        return self.has_bosses(count, player, 'Crystal')
+
+    def has_pendant_bosses(self, count, player):
+        return self.has_bosses(count, player, 'Pendant')
 
     def can_lift_rocks(self, player):
         return self.has('Power Glove', player) or self.has('Titans Mitts', player)
@@ -2728,7 +2752,7 @@ class Location(object):
         self.staleness_count = 0
         self.locked = False
         self.real = True
-        self.always_allow = lambda item, state: False
+        self.always_allow = None
         self.access_rule = lambda state: True
         self.verbose_rule = None
         self.item_rule = lambda item: True
@@ -2742,7 +2766,7 @@ class Location(object):
     def can_fill(self, state, item, check_access=True):
         if not self.valid_multiworld(state, item):
             return False
-        return self.always_allow(state, item) or (self.parent_region.can_fill(item) and self.item_rule(item) and (not check_access or self.can_reach(state)))
+        return (self.always_allow and self.always_allow(state, item)) or (self.parent_region.can_fill(item) and self.item_rule(item) and (not check_access or self.can_reach(state)))
 
     def valid_multiworld(self, state, item):
         if self.type == LocationType.Pot and self.player != item.player:
@@ -3061,6 +3085,7 @@ class Spoiler(object):
                          'flute_mode': self.world.flute_mode,
                          'bow_mode': self.world.bow_mode,
                          'goal': self.world.goal,
+                         'custom_goals': self.world.custom_goals,
                          'ow_shuffle': self.world.owShuffle,
                          'ow_terrain': self.world.owTerrain,
                          'ow_crossed': self.world.owCrossed,
@@ -3302,8 +3327,23 @@ class Spoiler(object):
                     if self.metadata['goal'][player] in ['triforcehunt', 'trinity', 'ganonhunt']:
                         outfile.write('Triforce Pieces Required:'.ljust(line_width) + '%s\n' % self.metadata['triforcegoal'][player])
                         outfile.write('Triforce Pieces Total:'.ljust(line_width) + '%s\n' % self.metadata['triforcepool'][player])
-                    outfile.write('Crystals Required for GT:'.ljust(line_width) + '%s\n' % str(self.world.crystals_gt_orig[player]))
-                    outfile.write('Crystals Required for Ganon:'.ljust(line_width) + '%s\n' % str(self.world.crystals_ganon_orig[player]))
+                    custom = self.metadata['custom_goals'][player]
+                    if custom['gtentry'] and 'requirements' in custom['gtentry']:
+                        outfile.write('GT Entry Requirement:'.ljust(line_width) + 'custom\n')
+                        outfile.write('    %s\n' % custom['gtentry']['goaltext'])
+                    else:
+                        outfile.write('GT Entry Requirement:'.ljust(line_width) + '%s crystals\n' % str(self.world.crystals_gt_orig[player]))
+                    if custom['ganongoal'] and 'requirements' in custom['ganongoal']:
+                        outfile.write('Ganon Requirement:'.ljust(line_width) + 'custom\n')
+                        outfile.write('    %s\n' % custom['ganongoal']['goaltext'])
+                    else:
+                        outfile.write('Ganon Requirement:'.ljust(line_width) + '%s crystals\n' % str(self.world.crystals_ganon_orig[player]))
+                    if custom['pedgoal'] and 'requirements' in custom['pedgoal']:
+                        outfile.write('Pedestal Requirement:'.ljust(line_width) + 'custom\n')
+                        outfile.write('    %s\n' % custom['pedgoal']['goaltext'])
+                    if custom['murahgoal'] and 'requirements' in custom['murahgoal']:
+                        outfile.write('Murahdahla Requirement:'.ljust(line_width) + 'custom\n')
+                        outfile.write('    %s\n' % custom['murahgoal']['goaltext'])
                     outfile.write('Item Required for Ganon:'.ljust(line_width) + '%s\n' % str(self.world.ganon_item_orig[player]))
                     outfile.write('Swords:'.ljust(line_width) + '%s\n' % self.metadata['weapons'][player])
                     outfile.write('\n')
@@ -3419,10 +3459,24 @@ class Spoiler(object):
                     outfile.write(f'{dungeon}:'.ljust(line_width) + '%s Medallion\n' % medallion)
                 for player in range(1, self.world.players + 1):
                     player_name = '' if self.world.players == 1 else str(' (Player ' + str(player) + ')')
-                    if self.world.crystals_gt_orig[player] == 'random':
+                    goal = self.world.custom_goals[player]['gtentry']
+                    if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                        pass
+                        # outfile.write(str('GT Entry Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
+                    elif self.world.crystals_gt_orig[player] == 'random':
                         outfile.write(str('Crystals Required for GT' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['gt_crystals'][player])))
-                    if self.world.crystals_ganon_orig[player] == 'random':
-                        outfile.write(str('Crystals Required for Ganon' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player])))
+                    goal = self.world.custom_goals[player]['ganongoal']
+                    if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                        pass
+                        # outfile.write(str('Ganon Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
+                    elif self.world.crystals_ganon_orig[player] == 'random':
+                       outfile.write(str('Crystals Required for Ganon' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player])))
+                    # goal = self.world.custom_goals[player]['pedgoal']
+                    # if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                    #     outfile.write(str('Pedestal Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
+                    # goal = self.world.custom_goals[player]['murahgoal']
+                    # if goal and 'requirements' in goal and goal['requirements'][0]['condition'] != 0x00:
+                    #     outfile.write(str('Murahdahla Sign Text' + player_name + ':').ljust(line_width) + '%s\n' % goal['goaltext'])
                 outfile.write('\n\nPrizes:\n\n')
                 for dungeon, prize in self.prizes.items():
                     outfile.write(str(dungeon + ':').ljust(line_width) + '%s\n' % prize)

@@ -8,7 +8,7 @@ from OWEdges import OWTileRegions, OWEdgeGroups, OWEdgeGroupsTerrain, OWExitType
 from OverworldGlitchRules import create_owg_connections
 from Utils import bidict
 
-version_number = '0.6.0.7'
+version_number = '0.6.1.7'
 # branch indicator is intentionally different across branches
 version_branch = ''
 
@@ -200,6 +200,7 @@ def link_overworld(world, player):
                 connect_simple(world, exitname, regionname, player)
 
     categorize_world_regions(world, player)
+    create_dynamic_mirror_exits(world, player)
 
     if world.logic[player] in ('owglitches', 'hybridglitches', 'nologic'):
         create_owg_connections(world, player)
@@ -424,8 +425,6 @@ def link_overworld(world, player):
                 assert len(forward_set) == len(back_set)
                 for (forward_edge, back_edge) in zip(forward_set, back_set):
                     connect_two_way(world, forward_edge, back_edge, player, connected_edges)
-
-        world.owsectors[player] = build_sectors(world, player)
     else:
         if world.owKeepSimilar[player] and world.owShuffle[player] == 'parallel':
             for exitname, destname in parallelsimilar_connections:
@@ -557,12 +556,13 @@ def link_overworld(world, player):
                     connect_set(forward_edge_sets[0], back_edge_sets[0], connected_edges)
                     remove_connected(forward_edge_sets, back_edge_sets)
             assert len(connected_edges) == len(default_connections) * 2, connected_edges
-            
-            world.owsectors[player] = build_sectors(world, player)
+
             valid_layout = validate_layout(world, player)
 
             tries -= 1
         assert valid_layout, 'Could not find a valid OW layout'
+
+    world.owsectors[player] = build_sectors(world, player)
 
     # flute shuffle
     logging.getLogger('').debug('Shuffling flute spots')
@@ -724,6 +724,8 @@ def link_overworld(world, player):
                                                                                  s[0x30],                                s[0x35],
                                                                                              s[0x3a],s[0x3b],s[0x3c],                s[0x3f])
         world.spoiler.set_map('flute', text_output, new_spots, player)
+
+    create_dynamic_flute_exits(world, player)
 
 def connect_custom(world, connected_edges, groups, forced, player):
     forced_crossed, forced_noncrossed = forced
@@ -1292,7 +1294,7 @@ def adjust_edge_groups(world, trimmed_groups, edges_to_swap, player):
                         groups[(mode, wrld, dir, terrain, parallel, count, group_name)][i].extend(matches)
     return groups
 
-def create_flute_exits(world, player):
+def create_dynamic_flute_exits(world, player):
     flute_in_pool = True if player not in world.customitemarray else any(i for i, n in world.customitemarray[player].items() if i == 'flute' and n > 0)
     if not flute_in_pool:
         return
@@ -1303,6 +1305,7 @@ def create_flute_exits(world, player):
             exit.spot_type = 'Flute'
             exit.connect(world.get_region('Flute Sky', player))
             region.exits.append(exit)
+    world.initialize_regions()
 
 def get_mirror_exit_name(from_region, to_region):
     if from_region in mirror_connections and to_region in mirror_connections[from_region]:
@@ -1329,7 +1332,7 @@ def get_mirror_edges(world, region, player):
                         mirror_exits.append(tuple([get_mirror_exit_name(other_world_region_name, region.name), region.name]))
     return mirror_exits
 
-def create_mirror_exits(world, player):
+def create_dynamic_mirror_exits(world, player):
     mirror_exits = set()
     for region in (r for r in world.regions if r.player == player and r.name not in ['Zoras Domain', 'Master Sword Meadow', 'Hobo Bridge']):
         if region.type == (RegionType.DarkWorld if world.mode[player] != 'inverted' else RegionType.LightWorld):
@@ -1350,12 +1353,6 @@ def create_mirror_exits(world, player):
                     region.exits.append(exit)
 
                     mirror_exits.add(exitname)
-            elif region.terrain == Terrain.Land:
-                pass
-
-def create_dynamic_exits(world, player):
-    create_flute_exits(world, player)
-    create_mirror_exits(world, player)
     world.initialize_regions()
 
 def categorize_world_regions(world, player):
@@ -1433,7 +1430,7 @@ def build_sectors(world, player):
     # perform accessibility check on duplicate world
     for p in range(1, world.players + 1):
         world.key_logic[p] = {}
-    base_world = copy_world_premature(world, player)
+    base_world = copy_world_premature(world, player, create_flute_exits=False)
     
     # build lists of contiguous regions accessible with full inventory (excl portals/mirror/flute/entrances)
     regions = list(OWTileRegions.copy().keys())
@@ -1510,7 +1507,7 @@ def build_accessible_region_list(world, start_region, player, build_copy_world=F
     if build_copy_world:
         for p in range(1, world.players + 1):
             world.key_logic[p] = {}
-        base_world = copy_world_premature(world, player)
+        base_world = copy_world_premature(world, player, create_flute_exits=True)
         base_world.override_bomb_check = True
     else:
         base_world = world
@@ -1554,11 +1551,9 @@ def validate_layout(world, player):
         'Pyramid Area':                       ['Pyramid Exit Ledge']
     }
 
-    from Main import copy_world_premature
-    from Utils import stack_size3a
     # TODO: Find a better source for the below lists, original sourced was deprecated
     from source.overworld.EntranceData import default_dungeon_connections, default_connector_connections, default_item_connections, default_shop_connections, default_drop_connections, default_dropexit_connections
-    
+
     dungeon_entrances = list(zip(*default_dungeon_connections + [('Ganons Tower', '')]))[0]
     connector_entrances = list(zip(*default_connector_connections))[0]
     item_entrances = list(zip(*default_item_connections))[0]
@@ -1567,12 +1562,11 @@ def validate_layout(world, player):
     flute_in_pool = True if player not in world.customitemarray else any(i for i, n in world.customitemarray[player].items() if i == 'flute' and n > 0)
 
     def explore_region(region_name, region=None):
-        if stack_size3a() > 500:
-            raise GenerationException(f'Infinite loop detected for "{region_name}" located at \'validate_layout\'')
-
-        explored_regions.append(region_name)
+        if region_name in explored_regions:
+            return
+        explored_regions.add(region_name)
         if not region:
-            region = base_world.get_region(region_name, player)
+            region = world.get_region(region_name, player)
         for exit in region.exits:
             if exit.connected_region is not None and exit.connected_region.name not in explored_regions \
                     and exit.connected_region.type in [RegionType.LightWorld, RegionType.DarkWorld]:
@@ -1586,11 +1580,8 @@ def validate_layout(world, player):
             for dest_region in sane_connectors[region_name]:
                 if dest_region not in explored_regions:
                     explore_region(dest_region)
-    
-    for p in range(1, world.players + 1):
-        world.key_logic[p] = {}
-    base_world = copy_world_premature(world, player)
-    explored_regions = list()
+
+    explored_regions = set()
 
     if world.shuffle[player] in ['vanilla', 'dungeonssimple', 'dungeonsfull'] or not world.shufflelinks[player]:
         if not world.is_bombshop_start(player):
@@ -1616,14 +1607,14 @@ def validate_layout(world, player):
         start_region = 'Hyrule Castle Ledge'
     explore_region(start_region)
 
-    unreachable_regions = OrderedDict()
+    unreachable_regions = {}
     unreachable_count = -1
     while unreachable_count != len(unreachable_regions):
         # find unreachable regions
         unreachable_regions = {}
         for region_name in list(OWTileRegions.copy().keys()):
             if region_name not in explored_regions and region_name not in isolated_regions:
-                region = base_world.get_region(region_name, player)
+                region = world.get_region(region_name, player)
                 unreachable_regions[region_name] = region
         
         # loop thru unreachable regions to check if some can be excluded

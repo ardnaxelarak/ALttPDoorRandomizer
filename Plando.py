@@ -74,9 +74,9 @@ def main(args):
     logger.info('Patching ROM.')
 
     rom = LocalRom(args.rom)
-    patch_rom(world, rom, 1, 1, False)
+    patch_rom(world, rom, 1, 1, False, str(args.rom_header) if args.rom_header else None)
 
-    apply_rom_settings(rom, args.heartbeep, args.heartcolor, args.quickswap, args.fastmenu, args.disablemusic, args.sprite, args.ow_palettes, args.uw_palettes)
+    apply_rom_settings(rom, args.heartbeep, args.heartcolor, args.quickswap, args.fastmenu, args.disablemusic, args.sprite, args.triforce_gfx, args.ow_palettes, args.uw_palettes)
 
     for textname, texttype, text in text_patches:
         if texttype == 'text':

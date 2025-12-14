@@ -47,6 +47,7 @@ def main():
                              Alternatively, can be a ALttP Rom patched with a Link
                              sprite that will be extracted.
                              ''')
+    parser.add_argument('--triforce_gfx', help='Name of the triforce graphics to use.')
     parser.add_argument('--names', default='', type=str)
     args = parser.parse_args()
 

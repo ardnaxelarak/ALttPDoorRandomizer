@@ -1,5 +1,63 @@
 # Changelog
 
+## 0.6.1.7
+- \~Merged in DR v1.5.2~
+  - Reverted key count update
+
+## 0.6.1.6
+- Fixed bonk drop sparkles in DW
+- \~Merged in DR v1.5.1~
+  - Fixed key count issues
+
+## 0.6.1.5
+- Fixed error with non-prize shuffle
+
+## 0.6.1.4
+- Fixes for Glitched Rain State (Bonk Shuffle included)
+- \~Merged in DR v1.5.0~
+  - GT Key Logic fix
+  - New HUD key count behavior
+  - Pot uncoloring on collection
+
+## 0.6.1.3
+- Added new post-gen option to change Triforce Piece GFX
+- Added new GFX for 10/11 keys to replace the A/B GFX
+- Fixed issue with Follower Sprite GFX after mirroring
+- Fixed VRAM issue with Crystal Maiden cutscene
+- Some performance updates
+- \~Merged in DR v1.4.11~
+  - Enemizer bans update
+
+## 0.6.1.2
+- Various fixes for Custom Goal Framework
+- Added custom gfx for Pedestal and Murahdahla
+- Re-fixed purple chest follower dupe
+- Updated tournament winners texts
+
+## 0.6.1.1
+- Fixed issue with Bosses goals in Custom Goal Framework
+- Fixed error when using Custom Goals with no extra values
+- Added more Custom Goal detail in Spoiler Log
+
+## 0.6.1.0
+- New Custom Goal framework (see Customizer.md)
+- New 'logic' hint terminology to replace vital/useful terminology
+- Removed possibility of duplicated hints
+- New fix for hammering pot drops when at sprite limit
+- Fixed issue with incorrect Ganon silvers hint
+- Fixed issue with Locksmith despawning after purple chest if a follower is stored
+- Fixed pogdor glitch (frogdor but at PoD entrance and Kiki following)
+- Fixed issue with Duck gfx overwriting GT Cutscene gfx
+- New CLI argument to allow external generators to supply a custom ROM Header
+- Fixed error with extra argument in MultiServer call
+- Added new text if Link's House is placed at any Snitch Lady house
+
+## 0.6.0.8
+- Re-fixed issue with Old Man spawning on pyramid
+- Allowing Zelda to be in TT Prison for follower shuffle escape
+- Fixed error with placing Old Man Cave in ER
+- Fixed error when plando'ing followers at locations
+
 ## 0.6.0.7
 - Emergency fix for GT cutscene GFX
 
