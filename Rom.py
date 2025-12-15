@@ -2756,13 +2756,18 @@ def write_strings(rom, world, player, team):
     tt['menu_start_3'] = "{MENU}\n{SPEED0}\n≥@'s " + lh_text + "\n " + sanc_text + "\n Mountain Cave\n{CHOICE2}"
     if world.mode[player] == 'inverted':
         tt['intro_main'] = CompressedTextMapper.convert(
-                            "{INTRO}\n Episode  III\n{PAUSE3}\n A Link to\n   the Past\n"
-                            + "{PAUSE3}\nInverted\n  Randomizer\n{PAUSE3}\nAfter mostly disregarding what happened in the first two games.\n"
-                            + "{PAUSE3}\nLink has been transported to the Dark World\n{PAUSE3}\nWhile he was slumbering\n"
-                            + "{PAUSE3}\nWhatever will happen?\n{PAUSE3}\n{CHANGEPIC}\nGanon has moved around all the items in Hyrule.\n"
-                            + "{PAUSE7}\nYou will have to find all the items necessary to beat Ganon.\n"
-                            + "{PAUSE7}\nThis is your chance to be a hero.\n{PAUSE3}\n{CHANGEPIC}\n"
-                            + "You must get the 7 crystals to beat Ganon.\n{PAUSE9}\n{CHANGEPIC}", False)
+            "{INTRO}\n    Episode III"
+            + "{PAUSE3}\n A Link to the Past"
+            + "{PAUSE3}\nInverted Randomizer"
+            + "{PAUSE3}\n\n\n"
+            + "{PAUSE3}\nAfter mostly disregarding what happened in the first two games,"
+            + "{PAUSE3}\nLink has been transported to the Dark World, while he was slumbering."
+            + "{PAUSE3}\n\nWhatever will happen?"
+            + "{PAUSE3} {CHANGEPIC}\nGanon has moved around all the items in Hyrule."
+            + "{PAUSE7}\nYou will have to find all the items necessary to beat Ganon."
+            + "{PAUSE7}\nThis is your chance to be a hero."
+            + "{PAUSE3} {CHANGEPIC}\nYou must get the 7 crystals to beat Ganon."
+            + "{PAUSE9} {CHANGEPIC}", False)
     rom.write_bytes(0xE0000, tt.getBytes())
 
     credits = Credits()

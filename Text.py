@@ -648,7 +648,7 @@ class MultiByteCoreTextMapper(object):
         outbuf = bytearray()
         lineindex = 0
         is_intro = '{INTRO}' in text
-        first_line=True
+        first_line = True
 
         while lines:
             linespace = wrap
@@ -679,20 +679,19 @@ class MultiByteCoreTextMapper(object):
                     outbuf.extend(cls.special_commands[start_command])
                     word = word.replace(start_command, '')
 
-                match = re.search(r'(\{[A-Z0-9_:]+\})\.?$', word)
+                match = re.search(r'(\{[A-Z0-9_:]+\})$', word)
                 if match:
                     end_command = match.group(1)
                     word = word.replace(end_command, '')
-                    period = word.endswith('.')
                 else:
-                    end_command, period = None, False
+                    end_command = None
 
                 # sanity check: if the word we have is more than 19 characters,
                 # we take as much as we can still fit and push the rest back for later
                 if cls.wordlen(word) > wrap:
                     (word_first, word_rest) = cls.splitword(word, linespace)
                     if end_command:
-                        word_rest = (word_rest[:-1] + end_command + '.') if period else (word_rest + end_command)
+                        word_rest = word_rest + end_command
                     words.insert(0, word_rest)
                     lines.insert(0, ' '.join(words))
 
@@ -705,16 +704,13 @@ class MultiByteCoreTextMapper(object):
                     if cls.wordlen(word) < linespace:
                         pending_space = True
                     linespace -= cls.wordlen(word) + 1 if pending_space else 0
-                    word_to_map = word[:-1] if period else word
-                    outbuf.extend(RawMBTextMapper.convert(word_to_map))
+                    outbuf.extend(RawMBTextMapper.convert(word))
                     if end_command:
                         outbuf.extend(cls.special_commands[end_command])
-                        if period:
-                            outbuf.extend(RawMBTextMapper.convert('.'))
                 else:
                     # ran out of space, push word and lines back and continue with next line
                     if end_command:
-                        word = (word[:-1] + end_command + '.') if period else (word + end_command)
+                        word = word + end_command
                     words.insert(0, word)
                     lines.insert(0, ' '.join(words))
                     break
@@ -1895,13 +1891,18 @@ class TextTable(object):
         text['magic_bat_wake'] = CompressedTextMapper.convert("You bum! I was sleeping! Where's my magic bolts?")
         text['magic_bat_give_half_magic'] = CompressedTextMapper.convert("How you like me now?")
         text['intro_main'] = CompressedTextMapper.convert(
-            "{INTRO}\n Episode  III\n{PAUSE3}\n A Link to\n   the Past\n"
-            + "{PAUSE3}\n  Randomizer\n{PAUSE3}\nAfter mostly disregarding what happened in the first two games.\n"
-            + "{PAUSE3}\nLink awakens to his uncle leaving the house.\n{PAUSE3}\nHe just runs out the door,\n"
-            + "{PAUSE3}\ninto the rainy night.\n{PAUSE3}\n{CHANGEPIC}\nGanon has moved around all the items in Hyrule.\n"
-            + "{PAUSE7}\nYou will have to find all the items necessary to beat Ganon.\n"
-            + "{PAUSE7}\nThis is your chance to be a hero.\n{PAUSE3}\n{CHANGEPIC}\n"
-            + "You must get the 7 crystals to beat Ganon.\n{PAUSE9}\n{CHANGEPIC}", False)
+            "{INTRO}\n    Episode III"
+            + "{PAUSE3}\n A Link to the Past"
+            + "{PAUSE3}\n     Randomizer"
+            + "{PAUSE3}\n\n\n"
+            + "{PAUSE3}\nAfter mostly disregarding what happened in the first two games,"
+            + "{PAUSE3}\nLink awakens to his uncle leaving the house."
+            + "{PAUSE3}\nHe just runs out the door, into the rainy night."
+            + "{PAUSE3} {CHANGEPIC}\nGanon has moved around all the items in Hyrule."
+            + "{PAUSE7}\nYou will have to find all the items necessary to beat Ganon."
+            + "{PAUSE7}\nThis is your chance to be a hero."
+            + "{PAUSE3} {CHANGEPIC}\nYou must get the 7 crystals to beat Ganon."
+            + "{PAUSE9} {CHANGEPIC}", False)
         text['intro_throne_room'] = CompressedTextMapper.convert("{IBOX}\nLook at this Stalfos on the throne.", False)
         text['intro_zelda_cell'] = CompressedTextMapper.convert("{IBOX}\nIt is your time to shine!", False)
         text['intro_agahnim'] = CompressedTextMapper.convert("{IBOX}\nAlso, you need to defeat this guy!", False)
