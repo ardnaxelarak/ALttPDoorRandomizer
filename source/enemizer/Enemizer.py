@@ -447,6 +447,7 @@ def randomize_enemies(world, player):
         set_mimics(data_tables)
     elif world.enemy_shuffle[player] != 'none':
         data_tables = world.data_tables[player]
+        custom_uw, custom_ow = {}, {}
         if world.force_enemy[player]:
             custom_ow = {area_id: {i: world.force_enemy[player] for i, s in enumerate(sprite_list)} for area_id, sprite_list in world.data_tables[player].ow_enemy_table.items()}
             custom_uw = {room_id: {i: world.force_enemy[player] for i, s in enumerate(sprite_list)} for room_id, sprite_list in world.data_tables[player].uw_enemy_table.room_map.items()}
