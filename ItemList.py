@@ -1107,7 +1107,7 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
         precollected_items.append('Pegasus Boots')
         pool.remove('Pegasus Boots')
         pool.extend(['Rupees (20)'])
-    
+
     if want_progressives():
         pool.extend(progressivegloves)
     else:
@@ -1123,6 +1123,11 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
 
     diff = difficulties[difficulty]
     pool.extend(diff.baseitems)
+
+    if world.compassshuffle[player] == 'wild':
+        pool.extend(['Compass (Escape)'])
+        if world.keyshuffle[player] == 'wild':
+            pool.extend(['Compass (Agahnims Tower)'])
 
     if bombbag:
         pool = [item.replace('Bomb Upgrade (+5)','Rupees (5)') for item in pool]

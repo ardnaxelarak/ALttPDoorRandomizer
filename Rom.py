@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '8e29777cf6d1ff6fceb72bbf7aacb62c'
+RANDOMIZERBASEHASH = '3e385a852b789c31079aa6a14ff2498d'
 
 
 class JsonRom(object):
@@ -1447,8 +1447,27 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
         loot_show |= 0x02
     if world.dropshuffle[player] != 'none':
         loot_show |= 0x04
-
     rom.write_byte(0x1CFF10, loot_show)
+
+    loot_icons = 0x1CF900
+    if world.bombbag[player]:
+        rom.write_byte(loot_icons + 0x52, 0x0B) # bomb bag is major
+
+    crystal_ids = [0x20, 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6]
+    if world.goal[player] in ['ganon', 'dungeons', 'crystals', 'trinity']:
+        crystal_category = 0x0D
+    else:
+        crystal_category = 0x06
+    for crystal_id in crystal_ids:
+        rom.write_byte(loot_icons + crystal_id, crystal_category)
+
+    pendant_ids = [0x37, 0x38, 0x39]
+    if world.goal[player] in ['pedestal', 'dungeons']:
+        pendant_category = 0x0C
+    else:
+        pendant_category = 0x06
+    for pendant_id in pendant_ids:
+        rom.write_byte(loot_icons + pendant_id, pendant_category)
 
     # compasses showing dungeon count
     compass_mode = 0x80 if world.compassshuffle[player] not in ['none', 'nearby'] else 0x00
