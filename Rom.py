@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '4ba89fbb7fc0e75b483e4289c65d1b8b'
+RANDOMIZERBASEHASH = '37cb55253a676976adb3bae6037f6498'
 
 
 class JsonRom(object):
@@ -1448,6 +1448,9 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     if world.dropshuffle[player] != 'none':
         loot_show |= 0x04
     rom.write_byte(0x1CFF10, loot_show)
+
+    if world.doorShuffle[player] != 'vanilla':
+        rom.write_byte(0x1CFF00, 0x04)
 
     loot_icons = 0x1CF900
     if world.bombbag[player]:
