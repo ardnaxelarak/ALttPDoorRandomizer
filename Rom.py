@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '66804e3a6063d35bee8945c721ad4776'
+RANDOMIZERBASEHASH = '8e29777cf6d1ff6fceb72bbf7aacb62c'
 
 
 class JsonRom(object):
@@ -1439,6 +1439,16 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     if world.keyshuffle[player] != 'universal' and (world.mapshuffle[player] not in ['none', 'nearby'] or world.doorShuffle[player] != 'vanilla'
           or world.dropshuffle[player] != 'none' or world.pottery[player] not in ['none', 'cave']):
         rom.write_byte(0x18003A, 0x01)  # show key counts on map pickup
+
+    loot_show = 0x09
+    if world.prizeshuffle[player] != 'none':
+        loot_show |= 0x10
+    if world.pottery[player] not in ['none', 'cave']:
+        loot_show |= 0x02
+    if world.dropshuffle[player] != 'none':
+        loot_show |= 0x04
+
+    rom.write_byte(0x1CFF10, loot_show)
 
     # compasses showing dungeon count
     compass_mode = 0x80 if world.compassshuffle[player] not in ['none', 'nearby'] else 0x00
