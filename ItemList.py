@@ -1124,11 +1124,6 @@ def get_pool_core(world, player, progressive, shuffle, difficulty, treasure_hunt
     diff = difficulties[difficulty]
     pool.extend(diff.baseitems)
 
-    if world.compassshuffle[player] == 'wild':
-        pool.extend(['Compass (Escape)'])
-        if world.keyshuffle[player] == 'wild':
-            pool.extend(['Compass (Agahnims Tower)'])
-
     if bombbag:
         pool = [item.replace('Bomb Upgrade (+5)','Rupees (5)') for item in pool]
         pool = [item.replace('Bomb Upgrade (+10)','Rupees (5)') for item in pool]

@@ -13,7 +13,18 @@ def create_dungeons(world, player):
             dungeon.world = world
         return dungeon
 
-    ES = make_dungeon('Hyrule Castle', 1, None, hyrule_castle_regions, None, [ItemFactory('Small Key (Escape)', player)], [ItemFactory('Map (Escape)', player)])
+    hc_dungeon_items = ['Map (Escape)']
+    at_dungeon_items = []
+
+    if world.dropshuffle[player] == 'underworld' or world.pottery[player] in ['dungeon', 'reduced', 'clustered', 'nonempty', 'lottery']:
+        hc_dungeon_items.append('Compass (Escape)')
+        at_dungeon_items.append('Compass (Agahnims Tower)')
+    elif world.compassshuffle[player] == 'wild':
+        hc_dungeon_items.append('Compass (Escape)')
+        if world.keyshuffle[player] == 'wild':
+            at_dungeon_items.append('Compass (Agahnims Tower)')
+
+    ES = make_dungeon('Hyrule Castle', 1, None, hyrule_castle_regions, None, [ItemFactory('Small Key (Escape)', player)], ItemFactory(hc_dungeon_items, player))
     EP = make_dungeon('Eastern Palace', 2, 'Armos Knights', eastern_regions, ItemFactory('Big Key (Eastern Palace)', player), [], ItemFactory(['Map (Eastern Palace)', 'Compass (Eastern Palace)'], player))
     DP = make_dungeon('Desert Palace', 3, 'Lanmolas', desert_regions, ItemFactory('Big Key (Desert Palace)', player), [ItemFactory('Small Key (Desert Palace)', player)], ItemFactory(['Map (Desert Palace)', 'Compass (Desert Palace)'], player))
     ToH = make_dungeon('Tower of Hera', 10, 'Moldorm', hera_regions, ItemFactory('Big Key (Tower of Hera)', player), [ItemFactory('Small Key (Tower of Hera)', player)], ItemFactory(['Map (Tower of Hera)', 'Compass (Tower of Hera)'], player))
@@ -24,7 +35,7 @@ def create_dungeons(world, player):
     IP = make_dungeon('Ice Palace', 9, 'Kholdstare', ice_regions, ItemFactory('Big Key (Ice Palace)', player), ItemFactory(['Small Key (Ice Palace)'] * 2, player), ItemFactory(['Map (Ice Palace)', 'Compass (Ice Palace)'], player))
     MM = make_dungeon('Misery Mire', 7, 'Vitreous', mire_regions, ItemFactory('Big Key (Misery Mire)', player), ItemFactory(['Small Key (Misery Mire)'] * 3, player), ItemFactory(['Map (Misery Mire)', 'Compass (Misery Mire)'], player))
     TR = make_dungeon('Turtle Rock', 12, 'Trinexx', tr_regions, ItemFactory('Big Key (Turtle Rock)', player), ItemFactory(['Small Key (Turtle Rock)'] * 4, player), ItemFactory(['Map (Turtle Rock)', 'Compass (Turtle Rock)'], player))
-    AT = make_dungeon('Agahnims Tower', 4, 'Agahnim', tower_regions, None, ItemFactory(['Small Key (Agahnims Tower)'] * 2, player), [])
+    AT = make_dungeon('Agahnims Tower', 4, 'Agahnim', tower_regions, None, ItemFactory(['Small Key (Agahnims Tower)'] * 2, player), ItemFactory(at_dungeon_items, player))
     GT = make_dungeon('Ganons Tower', 13, 'Agahnim2', gt_regions, ItemFactory('Big Key (Ganons Tower)', player), ItemFactory(['Small Key (Ganons Tower)'] * 4, player), ItemFactory(['Map (Ganons Tower)', 'Compass (Ganons Tower)'], player))
 
     GT.bosses['bottom'] = BossFactory('Armos Knights', player)
