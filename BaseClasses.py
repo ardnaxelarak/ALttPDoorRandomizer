@@ -149,6 +149,7 @@ class World(object):
             set_player_attr('keyshuffle', 'none')
             set_player_attr('bigkeyshuffle', 'none')
             set_player_attr('prizeshuffle', 'none')
+            set_player_attr('showloot', 'never')
             set_player_attr('restrict_boss_items', 'none')
             set_player_attr('bombbag', False)
             set_player_attr('flute_mode', 'normal')
@@ -3126,6 +3127,7 @@ class Spoiler(object):
                          'keyshuffle': self.world.keyshuffle,
                          'bigkeyshuffle': self.world.bigkeyshuffle,
                          'prizeshuffle': self.world.prizeshuffle,
+                         'showloot': self.world.showloot,
                          'boss_shuffle': self.world.boss_shuffle,
                          'enemy_shuffle': self.world.enemy_shuffle,
                          'enemy_health': self.world.enemy_health,
@@ -3390,6 +3392,7 @@ class Spoiler(object):
                     outfile.write('Small Key Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['keyshuffle'][player])
                     outfile.write('Big Key Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['bigkeyshuffle'][player])
                     outfile.write('Prize Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['prizeshuffle'][player])
+                    outfile.write('Show Value of Checks:'.ljust(line_width) + '%s\n' % self.metadata['showloot'][player])
                     outfile.write('Key Logic Algorithm:'.ljust(line_width) + '%s\n' % self.metadata['key_logic'][player])
                     outfile.write('\n')
                     outfile.write('Door Shuffle:'.ljust(line_width) + '%s\n' % self.metadata['door_shuffle'][player])

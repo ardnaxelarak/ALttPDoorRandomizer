@@ -431,6 +431,13 @@
       "wild"
     ]
   },
+  "showloot": {
+    "choices": [
+      "never",
+      "compass",
+      "always"
+    ]
+  },
   "keysanity": {
     "action": "store_true",
     "type": "bool",

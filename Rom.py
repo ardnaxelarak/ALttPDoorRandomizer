@@ -1440,14 +1440,24 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
           or world.dropshuffle[player] != 'none' or world.pottery[player] not in ['none', 'cave']):
         rom.write_byte(0x18003A, 0x01)  # show key counts on map pickup
 
-    loot_show = 0x09
+    loot_source = 0x09
     if world.prizeshuffle[player] != 'none':
-        loot_show |= 0x10
+        loot_source |= 0x10
     if world.pottery[player] not in ['none', 'cave']:
-        loot_show |= 0x02
+        loot_source |= 0x02
     if world.dropshuffle[player] != 'none':
-        loot_show |= 0x04
-    rom.write_byte(0x1CFF10, loot_show)
+        loot_source |= 0x04
+    rom.write_byte(0x1CFF10, loot_source)
+
+    if world.showloot[player] == 'never':
+        rom.write_bytes(0x1CFF08, [0x00, 0x00, 0x00, 0x00])
+        rom.write_byte(0x1CFF11, 0x00)
+    elif world.showloot[player] == 'compass':
+        rom.write_bytes(0x1CFF08, [0x00, 0x00, 0x02, 0x01])
+        rom.write_byte(0x1CFF11, 0x01)
+    elif world.showloot[player] == 'always':
+        rom.write_bytes(0x1CFF08, [0x02, 0x00, 0x00, 0x00])
+        rom.write_byte(0x1CFF11, 0x00)
 
     if world.doorShuffle[player] != 'vanilla':
         rom.write_byte(0x1CFF00, 0x04)

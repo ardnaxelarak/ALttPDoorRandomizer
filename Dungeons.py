@@ -16,13 +16,14 @@ def create_dungeons(world, player):
     hc_dungeon_items = ['Map (Escape)']
     at_dungeon_items = []
 
-    if world.dropshuffle[player] == 'underworld' or world.pottery[player] in ['dungeon', 'reduced', 'clustered', 'nonempty', 'lottery']:
-        hc_dungeon_items.append('Compass (Escape)')
-        at_dungeon_items.append('Compass (Agahnims Tower)')
-    elif world.compassshuffle[player] == 'wild':
-        hc_dungeon_items.append('Compass (Escape)')
-        if world.keyshuffle[player] == 'wild':
+    if world.showloot[player] == 'compass':
+        if world.dropshuffle[player] == 'underworld' or world.pottery[player] in ['dungeon', 'reduced', 'clustered', 'nonempty', 'lottery']:
+            hc_dungeon_items.append('Compass (Escape)')
             at_dungeon_items.append('Compass (Agahnims Tower)')
+        elif world.compassshuffle[player] == 'wild':
+            hc_dungeon_items.append('Compass (Escape)')
+            if world.keyshuffle[player] == 'wild':
+                at_dungeon_items.append('Compass (Agahnims Tower)')
 
     ES = make_dungeon('Hyrule Castle', 1, None, hyrule_castle_regions, None, [ItemFactory('Small Key (Escape)', player)], ItemFactory(hc_dungeon_items, player))
     EP = make_dungeon('Eastern Palace', 2, 'Armos Knights', eastern_regions, ItemFactory('Big Key (Eastern Palace)', player), [], ItemFactory(['Map (Eastern Palace)', 'Compass (Eastern Palace)'], player))
