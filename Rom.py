@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '853a9c63d437833d5812e287544cd0d3'
+RANDOMIZERBASEHASH = 'd07afe36de0db3b74653570ab03a18fe'
 
 
 class JsonRom(object):
@@ -164,11 +164,12 @@ class LocalRom(object):
 
         self.create_json_patch(orig_buffer)
 
-        # verify md5
-        patchedmd5 = hashlib.md5()
-        patchedmd5.update(self.buffer)
-        if RANDOMIZERBASEHASH != patchedmd5.hexdigest():
-            raise RuntimeError('Provided Base Rom unsuitable for patching. Please provide a JAP(1.0) "Zelda no Densetsu - Kamigami no Triforce (Japan).sfc" rom to use as a base.')
+        if not os.getenv("SKIP_BASEROM_CHECK", False):
+            # verify md5
+            patchedmd5 = hashlib.md5()
+            patchedmd5.update(self.buffer)
+            if RANDOMIZERBASEHASH != patchedmd5.hexdigest():
+                raise RuntimeError('Provided Base Rom unsuitable for patching. Please provide a JAP(1.0) "Zelda no Densetsu - Kamigami no Triforce (Japan).sfc" rom to use as a base.')
 
     def create_json_patch(self, orig_buffer):
         # extend to 2MB
@@ -1239,7 +1240,6 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
     rom.write_bytes(0x18016E, [0x04, 0x08, 0x10]) # Set spike cave and MM spike room Cape usage
     rom.write_bytes(0x50563, [0x3F, 0x14]) # disable below ganon chest
     rom.write_byte(0x50599, 0x00) # disable below ganon chest
-    rom.write_bytes(0xE9A5, [0x7E, 0x00, 0x24]) # disable below ganon chest
     if world.is_pyramid_open(player):
         rom.initial_sram.pre_open_pyramid_hole()
     rom.write_byte(0x18008F, 0x01 if world.is_atgt_swapped(player) else 0x00) # AT/GT swapped
