@@ -1780,7 +1780,7 @@ class TextTable(object):
         text['mastersword_pedestal_translated'] = CompressedTextMapper.convert("A test of strength: If you have 3 pendants, I'm yours.")
         text['telepathic_tile_spectacle_rock'] = CompressedTextMapper.convert("{NOBORDER}\n{NOBORDER}\nUse the Mirror, or the Hookshot and Hammer, to get to Tower of Hera!")
         text['telepathic_tile_swamp_entrance'] = CompressedTextMapper.convert("{NOBORDER}\nDrain the floodgate to raise the water here!")
-        text['telepathic_tile_thieves_town_upstairs'] = CompressedTextMapper.convert("{NOBORDER}\nBlind hate's bright light.")
+        text['telepathic_tile_thieves_town_upstairs'] = CompressedTextMapper.convert("{NOBORDER}\nBlind hates bright light.")
         text['telepathic_tile_misery_mire'] = CompressedTextMapper.convert("{NOBORDER}\nLighting 4 torches will open your way forward!")
         text['hylian_text_2'] = CompressedTextMapper.convert("%%^= %==%\n ^ =%^=\n==%= ^^%^")
         text['desert_entry_translated'] = CompressedTextMapper.convert("Kneel before this stone, and magic will move around you.")
