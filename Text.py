@@ -2014,7 +2014,7 @@ class TextTable(object):
         text['thief_desert_rupee_cave'] = CompressedTextMapper.convert("So you, like, busted down my door, and are being a jerk by talking to me? Normally I would be angry and make you pay for it, but I bet you're just going to break all my pots and steal my 50 rupees.")
         text['thief_ice_rupee_cave'] = CompressedTextMapper.convert("I'm a rupee pot farmer. One day I will take over the world with my skillz. Have you met my brother in the desert? He's way richer than I am.")
         text['telepathic_tile_south_east_darkworld_cave'] = CompressedTextMapper.convert("~~ dev cave ~~\n  no farming\n   required")
-        text['cukeman'] = CompressedTextMapper.convert("Did you hear that Veetorp beat ajneb174 in a 1 on 1 race at AGDQ?")
+        text['cukeman'] = CompressedTextMapper.convert("Trans rights!")
         text['cukeman_2'] = CompressedTextMapper.convert("You found Shabadoo, huh?\nNiiiiice.")
         text['potion_shop_no_cash'] = CompressedTextMapper.convert("Yo! I'm not running a charity here.")
         text['kakariko_powdered_chicken'] = CompressedTextMapper.convert("Smallhacker…\n\n\nWas hiding, you found me!\n\n\nOkay, you can leave now.")
