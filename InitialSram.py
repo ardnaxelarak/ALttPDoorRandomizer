@@ -72,7 +72,7 @@ class InitialSram:
         starting_magic = 0
 
         if world.flute_mode[player] == 'pseudo':
-            self._initial_sram_bytes[0x3C2] = 0x00
+            self._initial_sram_bytes[0x3C2] = 0xFF
             equip[0x34C] = 0x03
             equip[0x38C] = 0x01
 
@@ -118,9 +118,6 @@ class InitialSram:
         elif startingstate.has('Magic Upgrade (1/2)', player):
             equip[0x37B] = 1
             starting_magic = 0x80
-
-        if startingstate.has('Ocarina (Activated)', player) or startingstate.has('Ocarina', player):
-            self._initial_sram_bytes[0x3C2] = 0xFF
 
         if world.mode[player] == 'standard' and world.logic[player] not in ['noglitches', 'minorglitches']:
             if startingstate.has('Ocarina (Activated)', player):
