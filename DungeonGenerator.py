@@ -2330,7 +2330,7 @@ def parallel_full_neutralization(dungeon_map, polarized_sectors, global_pole):
             increment_depth = True
         current_depth = last_depth + 1 if increment_depth else last_depth
         finished = all([(x.polarity()+sum_polarity(solution_list[x])).is_neutral() for x in builders])
-    logging.getLogger('').info(f'-Balanced solution found in {time.process_time()-start}')
+    logging.getLogger('').debug(f'-Balanced solution found in {time.process_time()-start}')
     for builder, sectors in solution_list.items():
         for sector in sectors:
             assign_sector(sector, builder, polarized_sectors, global_pole)
