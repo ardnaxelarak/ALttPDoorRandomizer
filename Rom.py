@@ -1453,18 +1453,14 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None):
         rom.write_bytes(0x1CFF08, [0x00, 0x00, 0x00, 0x00])
         rom.write_byte(0x1CFF11, 0x00)
     elif world.showloot[player] == 'compass':
-        rom.write_bytes(0x1CFF08, [0x00, 0x00, 0x02, 0x01])
+        rom.write_bytes(0x1CFF08, [0x01, 0x00, 0x02, 0x00])
         rom.write_byte(0x1CFF11, 0x01)
     elif world.showloot[player] == 'always':
         rom.write_bytes(0x1CFF08, [0x02, 0x00, 0x00, 0x00])
         rom.write_byte(0x1CFF11, 0x00)
 
     if world.doorShuffle[player] != 'vanilla':
-        if world.showloot[player] == 'always':
-            rom.write_byte(0x1CFF00, 0x01)
-        else:
-            rom.write_byte(0x1CFF00, 0x00)
-        rom.write_bytes(0x1CFF01, [0x05, 0x01, 0x04])
+        rom.write_bytes(0x1CFF00, [0x01, 0x05, 0x00, 0x04])
 
     loot_icons = 0x1CF900
     if world.bombbag[player]:
