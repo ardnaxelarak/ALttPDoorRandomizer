@@ -61,29 +61,41 @@ def start():
     if args.gui:
         from Gui import guiMain
         guiMain(args)
-    elif args.count is not None and args.count > 1:
+    else:
+        count = args.count or 1
+        tries = args.tries or 1
         random.seed(None)
         seed = args.seed or random.randint(0, 999999999)
         failures = []
+        attempts = 0
         logger = logging.getLogger('')
-        for _ in range(args.count):
-            try:
-                main(seed=seed, args=args, fish=fish)
-                logger.info('%s %s', fish.translate("cli","cli","finished.run"), _+1)
-            except (FillError, EnemizerError, Exception, RuntimeError) as err:
-                failures.append((err, seed))
-                logger.warning('%s: %s', fish.translate("cli","cli","generation.failed"), err)
-            seed = random.randint(0, 999999999)
-        for fail in failures:
-            logger.info('%s\tseed failed with: %s', fail[1], fail[0])
-        fail_rate = 100 * len(failures) / args.count
-        success_rate = 100 * (args.count - len(failures)) / args.count
-        fail_rate = str(fail_rate).split('.')
-        success_rate = str(success_rate).split('.')
-        logger.info('Generation fail    rate: ' + str(fail_rate[0]   ).rjust(3, " ") + '.' + str(fail_rate[1]   ).ljust(6, '0') + '%')
-        logger.info('Generation success rate: ' + str(success_rate[0]).rjust(3, " ") + '.' + str(success_rate[1]).ljust(6, '0') + '%')
-    else:
-        main(seed=args.seed, args=args, fish=fish)
+        for seednum in range(count):
+            for trynum in range(tries):
+                try:
+                    attempts += 1
+                    main(seed=seed, args=args, fish=fish)
+                    logger.info('%s %s', fish.translate("cli","cli","finished.run"), seednum + 1)
+                    logger.info('')
+                    seed = random.randint(0, 999999999)
+                    break
+                except (FillError, EnemizerError, Exception, RuntimeError) as err:
+                    failures.append((err, seed))
+                    logger.warning('%s: %s', fish.translate("cli","cli","generation.failed"), err)
+                    logger.info('')
+                seed = random.randint(0, 999999999)
+
+        if count > 1 or tries > 1:
+            for fail in failures:
+                logger.info('seed %9s failed with: %s', fail[1], fail[0])
+            if len(failures) > 0:
+                logger.info('')
+            fail_rate = 100 * len(failures) / attempts
+            success_rate = 100 * (attempts - len(failures)) / attempts
+            logger.info('Generation failure rate: %6.2f%%', fail_rate)
+            logger.info('Generation success rate: %6.2f%%', success_rate)
+
+        if len(failures) == attempts:
+            sys.exit(1)
 
 
 if __name__ == '__main__':

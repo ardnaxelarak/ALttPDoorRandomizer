@@ -88,6 +88,7 @@ def parse_cli(argv, no_defaults=False):
 
     parser.add_argument('--seed', default=defval(int(settings["seed"]) if settings["seed"] != "" and settings["seed"] is not None else None), help="\n".join(fish.translate("cli", "help", "seed")), type=int)
     parser.add_argument('--count', default=defval(int(settings["count"]) if settings["count"] != "" and settings["count"] is not None else 1), help="\n".join(fish.translate("cli", "help", "count")), type=int)
+    parser.add_argument('--tries', default=defval(int(settings["tries"]) if settings["tries"] != "" and settings["tries"] is not None else 1), help="\n".join(fish.translate("cli", "help", "tries")), type=int)
     parser.add_argument('--customitemarray', default={}, help=argparse.SUPPRESS)
 
     # included for backwards compatibility
@@ -294,6 +295,7 @@ def parse_settings():
 
         "seed": "",
         "count": 1,
+        "tries": 1,
         "startinventory": "",
         'beemizer': '0',
         "remote_items": False,

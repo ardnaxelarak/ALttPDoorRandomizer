@@ -44,7 +44,7 @@ from source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'deecff935f83b9050e7b9ef86231d607'
+RANDOMIZERBASEHASH = '1fb7cd3e386f1c48d4abc7cf12990197'
 
 
 class JsonRom(object):
@@ -3162,7 +3162,7 @@ ConnectorEntrances = {'Elder House (East)': 'Elder House',
                       'Hookshot Cave': 'The rock on dark DM',
                       'Two Brothers House (West)': 'The door near the race game',
                       'Old Man Cave (East)': 'The SW-most cave on west DM',
-                      'Old Man House (Bottom)': 'A cave with a door on west DM',
+                      'Old Man House (Bottom)': 'A cave with a doorframe on west DM',
                       'Old Man House (Top)': 'The eastmost cave on west DM',
                       'Death Mountain Return Cave (East)': 'The westmost cave on west DM',
                       'Spectacle Rock Cave Peak': 'The highest cave on west DM',

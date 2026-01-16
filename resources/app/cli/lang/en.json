@@ -352,6 +352,11 @@
       "--seed given will produce the same %(default)s (different) rom(s) each",
       "time)."
     ],
+    "tries": [
+      "Use to attempt multiple times to succeed at generating a seed.",
+      "If --seed is provided, it will be used for the first seed, then",
+      "used to derive the next seed, until one succeeds."
+    ],
     "fastmenu": [
       "Select the rate at which the menu opens and closes. (default: %(default)s)"
     ],
