@@ -434,7 +434,15 @@
   "showloot": {
     "choices": [
       "never",
+      "presence",
       "compass",
+      "always"
+    ]
+  },
+  "showmap": {
+    "choices": [
+      "visited",
+      "map",
       "always"
     ]
   },
