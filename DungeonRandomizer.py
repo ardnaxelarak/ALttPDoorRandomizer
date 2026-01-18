@@ -80,7 +80,7 @@ def start():
                     break
                 except (FillError, EnemizerError, Exception, RuntimeError) as err:
                     failures.append((err, seed))
-                    logger.warning('%s: %s', fish.translate("cli","cli","generation.failed"), err)
+                    logger.warning('Attempt %d - %s: %s', trynum, fish.translate("cli","cli","generation.failed"), err)
                     logger.info('')
                 seed = random.randint(0, 999999999)
 
