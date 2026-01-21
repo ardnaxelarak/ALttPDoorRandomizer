@@ -80,7 +80,7 @@ def random_ganon_item(sword_mode):
 
 def main(args, seed=None, fish=None):
     check_python_version()
-    
+
     if args.print_template_yaml:
         return export_yaml(args, fish)
 
@@ -124,14 +124,14 @@ def main(args, seed=None, fish=None):
 
     from OverworldShuffle import __version__ as ORVersion
     logger.info(
-      world.fish.translate("cli","cli","app.title") + "\n",
-      ORVersion,
-      "%s (%s)" % (world.seed, str(args.outputname)) if str(args.outputname).startswith('M') else world.seed,
-      Settings.make_code(world, 1) if world.players == 1 else ''
+        world.fish.translate("cli","cli","app.title") + "\n",
+        ORVersion,
+        "%s (%s)" % (world.seed, str(args.outputname)) if str(args.outputname).startswith('M') else world.seed,
+        Settings.make_code(world, 1) if world.players == 1 else ''
     )
 
     for k,v in {"DR":__version__,"OR":ORVersion}.items():
-      logger.info((k + ' Version:').ljust(16) + '%s' % v)
+        logger.info((k + ' Version:').ljust(16) + '%s' % v)
 
     parsed_names = parse_player_names(args.names, world.players, args.teams)
     world.teams = len(parsed_names)
@@ -478,6 +478,8 @@ def init_world(args, fish):
     world.crystals_ganon_orig = args.crystals_ganon.copy()
     world.crystals_gt_orig = args.crystals_gt.copy()
     world.ganon_item_orig = args.ganon_item.copy()
+    world.bosses_ganon = {player: int(args.bosses_ganon[player]) for player in range(1, world.players + 1)}
+    world.bosshunt_include_agas = args.bosshunt_include_agas.copy()
     world.owTerrain = args.ow_terrain.copy()
     world.owKeepSimilar = args.ow_keepsimilar.copy()
     world.owWhirlpoolShuffle = args.ow_whirlpool.copy()
@@ -525,7 +527,7 @@ def init_world(args, fish):
     world.money_balance = args.money_balance.copy()
 
     # custom settings - these haven't been promoted to full settings yet
-    in_progress_settings = ['force_enemy', 'free_lamp_cone']
+    in_progress_settings = ['force_enemy']
     for player in range(1, world.players + 1):
         for setting in in_progress_settings:
             if world.customizer and world.customizer.has_setting(player, setting):
@@ -795,6 +797,8 @@ def copy_world(world):
     ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
+    ret.bosses_ganon = world.bosses_ganon.copy()
+    ret.bosshunt_include_agas = world.bosshunt_include_agas.copy()
     ret.ganon_item = world.ganon_item.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()
@@ -1024,6 +1028,8 @@ def copy_world_premature(world, player, create_flute_exits=True):
     ret.free_lamp_cone = world.free_lamp_cone.copy()
     ret.crystals_needed_for_ganon = world.crystals_needed_for_ganon.copy()
     ret.crystals_needed_for_gt = world.crystals_needed_for_gt.copy()
+    ret.bosses_ganon = world.bosses_ganon.copy()
+    ret.bosshunt_include_agas = world.bosshunt_include_agas.copy()
     ret.ganon_item = world.ganon_item.copy()
     ret.crystals_ganon_orig = world.crystals_ganon_orig.copy()
     ret.crystals_gt_orig = world.crystals_gt_orig.copy()

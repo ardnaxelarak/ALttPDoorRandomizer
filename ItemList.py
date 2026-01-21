@@ -218,12 +218,14 @@ def get_custom_array_key(item):
 
 def generate_itempool(world, player):
     if (world.difficulty[player] not in ['normal', 'hard', 'expert']
-       or world.goal[player] not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'trinity', 'crystals',
-                                     'ganonhunt', 'completionist', 'sanctuary']
+       or world.goal[player] not in ['ganon', 'pedestal', 'dungeons',
+                                     'triforcehunt', 'trinity', 'crystals',
+                                     'ganonhunt', 'completionist', 'sanctuary',
+                                     'bosshunt']
        or world.mode[player] not in ['open', 'standard', 'inverted']
        or world.timer not in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown']
        or world.progressive not in ['on', 'off', 'random']):
-        raise NotImplementedError('Not supported yet')
+            raise NotImplementedError('Not supported yet')
 
     if world.timer in ['ohko', 'timed-ohko']:
         world.can_take_damage[player] = False

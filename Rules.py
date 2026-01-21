@@ -80,6 +80,15 @@ def set_rules(world, player):
                 add_rule(world.get_location('Ganon', player), lambda state: state.has_crystals(world.crystals_needed_for_ganon[player], player))
         elif world.goal[player] == 'ganonhunt':
             add_rule(world.get_location('Ganon', player), lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
+        elif world.goal[player] == 'bosshunt':
+            if world.bosshunt_include_agas[player]:
+                add_rule(world.get_location('Ganon', player), lambda state: 
+                         state.item_count('Beat Agahnim 1', player) +
+                         state.item_count('Beat Agahnim 2', player) +
+                         state.item_count('Beat Boss', player) >= world.bosses_ganon[player])
+            else:
+                add_rule(world.get_location('Ganon', player), lambda state: 
+                         state.item_count('Beat Boss', player) >= world.bosses_ganon[player])
         elif world.goal[player] == 'completionist':
             add_rule(world.get_location('Ganon', player), lambda state: state.everything(player))
 

@@ -74,6 +74,8 @@ class World(object):
         self.dark_rooms = {}
         self.damage_challenge = {}
         self.shuffle_damage_table = {}
+        self.bosses_ganon = {}
+        self.bosshunt_include_agas = {}
         self.ganon_item = {}
         self.ganon_item_orig = {}
         self.custom = custom
@@ -168,6 +170,8 @@ class World(object):
             set_player_attr('escape_assist', [])
             set_player_attr('crystals_needed_for_ganon', 7)
             set_player_attr('crystals_needed_for_gt', 7)
+            set_player_attr('bosses_ganon', 8)
+            set_player_attr('bosshunt_include_agas', False)
             set_player_attr('ganon_item', 'silver')
             set_player_attr('crystals_ganon_orig', {})
             set_player_attr('crystals_gt_orig', {})
@@ -356,7 +360,7 @@ class World(object):
         else:
             if self.shuffle[player] not in ['vanilla', 'dungeonssimple', 'dungeonsfull', 'district']:
                 return False
-            elif self.goal[player] in ['crystals', 'trinity', 'ganonhunt']:
+            elif self.goal[player] in ['crystals', 'trinity', 'ganonhunt', 'bosshunt']:
                 return True
             else:
                 return False
@@ -3118,6 +3122,8 @@ class Spoiler(object):
                          'beemizer': self.world.beemizer,
                          'gt_crystals': self.world.crystals_needed_for_gt,
                          'ganon_crystals': self.world.crystals_needed_for_ganon,
+                         'ganon_bosses': self.world.bosses_ganon,
+                         'bosshunt_include_agas': self.world.bosshunt_include_agas,
                          'ganon_item': self.world.ganon_item,
                          'open_pyramid': self.world.open_pyramid,
                          'accessibility': self.world.accessibility,
@@ -3340,6 +3346,10 @@ class Spoiler(object):
                     if custom['ganongoal'] and 'requirements' in custom['ganongoal']:
                         outfile.write('Ganon Requirement:'.ljust(line_width) + 'custom\n')
                         outfile.write('    %s\n' % custom['ganongoal']['goaltext'])
+                    elif self.metadata['goal'][player] == 'bosshunt':
+                        outfile.write('Ganon Requirement:'.ljust(line_width) + '%s bosses%s\n' %
+                              (str(self.world.bosses_ganon[player]),
+                               ' (including both Agahnims)' if self.world.bosshunt_include_agas[player] else ''))
                     else:
                         outfile.write('Ganon Requirement:'.ljust(line_width) + '%s crystals\n' % str(self.world.crystals_ganon_orig[player]))
                     if custom['pedgoal'] and 'requirements' in custom['pedgoal']:
@@ -3749,8 +3759,9 @@ world_mode = {"open": 0, "standard": 1, "inverted": 2}
 sword_mode = {"random": 0, "assured": 1, "swordless": 2, "vanilla": 3}
 
 # byte 2: GGGD DFFH (goal, diff, item_func, hints)
-goal_mode = {'ganon': 0, 'pedestal': 1, 'dungeons': 2, 'triforcehunt': 3, 'crystals': 4, 'trinity': 5,
-             'ganonhunt': 6, 'completionist': 7, 'sanctuary': 1}
+goal_mode = {'ganon': 0, 'pedestal': 1, 'dungeons': 2, 'triforcehunt': 3,
+             'crystals': 4, 'trinity': 5, 'ganonhunt': 6, 'completionist': 7,
+             'sanctuary': 1, 'bosshunt': 6}
 diff_mode = {"normal": 0, "hard": 1, "expert": 2}
 func_mode = {"normal": 0, "hard": 1, "expert": 2}
 
