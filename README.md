@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> ***This version of the repo hosted on GitHub is now deprecated; please see the current repo [here](https://git.gwaa.kiwi/alttpr-gwaa-kiwi/alttpr-python).***
+
 # Overworld Randomizer
 
 This is a overworld randomizer for _The Legend of Zelda: A Link to the Past_ for the SNES
