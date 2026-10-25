@@ -1570,7 +1570,11 @@ def assign_cross_keys(dungeon_builders, world, player):
             if actual_chest_keys == 0:
                 dungeon.small_keys = []
             else:
-                dungeon.small_keys = [ItemFactory(dungeon_keys[name], player)] * actual_chest_keys
+                extra_keys = ceil(actual_chest_keys * world.extra_keys[player] / 100)
+                logger.debug(f'Adding {extra_keys} extra small keys to {name}')
+                dungeon.extra_small_keys = extra_keys
+                created_keys = actual_chest_keys + extra_keys
+                dungeon.small_keys = [ItemFactory(dungeon_keys[name], player)] * created_keys
     logger.info(f'{world.fish.translate("cli", "cli", "keydoor.shuffle.time.crossed")}: {time.process_time()-start}')
 
 
@@ -2143,7 +2147,10 @@ def shuffle_small_key_doors(door_type_pools, used_doors, start_regions_map, all_
                     if actual_chest_keys == 0:
                         dungeon.small_keys = []
                     else:
-                        dungeon.small_keys = [ItemFactory(dungeon_keys[dungeon_name], player) for _ in range(actual_chest_keys)]
+                        extra_keys = ceil(actual_chest_keys * world.extra_keys[player] / 100)
+                        dungeon.extra_small_keys = extra_keys
+                        created_keys = actual_chest_keys + extra_keys
+                        dungeon.small_keys = [ItemFactory(dungeon_keys[dungeon_name], player) for _ in range(created_keys)]
 
         for name, small_list in small_map.items():
             used_doors.update(flatten_pair_list(small_list))

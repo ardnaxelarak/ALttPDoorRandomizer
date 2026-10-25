@@ -233,32 +233,37 @@ Ganon_Phase_3_No_Silvers_texts = [
     "Did you find\nthe arrows?\nI think not.",
     "Silver arrows?\nI have never\nheard of them",
     "Did you find\nthe arrows on\nThe Moon?",
-    "Did you find\nthe arrows\nIn dev null?",
+    "Did you find\nthe arrows\nIn /dev/null?",
     "I have sold\nthe arrows for\na green big 20",
     "Did you find\nThe arrows in\nCount Dracula?",
     "Error 404\nSilver arrows\nnot found.",
     "No arrows for\nYou today,\nSorry",
     "No arrows?\nCheck your\njunk mail."
-    "Careful, all\nthat spinning\nmakes me dizzy",
     "Did you find\nthe arrows in\nJabu's belly?",
     "Silver is not\nan appropriate\narrow material",
     "Did you find\nthe arrows in\nNarnia?",
-    "Are you ready\nTo spin\nTo win?",
     "DID YOU FIND\nTHE ARROWS IN\nKEFKA'S TOWER",
     "Did you find\nthe arrows in\nRecycle Bin?",
     "Silver Arrows?\n\nLUL",
     "Imagine\nfinding the\narrows",
     "Did you find\nsilvers in\nscenic Ohio?",
     "Did you find\nThe arrows in\n*mumblemumble*",
-    "\nSpin To Win!\n",
     "did you find\nthe arrows in\nthe hourglass?",
-    "Silver Arrows\nare so v30",
-    "OH, NO, THEY\nACTUALLY SAID\nSILVER MARROW",
-    "SURELY THE\nLEFTMOST TILES\nWILL STAY UP",
+    "Silver Arrows\nare so main branch.",
     "Did you find\nthe arrows in\nWorld 4-2?",
-    "You Spin Me\nRight Round\nLike A Record",
-    "SILLY HERO,\nSILVER IS FOR\nWEREWOLVES!",
     "Did you find\nthe silvers in\nganti's ears",
+]
+
+Ganon_Phase_3_No_Weakness_texts = [
+    "\n    Error 404\nWeakness Not Found",
+    "No weakness\nfor you today.\nSorry.",
+    "Careful, all\nthat spinning\nmakes me dizzy.",
+    "Are you ready\nto spin\nto win?",
+    "\n   Spin To Win!\n",
+    "Surely the\nleftmost tiles\nwill stay up!",
+    "You spin me\nright round\nlike a record.",
+    "Oh, no, they\nactually said\nsilver •marrow•.",
+    "Silly hero,\nsilver is for\nwerewolves!",
 ]
 
 TavernMan_texts = [
@@ -482,7 +487,7 @@ class Credits(object):
             ],
             'pedestal': [
                 SceneSmallCreditLine(19, 'and the master sword'),
-                SceneSmallAltCreditLine(21, 'sleeps again···'),
+                SceneSmallAltCreditLine(21, 'sleeps again…'),
                 SceneLargeCreditLine(23, 'Forever!'),
             ],
         }
@@ -673,20 +678,19 @@ class MultiByteCoreTextMapper(object):
                     outbuf.extend(cls.special_commands[start_command])
                     word = word.replace(start_command, '')
 
-                match = re.search(r'(\{[A-Z0-9_:]+\})\.?$', word)
+                match = re.search(r'(\{[A-Z0-9_:]+\})$', word)
                 if match:
                     end_command = match.group(1)
                     word = word.replace(end_command, '')
-                    period = word.endswith('.')
                 else:
-                    end_command, period = None, False
+                    end_command = None
 
                 # sanity check: if the word we have is more than 19 characters,
                 # we take as much as we can still fit and push the rest back for later
                 if cls.wordlen(word) > wrap:
                     (word_first, word_rest) = cls.splitword(word, linespace)
                     if end_command:
-                        word_rest = (word_rest[:-1] + end_command + '.') if period else (word_rest + end_command)
+                        word_rest = word_rest + end_command
                     words.insert(0, word_rest)
                     lines.insert(0, ' '.join(words))
 
@@ -699,12 +703,9 @@ class MultiByteCoreTextMapper(object):
                     if cls.wordlen(word) < linespace:
                         pending_space = True
                     linespace -= cls.wordlen(word) + 1 if pending_space else 0
-                    word_to_map = word[:-1] if period else word
-                    outbuf.extend(RawMBTextMapper.convert(word_to_map))
+                    outbuf.extend(RawMBTextMapper.convert(word))
                     if end_command:
                         outbuf.extend(cls.special_commands[end_command])
-                        if period:
-                            outbuf.extend(RawMBTextMapper.convert('.'))
                 else:
                     # ran out of space, push word and lines back and continue with next line
                     if end_command:
@@ -830,6 +831,8 @@ class CharTextMapper(object):
 
 class RawMBTextMapper(CharTextMapper):
     char_map = {' ': 0xFF,
+                '/': 0x97,
+                '•': 0x98,
                 '≥': 0x99, # Cursor
                 '『': 0xC4,
                 '』': 0xC5,
@@ -1314,7 +1317,8 @@ class GoldCreditMapper(CharTextMapper):
 
 class GreenCreditMapper(CharTextMapper):
     char_map = {' ': 0x9F,
-                '.': 0x52,
+                '…': 0xFD,
+                '.': 0xFE,
                 '·': 0x52}
     alpha_offset = -0x29
     alpha_lower_offset = -0x29
@@ -1832,7 +1836,7 @@ class TextTable(object):
         text['blacksmiths_tempered_already'] = CompressedTextMapper.convert("Whelp… We can't make this any better.")
         text['blacksmiths_temper_no'] = CompressedTextMapper.convert("Oh, come by any time!")
         text['blacksmiths_bogart_sword'] = CompressedTextMapper.convert("We're going to have to take it to work on it.")
-        text['blacksmiths_get_sword'] = CompressedTextMapper.convert("Sword is donw. Now, back to our bread!")
+        text['blacksmiths_get_sword'] = CompressedTextMapper.convert("Sword is done. Now, back to our bread!")
         text['blacksmiths_shop_before_saving'] = CompressedTextMapper.convert("I lost my friend. Help me find him!")
         text['blacksmiths_shop_saving'] = CompressedTextMapper.convert("You found him! Colour me happy! Come back right away and we will bang on your sword.")
         text['blacksmiths_collect_frog'] = CompressedTextMapper.convert("Ribbit! Ribbit! Let's find my partner. To the shop!")
