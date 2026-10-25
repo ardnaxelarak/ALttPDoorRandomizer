@@ -709,7 +709,7 @@ class MultiByteCoreTextMapper(object):
                 else:
                     # ran out of space, push word and lines back and continue with next line
                     if end_command:
-                        word = (word[:-1] + end_command + '.') if period else (word + end_command)
+                        word = word + end_command
                     words.insert(0, word)
                     lines.insert(0, ' '.join(words))
                     break
@@ -1898,13 +1898,18 @@ class TextTable(object):
         text['magic_bat_give_half_magic'] = CompressedTextMapper.convert("How you like me now?")
         # 110
         text['intro_main'] = CompressedTextMapper.convert(
-            "{INTRO}\n Episode  III\n{PAUSE3}\n A Link to\n   the Past\n"
-            + "{PAUSE3}\n  Randomizer\n{PAUSE3}\nAfter mostly disregarding what happened in the first two games.\n"
-            + "{PAUSE3}\nLink awakens to his uncle leaving the house.\n{PAUSE3}\nHe just runs out the door,\n"
-            + "{PAUSE3}\ninto the rainy night.\n{PAUSE3}\n{CHANGEPIC}\nGanon has moved around all the items in Hyrule.\n"
-            + "{PAUSE7}\nYou will have to find all the items necessary to beat Ganon.\n"
-            + "{PAUSE7}\nThis is your chance to be a hero.\n{PAUSE3}\n{CHANGEPIC}\n"
-            + "You must get the 7 crystals to beat Ganon.\n{PAUSE9}\n{CHANGEPIC}", False)
+            "{INTRO}\n    Episode III"
+            + "{PAUSE3}\n A Link to the Past"
+            + "{PAUSE3}\n     Randomizer"
+            + "{PAUSE3}\n\n\n"
+            + "{PAUSE3}\nAfter mostly disregarding what happened in the first two games,"
+            + "{PAUSE3}\nLink awakens to his uncle leaving the house."
+            + "{PAUSE3}\nHe just runs out the door, into the rainy night."
+            + "{PAUSE3} {CHANGEPIC}\nGanon has moved around all the items in Hyrule."
+            + "{PAUSE7}\nYou will have to find all the items necessary to beat Ganon."
+            + "{PAUSE7}\nThis is your chance to be a hero."
+            + "{PAUSE3} {CHANGEPIC}\nYou must get the 7 crystals to beat Ganon."
+            + "{PAUSE9} {CHANGEPIC}", False)
         text['intro_throne_room'] = CompressedTextMapper.convert("{IBOX}\nLook at this Stalfos on the throne.", False)
         text['intro_zelda_cell'] = CompressedTextMapper.convert("{IBOX}\nIt is your time to shine!", False)
         text['intro_agahnim'] = CompressedTextMapper.convert("{IBOX}\nAlso, you need to defeat this guy!", False)
