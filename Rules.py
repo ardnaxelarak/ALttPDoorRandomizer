@@ -90,10 +90,10 @@ def set_rules(world, player):
                 add_rule(world.get_location('Ganon', player), lambda state: 
                          state.item_count('Beat Agahnim 1', player) +
                          state.item_count('Beat Agahnim 2', player) +
-                         state.item_count('Beat Boss', player) >= world.bosses_ganon[player])
+                         state.item_count('Beat Boss', player) >= int(world.bosses_ganon[player]))
             else:
                 add_rule(world.get_location('Ganon', player), lambda state: 
-                         state.item_count('Beat Boss', player) >= world.bosses_ganon[player])
+                         state.item_count('Beat Boss', player) >= int(world.bosses_ganon[player]))
         elif world.goal[player] == 'completionist':
             add_rule(world.get_location('Ganon', player), Primitive('everything', player))
 
@@ -477,7 +477,7 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Skull Woods Rock (West)', player), Primitive('can_lift_rocks', player))
     set_rule(world.get_entrance('Skull Woods Rock (East)', player), Primitive('can_lift_rocks', player))
     # this more like an ohko rule - dependent on bird being present too - so enemizer could turn this off?
-    set_rule(world.get_entrance('Bumper Cave Ledge Drop', player), or_rule(lambda state: Has('Cape', player), Has('Cane of Byrna', player), Primitive('has_sword', player)))
+    set_rule(world.get_entrance('Bumper Cave Ledge Drop', player), or_rule(Has('Cape', player), Has('Cane of Byrna', player), Primitive('has_sword', player)))
     set_rule(world.get_entrance('Bumper Cave Rock (Outer)', player), Primitive('can_lift_rocks', player))
     set_rule(world.get_entrance('Bumper Cave Rock (Inner)', player), Primitive('can_lift_rocks', player))
     set_rule(world.get_entrance('Skull Woods Pass Rock (North)', player), Primitive('can_lift_heavy_rocks', player))
@@ -995,14 +995,7 @@ def global_rules(world, player):
         add_mc_rule('Agahnim 2')
 
     set_rule(
-        world.get_location('Ganon', player),
-        lambda state: state.has_beam_sword(player)
-            and state.has_fire_source(player)
-            and (state.can_hit_stunned_ganon(player) or (
-                not world.require_ganon_item[player] and (
-                    state.has('Tempered Sword', player) or state.has('Golden Sword', player)
-                    or state.has('Lamp', player)
-                    or state.can_extend_magic(player, 12)))))  # need to light torch a sufficient amount of times
+        world.get_location('Ganon', player), and_rule(Primitive('has_beam_sword', player), Primitive('has_fire_source', player), Primitive('can_hit_stunned_ganon', player)))
 
     set_rule(world.get_entrance('Ganon Drop', player), Primitive('has_beam_sword', player))  # need to damage ganon to get tiles to drop
 

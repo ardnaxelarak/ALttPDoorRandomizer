@@ -1414,7 +1414,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
             write_int16(rom, snes_to_pc(gfx_addr[0]), gfx[0])
             rom.write_byte(snes_to_pc(gfx_addr[1]), gfx[1])
 
-   ganon_item_byte = {
+    ganon_item_byte = {
         "silver": 0x00,
         "boomerang": 0x02,
         "hookshot": 0x03,
