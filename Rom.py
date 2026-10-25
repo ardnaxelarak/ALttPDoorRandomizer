@@ -945,7 +945,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
             rom.write_byte(cr_pc+0x1e, 0xEE)  # slash
             rom.write_byte(cr_pc+0x1f, thousands_bot)
             # modify stat config
-            stat_address = 0x239D14
+            stat_address = 0x239D38
             stat_pc = snes_to_pc(stat_address)
             rom.write_byte(stat_pc, 0xa9)  # change to pos 21 (from b1)
             rom.write_byte(stat_pc+2, 0xc0)  # change to 12 bits (from a0)
@@ -1142,6 +1142,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
         write_int16s(rom, snes_to_pc(0x22C06E), [0x01]*3) # pendants
         write_int16s(rom, snes_to_pc(0x22C160), [0x81]*7) # crystals
     if world.bombbag[player]:
+        rom.write_byte(snes_to_pc(0x22C6A4), 0xE0) # use new bomb bag gfx
         rom.write_byte(snes_to_pc(0x22C8A4), 0xE0) # use new bomb bag gfx
         rom.write_byte(snes_to_pc(0x22BD52), 0x02)
 
@@ -1654,14 +1655,15 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
     rom.write_byte(0x180358, 0x01 if glitches_enabled else 0x00)
     rom.write_byte(0x18008B, 0x01 if glitches_enabled else 0x00)
 
-    # remove shield from uncle
-    rom.write_bytes(0x6D253, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
-    rom.write_bytes(0x6D25B, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
-    rom.write_bytes(0x6D283, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
-    rom.write_bytes(0x6D28B, [0x00, 0x00, 0xf7, 0xff, 0x00, 0x0E])
-    rom.write_bytes(0x6D2CB, [0x00, 0x00, 0xf6, 0xff, 0x02, 0x0E])
-    rom.write_bytes(0x6D2FB, [0x00, 0x00, 0xf7, 0xff, 0x02, 0x0E])
-    rom.write_bytes(0x6D313, [0x00, 0x00, 0xe4, 0xff, 0x08, 0x0E])
+    if uncle_location.item is None or uncle_location.item.name not in ['Blue Shield', 'Red Shield', 'Mirror Shield', 'Progressive Shield', 'Sword and Shield']:
+        # remove shield from uncle
+        rom.write_bytes(0x6D253, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
+        rom.write_bytes(0x6D25B, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
+        rom.write_bytes(0x6D283, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
+        rom.write_bytes(0x6D28B, [0x00, 0x00, 0xf7, 0xff, 0x00, 0x0E])
+        rom.write_bytes(0x6D2CB, [0x00, 0x00, 0xf6, 0xff, 0x02, 0x0E])
+        rom.write_bytes(0x6D2FB, [0x00, 0x00, 0xf7, 0xff, 0x02, 0x0E])
+        rom.write_bytes(0x6D313, [0x00, 0x00, 0xe4, 0xff, 0x08, 0x0E])
 
     rom.write_byte(0x18004E, 0)  # Escape Fill (nothing)
     write_int16(rom, 0x180183, 300)  # Escape fill rupee bow

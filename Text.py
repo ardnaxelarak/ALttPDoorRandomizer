@@ -1871,7 +1871,7 @@ class TextTable(object):
         text['dark_sanctuary_no'] = CompressedTextMapper.convert("Then go away!")
         text['dark_sanctuary_hint_1'] = CompressedTextMapper.convert("There is a thief in the desert, he can open creepy chests that follow you. But now that we have that out of the way, Do you like my hair? I've spent eons getting it this way.")
         # 100
-        text['dark_sanctuary_yes'] = CompressedTextMapper.convert("With Crystals 5&6, you can find a great fairy in the pyramid.\n\nFlomp Flomp, Whizzle Whomp")
+        text['dark_sanctuary_yes'] = CompressedTextMapper.convert("With crystals 5 and 6, you can find a great fairy in the pyramid.\n\nFlomp Flomp, Whizzle Whomp")
         text['dark_sanctuary_hint_2'] = CompressedTextMapper.convert(
             "All I can say is that my life is pretty plain,\n"
             + "I like watchin' the puddles gather rain,\n"
@@ -2064,5 +2064,6 @@ class TextTable(object):
         # 1A0
         text['limited_run_message_8'] = CompressedTextMapper.convert("{NOTEXT}", False)
         text['limited_run_message_9'] = CompressedTextMapper.convert("{NOTEXT}", False)
+        text['orange_potion_refill'] = CompressedTextMapper.convert("This rare orange potion will give you infinite magic, but only until you die or quit the game.")
         text['end_pad_data'] = bytearray([0xfb])
         text['terminator'] = bytearray([0xFF, 0xFF])

@@ -306,7 +306,7 @@ UwGeneralDeny:
   - [0x00b0, 7, [ "StalfosKnight", "Blob", "Stal", "Wizzrobe"]] # blocked, but Geldmen are probably okay
   - [0x00b0, 8, [ "StalfosKnight", "Blob", "Stal", "Wizzrobe"]] # blocked, but Geldmen are probably okay
   - [ 0x00b1, 2, [ "RollerVerticalUp", "RollerVerticalDown" ] ]  #"Misery Mire - Hourglass - Spike Trap 1"
-  - [ 0x00b1, 3, [ "RollerVerticalUp", "RollerVerticalDown" ] ]  #"Misery Mire - Hourglass - Spike Trap 2"
+  - [ 0x00b1, 3, [ "RollerVerticalUp", "RollerVerticalDown", "Bumper" ] ]  #"Misery Mire - Hourglass - Spike Trap 2"
   - [0x00b1, 4, ["Bumper", "BigSpike", "AntiFairyCircle", "Statue"]]  # Wizzrobe near door
   - [ 0x00b2, 1, [ "Wizzrobe", "Statue" ] ]  # Wizzrobes can't spawn on pots
   - [ 0x00b2, 3, [ "Wizzrobe", "Statue" ] ]  # Wizzrobes can't spawn on pots
