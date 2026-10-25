@@ -47,7 +47,7 @@ from .source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '3bd07e285c88cd847d2a4078069e5a2d'
+RANDOMIZERBASEHASH = '0717c290db26edc9d12ec19073d5dcc2'
 
 limited_run_hashes = {
     '2604' : 'f6db6681f0e28e8463c2cc9ac3a07f07',
