@@ -823,7 +823,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
             else:
                 rom.write_byte(0x13f020+offset, layout.max_chests + layout.max_drops + dungeon.extra_small_keys)  # not currently used
                 rom.write_byte(0x187010+offset, layout.max_chests + dungeon.extra_small_keys)
-                rom.write_byte(0x177000+offset, dungeon.extra_small_keys)
+                rom.write_byte(0x187000+offset, dungeon.extra_small_keys)
             builder = world.dungeon_layouts[player][name]
             bk_status = 1 if builder.bk_required else 0
             bk_status = 2 if builder.bk_provided else bk_status
