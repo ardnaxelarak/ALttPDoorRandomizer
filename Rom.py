@@ -446,24 +446,54 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
 
     # patch items
     pot_mw_index = 0
+    pot_table = {}
+    MAX_PLAYER_ID = 254
+    UNKNOWN_PLAYER_ID = 255
+
+    def get_pot_table_index(item_code, mw_player):
+        nonlocal pot_mw_index
+        if mw_player > MAX_PLAYER_ID:
+            mw_player = UNKNOWN_PLAYER_ID
+
+        if mw_player not in pot_table:
+            pot_table[mw_player] = {}
+
+        if item_code in pot_table[mw_player]:
+            return pot_table[mw_player][item_code]
+
+        if pot_mw_index < 0x100:
+            pot_table[mw_player][item_code] = pot_mw_index
+            rom.write_byte(0x142800 + pot_mw_index * 2, item_code)
+            rom.write_byte(0x142800 + pot_mw_index * 2 + 1, mw_player)
+            item_index = pot_mw_index
+            pot_mw_index += 1
+            return item_index
+
+        if item_code in pot_table[UNKNOWN_PLAYER_ID]:
+            return pot_table[UNKNOWN_PLAYER_ID][item_code]
+
+        return 0
+
+    # prefill these for use if/when we run out of space in the pot lookup table
+    get_pot_table_index(0x69, UNKNOWN_PLAYER_ID)  # filler AP item
+    get_pot_table_index(0x68, UNKNOWN_PLAYER_ID)  # useful AP item
+    get_pot_table_index(0x67, UNKNOWN_PLAYER_ID)  # progression AP item
+
     for location in world.get_locations():
         if location.player != player:
             continue
         itemid = location.item.code if location.item is not None else 0x5A
         if location.type == LocationType.Pot:
-            if location.item.name in valid_pot_items and location.item.player == player:
+            if location.item.name in valid_pot_items and location.item.mw_player == 0:
                 location.pot.item = valid_pot_items[location.item.name]
             else:
                 code = itemid
                 if world.pottery[player] == 'none' or location.locked:
                     code = handle_native_dungeon(location, itemid)
                 standing_item_flag = 0x80
-                if location.item.player != player:
+                if location.item.mw_player != 0:
                     standing_item_flag |= 0x40
-                    rom.write_byte(0x142800 + pot_mw_index * 2, code)
-                    rom.write_byte(0x142800 + pot_mw_index * 2 + 1, location.item.player)
-                    code = pot_mw_index
-                    pot_mw_index += 1
+                    code = get_pot_table_index(itemid, location.item.mw_player)
                 location.pot.indicator = standing_item_flag
                 location.pot.standing_item_code = code
             continue
@@ -472,10 +502,12 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
         elif location.type == LocationType.Bonk:
             address = snes_to_pc(location.address)
             rom.write_byte(address, itemid)
-            if location.item.player != player:
-                rom.write_byte(address+1, location.item.player)
-            else:
+            if location.item.mw_player == 0:
                 rom.write_byte(address+1, 0)
+            elif location.item.mw_player > MAX_PLAYER_ID:
+                rom.write_byte(address+1, UNKNOWN_PLAYER_ID)
+            else:
+                rom.write_byte(address+1, location.item.mw_player)
             continue
         if location.address is None or (type(location.address) is int and location.address >= 0x400000):
             continue
@@ -485,9 +517,12 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
                 itemid = list(location_table.keys()).index(location.name) + 1
                 assert itemid < 0x100
                 rom.write_byte(location.player_address, 0xFF)
-            elif location.item.player != player:
+            elif location.item.mw_player != 0:
                 if location.player_address is not None:
-                    rom.write_byte(location.player_address, location.item.player)
+                    if location.item.mw_player > MAX_PLAYER_ID:
+                        rom.write_byte(location.player_address, UNKNOWN_PLAYER_ID)
+                    else:
+                        rom.write_byte(location.player_address, location.item.player)
                 else:
                     itemid = 0x5A
 
@@ -496,6 +531,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
             itemid = handle_native_dungeon(location, itemid)
 
         rom.write_byte(location.address, itemid)
+
     for dungeon in [d for d in world.dungeons if d.player == player]:
         if dungeon.prize:
             # prizes
@@ -1926,7 +1962,7 @@ def write_custom_shops(rom, world, player):
                 replace = ItemFactory(item['replacement'], player).code if item['replacement'] else 0xFF
                 replace_price = int16_as_bytes(item['replacement_price'])
                 item_max = item['max']
-            item_player = 0 if item['player'] == player else item['player']
+            item_player = loc_item.mw_player
             item_data = [shop_id,  item_id] + price + [item_max, replace] + replace_price + [item_player]
             items_data.extend(item_data)
 

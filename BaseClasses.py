@@ -2837,7 +2837,7 @@ class Item(object):
 
     def __init__(self, name='', advancement=False, priority=False, type=None, code=None, price=999, pedestal_hint=None,
                  pedestal_credit=None, sickkid_credit=None, zora_credit=None, witch_credit=None, fluteboy_credit=None,
-                 hint_text=None, player=None):
+                 hint_text=None, player=None, mw_player=0):
         self.name = name
         self.advancement = advancement
         self.priority = priority
@@ -2854,6 +2854,7 @@ class Item(object):
         self.location = None
         self.dungeon_object = None
         self.world = None
+        self.mw_player = mw_player
         self.player = player
 
     @property
@@ -2944,12 +2945,12 @@ class Item(object):
         return str(self.__unicode__())
 
     def __unicode__(self):
-        return self.world.get_name_string_for_object(self) if self.world else f'{self.name} (Player {self.player})'
+        return self.world.get_name_string_for_object(self) if self.world else f'{self.name} (Player {self.mw_player})'
 
     def __eq__(self, other):
         if type(other) is str:
             return self.name == other
-        return other is not None and self.name == other.name and self.player == other.player
+        return other is not None and self.name == other.name and self.player == other.player and self.mw_player == self.mw_player
 
 
 # have 6 address that need to be filled

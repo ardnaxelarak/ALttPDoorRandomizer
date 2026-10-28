@@ -1,7 +1,7 @@
 from .BaseClasses import Item
 
 
-def ItemFactory(items, player):
+def ItemFactory(items, player, mw_player=0):
     ret = []
     singleton = False
     if isinstance(items, str):
@@ -10,7 +10,7 @@ def ItemFactory(items, player):
     for item in items:
         if item in item_table:
             advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text = item_table[item]
-            ret.append(Item(item, advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text, player))
+            ret.append(Item(item, advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text, player, mw_player))
         else:
             raise RuntimeError(f'Unknown Item: {item}')
 
