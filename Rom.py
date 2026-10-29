@@ -47,7 +47,7 @@ from .source.enemizer.Enemizer import write_enemy_shuffle_settings
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '917c53094c073a2e12fa9d7dd4b7cd2e'
+RANDOMIZERBASEHASH = '84440b4e326615ae09df15a3bd5f5811'
 
 limited_run_hashes = {
     '2604' : 'f6db6681f0e28e8463c2cc9ac3a07f07',
@@ -1401,6 +1401,11 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
             ganon_goal += [0x02, world.crystals_needed_for_ganon[player]]
         elif world.goal[player] in ['ganonhunt']:
             ganon_goal += [0x88] # triforce pieces
+        elif world.goal[player] in ['bosshunt']:
+            if world.bosshunt_include_agas[player]:
+                ganon_goal += [0x0C, world.bosses_ganon[player]] # total bosses
+            else:
+                ganon_goal += [0x05, world.bosses_ganon[player]] # prize bosses
         elif world.goal[player] in ['completionist']:
             ganon_goal += [0x81, 0x82, 0x06, 0x07, 0x89] # AD and max collection rate
         else:
