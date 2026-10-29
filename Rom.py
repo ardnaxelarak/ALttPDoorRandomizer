@@ -522,7 +522,7 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
                     if location.item.mw_player > MAX_PLAYER_ID:
                         rom.write_byte(location.player_address, UNKNOWN_PLAYER_ID)
                     else:
-                        rom.write_byte(location.player_address, location.item.player)
+                        rom.write_byte(location.player_address, location.item.mw_player)
                 else:
                     itemid = 0x5A
 
