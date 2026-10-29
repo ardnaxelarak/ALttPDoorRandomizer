@@ -1365,6 +1365,11 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
             ganon_goal += [0x02, world.crystals_needed_for_ganon[player]]
         elif world.goal[player] in ['ganonhunt']:
             ganon_goal += [0x88] # triforce pieces
+        elif world.goal[player] in ['bosshunt']:
+            if world.bosshunt_include_agas[player]:
+                ganon_goal += [0x0C, world.bosses_ganon[player]] # total bosses
+            else:
+                ganon_goal += [0x05, world.bosses_ganon[player]] # prize bosses
         elif world.goal[player] in ['completionist']:
             ganon_goal += [0x81, 0x82, 0x06, 0x07, 0x89] # AD and max collection rate
         else:
