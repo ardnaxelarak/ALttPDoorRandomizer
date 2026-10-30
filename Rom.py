@@ -2577,17 +2577,17 @@ def write_strings(rom, world, player, team, multiworld_hint_text={}):
                 hint += f" for {world.player_names[dest.player][team]}"
         return hint
 
+    zoraitem = world.get_location('King Zora', player).item.hint_text
+    if len(zoraitem) <= 15:
+        tt['zora_meeting'] = f"Whaddaya want?\n  ≥ {zoraitem.title()}\n    Nothin'{{CHOICE}}"
+    else:
+        tt['zora_meeting'] = f"Do you want {zoraitem}?\n  ≥ I'll pay\n    No thanks{{CHOICE}}"
+
+    bottleitem = world.get_location('Bottle Merchant', player).item.hint_text
+    tt['bottle_vendor_choice'] = f"Do you want {bottleitem}?\n  ≥ I'll take it\n    No thanks!\n{{CHOICE}}"
+
     # For hints, first we write hints about entrances, some from the inconvenient list others from all reasonable entrances.
     if world.hints[player]:
-        zoraitem = world.get_location('King Zora', player).item.hint_text
-        if len(zoraitem) <= 15:
-            tt['zora_meeting'] = f"Whaddaya want?\n  ≥ {zoraitem.title()}\n    Nothin'{{CHOICE}}"
-        else:
-            tt['zora_meeting'] = f"Do you want {zoraitem}?\n  ≥ I'll pay\n    No thanks{{CHOICE}}"
-
-        bottleitem = world.get_location('Bottle Merchant', player).item.hint_text
-        tt['bottle_vendor_choice'] = f"Do you want {bottleitem}?\n  ≥ I'll take it\n    No thanks!\n{{CHOICE}}"
-
         tt['sign_north_of_links_house'] = '> Randomizer The telepathic tiles can have hints!'
         hint_locations = HintLocations.copy()
         random.shuffle(hint_locations)
@@ -2840,32 +2840,21 @@ def write_strings(rom, world, player, team, multiworld_hint_text={}):
                 tt[location] = junk_hints.pop(0)
 
     # We still need the older hints of course. Those are done here.
-    no_silver_text = Ganon_Phase_3_No_Silvers_texts[random.randint(0, len(Ganon_Phase_3_No_Silvers_texts) - 1)]
-
     ganon_item = world.ganon_item[player]
     if ganon_item == "silver":
-        silverarrows = world.find_items('Silver Arrows', player)
-        random.shuffle(silverarrows)
-        if silverarrows:
-            hint_phrase = hint_text(silverarrows[0]).replace("Ganon's", "my")
-            silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?'
-        else:
-            silverarrow_hint = no_silver_text
-        tt['ganon_phase_3_no_silvers'] = silverarrow_hint
-        tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
+        no_silver_text = random.choice(Ganon_Phase_3_No_Silvers_texts)
 
-        prog_bow_locs = world.find_items('Progressive Bow', player)
-        distinguished_prog_bow_loc = next((location for location in prog_bow_locs if location.item.code == 0x65), None)
-        progressive_silvers = world.difficulty_requirements[player].progressive_bow_limit >= 2 or world.swords[player] == 'swordless'
-        if distinguished_prog_bow_loc:
-            prog_bow_locs.remove(distinguished_prog_bow_loc)
-            hint_phrase = hint_text(distinguished_prog_bow_loc).replace("Ganon's", "my")
-            silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
-            tt['ganon_phase_3_no_silvers'] = silverarrow_hint
-        if any(prog_bow_locs):
-            hint_phrase = hint_text(random.choice(prog_bow_locs)).replace("Ganon's", "my")
-            silverarrow_hint = f'Did you find the silver arrows {hint_phrase}?' if progressive_silvers else no_silver_text
-            tt['ganon_phase_3_no_silvers_alt'] = silverarrow_hint
+        can_get_silvers = world.difficulty_requirements[player].progressive_bow_limit >= 2 or world.swords[player] == 'swordless'
+        hint_phrase = multiworld_hint_text.get("Ganon Item", [])
+        random.shuffle(hint_phrase)
+        if not can_get_silvers:
+            silver_hint = no_silver_text
+        elif len(hint_phrase) >= 2:
+            silver_hint = f'Did you find the silver arrows {" and ".join(hint_phrase[:2])}?'
+        else:
+            silver_hint = "You can't best\nme without\nsilver arrows!"
+        tt['ganon_phase_3_no_silvers'] = silver_hint
+        tt['ganon_phase_3_no_silvers_alt'] = silver_hint
     elif ganon_item == "bomb":
         tt['ganon_phase_3_no_bow'] = "You can't best\nme without\nexplosives!"
         tt['ganon_phase_3_silvers'] = "Explosives!\nMy one true\nweakness!"
@@ -2873,28 +2862,28 @@ def write_strings(rom, world, player, team, multiworld_hint_text={}):
         tt['ganon_phase_3_no_bow'] = "You can't best\nme without\na bee!"
         tt['ganon_phase_3_silvers'] = "Oh no! A bee!\nMy one true\nweakness!"
     elif ganon_item == "none":
-        no_weakness_text = Ganon_Phase_3_No_Weakness_texts[random.randint(0, len(Ganon_Phase_3_No_Weakness_texts) - 1)]
+        no_weakness_text = random.choice(Ganon_Phase_3_No_Weakness_texts)
         tt['ganon_phase_3_no_bow'] = no_weakness_text
         tt['ganon_phase_3_silvers'] = no_weakness_text
     else:
         name_table = {
-            'boomerang': ['a boomerang', 'A boomerang', 'Red Boomerang'],
-            'hookshot': ['a hookshot', 'A hookshot', 'Hookshot'],
-            'powder': ['the powder', 'Powder', 'Magic Powder'],
-            'fire_rod': ['the fire rod', 'The fire rod', 'Fire Rod'],
-            'ice_rod': ['the ice rod', 'The ice rod', 'Ice Rod'],
-            'bombos': ['bombos', 'Bombos', 'Bombos'],
-            'ether': ['ether', 'Ether', 'Ether'],
-            'quake': ['quake', 'Quake', 'Quake'],
-            'hammer': ['a hammer', 'A hammer', 'Hammer'],
-            'somaria': ['somaria', 'Somaria', 'Cane of Somaria'],
-            'byrna': ['byrna', 'Byrna', 'Cane of Byrna'],
+            'boomerang': 'a boomerang',
+            'hookshot': 'a hookshot',
+            'powder': 'the powder',
+            'fire_rod': 'the fire rod',
+            'ice_rod': 'the ice rod',
+            'bombos': 'bombos',
+            'ether': 'ether',
+            'quake': 'quake',
+            'hammer': 'a hammer',
+            'somaria': 'somaria',
+            'byrna': 'byrna',
         }
-        locations = world.find_items(name_table[ganon_item][2], player)
-        random.shuffle(locations)
-        location_hint = (' %s?' % hint_text(locations[0]).replace("Ganon's", "my")) if locations else "?\nI think not!"
-        have_text = name_table[ganon_item][1]
-        none_text = name_table[ganon_item][0]
+        hint_phrase = multiworld_hint_text.get("Ganon Item", [])
+        random.shuffle(hint_phrase)
+        location_hint = (' %s?' % hint_phrase[0]) if len(hint_phrase) > 0 else "?\nI think not!"
+        have_text = name_table[ganon_item].capitalize()
+        none_text = name_table[ganon_item]
         if len(have_text) <= 6:
             have_text = "Oh no! %s" % have_text
         tt['ganon_phase_3_no_bow'] = "Did you find %s%s" % (none_text, location_hint)
