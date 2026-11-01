@@ -527,6 +527,7 @@ def init_world(args, fish):
     world.take_any = args.take_any.copy()
     world.restrict_boss_items = args.restrict_boss_items.copy()
     world.collection_rate = args.collection_rate.copy()
+    world.junk_item_frames = args.junk_item_frames.copy()
     world.colorizepots = args.colorizepots.copy()
     world.aga_randomness = args.aga_randomness.copy()
     world.money_balance = args.money_balance.copy()

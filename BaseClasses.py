@@ -199,6 +199,7 @@ class World(object):
             set_player_attr('crystal_book', False)
             set_player_attr('extra_keys', 0)
             set_player_attr('collection_rate', False)
+            set_player_attr('junk_item_frames', 16)
             set_player_attr('colorizepots', True)
             set_player_attr('pot_pool', {})
             set_player_attr('decoupledoors', False)

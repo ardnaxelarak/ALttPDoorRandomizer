@@ -179,7 +179,8 @@ def parse_cli(argv, no_defaults=False, include_user_settings=True):
                          'decoupledoors', 'door_type_mode', 'bonk_drops',
                          'trap_door_mode', 'key_logic_algorithm', 
                          'door_self_loops', 'any_enemy_logic', 'aga_randomness',
-                         'money_balance', 'limited_run', 'limited_run_args']:
+                         'junk_item_frames', 'money_balance', 'limited_run',
+                         'limited_run_args']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if value and name == 'limited_run_args':
                     value = get_limited_run_args(value)
@@ -326,6 +327,7 @@ def parse_settings(include_user_settings=True):
         "shuffle_songinstruments": False,
         "msu_resume": False,
         "collection_rate": False,
+        "junk_item_frames": 16,
 
         'spoiler': 'full',
         # Playthrough defaults to TRUE

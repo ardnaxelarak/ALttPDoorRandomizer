@@ -744,6 +744,10 @@ def patch_rom(world, rom, player, team, is_mystery=False, rom_header=None, hint_
         if world.limited_run[player] != '2604':
             dr_flags |= DROptions.Debug
             rom.write_byte(snes_to_pc(0x308039), 1)
+    if world.junk_item_frames[player] > 0 and world.junk_item_frames[player] < 0x40:
+        rom.write_byte(0x1800AF, 0x80 | world.junk_item_frames[player])
+    else:
+        rom.write_byte(0x1800AF, 0)
     if world.doorShuffle[player] not in ['vanilla', 'basic'] and world.logic[player] != 'nologic'\
             and world.mixed_travel[player] == 'prevent':
         # PoD Falling Bridge or Hammjump
