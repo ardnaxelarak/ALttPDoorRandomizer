@@ -3613,7 +3613,7 @@ def explore_state(state, world, player):
     while len(state.avail_doors) > 0:
         door = state.next_avail_door().door
         connect_region = world.get_entrance(door.name, player).connected_region
-        if (state.can_traverse(door) and not state.visited(connect_region)
+        if (state.can_traverse(door, world) and not state.visited(connect_region)
            and valid_region_to_explore(connect_region, state.dungeon, world, player)):
             state.visit_region(connect_region)
             state.add_all_doors_check_unattached(connect_region, world, player)
@@ -3633,7 +3633,7 @@ def explore_state_not_inaccessible(state, world, player):
     while len(state.avail_doors) > 0:
         door = state.next_avail_door().door
         connect_region = world.get_entrance(door.name, player).connected_region
-        if state.can_traverse(door) and not state.visited(connect_region) and connect_region.type == RegionType.Dungeon:
+        if state.can_traverse(door, world) and not state.visited(connect_region) and connect_region.type == RegionType.Dungeon:
             state.visit_region(connect_region)
             state.add_all_doors_check_unattached(connect_region, world, player)
 
@@ -4796,5 +4796,4 @@ door_type_counts = {
     'Turtle Rock': (6, 2, 2, 0, 2, 0, 1),  # 2 bombs kind of for entrances, but I put 0 here
     'Ganons Tower': (8, 2, 5, 2, 1, 0, 0)
 }
-
 
